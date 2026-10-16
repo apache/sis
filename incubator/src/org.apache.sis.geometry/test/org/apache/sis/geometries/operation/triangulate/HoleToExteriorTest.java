@@ -134,6 +134,35 @@ public class HoleToExteriorTest {
     }
 
     /**
+     * The joined ring is given as indices of the positions of the polygon, those of the exterior ring first.
+     * It ends with the closing position of the exterior ring.
+     */
+    @Test
+    public void testRingIndices() {
+        final CoordinateReferenceSystem crs = CommonCRS.WGS84.normalizedGeographic();
+        final Polygon polygon = GeometryFactory.DEFAULT.createPolygon(ring(crs, 0,0, 10,0, 10,10, 0,10, 0,0),
+                List.of(ring(crs, 2,3, 2,5, 4,5, 4,3, 2,3)));
+        //the cut goes from (10,0) to the hole position (4,5) of index 7, around the hole, and back.
+        assertArrayEquals(new int[] {0, 1, 7, 8, 5, 6, 7, 1, 2, 3, 4}, HoleToExterior.ring(polygon));
+        assertArrayEquals(new int[] {0, 1, 2, 3}, HoleToExterior.ring(
+                GeometryFactory.DEFAULT.createPolygon(ring(crs, 0,0, 1,0, 1,1, 0,0), null)), "Without hole");
+    }
+
+    /**
+     * A hole outside of the exterior ring makes an invalid polygon, where no vertex is visible from the hole.
+     * The cut shall start from the nearest end of the nearest segment of the exterior ring, without adding position.
+     */
+    @Test
+    public void testHoleOutside() {
+        final CoordinateReferenceSystem crs = CommonCRS.WGS84.normalizedGeographic();
+        final Polygon polygon = GeometryFactory.DEFAULT.createPolygon(ring(crs, 0,0, 4,0, 4,4, 0,4, 0,0),
+                List.of(ring(crs, 6,1, 6,3, 8,3, 8,1, 6,1)));
+        //the hole position (8,3) of index 7 is nearest to the segment from (4,0) to (4,4), at (4,3).
+        assertArrayEquals(new int[] {0, 1, 2, 7, 8, 5, 6, 7, 2, 3, 4}, HoleToExterior.ring(polygon));
+        assertNoAddedPosition(polygon, HoleToExterior.apply(polygon).getExteriorRing().getDataPoints());
+    }
+
+    /**
      * A reflex vertex of the exterior ring hides the end of the segment reached by the ray from the hole,
      * so the cut shall go to that reflex vertex.
      */

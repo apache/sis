@@ -26,7 +26,6 @@ import org.opengis.geometry.Envelope;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import org.apache.sis.geometries.Curve;
 import org.apache.sis.geometries.DataPoints;
-import org.apache.sis.geometries.DataPointsType;
 import org.apache.sis.geometries.Geometries;
 import org.apache.sis.geometries.GeometryFactory;
 import org.apache.sis.geometries.Point;
@@ -482,13 +481,8 @@ public final class CurveLinearizer {
         if (result.size() == n) {
             return points;
         }
-        final DataPointsType type = points.getType();
-        final DataPoints copy = GeometryFactory.DEFAULT.createDataPoints(type, result.size());
-        for (int i = 0; i < result.size(); i++) {
-            for (final String name : type.getAttributeNames()) {
-                copy.setAttribute(i, name, result.get(i).getAttribute(name));
-            }
-        }
-        return copy;
+        //copy the points, so that the polyline does not depend on the given ones.
+        final DataPoints view = ConcatenatedDataPoints.of(result.toArray(Point[]::new));
+        return view.subset(0, view.size());
     }
 }

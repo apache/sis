@@ -45,7 +45,6 @@ import org.apache.sis.maths.Array;
 import org.apache.sis.maths.NDArrays;
 import org.apache.sis.maths.SampleSystem;
 import org.apache.sis.maths.Vector;
-import org.apache.sis.maths.Vectors;
 import org.apache.sis.measure.NumberRange;
 import org.apache.sis.referencing.CRS;
 import org.apache.sis.util.Utilities;
@@ -403,30 +402,24 @@ public non-sealed class DefaultPrism extends AbstractGeometry implements Prism {
          * @param  values   extrusion value of each copied position.
          */
         private DataPoints copy(final DataPoints source, final int[] indices, final double[] values) {
-            final DataPointsType type = source.getType();
-            final SampleSystem system = SampleSystem.of(crs);
+            final DataPoints copy = source.subset(indices);
             final Map<String,Array> attributes = new LinkedHashMap<>();
-            for (final String name : type.getAttributeNames()) {
-                final boolean isPosition = DataPointsType.ATT_POSITION.equals(name);
-                attributes.put(name, NDArrays.of(isPosition ? system : type.getAttributeSystem(name),
-                                                 type.getAttributeType(name), indices.length));
+            for (final String name : copy.getType().getAttributeNames()) {
+                attributes.put(name, copy.getAttributeArray(name));
             }
-            final Array positions = attributes.get(DataPointsType.ATT_POSITION);
-            final Vector<?> position = Vectors.create(system, type.getAttributeType(DataPointsType.ATT_POSITION));
-            final int dimension = source.getDimension();
+            //the positions are in the reference system of the extrusion, which may have one more dimension.
+            final Array positions = NDArrays.of(SampleSystem.of(crs),
+                    copy.getType().getAttributeType(DataPointsType.ATT_POSITION), indices.length);
             for (int i = 0; i < indices.length; i++) {
-                final Vector<?> p = source.getPosition(indices[i]);
-                for (int d = 0; d < dimension; d++) {
-                    position.set(d, p.get(d));
+                Vector<?> position = copy.getPosition(i);
+                if (axis < position.getDimension()) {
+                    position.set(axis, values[i]);
+                } else {
+                    position = position.extend(values[i]);
                 }
-                position.set(axis, values[i]);
                 positions.set(i, position);
-                for (final Map.Entry<String,Array> entry : attributes.entrySet()) {
-                    if (entry.getValue() != positions) {
-                        entry.getValue().set(i, source.getAttribute(indices[i], entry.getKey()));
-                    }
-                }
             }
+            attributes.put(DataPointsType.ATT_POSITION, positions);
             return factory.createDataPoints(attributes);
         }
     }
