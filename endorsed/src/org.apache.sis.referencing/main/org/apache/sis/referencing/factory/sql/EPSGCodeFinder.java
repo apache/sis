@@ -553,6 +553,15 @@ crs:    if (isInstance(CoordinateReferenceSystem.class, object)) {
      * Note that this rule replaces also the {@code %}, {@code _} and {@code '} characters,
      * thus avoiding the need to escape them.
      *
+     * <p>A trailing {@code '%'} character is added for including datum variants.
+     * For example if the name is <q>Nouvelle Triangulation Française</q>,
+     * we want to find the following:</p>
+     *
+     * <ul>
+     *   <li>EPSG:6275 — Nouvelle Triangulation Française</li>
+     *   <li>EPSG:6807 — Nouvelle Triangulation Française (Paris)</li>
+     * </ul>
+     *
      * <p>This method does not try to address case-insensitive and accent-insensitive searches.
      * This method assumes that the column uses a database collation ignoring cases and accents.
      * This method is used in complement to collation, for adding more flexibility in the punctuations.
@@ -624,14 +633,17 @@ crs:    if (isInstance(CoordinateReferenceSystem.class, object)) {
                 if (isNext) {
                     buffer.append(" OR ");
                 }
-                final String name;
-                final String operator;
+                String name;
+                String operator = " LIKE ";
                 if (supportsCollationInLike) {
                     name = entry.getValue();    // LIKE pattern.
-                    operator = " LIKE ";
                 } else {
                     name = entry.getKey();      // Original name.
-                    operator = " = ";
+                    if (name.indexOf('%') < 0 && name.indexOf('_') < 0) {
+                        name += '%';            // On HSQLDB, LIKE works if the wildcard is only at the end.
+                    } else {
+                        operator = " = ";       // Collation does not fully work with LIKE clause on HSQLDB.
+                    }
                 }
                 buffer.append(column).append(operator).append(JDK26.enquoteLiteral(name));
                 isNext = true;
