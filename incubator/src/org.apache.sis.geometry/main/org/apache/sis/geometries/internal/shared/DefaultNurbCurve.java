@@ -19,6 +19,7 @@ package org.apache.sis.geometries.internal.shared;
 import java.util.Arrays;
 import java.util.List;
 import javax.measure.Quantity;
+import org.opengis.geometry.Envelope;
 import org.apache.sis.geometries.DataPoints;
 import org.apache.sis.geometries.DataPointsType;
 import org.apache.sis.geometries.Geometries;
@@ -34,7 +35,6 @@ import org.apache.sis.maths.NDRange;
 import org.apache.sis.maths.Vector;
 import org.apache.sis.maths.Vectors;
 import org.apache.sis.measure.Quantities;
-import org.opengis.geometry.Envelope;
 
 
 /**

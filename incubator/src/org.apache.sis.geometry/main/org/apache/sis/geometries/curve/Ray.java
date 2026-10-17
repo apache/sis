@@ -18,6 +18,7 @@ package org.apache.sis.geometries.curve;
 
 import javax.measure.Quantity;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
+import org.opengis.geometry.Envelope;
 import org.apache.sis.geometries.Curve;
 import org.apache.sis.geometries.CurveInterpolation;
 import org.apache.sis.geometries.DataPointsType;
@@ -29,7 +30,6 @@ import org.apache.sis.maths.Array;
 import org.apache.sis.maths.NDRange;
 import org.apache.sis.maths.ReadOnly;
 import org.apache.sis.measure.Quantities;
-import org.opengis.geometry.Envelope;
 
 
 /**

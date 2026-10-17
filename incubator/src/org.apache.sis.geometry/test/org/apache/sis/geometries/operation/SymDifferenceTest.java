@@ -18,10 +18,10 @@ package org.apache.sis.geometries.operation;
 
 import org.apache.sis.geometries.Geometry;
 import org.apache.sis.geometries.GeometryCollection;
-
-// Test dependencies
 import org.apache.sis.geometries.GeometryType;
 import org.apache.sis.geometries.Point;
+
+// Test dependencies
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertInstanceOf;
 import static org.junit.jupiter.api.Assertions.assertNull;

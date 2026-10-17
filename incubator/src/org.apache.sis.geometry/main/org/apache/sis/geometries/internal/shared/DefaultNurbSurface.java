@@ -21,21 +21,21 @@ import java.util.Arrays;
 import java.util.List;
 import javax.measure.Quantity;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
+import org.opengis.geometry.Envelope;
 import org.apache.sis.geometries.Curve;
 import org.apache.sis.geometries.DataPoints;
 import org.apache.sis.geometries.Geometry;
+import org.apache.sis.geometries.Geometries;
 import org.apache.sis.geometries.curve.KnotType;
 import org.apache.sis.geometries.operation.DeBoorAlgorithm;
 import org.apache.sis.geometries.surface.BSplineSurfaceForm;
 import org.apache.sis.geometries.surface.NurbSurface;
-import org.apache.sis.geometries.Geometries;
 import org.apache.sis.maths.Array;
 import org.apache.sis.maths.DataType;
 import org.apache.sis.maths.NDArrays;
 import org.apache.sis.maths.NDRange;
 import org.apache.sis.maths.Vector;
 import org.apache.sis.maths.Vectors;
-import org.opengis.geometry.Envelope;
 
 
 /**

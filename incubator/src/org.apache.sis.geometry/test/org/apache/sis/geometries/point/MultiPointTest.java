@@ -16,8 +16,8 @@
  */
 package org.apache.sis.geometries.point;
 
-import org.apache.sis.geometries.GeometryCollection;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
+import org.apache.sis.geometries.GeometryCollection;
 import org.apache.sis.geometries.Point;
 
 // Test dependencies

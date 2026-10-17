@@ -23,14 +23,14 @@ import org.apache.sis.geometries.GeometryFactory;
 import org.apache.sis.geometries.GeometryType;
 import org.apache.sis.geometries.curve.EllipticArc;
 import org.apache.sis.maths.Vector;
+import static org.apache.sis.geometries.surface.SphereTest.assertEnvelope;
+import static org.apache.sis.geometries.surface.SphereTest.assertPosition;
+import static org.apache.sis.geometries.surface.SphereTest.line;
 
 // Test dependencies
 import static org.junit.jupiter.api.Assertions.*;
 import org.junit.jupiter.api.Test;
 import org.apache.sis.geometries.GeometryTest;
-import static org.apache.sis.geometries.surface.SphereTest.assertEnvelope;
-import static org.apache.sis.geometries.surface.SphereTest.assertPosition;
-import static org.apache.sis.geometries.surface.SphereTest.line;
 
 
 /**

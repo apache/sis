@@ -18,9 +18,9 @@ package org.apache.sis.geometries;
 
 import java.util.List;
 import javax.measure.Quantity;
-import org.apache.sis.geometries.internal.shared.DefaultSolid;
 import static org.opengis.annotation.Specification.ISO_19107;
 import org.opengis.annotation.UML;
+import org.apache.sis.geometries.internal.shared.DefaultSolid;
 import org.apache.sis.geometries.solid.ParametricCurveSolid;
 import org.apache.sis.geometries.solid.Polyhedron;
 import org.apache.sis.maths.Array;

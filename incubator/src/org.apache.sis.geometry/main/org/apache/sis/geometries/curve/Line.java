@@ -16,8 +16,8 @@
  */
 package org.apache.sis.geometries.curve;
 
-import javax.measure.Quantity;
 import javax.print.attribute.standard.MediaSize.ISO;
+import javax.measure.Quantity;
 import static org.opengis.annotation.Specification.ISO_19107;
 import org.opengis.annotation.UML;
 import org.opengis.geometry.Envelope;
