@@ -24,6 +24,7 @@ import java.awt.image.RenderedImage;
 import java.awt.image.ImagingOpException;
 import org.apache.sis.feature.internal.Resources;
 import org.apache.sis.util.Disposable;
+import org.apache.sis.util.Workaround;
 import org.apache.sis.util.internal.shared.Numerics;
 import org.apache.sis.image.internal.shared.ImageUtilities;
 
@@ -66,7 +67,10 @@ final class OverviewImage extends ComputedImage {
         this(targetBounds(ImageUtilities.getBounds(source)), source);
     }
 
-    /** Workaround for RFE #4093999 ("Relax constraint on placement of this()/super() call in constructors"). */
+    /**
+     * Workaround while waiting for JEP 513: Flexible Constructor Bodies.
+     */
+    @Workaround(library="JDK", version="11", fixed="25")
     private static Rectangle targetBounds(final Rectangle bounds) {
         bounds.x     >>= 1;     // Round toward negative infinity.
         bounds.y     >>= 1;
@@ -75,10 +79,13 @@ final class OverviewImage extends ComputedImage {
         return bounds;
     }
 
-    /** Workaround for RFE #4093999 ("Relax constraint on placement of this()/super() call in constructors"). */
+    /**
+     * Workaround while waiting for JEP 513: Flexible Constructor Bodies.
+     */
+    @Workaround(library="JDK", version="11", fixed="25")
     private OverviewImage(final Rectangle bounds, final RenderedImage source) {
         super(ImageLayout.DEFAULT.createCompatibleSampleModel(source, bounds), source);
-        offsetX = (byte) (source.getMinX() & 1);    // TODO: move before `targetBounds(…)` after RFE #4093999.
+        offsetX = (byte) (source.getMinX() & 1);    // TODO: move before `targetBounds(…)` on JDK25.
         offsetY = (byte) (source.getMinY() & 1);
         minX    = bounds.x;
         minY    = bounds.y;

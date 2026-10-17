@@ -20,7 +20,7 @@
  *
  * @author  Johann Sorel (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.7
+ * @version 1.8
  * @since   0.3
  */
 module org.apache.sis.storage {

@@ -284,24 +284,22 @@ public class MilitaryGridReferenceSystem extends ReferencingByIdentifiers {
     }
 
     /**
-     * Work around for RFE #4093999 in Sun's bug database
-     * ("Relax constraint on placement of this()/super() call in constructors").
+     * Workaround while waiting for JEP 513: Flexible Constructor Bodies.
      */
-    @Workaround(library="JDK", version="8", fixed="25")
+    @Workaround(library="JDK", version="11", fixed="25")
     private static Map<String,?> properties() {
         final var party = new AbstractParty("North Atlantic Treaty Organization", null);
         return properties(new NamedIdentifier(null, "NATO", Resources.formatInternational(Resources.Keys.MGRS), null, null), IDENTIFIER, party);
     }
 
     /**
-     * Work around for RFE #4093999 in Sun's bug database
-     * ("Relax constraint on placement of this()/super() call in constructors").
+     * Workaround while waiting for JEP 513: Flexible Constructor Bodies.
      */
-    @Workaround(library="JDK", version="8", fixed="25")
+    @Workaround(library="JDK", version="11", fixed="25")
     private static ModifiableLocationType[] types() {
-        final ModifiableLocationType gzd    = new ModifiableLocationType(Resources.formatInternational(Resources.Keys.GridZoneDesignator));
-        final ModifiableLocationType square = new ModifiableLocationType(Resources.formatInternational(Resources.Keys.SquareIdentifier100));
-        final ModifiableLocationType coord  = new ModifiableLocationType(Resources.formatInternational(Resources.Keys.GridCoordinates));
+        final var gzd    = new ModifiableLocationType(Resources.formatInternational(Resources.Keys.GridZoneDesignator));
+        final var square = new ModifiableLocationType(Resources.formatInternational(Resources.Keys.SquareIdentifier100));
+        final var coord  = new ModifiableLocationType(Resources.formatInternational(Resources.Keys.GridCoordinates));
         gzd   .addIdentification(Vocabulary.formatInternational(Vocabulary.Keys.Code));
         coord .addIdentification(Vocabulary.formatInternational(Vocabulary.Keys.Coordinate));
         square.addParent(gzd);
@@ -320,7 +318,7 @@ public class MilitaryGridReferenceSystem extends ReferencingByIdentifiers {
         // No need to synchronized; not a big deal if computed twice.
         short origin = south ? southOffset : northOffset;
         if (origin == 0) {
-            final DirectPosition2D position = new DirectPosition2D(
+            final var position = new DirectPosition2D(
                     south ? TransverseMercator.Zoner.SOUTH_BOUNDS
                           : TransverseMercator.Zoner.NORTH_BOUNDS, 0);
             double northing = datum.universal(position.x * 1.01, position.y).getConversionFromBase()

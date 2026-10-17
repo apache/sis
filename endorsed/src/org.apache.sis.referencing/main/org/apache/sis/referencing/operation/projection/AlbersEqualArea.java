@@ -88,13 +88,11 @@ public class AlbersEqualArea extends AuthalicConversion {
     }
 
     /**
-     * Work around for RFE #4093999 in Sun's bug database
-     * ("Relax constraint on placement of this()/super() call in constructors").
+     * Workaround while waiting for JEP 513: Flexible Constructor Bodies.
      */
-    @SuppressWarnings("fallthrough")
-    @Workaround(library="JDK", version="7", fixed="25")
+    @Workaround(library="JDK", version="11", fixed="25")
     private static Initializer initializer(final OperationMethod method, final Parameters parameters) {
-        final EnumMap<ParameterRole, ParameterDescriptor<Double>> roles = new EnumMap<>(ParameterRole.class);
+        final var roles = new EnumMap<ParameterRole, ParameterDescriptor<Double>>(ParameterRole.class);
         roles.put(ParameterRole.FALSE_EASTING,    EASTING_AT_FALSE_ORIGIN);
         roles.put(ParameterRole.FALSE_NORTHING,   NORTHING_AT_FALSE_ORIGIN);
         roles.put(ParameterRole.CENTRAL_MERIDIAN, LONGITUDE_OF_FALSE_ORIGIN);
@@ -102,10 +100,9 @@ public class AlbersEqualArea extends AuthalicConversion {
     }
 
     /**
-     * Work around for RFE #4093999 in Sun's bug database
-     * ("Relax constraint on placement of this()/super() call in constructors").
+     * Workaround while waiting for JEP 513: Flexible Constructor Bodies.
      */
-    @Workaround(library="JDK", version="7", fixed="25")
+    @Workaround(library="JDK", version="11", fixed="25")
     private AlbersEqualArea(final Initializer initializer) {
         super(initializer, null);
         double φ0 = initializer.getAndStore(LATITUDE_OF_FALSE_ORIGIN);

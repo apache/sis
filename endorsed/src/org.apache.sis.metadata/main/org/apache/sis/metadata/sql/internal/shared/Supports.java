@@ -87,9 +87,15 @@ final class Supports {
     public static final int ILIKE = 0x200;
 
     /**
+     * Whether the database supports collations in {@code LIKE} clauses.
+     * Some databases support collations in {@code =} comparisons but silently ignore it in {@code LIKE} clauses.
+     */
+    public static final int COLLATION_IN_LIKE = 0x400;
+
+    /**
      * Whether the spatial extension supports <abbr>SRID</abbr> in {@code ST_*} functions.
      */
-    public static final int SRID = 0x400;
+    public static final int SRID = 0x800;
 
     /**
      * Do not allow instantiation of this class.

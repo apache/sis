@@ -64,11 +64,10 @@ public final class IdentifiedMediaData extends MediaData {
     }
 
     /**
-     * Work around for RFE #4093999 in Sun's bug database
-     * ("Relax constraint on placement of this()/super() call in constructors").
+     * Workaround while waiting for JEP 513: Flexible Constructor Bodies.
      * The identifier needs to be read before the call to `super(reader)`.
      */
-    @Workaround(library="JDK", version="7", fixed="25")
+    @Workaround(library="JDK", version="11", fixed="25")
     private IdentifiedMediaData(final Reader reader, final int id) throws IOException {
         super(reader);
         identifier = id;

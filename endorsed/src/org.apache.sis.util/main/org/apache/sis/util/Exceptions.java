@@ -25,7 +25,6 @@ import java.io.UncheckedIOException;
 import java.nio.file.DirectoryIteratorException;
 import java.lang.reflect.InvocationTargetException;
 import java.util.concurrent.ExecutionException;
-import org.opengis.util.InternationalString;
 import org.apache.sis.util.resources.Vocabulary;
 import org.apache.sis.util.collection.BackingStoreException;
 
@@ -51,7 +50,7 @@ import org.apache.sis.util.collection.BackingStoreException;
  * This allows system administrator to analyze the issue without the need to understand client's language.</p>
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
- * @version 1.7
+ * @version 1.8
  * @since   0.3
  */
 public final class Exceptions {
@@ -62,47 +61,36 @@ public final class Exceptions {
     }
 
     /**
-     * Returns the message of the given exception, localized in the given locale if possible.
-     * Some exceptions created by SIS can format a message in different locales. This method
-     * returns such localized message if possible, or fallback on the standard JDK methods otherwise.
-     * More specifically:
+     * Returns the message of the given exception with a preference for the given locale.
+     * The heuristic rules applied by this method may change between different versions of
+     * Apache <abbr>SIS</abbr>. The current rules are:
      *
      * <ul>
-     *   <li>If the given {@code exception} is null, then this method returns {@code null}.</li>
-     *   <li>Otherwise if the given {@code locale} is null, then this method returns {@link Exception#getMessage()}.
-     *       This is consistent with the {@link Localized} policy saying that null locale stands for "unlocalized"
-     *       message (usually in English) or message in the JVM {@linkplain Locale#getDefault() default locale}.</li>
-     *   <li>Otherwise if the given {@code exception} is an instance of {@link LocalizedException} providing
-     *       a non-null {@linkplain LocalizedException#getInternationalMessage() international message},
-     *       then this method returns the result of {@link InternationalString#toString(Locale)}.</li>
-     *   <li>Otherwise this method returns {@link Exception#getLocalizedMessage()}.</li>
+     *   <li>If the given {@code exception} is null, returns {@code null}.</li>
+     *   <li>If the given {@code locale} is null, returns {@link Exception#getMessage()}.</li>
+     *   <li>If the given {@code exception} does <em>not</em> implement {@link Localized},
+     *       returns {@link Exception#getLocalizedMessage()}.</li>
+     *   <li>Otherwise, this method compares {@link Localized#getLocale()} with the given locale
+     *       for choosing between {@code getMessage()} and {@code getLocalizedMessage()}.</li>
      * </ul>
      *
      * @param  exception  the exception from which to get the localize message, or {@code null}.
-     * @param  locale     the preferred locale for the message, or {@code null} for the JVM default locale.
+     * @param  locale     the preferred locale for the message, or {@code null} if unspecified.
      *                    This locale is honored on a <em>best effort</em> basis only.
      * @return the message in the given locale if possible, or {@code null} if the {@code exception}
      *         argument was {@code null} or if the exception does not contain a message.
-     *
-     * @see LocalizedException#getLocalizedMessage()
-     *
-     * @deprecated Depends on {@link LocalizedException}, which has been deprecated.
      */
-    @Deprecated(since = "1.7", forRemoval = true)
     public static String getLocalizedMessage(final Throwable exception, final Locale locale) {
         if (exception == null) {
             return null;
         }
         if (locale == null) {
-            return exception.getMessage();      // See the policy documented in LocalizedException.getMessage()
+            return exception.getMessage();
         }
-        if (exception instanceof LocalizedException) {
-            final InternationalString i18n = ((LocalizedException) exception).getInternationalMessage();
-            if (i18n != null) {
-                final String message = i18n.toString(locale);
-                if (message != null) {
-                    return message;
-                }
+        if (exception instanceof Localized) {
+            final Locale actual = ((Localized) exception).getLocale();
+            if (actual != null && !locale.getLanguage().equalsIgnoreCase(actual.getLanguage())) {
+                return exception.getMessage();
             }
         }
         return exception.getLocalizedMessage();

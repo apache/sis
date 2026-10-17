@@ -16,13 +16,17 @@
  */
 package org.apache.sis.storage;
 
+import java.util.Map;
+import java.util.HashMap;
 import java.util.Locale;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.logging.Logger;
 import java.util.function.Supplier;
 import java.time.ZoneId;
-import java.nio.ByteBuffer;
+import java.io.Serializable;
 import java.io.ObjectStreamException;
+import java.nio.ByteBuffer;
 import java.nio.charset.Charset;
 import java.nio.file.Path;
 import java.nio.file.OpenOption;
@@ -71,13 +75,18 @@ import org.apache.sis.system.Modules;
  *     }
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.7
+ * @version 1.8
  *
  * @param <T>  the type of option values.
  *
  * @since 1.7
  */
-public class OptionKey<T> extends org.apache.sis.setup.OptionKey<T> {
+public class OptionKey<T> implements Serializable {
+    /**
+     * For cross-version compatibility.
+     */
+    private static final long serialVersionUID = 4656629698200082120L;
+
     /**
      * The locale to use for locale-sensitive data. This option determines the language to use for writing
      * {@link org.opengis.util.InternationalString international strings} when the target storage supports
@@ -255,22 +264,21 @@ public class OptionKey<T> extends org.apache.sis.setup.OptionKey<T> {
     public static final OptionKey<StoreListeners> PARENT_LISTENERS =
             new OptionKey<>("PARENT_LISTENERS", StoreListeners.class);
 
-    // Temporary hack for transition from deprecated class.
-    static {
-        org.apache.sis.setup.OptionKey.LOCALE       = LOCALE;
-        org.apache.sis.setup.OptionKey.TIMEZONE     = TIMEZONE;
-        org.apache.sis.setup.OptionKey.ENCODING     = ENCODING;
-        org.apache.sis.setup.OptionKey.URL_ENCODING = URL_ENCODING;
-        org.apache.sis.setup.OptionKey.OPEN_OPTIONS = OPEN_OPTIONS;
-        org.apache.sis.setup.OptionKey.DEFAULT_CRS  = DEFAULT_CRS;
-        org.apache.sis.setup.OptionKey.INDENTATION  = INDENTATION;
-        org.apache.sis.setup.OptionKey.GEOMETRY_LIBRARY = GEOMETRY_LIBRARY;
-    }
-
     /*
      * Note: we do not provide a LINE_SEPARATOR option for now because we cannot control the line separator
      * in JDK's JAXB implementation, and Apache SIS provides an org.apache.sis.io.LineAppender alternative.
      */
+
+    /**
+     * The name of this key. For {@code OptionKey} instances, it shall be the name of the static constants.
+     * For subclasses of {@code OptionKey}, there is no restriction.
+     */
+    private final String name;
+
+    /**
+     * The type of values.
+     */
+    private final Class<T> type;
 
     /**
      * Creates a new key of the given name for values of the given type.
@@ -279,7 +287,26 @@ public class OptionKey<T> extends org.apache.sis.setup.OptionKey<T> {
      * @param type  the type of values.
      */
     protected OptionKey(final String name, final Class<T> type) {
-        super(name, type);
+        this.name = Objects.requireNonNull(name);
+        this.type = Objects.requireNonNull(type);
+    }
+
+    /**
+     * Returns the name of this option key.
+     *
+     * @return the name of this option key.
+     */
+    public String getName() {
+        return name;
+    }
+
+    /**
+     * Returns the type of values associated with this option key.
+     *
+     * @return the type of values.
+     */
+    public final Class<T> getElementType() {
+        return type;
     }
 
     /**
@@ -289,9 +316,9 @@ public class OptionKey<T> extends org.apache.sis.setup.OptionKey<T> {
      * @return the unique {@code OptionKey} instance.
      * @throws ObjectStreamException required by specification but should never be thrown.
      */
-    final Object readResolve() throws ObjectStreamException {
+    private Object readResolve() throws ObjectStreamException {
         try {
-            return OptionKey.class.getField(super.getName()).get(null);
+            return OptionKey.class.getField(name).get(null);
         } catch (ReflectiveOperationException e) {
             /*
              * This may happen if we are deserializing a stream produced by a more recent SIS library
@@ -299,7 +326,7 @@ public class OptionKey<T> extends org.apache.sis.setup.OptionKey<T> {
              * we override the `equals` and `hashCode` methods. This option is likely to be ignored,
              * but options are expected to be optional.
              */
-            Logging.recoverableException(Logger.getLogger(Modules.STORAGE), OptionKey.class, "readResolve", e);
+            Logging.recoverableException(Logger.getLogger(Modules.UTILITIES), OptionKey.class, "readResolve", e);
             return this;
         }
     }
@@ -330,6 +357,11 @@ public class OptionKey<T> extends org.apache.sis.setup.OptionKey<T> {
      * @param <T>  the type of option values.
      */
     private static final class Parameter<T> extends OptionKey<T> {
+        /**
+         * For cross-version compatibility.
+         */
+        private static final long serialVersionUID = -3010310759401437668L;
+
         /**
          * The parameter name. This is similar but not identical to the option name.
          */
@@ -378,5 +410,83 @@ public class OptionKey<T> extends org.apache.sis.setup.OptionKey<T> {
             }
             return Optional.of(p);
         }
+    }
+
+    /**
+     * Returns the option value in the given map for this key, or {@code null} if none.
+     * This is a convenience method for implementers which can be used as below:
+     *
+     * {@snippet lang="java" :
+     *     public <T> T getOption(OptionKey<T> key) {
+     *         return key.getValueFrom(options);
+     *     }
+     *     }
+     *
+     * @param  options  the map where to search for the value, or {@code null} if not yet created.
+     * @return the current value in the map for the this option, or {@code null} if none.
+     */
+    public T getValueFrom(final Map<? extends OptionKey<?>, ?> options) {
+        return (options != null) ? type.cast(options.get(this)) : null;
+    }
+
+    /**
+     * Sets a value for this option key in the given map, or in a new map if the given map is {@code null}.
+     * This is a convenience method for implementers, which can be used as below:
+     *
+     * {@snippet lang="java" :
+     *     public <T> void setOption(final OptionKey<T> key, final T value) {
+     *         options = key.setValueInto(options, value);
+     *     }
+     *     }
+     *
+     * @param  options  the map where to set the value, or {@code null} if not yet created.
+     * @param  value    the new value for the given option, or {@code null} for removing the value.
+     * @return the given map of options, or a new map if the given map was null. The returned value
+     *         may be null if the given map and the given value are both null.
+     */
+    public Map<OptionKey<?>, Object> setValueInto(Map<OptionKey<?>, Object> options, final T value) {
+        if (value != null) {
+            if (options == null) {
+                options = new HashMap<>();
+            }
+            options.put(this, value);
+        } else if (options != null) {
+            options.remove(this);
+        }
+        return options;
+    }
+
+    /**
+     * Returns {@code true} if the given object is an instance of the same class having the same name and type.
+     *
+     * @param object  the object to compare with this {@code OptionKey} for equality.
+     */
+    @Override
+    public boolean equals(final Object object) {
+        if (object == this) {
+            return true;
+        }
+        if (object != null && object.getClass() == getClass()) {
+            final OptionKey<?> that = (OptionKey<?>) object;
+            return name.equals(that.name) && type == that.type;
+        }
+        return false;
+    }
+
+    /**
+     * Returns a hash code value for this object.
+     */
+    @Override
+    public int hashCode() {
+        return name.hashCode() ^ (int) serialVersionUID;
+    }
+
+    /**
+     * Returns a string representation of this option key.
+     * The default implementation returns the value of {@link #getName()}.
+     */
+    @Override
+    public String toString() {
+        return getName();
     }
 }

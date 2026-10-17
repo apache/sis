@@ -26,11 +26,13 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Types;
+import org.apache.sis.util.Workaround;
 import org.apache.sis.util.CharSequences;
 import org.apache.sis.util.OptionalCandidate;
 import org.apache.sis.util.StringBuilders;
 import org.apache.sis.util.resources.Errors;
 import org.apache.sis.util.internal.shared.Constants;
+import org.apache.sis.metadata.sql.internal.shared.Dialect;
 import org.apache.sis.metadata.sql.internal.shared.Reflection;
 import org.apache.sis.metadata.sql.internal.shared.SQLUtilities;
 import org.apache.sis.referencing.internal.Resources;
@@ -202,7 +204,7 @@ public class SQLTranslator implements UnaryOperator<String> {
      * and values are the names used in the <abbr>EPSG</abbr> database on which {@link EPSGDataAccess} is connected.
      * By convention, all column names are in upper-case while table names are in mixed-case characters.</p>
      */
-    private Map<String,String> tableRewording;
+    private Map<String, String> tableRewording;
 
     /**
      * Replacements to perform on <abbr>SQL</abbr> statements before execution. Some entries are the replacements
@@ -211,7 +213,7 @@ public class SQLTranslator implements UnaryOperator<String> {
      * Other entries are replacements of missing columns by {@code CAST(NULL AS …)} expressions and replacements
      * of {@code BOOLEAN} comparator operands by {@code SMALLINT}.
      */
-    private Map<String,String> replacements;
+    private Map<String, String> replacements;
 
     /**
      * The characters used for quoting identifiers, or an empty string if none.
@@ -241,6 +243,15 @@ public class SQLTranslator implements UnaryOperator<String> {
      * @see #useBoolean()
      */
     private boolean useBoolean;
+
+    /**
+     * Whether the database takes collation in account in {@code LIKE} clauses.
+     * Collations were working well in Derby, but the migration to HSQLDB forces
+     * us to create redundant conditions in the <abbr>SQL</abbr> statement without
+     * reaching the same power as Derby or PostgreSQL.
+     */
+    @Workaround(library="HSQLDB", version="2.7.4")
+    final boolean supportsCollationInLike;
 
     /**
      * Whether the sentinel table {@code "Coordinate_Operation"} or a variant has been found.
@@ -287,6 +298,7 @@ public class SQLTranslator implements UnaryOperator<String> {
      * @throws SQLException if an error occurred while querying the database metadata.
      */
     public SQLTranslator(final DatabaseMetaData md, final String catalog, final String schema) throws SQLException {
+        supportsCollationInLike = Dialect.guess(md).supportsCollationInLike();
         identifierQuote = md.getIdentifierQuoteString().trim();
         wildcardEscape  = md.getSearchStringEscape();
         this.catalog = catalog;

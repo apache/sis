@@ -120,7 +120,7 @@
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @author  Adrian Custer (Geomatys)
- * @version 1.7
+ * @version 1.8
  * @since   0.3
  */
 @XmlAccessorType(XmlAccessType.NONE)

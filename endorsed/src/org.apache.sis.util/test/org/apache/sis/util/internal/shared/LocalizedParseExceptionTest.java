@@ -50,16 +50,18 @@ public final class LocalizedParseExceptionTest extends TestCase {
         final var pos = new ParsePosition(0);
         pos.setErrorIndex(5);
         final var e = new LocalizedParseException(Locale.CANADA, Angle.class, "Some text to parse", pos);
-        String message = e.getLocalizedMessage();
+        final String message = e.getLocalizedMessage();
         assertTrue(message.contains("Some text to parse"), message);
         assertTrue(message.contains("cannot be parsed"), message);
         assertTrue(message.contains("Angle"), message);
 
         assertEquals(message, Exceptions.getLocalizedMessage(e, Locale.CANADA));
-        message = Exceptions.getLocalizedMessage(e, Locale.FRANCE);
-        assertTrue(message.contains("Some text to parse"), message);
-        assertTrue(message.contains("n’est pas reconnu"), message);
-        assertTrue(message.contains("Angle"), message);
+        final String localized = Exceptions.getLocalizedMessage(e, Locale.FRANCE);
+        if (!localized.equals(message)) {    // Locale-dependent test.
+            assertTrue(localized.contains("Some text to parse"), localized);
+            assertTrue(localized.contains("n’est pas reconnu"), localized);
+            assertTrue(localized.contains("Angle"), localized);
+        }
     }
 
     /**

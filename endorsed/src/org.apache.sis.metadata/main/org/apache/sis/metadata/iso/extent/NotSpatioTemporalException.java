@@ -75,10 +75,9 @@ public class NotSpatioTemporalException extends TransformException {
     }
 
     /**
-     * Work around for RFE #4093999 in Sun's bug database
-     * ("Relax constraint on placement of this()/super() call in constructors").
+     * Workaround while waiting for JEP 513: Flexible Constructor Bodies.
      */
-    @Workaround(library="JDK", version="7", fixed="25")
+    @Workaround(library="JDK", version="11", fixed="25")
     private static String message(final int type, final CoordinateReferenceSystem crs) {
         return (crs != null) ? Resources.format(Resources.Keys.MissingDimension_2, type, crs.getName())
                              : Errors.format(Errors.Keys.UnspecifiedCRS);

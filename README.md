@@ -27,7 +27,7 @@ project logo are trademarks of The Apache Software Foundation.
 
 ## Build from sources
 
-Running the library part of Apache SIS requires Java 11 or higher.
+Running the library part of Apache SIS requires Java 12 or higher.
 Running the JavaFX application part requires Java 22 or higher.
 Building SIS requires Java 22 or higher
 together with [Gradle](https://gradle.org/) 8 build system.

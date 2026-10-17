@@ -18,7 +18,7 @@ package org.apache.sis.pending.jdk;
 
 
 /**
- * Place holder for some functionalities defined in a JDK more recent than Java 11.
+ * Place holder for some functionalities defined in a JDK more recent than the targeted version11.
  *
  * @author  Martin Desruisseaux (Geomatys)
  */

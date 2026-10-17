@@ -49,12 +49,24 @@ public enum Dialect {
      * <a href="https://issues.apache.org/jira/browse/DERBY-6445">DERBY-6445</a>
      */
     DERBY("derby", Supports.ALTER_TABLE_WITH_ADD_CONSTRAINT
+                 | Supports.COLLATION_IN_LIKE
                  | Supports.READ_ONLY_UPDATE
                  | Supports.CONCURRENCY),
 
     /**
      * The database uses HSQL syntax. This is ANSI, but does not allow {@code INSERT} statements inserting many lines.
      * It also have a {@code SHUTDOWN} command which is specific to HSQLDB.
+     *
+     * Note: the following HSQLDB 2.7.4 issues require workaround by Apache SIS:
+     *
+     * <ul>
+     *   <li><a href="https://sourceforge.net/p/hsqldb/bugs/1752/">HSQLDB should not depend on the jdk.unsupporte module</a></li>
+     *   <li><a href="https://sourceforge.net/p/hsqldb/bugs/1753/">Deadlock between SchemaManager and SessionManager</a></li>
+     *   <li><a href="https://sourceforge.net/p/hsqldb/bugs/1754/">Connection.rollback() does not remove schemas</a></li>
+     *   <li><a href="https://sourceforge.net/p/hsqldb/bugs/1758/">Embedded database extremely slow because of inefficient length measurement</a></li>
+     *   <li><a href="https://sourceforge.net/p/hsqldb/bugs/1761/">Embedded database does not work when HSQL is on the module-path</a></li>
+     *   <li><a href="https://sourceforge.net/p/hsqldb/bugs/1762/">Collation does not work with LIKE clause having wildcard in the middle</a></li>
+     * </ul>
      */
     HSQL("hsqldb", Supports.ALTER_TABLE_WITH_ADD_CONSTRAINT
                  | Supports.READ_ONLY_UPDATE
@@ -82,6 +94,7 @@ public enum Dialect {
                            | Supports.CONCURRENCY
                            | Supports.JAVA_TIME
                            | Supports.ILIKE
+                           | Supports.COLLATION_IN_LIKE     // Since PostgreSQL 18.
                            | Supports.SRID),
 
     /**
@@ -269,6 +282,15 @@ public enum Dialect {
      */
     public final boolean supportsSRID() {
         return (flags & Supports.SRID) != 0;
+    }
+
+    /**
+     * Whether the database takes collation in account in {@code LIKE} clauses.
+     *
+     * @return whether the database supports collations in {@code LIKE} clauses.
+     */
+    public final boolean supportsCollationInLike() {
+        return (flags & Supports.COLLATION_IN_LIKE) != 0;
     }
 
     /**

@@ -34,7 +34,6 @@ import java.lang.reflect.GenericDeclaration;
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Modifier;
 import org.opengis.annotation.UML;
-import org.apache.sis.pending.jdk.JDK12;
 
 // Specific to the main branch:
 import org.opengis.util.InternationalString;
@@ -58,7 +57,7 @@ import org.opengis.util.InternationalString;
  * </ul>
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
- * @version 1.7
+ * @version 1.8
  * @since   0.3
  */
 public final class Classes {
@@ -119,24 +118,8 @@ public final class Classes {
                 do element = element.getComponentType();
                 while (element!=null && ++change != 0);
             } else if (element != Void.TYPE) {
-                // TODO: use Class.arrayType() with JDK12.
-                final var buffer = new StringBuilder();
-                do buffer.insert(0, '[');
+                do element = element.arrayType();
                 while (--change != 0);
-                if (element.isPrimitive()) {
-                    buffer.append(JDK12.descriptorString(element));
-                } else if (element.isArray()) {
-                    buffer.append(element.getName());
-                } else {
-                    buffer.append('L').append(element.getName()).append(';');
-                }
-                final String name = buffer.toString();
-                try {
-                    element = Class.forName(name);
-                } catch (ClassNotFoundException e) {
-                    throw new TypeNotPresentException(name, e);
-                    // Should never happen because we are creating an array of an existing class.
-                }
             }
         }
         return element;

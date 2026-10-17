@@ -18,27 +18,24 @@ package org.apache.sis.pending.jdk;
 
 
 /**
- * Place holder for some functionalities defined in a JDK more recent than Java 11.
+ * Place holder for some functionalities defined in a JDK more recent than the targeted version.
  *
  * @author  Martin Desruisseaux (Geomatys)
  */
-public final class JDK12 {
+public final class JDK26 {
     /**
      * Do not allow instantiation of this class.
      */
-    private JDK12() {
+    private JDK26() {
     }
 
-    public static String descriptorString(Class<?> c) {
-        if (c == Double.TYPE)    return "D";
-        if (c == Float.TYPE)     return "F";
-        if (c == Long.TYPE)      return "J";
-        if (c == Integer.TYPE)   return "I";
-        if (c == Short.TYPE)     return "S";
-        if (c == Byte.TYPE)      return "B";
-        if (c == Character.TYPE) return "C";
-        if (c == Boolean.TYPE)   return "Z";
-        if (c == Void.TYPE)      return "V";
-        return "L" + c.getCanonicalName() + ';';
+    /**
+     * Placeholder for {@code Connection.enquoteLiteral(String)}.
+     *
+     * @param  value  the string to encode.
+     * @return the quoted value.
+     */
+    public static String enquoteLiteral(String value) {
+        return '\'' + value.replace("'", "''") + '\'';
     }
 }

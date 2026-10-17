@@ -178,8 +178,8 @@ public class ScriptRunner implements AutoCloseable {
      * In principle, {@link Connection#rollback()} should be sufficient, but it appears to not be the case
      * with all databases.
      *
-     * <p>This is a workaround for what seems to be a bug in <abbr>HSQLDB</abbr>, where
-     * {@link Connection#rollback()} does drop the schema created before the rollback.</p>
+     * <p>This is a workaround for a limitation in <abbr>HSQLDB</abbr>, where
+     * {@link Connection#rollback()} does not drop the schema created before the rollback.</p>
      *
      * @see <a href="https://sourceforge.net/p/hsqldb/bugs/1754/">Connection.rollback() does not remove schemas</a>
      */

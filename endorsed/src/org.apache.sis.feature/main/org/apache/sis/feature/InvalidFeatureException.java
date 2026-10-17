@@ -17,27 +17,22 @@
 package org.apache.sis.feature;
 
 import org.opengis.util.InternationalString;
-import org.apache.sis.util.LocalizedException;
 
 
 /**
  * Thrown when a feature fails at least one conformance test.
  *
  * @author  Martin Desruisseaux (Geomatys)
+ * @version 1.8
+ * @since   1.8
  *
  * @see Features#validate(AbstractFeature)
  */
-final class InvalidFeatureException extends IllegalArgumentException implements LocalizedException {
+public class InvalidFeatureException extends IllegalArgumentException {
     /**
      * For cross-version compatibility.
      */
-    private static final long serialVersionUID = 7288810679876346027L;
-
-    /**
-     * A description of the illegal feature.
-     */
-    @SuppressWarnings("serial")                     // Most SIS implementations are serializable.
-    private final InternationalString message;
+    private static final long serialVersionUID = -8089121424988848183L;
 
     /**
      * Creates a new exception with the given explanation message.
@@ -46,16 +41,24 @@ final class InvalidFeatureException extends IllegalArgumentException implements 
      */
     InvalidFeatureException(final InternationalString message) {
         super(message.toString());
-        this.message = message;
     }
 
     /**
-     * Returns the message in various locales.
+     * Creates an exception with the specified details message.
      *
-     * @return the exception message.
+     * @param message  the detail message in the default locale.
      */
-    @Override
-    public InternationalString getInternationalMessage() {
-        return message;
+    public InvalidFeatureException(String message) {
+        super(message);
+    }
+
+    /**
+     * Creates an exception with the specified details message and cause.
+     *
+     * @param message  the detail message in the default locale.
+     * @param cause    the cause for this exception.
+     */
+    public InvalidFeatureException(String message, Throwable cause) {
+        super(message, cause);
     }
 }

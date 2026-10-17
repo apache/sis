@@ -155,17 +155,6 @@ public abstract class AbstractMetadata implements LenientComparable, Emptiable {
     }
 
     /**
-     * Returns the metadata interface implemented by this class.
-     *
-     * @return the standard interface implemented by this class.
-     * @deprecated Renamed {@link #getStandardType()} for integration with {@link LenientComparable}.
-     */
-    @Deprecated(since="1.7", forRemoval=true)
-    public final Class<?> getInterface() {
-        return org.apache.sis.util.Classes.getRawClass(getStandardType());
-    }
-
-    /**
      * Returns {@code true} if this metadata contains only {@code null},
      * {@linkplain org.apache.sis.xml.NilObject nil} or empty properties.
      * A non-null and non-nil property is considered empty in any of the following cases:

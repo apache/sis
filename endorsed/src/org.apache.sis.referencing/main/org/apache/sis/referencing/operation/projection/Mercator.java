@@ -183,14 +183,12 @@ public class Mercator extends ConformalProjection {
     }
 
     /**
-     * Work around for RFE #4093999 in Sun's bug database
-     * ("Relax constraint on placement of this()/super() call in constructors").
+     * Workaround while waiting for JEP 513: Flexible Constructor Bodies.
      */
-    @SuppressWarnings("fallthrough")
-    @Workaround(library="JDK", version="7", fixed="25")
+    @Workaround(library="JDK", version="11", fixed="25")
     private static Initializer initializer(final OperationMethod method, final Parameters parameters) {
         final Variant variant = variant(method, Variant.values(), Variant.TWO_PARALLELS);
-        final EnumMap<ParameterRole, ParameterDescriptor<Double>> roles = new EnumMap<>(ParameterRole.class);
+        final var roles = new EnumMap<ParameterRole, ParameterDescriptor<Double>>(ParameterRole.class);
         /*
          * The "scale factor" is not formally a "Mercator 2SP" argument, but we accept it anyway
          * for all Mercator projections because it may be used in some Well Known Text (WKT).
@@ -235,10 +233,9 @@ public class Mercator extends ConformalProjection {
     }
 
     /**
-     * Work around for RFE #4093999 in Sun's bug database
-     * ("Relax constraint on placement of this()/super() call in constructors").
+     * Workaround while waiting for JEP 513: Flexible Constructor Bodies.
      */
-    @Workaround(library="JDK", version="7", fixed="25")
+    @Workaround(library="JDK", version="11", fixed="25")
     private Mercator(final Initializer initializer) {
         super(initializer);
         variant = (Variant) initializer.variant;
