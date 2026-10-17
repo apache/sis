@@ -16,6 +16,7 @@
  */
 package org.apache.sis.storage.geoheif;
 
+import org.apache.sis.util.Workaround;
 import org.apache.sis.storage.DataStoreException;
 import org.apache.sis.storage.GridCoverageResource;
 import org.apache.sis.storage.StorageConnector;
@@ -47,12 +48,12 @@ public final class SelfConsistencyTest extends CoverageReadConsistency<GeoHeifSt
     }
 
     /**
-     * Work around for RFE #4093999 in Sun's bug database
-     * ("Relax constraint on placement of this()/super() call in constructors").
+     * Workaround while waiting for JEP 513: Flexible Constructor Bodies.
      *
      * @throws DataStoreException if an error occurred while reading the file.
      */
     @Override
+    @Workaround(library="JDK", version="11", fixed="25")
     protected GridCoverageResource resource() throws DataStoreException {
         return assertInstanceOf(GridCoverageResource.class, store.components().iterator().next());
     }

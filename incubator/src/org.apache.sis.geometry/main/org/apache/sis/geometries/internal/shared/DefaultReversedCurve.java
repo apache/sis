@@ -28,7 +28,10 @@ import org.apache.sis.geometries.Orientable;
 import org.apache.sis.geometries.Point;
 import org.apache.sis.geometries.Primitive;
 import org.apache.sis.geometries.DataPointsType;
+import org.apache.sis.geometries.curve.LineString;
 import org.apache.sis.maths.Array;
+import org.apache.sis.measure.Quantities;
+import org.apache.sis.measure.Units;
 
 
 /**
@@ -99,6 +102,20 @@ public non-sealed class DefaultReversedCurve extends AbstractGeometry implements
         return base.getLength();
     }
 
+    /**
+     * Returns the point of the base curve at the given distance from its end, which is where this
+     * curve starts.
+     */
+    @Override
+    public Point subCurve(Quantity<?> dist) {
+        if (Curves.isPercent(dist)) {
+            return base.subCurve(Quantities.create(100 - dist.getValue().doubleValue(), Units.PERCENT));
+        }
+        final Quantity<?> length = base.getLength();
+        final double s = Curves.toArcLength(dist, length.getValue().doubleValue(), length.getUnit());
+        return base.subCurve(Quantities.create(length.getValue().doubleValue() - s, length.getUnit()));
+    }
+
     @Override
     public boolean isClosed() {
         return base.isClosed();
@@ -137,5 +154,37 @@ public non-sealed class DefaultReversedCurve extends AbstractGeometry implements
     @Override
     public DataPoints getDataPoints() {
         return base.getDataPoints();
+    }
+
+    /**
+     * Returns the knots of the base curve: reversing a curve keeps its construction parameterization.
+     */
+    @Override
+    public double[] getKnots() {
+        return base.getKnots();
+    }
+
+    /**
+     * Returns the end construction parameter of the base curve, which is where this curve starts.
+     */
+    @Override
+    public double getStartConstrParam() {
+        return base.getEndConstrParam();
+    }
+
+    /**
+     * Returns the start construction parameter of the base curve, which is where this curve ends.
+     */
+    @Override
+    public double getEndConstrParam() {
+        return base.getStartConstrParam();
+    }
+
+    /**
+     * Returns the polyline of the base curve with its points in reverse order.
+     */
+    @Override
+    public LineString asLine(final Quantity<?> spacing, final Quantity<?> offset) {
+        return CurveLinearizer.reverse(this, base, spacing, offset);
     }
 }

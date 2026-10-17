@@ -21,7 +21,9 @@ import org.opengis.geometry.Envelope;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import org.apache.sis.geometries.Empty;
 import org.apache.sis.geometries.DataPointsType;
+import org.apache.sis.geometries.Geometries;
 import org.apache.sis.geometry.GeneralEnvelope;
+import org.apache.sis.maths.SampleSystem;
 
 
 /**
@@ -38,7 +40,8 @@ public non-sealed class DefaultEmpty extends AbstractGeometry implements Empty {
 
     @Override
     public CoordinateReferenceSystem getCoordinateReferenceSystem() {
-        return attType.getAttributeSystem(DataPointsType.ATT_POSITION).getCoordinateReferenceSystem();
+        final SampleSystem system = attType.getAttributeSystem(DataPointsType.ATT_POSITION);
+        return Geometries.orUndefinedCRS(system.getCoordinateReferenceSystem(), system.getSize());
     }
 
     @Override

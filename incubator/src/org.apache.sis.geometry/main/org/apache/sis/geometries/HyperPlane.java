@@ -22,8 +22,10 @@ import org.opengis.annotation.UML;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import org.apache.sis.geometries.internal.shared.AbstractGeometry;
 import org.apache.sis.maths.NDArrays;
+import org.apache.sis.maths.NDRange;
 import org.apache.sis.maths.ReadOnly;
 import org.apache.sis.maths.Vector;
+import org.opengis.geometry.Envelope;
 
 
 /**
@@ -56,13 +58,13 @@ public final class HyperPlane extends AbstractGeometry{
     }
 
     /**
-     * Creates a hyperplane passing by the single position of the given sequence.
-     * The sequence is taken as-is, so the caller may give the hyperplane the attributes
-     * carried by that sequence.
+     * Creates a hyperplane passing by the single position of the given {@code DataPoints}.
+     * The {@code DataPoints} is taken as-is, so the caller may give the hyperplane the attributes
+     * carried by that {@code DataPoints}.
      *
-     * @param  points  a position the hyperplane passes by, as a sequence of exactly one position.
+     * @param  points  a position the hyperplane passes by, as a {@code DataPoints} of exactly one position.
      * @param  normal  the direction the hyperplane is perpendicular to, not null.
-     * @throws IllegalArgumentException if the given sequence does not hold exactly one position.
+     * @throws IllegalArgumentException if the given {@code DataPoints} does not hold exactly one position.
      */
     public HyperPlane(DataPoints points, Vector<?> normal) {
         if (points.size() != 1) {
@@ -75,6 +77,11 @@ public final class HyperPlane extends AbstractGeometry{
     @Override
     public GeometryType getGeometryType() {
         return GeometryType.HYPERPLANE;
+    }
+
+    @Override
+    public int getTopologicDimension() {
+        return getDimension();
     }
 
     public DataPoints getDataPoints() {
@@ -106,10 +113,10 @@ public final class HyperPlane extends AbstractGeometry{
      * its dimensions, the hyperplane spans the whole space on every axis.</p>
      */
     @Override
-    public BBox getEnvelope() {
+    public Envelope getEnvelope() {
         final ReadOnly.Vector<?> position = getPosition();
         final int dim = normal.getDimension();
-        final BBox bbox = new BBox(dim);
+        final NDRange bbox = new NDRange(getCoordinateReferenceSystem());
         /*
          * Search the axis the normal is aligned with. There is one only if every other
          * dimension of the normal is null, in which case the hyperplane is flat on it.
@@ -144,9 +151,12 @@ public final class HyperPlane extends AbstractGeometry{
         return points.getCoordinateReferenceSystem();
     }
 
+    /**
+     * Returns the empty geometry: a hyperplane extends to infinity in all its directions, so it has no edge.
+     */
     @Override
     public Geometry getBoundary() {
-        throw new UnsupportedOperationException("Not supported yet.");
+        return GeometryFactory.DEFAULT.createEmpty(getCoordinateReferenceSystem());
     }
 
     @Override

@@ -16,7 +16,10 @@
  */
 package org.apache.sis.geometries.curve;
 
+import org.apache.sis.geometries.GeometryFactory;
+
 // Test dependencies
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.apache.sis.geometries.GeometryTest;
@@ -74,8 +77,10 @@ public class RhumbTest extends GeometryTest {
     }
 
     @Test
-    @Disabled("Not implemented yet.")
     public void testGetTopologicDimension() {
+        final Rhumb rhumb = GeometryFactory.DEFAULT.createRhumb(
+                GeometryFactory.DEFAULT.createDataPoints(CRS_2D, 0,0, 10,10));
+        assertEquals(1, rhumb.getTopologicDimension());
     }
 
     @Test

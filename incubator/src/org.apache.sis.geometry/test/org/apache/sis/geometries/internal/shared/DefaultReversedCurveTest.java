@@ -16,9 +16,18 @@
  */
 package org.apache.sis.geometries.internal.shared;
 
+import org.apache.sis.geometries.Curve;
+import org.apache.sis.geometries.GeometryFactory;
+import org.apache.sis.geometries.curve.LineString;
+import org.apache.sis.measure.Quantities;
+import org.apache.sis.measure.Units;
+
 // Test dependencies
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertArrayEquals;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
+import org.apache.sis.geometries.GeometryTest;
 
 
 /**
@@ -26,10 +35,13 @@ import org.junit.jupiter.api.Test;
  *
  * @author Johann Sorel (Geomatys)
  */
-public class DefaultReversedCurveTest {
+public class DefaultReversedCurveTest extends GeometryTest {
     @Test
-    @Disabled("Not implemented yet.")
     public void testGetTopologicDimension() {
+        final LineString base = GeometryFactory.DEFAULT.createLineString(
+                GeometryFactory.DEFAULT.createDataPoints(CRS_2D, 0,0, 10,0));
+        final Curve reversed = GeometryFactory.DEFAULT.createReversed(base);
+        assertEquals(1, reversed.getTopologicDimension());
     }
 
     @Test
@@ -77,9 +89,14 @@ public class DefaultReversedCurveTest {
     public void testGetControlPoints() {
     }
 
+    /**
+     * A reversed curve keeps the construction parameterization of its base curve.
+     */
     @Test
-    @Disabled("Not implemented yet.")
     public void testGetKnots() {
+        final LineString base = GeometryFactory.DEFAULT.createLineString(
+                GeometryFactory.DEFAULT.createDataPoints(CRS_2D, 0,0, 10,0, 10,10));
+        assertArrayEquals(base.getKnots(), GeometryFactory.DEFAULT.createReversed(base).getKnots());
     }
 
     @Test
@@ -88,13 +105,17 @@ public class DefaultReversedCurveTest {
     }
 
     @Test
-    @Disabled("Not implemented yet.")
     public void testGetStartConstrParam() {
+        final LineString base = GeometryFactory.DEFAULT.createLineString(
+                GeometryFactory.DEFAULT.createDataPoints(CRS_2D, 0,0, 10,0, 10,10));
+        assertEquals(2, GeometryFactory.DEFAULT.createReversed(base).getStartConstrParam());
     }
 
     @Test
-    @Disabled("Not implemented yet.")
     public void testGetEndConstrParam() {
+        final LineString base = GeometryFactory.DEFAULT.createLineString(
+                GeometryFactory.DEFAULT.createDataPoints(CRS_2D, 0,0, 10,0, 10,10));
+        assertEquals(0, GeometryFactory.DEFAULT.createReversed(base).getEndConstrParam());
     }
 
     @Test
@@ -175,6 +196,21 @@ public class DefaultReversedCurveTest {
     @Test
     @Disabled("Not implemented yet.")
     public void testSubCurve_Length_Length() {
+    }
+
+    /**
+     * Distances along the reversed curve are measured from the end of the base curve.
+     */
+    @Test
+    public void testSubCurve_Length() {
+        final LineString base = GeometryFactory.DEFAULT.createLineString(
+                GeometryFactory.DEFAULT.createDataPoints(CRS_2D, 0,0, 10,0, 10,10));
+        final Curve reversed = GeometryFactory.DEFAULT.createReversed(base);
+        assertPositionEquals(10, 10, reversed.subCurve(Quantities.create(  0, Units.PERCENT)));
+        assertPositionEquals(10,  5, reversed.subCurve(Quantities.create( 25, Units.PERCENT)));
+        assertPositionEquals( 0,  0, reversed.subCurve(Quantities.create(100, Units.PERCENT)));
+        assertPositionEquals(10,  5, reversed.subCurve(Quantities.create(  5, Units.DEGREE)));
+        assertPositionEquals( 5,  0, reversed.subCurve(Quantities.create( 15, Units.DEGREE)));
     }
 
     @Test
@@ -263,8 +299,11 @@ public class DefaultReversedCurveTest {
     }
 
     @Test
-    @Disabled("Not implemented yet.")
     public void testGetRepresentativePoint() {
+        final LineString base = GeometryFactory.DEFAULT.createLineString(
+                GeometryFactory.DEFAULT.createDataPoints(CRS_2D, 0,0, 10,0));
+        final Curve reversed = GeometryFactory.DEFAULT.createReversed(base);
+        assertPositionEquals(5, 0, reversed.getRepresentativePoint());
     }
 
     @Test

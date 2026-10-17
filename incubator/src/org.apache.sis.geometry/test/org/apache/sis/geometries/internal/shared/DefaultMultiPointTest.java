@@ -18,9 +18,10 @@ package org.apache.sis.geometries.internal.shared;
 
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import org.apache.sis.geometries.DataPoints;
+import org.apache.sis.geometries.GeometryCollection;
+import org.apache.sis.geometries.Point;
 import org.apache.sis.maths.NDArrays;
 import org.apache.sis.maths.SampleSystem;
-import org.apache.sis.geometries.point.MultiPoint;
 
 // Test dependencies
 import org.apache.sis.geometries.point.MultiPointTest;
@@ -34,7 +35,7 @@ import org.apache.sis.geometries.point.MultiPointTest;
 public class DefaultMultiPointTest extends MultiPointTest {
 
     @Override
-    protected MultiPoint<?> createMultiPoint(final CoordinateReferenceSystem crs, final double... coordinates) {
+    protected GeometryCollection<Point> createMultiPoint(final CoordinateReferenceSystem crs, final double... coordinates) {
         return new DefaultMultiPoint(sequence(crs, coordinates));
     }
 

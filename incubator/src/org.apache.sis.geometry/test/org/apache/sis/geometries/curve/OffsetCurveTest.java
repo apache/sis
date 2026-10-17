@@ -16,7 +16,12 @@
  */
 package org.apache.sis.geometries.curve;
 
+import org.apache.sis.geometries.GeometryFactory;
+import org.apache.sis.measure.Quantities;
+import org.apache.sis.measure.Units;
+
 // Test dependencies
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.apache.sis.geometries.GeometryTest;
@@ -44,8 +49,11 @@ public class OffsetCurveTest extends GeometryTest {
     }
 
     @Test
-    @Disabled("Not implemented yet.")
     public void testGetTopologicDimension() {
+        final LineString base = GeometryFactory.DEFAULT.createLineString(
+                GeometryFactory.DEFAULT.createDataPoints(CRS_2D, 0,0, 10,0));
+        final OffsetCurve curve = GeometryFactory.DEFAULT.createOffsetCurve(base, Quantities.create(2, Units.DEGREE), null);
+        assertEquals(1, curve.getTopologicDimension());
     }
 
     @Test

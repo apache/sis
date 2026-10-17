@@ -34,7 +34,7 @@ import org.apache.sis.maths.Vector;
 
 /**
  * Java2D path iterator for SIS geometry.
- * This iterator gets coordinates from the {@link CoordinateSequence} associated with each geometry.
+ * This iterator gets coordinates from the {@link DataPoints} associated with each geometry.
  *
  * @author  Johann Sorel (Puzzle-GIS, Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
@@ -47,18 +47,18 @@ final class PathIteratorAdapter implements PathIterator {
     private final AffineTransform at;
 
     /**
-     * Provider of point sequences.
+     * Provider of the {@code DataPoints}.
      */
     private final Iterator<DataPoints> sequences;
 
     /**
-     * The sequence of point tuples to return,
+     * The {@code DataPoints} to return,
      * or {@code null} if the iteration is finished.
      */
     private DataPoints coordinates;
 
     /**
-     * Number of points to return in the sequence.
+     * Number of points to return in the {@code DataPoints}.
      */
     private int pointCount;
 
@@ -68,7 +68,7 @@ final class PathIteratorAdapter implements PathIterator {
     private int closingPoint;
 
     /**
-     * Index of current position in the sequence of coordinate tuples.
+     * Index of current position in the {@code DataPoints}.
      */
     private int currentIndex;
 
@@ -85,8 +85,8 @@ final class PathIteratorAdapter implements PathIterator {
     }
 
     /**
-     * Moves to the next sequence of coordinate tuples. The {@link #coordinates} sequence
-     * should be null when this method is invoked. If there are no more sequences,
+     * Moves to the next {@code DataPoints}. The {@link #coordinates} {@code DataPoints}
+     * should be null when this method is invoked. If there are no more {@code DataPoints},
      * then the {@link #coordinates} will be left unchanged (i.e. null).
      */
     private void nextSequence() {
@@ -170,10 +170,10 @@ final class PathIteratorAdapter implements PathIterator {
     }
 
     /**
-     * Returns an iterator over the coordinate sequences of the given geometry.
+     * Returns an iterator over the {@code DataPoints} of the given geometry.
      *
-     * @param  geometry  the geometry for which to get coordinate sequences.
-     * @return coordinate sequences over the given geometry.
+     * @param  geometry  the geometry for which to get the {@code DataPoints}.
+     * @return {@code DataPoints} over the given geometry.
      */
     private static Iterator<DataPoints> iterator(final Geometry geometry) {
         final Collection<DataPoints> sequences;
@@ -192,9 +192,9 @@ final class PathIteratorAdapter implements PathIterator {
     }
 
     /**
-     * An iterator over the coordinate sequences of a polygon.
-     * The first coordinate sequence is the exterior ring and
-     * all other sequences are interior rings.
+     * An iterator over the {@code DataPoints} of a polygon.
+     * The first {@code DataPoints} is the exterior ring and
+     * all others are interior rings.
      */
     private static final class RingIterator implements Iterator<DataPoints> {
         /** The polygon for which to return rings. */
@@ -214,7 +214,7 @@ final class PathIteratorAdapter implements PathIterator {
             return interior < polygon.getNumInteriorRing();
         }
 
-        /** Returns the coordinate sequence of the next ring. */
+        /** Returns the {@code DataPoints} of the next ring. */
         @Override public DataPoints next() {
             final LineString current;
             if (interior < 0) {
@@ -228,7 +228,7 @@ final class PathIteratorAdapter implements PathIterator {
     }
 
     /**
-     * An iterator over the coordinate sequences of a geometry collection.
+     * An iterator over the {@code DataPoints} of a geometry collection.
      */
     private static final class GeomIterator implements Iterator<DataPoints> {
         /** The collection for which to return geometries. */
@@ -237,7 +237,7 @@ final class PathIteratorAdapter implements PathIterator {
         /** Index of current geometry. */
         private int index;
 
-        /** Coordinate sequences of the current geometry. */
+        /** {@code DataPoints} of the current geometry. */
         private Iterator<DataPoints> current;
 
         /** Created a new iterator for the given collection. */
@@ -250,7 +250,7 @@ final class PathIteratorAdapter implements PathIterator {
             }
         }
 
-        /** Returns {@code true} if there is more sequences to return. */
+        /** Returns {@code true} if there is more {@code DataPoints} to return. */
         @Override public boolean hasNext() {
             while (!current.hasNext()) {
                 if (++index >= collection.getNumGeometries()) {
@@ -261,7 +261,7 @@ final class PathIteratorAdapter implements PathIterator {
             return true;
         }
 
-        /** Returns the coordinate sequence of the next geometry. */
+        /** Returns the {@code DataPoints} of the next geometry. */
         @Override public DataPoints next() {
             return current.next();
         }

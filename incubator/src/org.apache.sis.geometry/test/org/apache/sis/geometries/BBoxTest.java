@@ -14,22 +14,35 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.sis.geometries.solid;
+package org.apache.sis.geometries;
 
 // Test dependencies
-import org.junit.jupiter.api.Disabled;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import org.junit.jupiter.api.Test;
-import org.apache.sis.geometries.GeometryTest;
 
 
 /**
- * Tests {@link MultiPolyhedron}.
+ * Tests {@link BBox}.
  *
  * @author Johann Sorel (Geomatys)
  */
-public class MultiPolyhedronTest extends GeometryTest {
+public class BBoxTest extends GeometryTest {
+    /**
+     * The topological dimension of a box is the number of axes of its coordinate reference
+     * system, since a non-empty box occupies the whole of that space locally.
+     */
     @Test
-    @Disabled("Not implemented yet.")
-    public void testGetGeometryType() {
+    public void testGetTopologicDimension() {
+        assertEquals(2, new BBox(CRS_2D, 0,0, 10,10).getTopologicDimension());
+        assertEquals(3, new BBox(CRS_3D, 0,0,0, 10,10,10).getTopologicDimension());
+    }
+
+    /**
+     * The topological dimension of an empty box is −1, consistently with {@link Empty}.
+     */
+    @Test
+    public void testGetTopologicDimensionOfEmptyBox() {
+        final BBox bbox = new BBox(CRS_2D);
+        assertEquals(-1, bbox.getTopologicDimension());
     }
 }

@@ -31,20 +31,17 @@ import org.apache.sis.geometries.Orientable;
 import org.apache.sis.geometries.Point;
 import org.apache.sis.geometries.Surface;
 import org.apache.sis.geometries.DataPoints;
+import org.apache.sis.geometries.GeometryType;
 import org.apache.sis.geometries.curve.CompoundCurve;
 import org.apache.sis.geometries.curve.LineString;
 import org.apache.sis.geometries.curve.LinearRing;
-import org.apache.sis.geometries.curve.MultiLineString;
 import org.apache.sis.geometries.curve.ArcByBulge;
 import org.apache.sis.geometries.curve.ArcByCenterPoint;
 import org.apache.sis.geometries.curve.CircularString;
 import org.apache.sis.geometries.surface.CurvePolygon;
-import org.apache.sis.geometries.surface.MultiPolygon;
 import org.apache.sis.geometries.surface.Polygon;
 import org.apache.sis.geometries.surface.PolyhedralSurface;
 import org.apache.sis.geometries.surface.TIN;
-import org.apache.sis.geometries.point.MultiPoint;
-import org.apache.sis.geometries.solid.MultiPolyhedron;
 import org.apache.sis.geometries.solid.Polyhedron;
 import org.apache.sis.maths.NDArrays;
 import org.apache.sis.maths.SampleSystem;
@@ -102,7 +99,7 @@ public final class GML3ReaderTest {
     }
 
     /**
-     * Creates a point sequence in the {@link #wgs84} CRS from a flat list of ordinates.
+     * Creates a {@code DataPoints} in the {@link #wgs84} CRS from a flat list of ordinates.
      */
     private DataPoints sequence(final double... ordinates) {
         return GeometryFactory.DEFAULT.createDataPoints(NDArrays.of(SampleSystem.of(wgs84), ordinates));
@@ -170,7 +167,8 @@ public final class GML3ReaderTest {
     @Test
     public void testMultiPoint() throws Exception {
         final Geometry g = read(TestData.V3, TestData.MULTI_POINT);
-        assertInstanceOf(MultiPoint.class, g);
+        assertInstanceOf(GeometryCollection.class, g);
+        assertEquals(GeometryType.POINT, ((GeometryCollection)g).getElementType());
         assertGeometryEquals(expectedMultiPoint(), g);
         assertCRS(wgs84, g);
     }
@@ -181,12 +179,13 @@ public final class GML3ReaderTest {
     @Test
     public void testMultiPointCompactForm() throws Exception {
         final Geometry g = read(TestData.V3, TestData.MULTI_POINT_MEMBERS);
-        assertInstanceOf(MultiPoint.class, g);
+        assertInstanceOf(GeometryCollection.class, g);
+        assertEquals(GeometryType.POINT, ((GeometryCollection)g).getElementType());
         assertGeometryEquals(expectedMultiPoint(), g);
         assertCRS(wgs84, g);
     }
 
-    private MultiPoint<?> expectedMultiPoint() {
+    private GeometryCollection<Point> expectedMultiPoint() {
         return GeometryFactory.DEFAULT.createMultiPoint(
                 GeometryFactory.DEFAULT.createPoint(sequence(0.0, 0.0)),
                 GeometryFactory.DEFAULT.createPoint(sequence(10.0, 10.0)));
@@ -200,7 +199,8 @@ public final class GML3ReaderTest {
     @Test
     public void testMultiCurve() throws Exception {
         final Geometry g = read(TestData.V3, TestData.MULTI_CURVE);
-        assertInstanceOf(MultiLineString.class, g);
+        assertInstanceOf(GeometryCollection.class, g);
+        assertEquals(GeometryType.LINESTRING, ((GeometryCollection)g).getElementType());
         assertGeometryEquals(GeometryFactory.DEFAULT.createMultiLineString(
                 GeometryFactory.DEFAULT.createLineString(sequence(0.0, 0.0, 10.0, 10.0)),
                 GeometryFactory.DEFAULT.createLineString(sequence(20.0, 20.0, 30.0, 30.0, 40.0, 20.0))), g);
@@ -215,7 +215,8 @@ public final class GML3ReaderTest {
     @Test
     public void testMultiSurface() throws Exception {
         final Geometry g = read(TestData.V3, TestData.MULTI_SURFACE);
-        assertInstanceOf(MultiPolygon.class, g);
+        assertInstanceOf(GeometryCollection.class, g);
+        assertEquals(GeometryType.POLYGON, ((GeometryCollection)g).getElementType());
         assertGeometryEquals(GeometryFactory.DEFAULT.createMultiPolygon(
                 GeometryFactory.DEFAULT.createPolygon(ring(0, 0, 10, 10), null),
                 GeometryFactory.DEFAULT.createPolygon(ring(20, 20, 30, 30), null)), g);
@@ -752,7 +753,8 @@ public final class GML3ReaderTest {
     @Test
     public void testCompositeSolid() throws Exception {
         final Geometry g = read(TestData.V3, TestData.COMPOSITE_SOLID);
-        final MultiPolyhedron solids = assertInstanceOf(MultiPolyhedron.class, g);
+        final GeometryCollection<Polyhedron> solids = assertInstanceOf(GeometryCollection.class, g);
+        assertEquals(GeometryType.POLYHEDRON, ((GeometryCollection)g).getElementType());
         assertEquals(1, solids.getNumGeometries());
         assertEquals(0, solids.getGeometryN(0).getExteriorShell().getNumGeometries(), "the empty Shell");
         assertNotNull(solids.getCoordinateReferenceSystem());

@@ -257,7 +257,7 @@ public interface ArrayFactory {
                         final Cursor cursor = target.cursor();
                         while (cursor.next()) {
                             final Vector tuple = cursor.samples();
-                            tuple.set((ReadOnly.Vector) java.lang.reflect.Array.get(values, idx));
+                            tuple.set((ReadOnly.Vector) java.lang.reflect.Array.get(values, idx++));
                         }
                     } else {
                         int idx = 0;

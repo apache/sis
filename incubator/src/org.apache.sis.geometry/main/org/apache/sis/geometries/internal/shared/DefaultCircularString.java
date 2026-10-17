@@ -16,9 +16,16 @@
  */
 package org.apache.sis.geometries.internal.shared;
 
+import java.util.ArrayList;
+import javax.measure.Quantity;
 import org.opengis.geometry.Envelope;
 import org.apache.sis.geometries.DataPoints;
+import org.apache.sis.geometries.GeometryFactory;
 import org.apache.sis.geometries.curve.CircularString;
+import org.apache.sis.geometries.curve.LineString;
+import org.apache.sis.maths.DataType;
+import org.apache.sis.maths.NDRange;
+import org.apache.sis.maths.Vector;
 
 
 /**
@@ -51,9 +58,40 @@ public non-sealed class DefaultCircularString extends AbstractGeometry implement
         return points;
     }
 
+    /**
+     * Returns the smallest envelope containing this circular string. That envelope contains the
+     * points of each arc, plus each point where an arc reaches an extreme along an axis.
+     *
+     * @throws IllegalStateException if an arc is a full circle in more than two dimensions.
+     */
     @Override
     public Envelope getEnvelope() {
-        throw new UnsupportedOperationException("Not supported yet.");
+        final var envelope = new NDRange(points.getEnvelope());
+        Vector<?> start = (points.size() != 0) ? points.getPosition(0).copy(DataType.DOUBLE) : null;
+        for (int i = 2; i < points.size(); i += 2) {
+            final Vector<?> end = points.getPosition(i).copy(DataType.DOUBLE);
+            Curves.addArc(envelope, start, points.getPosition(i - 1).copy(DataType.DOUBLE), end);
+            start = end;
+        }
+        return envelope;
+    }
+
+    /**
+     * Returns a polyline whose points are on this circular string, including all its data points.
+     *
+     * @throws IllegalStateException if an arc is a full circle in more than two dimensions.
+     */
+    @Override
+    public LineString asLine(final Quantity<?> spacing, final Quantity<?> offset) {
+        final var pieces = new ArrayList<CurveLinearizer.Piece>();
+        for (int i = 2; i < points.size(); i += 2) {
+            pieces.add(CurveLinearizer.circularArc(points.getPosition(i - 2).copy(DataType.DOUBLE),
+                    points.getPosition(i - 1).copy(DataType.DOUBLE), points.getPosition(i).copy(DataType.DOUBLE), true));
+        }
+        if (pieces.isEmpty()) {
+            return GeometryFactory.DEFAULT.createLineString(points);
+        }
+        return CurveLinearizer.linearize(this, spacing, offset, pieces);
     }
 
 }

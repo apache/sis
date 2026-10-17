@@ -16,9 +16,16 @@
  */
 package org.apache.sis.geometries.internal.shared;
 
+import org.apache.sis.geometries.GeometryFactory;
+import org.apache.sis.geometries.Surface;
+import org.apache.sis.geometries.curve.LinearRing;
+import org.apache.sis.geometries.surface.Polygon;
+
 // Test dependencies
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
+import org.apache.sis.geometries.GeometryTest;
 
 
 /**
@@ -26,10 +33,14 @@ import org.junit.jupiter.api.Test;
  *
  * @author Johann Sorel (Geomatys)
  */
-public class DefaultReversedSurfaceTest {
+public class DefaultReversedSurfaceTest extends GeometryTest {
     @Test
-    @Disabled("Not implemented yet.")
     public void testGetTopologicDimension() {
+        final LinearRing ring = GeometryFactory.DEFAULT.createLinearRing(
+                GeometryFactory.DEFAULT.createDataPoints(CRS_2D, 0,0, 10,0, 10,10, 0,10, 0,0));
+        final Polygon base = GeometryFactory.DEFAULT.createPolygon(ring, null);
+        final Surface reversed = GeometryFactory.DEFAULT.createReversed(base);
+        assertEquals(2, reversed.getTopologicDimension());
     }
 
     @Test

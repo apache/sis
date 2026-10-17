@@ -158,11 +158,11 @@ public sealed interface Geometry
     /**
      * Positions this geometry is made of.
      *
-     * <p>The returned sequence is the one this geometry holds, or a view onto it: writing a
+     * <p>The returned {@code DataPoints} is the one this geometry holds, or a view onto it: writing a
      * position through it moves this geometry. A geometry built on other geometries, such as a
      * surface on its rings or a collection on its elements, returns a view concatenating their
-     * sequences in the order it holds them, so a position shared by two elements appears as many
-     * times as it is held. A geometry which has no position of its own returns an empty sequence.</p>
+     * {@code DataPoints} in the order it holds them, so a position shared by two elements appears as many
+     * times as it is held. A geometry which has no position of its own returns an empty {@code DataPoints}.</p>
      *
      * <p>Difference with ISO 19107: the type has been changed from a list of direct positions
      * to {@link DataPoints}, in order to accommodate additional attributes like in GLTF or
@@ -215,7 +215,12 @@ public sealed interface Geometry
              */
             return getTopologicDimension();
         }
-        throw new UnsupportedOperationException();
+        /*
+         * A geometry which is not an aggregate is homogeneous: it has the same dimension at every
+         * interior position. Aggregates, which may mix components of different dimensions,
+         * override this method.
+         */
+        return getTopologicDimension();
     }
 
     /**
@@ -261,11 +266,7 @@ public sealed interface Geometry
      * @see ISO 19107:2019 - 6.4.4.22
      */
     @UML(identifier="topologicalDimension", specification=ISO_19107)
-    default int getTopologicDimension() {
-        //TODO remove this method default when all classes implement it.
-        //Empty, Point, Curve, Surface, Solid and GeometryCollection already do.
-        throw new UnsupportedOperationException();
-    }
+    int getTopologicDimension();
 
     /**
      * Rule used to compute the {@linkplain #getBoundary() boundary} of this geometry
@@ -280,14 +281,16 @@ public sealed interface Geometry
      *       boundary, and in the interior those lying on more than one.</li>
      * </ul>
      *
+     * <p>The default implementation returns {@link BoundaryType#MOD_2}, the rule of OGC Simple Feature
+     * Access. The three rules agree on geometries which are not aggregates.</p>
+     *
      * @return rule used to compute the boundary of this geometry.
      *
      * @see ISO 19107:2019 - 6.4.3, 10.8.3
      */
     @UML(identifier="boundaryType", specification=ISO_19107)
     default BoundaryType getBoundaryType() {
-        //TODO remove this method default when all classes implement it.
-        throw new UnsupportedOperationException();
+        return BoundaryType.MOD_2;
     }
 
     /**
@@ -527,8 +530,7 @@ public sealed interface Geometry
      */
     @UML(identifier="isCycle", specification=ISO_19107)
     default boolean isCycle() {
-        //TODO remove this method default when all classes implement it.
-        throw new UnsupportedOperationException();
+        return getBoundary().isEmpty();
     }
 
     /**

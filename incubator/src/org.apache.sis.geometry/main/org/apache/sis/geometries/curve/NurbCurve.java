@@ -126,9 +126,23 @@ public sealed interface NurbCurve extends BSplineCurve
         return true;
     }
 
+    /**
+     * Returns the number of non-empty knot spans in the domain of this curve, each of them being a
+     * polynomial arc. The domain extends from the knot at index <var>degree</var> to the knot at index
+     * <var>n</var>, where <var>n</var> is the number of control points. The knots are repeated
+     * according to their multiplicity, so repeated knots delimit empty spans which are not counted.
+     */
     @Override
     default Integer getNumArc() {
-        throw new UnsupportedOperationException("Not supported yet.");
+        final double[] knots = getKnots();
+        final int degree = getDegree();
+        int count = 0;
+        for (int i = degree, n = knots.length - degree - 1; i < n; i++) {
+            if (knots[i + 1] > knots[i]) {
+                count++;
+            }
+        }
+        return count;
     }
 
     @Override

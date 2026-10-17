@@ -1022,4 +1022,39 @@ public final class EPSGFactoryTest extends TestCaseWithLogs {
         assertFalse(it.hasNext());
         loggings.assertNoUnexpectedLog();
     }
+
+    /**
+     * Tests {@link EPSGFactory#newIdentifiedObjectFinder()} method in a way that requires collation support.
+     * This test reproduces the * <a href="https://sis.apache.org/command-line.html#identifier">Getting a verified
+     * EPSG identifier from a Coordinate Reference System</a> example with {@code MissingIdentifier.wkt} sample file.
+     *
+     * @throws FactoryException if an error occurred while querying the factory.
+     */
+    @Test
+    public void testFindNeedsCollation() throws FactoryException {
+        final CoordinateReferenceSystem crs = CRS.fromWKT(
+                "PROJCRS[“NTF (Paris) / zone to be discovered by the demo”,\n"
+                + "  BASEGEODCRS[“Bla (Paris)”,\n"
+                + "    DATUM[“Nouvelle Triangulation Francaise”,\n"     // Intentionally omitting the "(Paris") suffix.
+                + "      ELLIPSOID[“Clarke 1880 (IGN)”, 6378249.2, 293.4660212936269]],\n"
+                + "      PRIMEM[“Paris”, 2.5969213],\n"
+                + "    UNIT[“grade”, 0.015707963267948967]],\n"
+                + "  CONVERSION[“Lambert zone II”,\n"
+                + "    METHOD[“Lambert Conic Conformal (1SP)”],\n"
+                + "    PARAMETER[“Latitude of natural origin”, 52.0, UNIT[“grade”, 0.015707963267948967]],\n"
+                + "    PARAMETER[“Scale factor at natural origin”, 0.99987742],\n"
+                + "    PARAMETER[“False easting”, 600000.0],\n"
+                + "    PARAMETER[“False northing”, 2200000.0]],\n"
+                + "  CS[Cartesian, 2],\n"
+                + "    AXIS[“Easting (E)”, east],\n"
+                + "    AXIS[“Northing (N)”, north],\n"
+                + "    LENGTHUNIT[“metre”, 1],\n"
+                + "  REMARK[“In this example, the EPSG:27572 identifier has been intentionally omitted.”]]");
+
+        assertNotNull(dataEPSG.factory());    // Skip the test if no EPSG database.
+        final String identifier = IdentifiedObjects.lookupURN(crs, Citations.EPSG);
+        assertNotNull(identifier);
+        assertTrue(identifier.endsWith(":27572"), identifier);
+        loggings.assertNoUnexpectedLog();
+    }
 }

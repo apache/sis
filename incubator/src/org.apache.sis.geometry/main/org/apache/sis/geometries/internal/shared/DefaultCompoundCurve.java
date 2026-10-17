@@ -16,12 +16,20 @@
  */
 package org.apache.sis.geometries.internal.shared;
 
+import java.util.ArrayList;
+import java.util.List;
+import javax.measure.Quantity;
 import org.opengis.geometry.Envelope;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import org.apache.sis.geometries.Curve;
 import org.apache.sis.geometries.DataPointsType;
 import org.apache.sis.geometries.curve.CompoundCurve;
+import org.apache.sis.geometries.curve.LineString;
+import org.apache.sis.geometries.Geometries;
 import org.apache.sis.maths.Array;
+import org.apache.sis.maths.DataType;
+import org.apache.sis.maths.NDArrays;
+import org.apache.sis.util.ArgumentChecks;
 
 
 /**
@@ -35,7 +43,7 @@ public non-sealed class DefaultCompoundCurve extends AbstractGeometry implements
 
     /**
      * The coordinate reference system to report when this curve has no component.
-     * Ignored otherwise, in which case the first component is authoritative. May be {@code null}.
+     * Ignored otherwise, in which case the first component is authoritative. Never null.
      */
     private CoordinateReferenceSystem fallbackCRS;
 
@@ -49,7 +57,7 @@ public non-sealed class DefaultCompoundCurve extends AbstractGeometry implements
      */
     public DefaultCompoundCurve(CoordinateReferenceSystem fallbackCRS, Curve... curves) {
         this.curves      = curves;
-        this.fallbackCRS = fallbackCRS;
+        this.fallbackCRS = (fallbackCRS != null) ? fallbackCRS : Geometries.getUndefinedCRS(2);
     }
 
     @Override
@@ -79,6 +87,7 @@ public non-sealed class DefaultCompoundCurve extends AbstractGeometry implements
 
     @Override
     public void setCoordinateReferenceSystem(CoordinateReferenceSystem crs) throws IllegalArgumentException {
+        ArgumentChecks.ensureNonNull("crs", crs);
         this.fallbackCRS = crs;
         for (final Curve c : curves) {
             c.setCoordinateReferenceSystem(crs);
@@ -95,9 +104,44 @@ public non-sealed class DefaultCompoundCurve extends AbstractGeometry implements
         return envUnion(curves);
     }
 
+    /**
+     * Returns the control points of the components, in the order of the components.
+     * A component without control points, such as a line string, contributes none.
+     *
+     * @return control points of the components, or {@code null} if none of them has control points.
+     */
     @Override
     public Array getControlPoints() {
-        throw new UnsupportedOperationException("Not supported yet.");
+        final var arrays = new ArrayList<Array>(curves.length);
+        DataType dataType = null;
+        boolean mixed = false;
+        for (final Curve curve : curves) {
+            final Array array = curve.getControlPoints();
+            if (array != null && array.getLength() != 0) {
+                arrays.add(array);
+                if (dataType == null) {
+                    dataType = array.getDataType();
+                } else {
+                    mixed |= (dataType != array.getDataType());
+                }
+            }
+        }
+        switch (arrays.size()) {
+            case 0: return null;
+            case 1: return arrays.get(0);
+        }
+        if (mixed) {
+            arrays.replaceAll((array) -> array.retype(DataType.DOUBLE));
+        }
+        return NDArrays.concatenate(arrays.toArray(Array[]::new));
     }
 
+    /**
+     * Returns a polyline whose points are on this curve, made of the polylines of the component curves.
+     * A spacing or an offset in percent is relative to the length of this whole curve.
+     */
+    @Override
+    public LineString asLine(final Quantity<?> spacing, final Quantity<?> offset) {
+        return CurveLinearizer.concatenate(this, List.of(curves), spacing, offset);
+    }
 }

@@ -303,7 +303,7 @@ public abstract class ConcurrentAuthorityFactory<DAO extends GeodeticAuthorityFa
      *        If more than this number of threads are querying this {@code ConcurrentAuthorityFactory} concurrently,
      *        additional threads will be blocked until a Data Access Object become available.
      */
-    @SuppressWarnings("this-escape")        // Phantom reference.
+    @SuppressWarnings({"this-escape", "LeakingThisInConstructor"})        // Phantom reference.
     protected ConcurrentAuthorityFactory(final Class<DAO> dataAccessClass,
             final int maxStrongReferences, final int maxConcurrentQueries)
     {

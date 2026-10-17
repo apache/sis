@@ -16,7 +16,13 @@
  */
 package org.apache.sis.geometries.curve;
 
+import org.apache.sis.geometries.GeometryFactory;
+import org.apache.sis.measure.Quantities;
+import org.apache.sis.measure.Units;
+
 // Test dependencies
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.apache.sis.geometries.GeometryTest;
@@ -74,8 +80,11 @@ public class CompoundCurveTest extends GeometryTest {
     }
 
     @Test
-    @Disabled("Not implemented yet.")
     public void testGetTopologicDimension() {
+        final LineString segment = GeometryFactory.DEFAULT.createLineString(
+                GeometryFactory.DEFAULT.createDataPoints(CRS_2D, 0,0, 10,0));
+        final CompoundCurve curve = GeometryFactory.DEFAULT.createCompoundCurve(segment);
+        assertEquals(1, curve.getTopologicDimension());
     }
 
     @Test
@@ -198,6 +207,24 @@ public class CompoundCurveTest extends GeometryTest {
     public void testSubCurve_Length_Length() {
     }
 
+    /**
+     * The point at a distance along two components of length 10 is found on the component
+     * which covers that distance.
+     */
+    @Test
+    public void testSubCurve_Length() {
+        final CompoundCurve curve = GeometryFactory.DEFAULT.createCompoundCurve(
+                GeometryFactory.DEFAULT.createLineString(GeometryFactory.DEFAULT.createDataPoints(CRS_2D, 0,0, 10,0)),
+                GeometryFactory.DEFAULT.createLineString(GeometryFactory.DEFAULT.createDataPoints(CRS_2D, 10,0, 10,10)));
+        assertPositionEquals( 5,  0, curve.subCurve(Quantities.create( 25, Units.PERCENT)));
+        assertPositionEquals(10,  0, curve.subCurve(Quantities.create( 50, Units.PERCENT)));
+        assertPositionEquals(10,  5, curve.subCurve(Quantities.create( 75, Units.PERCENT)));
+        assertPositionEquals(10, 10, curve.subCurve(Quantities.create(100, Units.PERCENT)));
+        assertPositionEquals(10,  8, curve.subCurve(Quantities.create( 18, Units.DEGREE)));
+        assertPositionEquals(10,  0, curve.getRepresentativePoint());
+        assertThrows(IllegalArgumentException.class, () -> curve.subCurve(Quantities.create(21, Units.DEGREE)));
+    }
+
     @Test
     @Disabled("Not implemented yet.")
     public void testGetOrientationSign() {
@@ -279,8 +306,11 @@ public class CompoundCurveTest extends GeometryTest {
     }
 
     @Test
-    @Disabled("Not implemented yet.")
     public void testGetRepresentativePoint() {
+        final LineString segment = GeometryFactory.DEFAULT.createLineString(
+                GeometryFactory.DEFAULT.createDataPoints(CRS_2D, 0,0, 10,0));
+        final CompoundCurve curve = GeometryFactory.DEFAULT.createCompoundCurve(segment);
+        assertPositionEquals(5, 0, curve.getRepresentativePoint());
     }
 
     @Test

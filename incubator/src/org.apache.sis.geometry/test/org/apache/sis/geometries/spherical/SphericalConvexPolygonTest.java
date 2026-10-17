@@ -17,7 +17,7 @@
 package org.apache.sis.geometries.spherical;
 
 import java.util.List;
-import org.apache.sis.geometries.surface.Sphere;
+import org.apache.sis.geometries.internal.shared.DefaultSphere;
 import org.apache.sis.maths.Array;
 import org.apache.sis.maths.DataType;
 import org.apache.sis.maths.NDArrays;
@@ -45,7 +45,7 @@ public class SphericalConvexPolygonTest {
     private final Vector3D.Double d = new Vector3D.Double(0, -1, 1).normalize();
 
     private final Array points = NDArrays.of(List.of(a, b, c, d, a), 3, DataType.DOUBLE);
-    private final SphericalConvexPolygon polygon = new SphericalConvexPolygon(new Sphere(3), points);
+    private final SphericalConvexPolygon polygon = new SphericalConvexPolygon(new DefaultSphere(3), points);
 
     /**
      * Corner points lie on the polygon boundary and must be considered contained.

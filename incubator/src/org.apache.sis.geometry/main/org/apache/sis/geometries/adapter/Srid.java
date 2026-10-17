@@ -85,13 +85,10 @@ final class Srid {
      * to a two-dimensional one keeps no identifier — neither the combined system nor the
      * horizontal component extracted back from it carries the code the height was added to.</p>
      *
-     * @param  crs  the system whose identifier to return, or {@code null}.
+     * @param  crs  the system whose identifier to return.
      * @return the spatial reference identifier, or {@link #UNDEFINED} if none.
      */
     static int of(final CoordinateReferenceSystem crs) {
-        if (crs == null) {
-            return UNDEFINED;
-        }
         int srid = declaredCode(crs);
         if (srid == UNDEFINED) {
             final SingleCRS horizontal = CRS.getHorizontalComponent(crs);

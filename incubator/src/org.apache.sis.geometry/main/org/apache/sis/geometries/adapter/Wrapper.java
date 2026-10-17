@@ -46,10 +46,7 @@ import org.apache.sis.geometries.Point;
 import org.apache.sis.geometries.Surface;
 import org.apache.sis.geometries.curve.LineString;
 import org.apache.sis.geometries.curve.LinearRing;
-import org.apache.sis.geometries.curve.MultiLineString;
 import org.apache.sis.geometries.operation.GeometryProcessor;
-import org.apache.sis.geometries.point.MultiPoint;
-import org.apache.sis.geometries.surface.MultiPolygon;
 import org.apache.sis.geometries.surface.Polygon;
 import org.apache.sis.geometry.GeneralDirectPosition;
 import org.apache.sis.geometry.GeneralEnvelope;
@@ -85,7 +82,7 @@ public final class Wrapper extends GeometryWrapper {
      */
     private static final Class<?>[] TYPES = {
         Point.class, LineString.class, Polygon.class,
-        MultiPoint.class, MultiLineString.class, MultiPolygon.class,
+        GeometryCollection.class, GeometryCollection.class, GeometryCollection.class,
         GeometryCollection.class, Geometry.class,
     };
 
@@ -546,7 +543,7 @@ add:    for (Geometry next = geometry;;) {
                 return GeometryFactory.DEFAULT.createLineString(GeometryFactory.DEFAULT.createDataPoints(geometry.getDataPoints()));
             }
             case POLYGON: {
-                if (!geometry.isEmpty() && geometry instanceof MultiLineString lines) {
+                if (!geometry.isEmpty() && geometry instanceof GeometryCollection lines && GeometryType.LINESTRING.equals(lines.getElementType())) {
                     // SQLMM `ST_BdMPolyFromText` and `ST_BdMPolyFromWKB` behavior.
                     final int count = lines.getNumGeometries();
                     final LinearRing exterior = toRing(lines.getGeometryN(0));
@@ -625,7 +622,7 @@ add:    for (Geometry next = geometry;;) {
      */
     private static boolean isCollection(final Geometry candidate) {
         return (candidate instanceof GeometryCollection<?> collection)
-                && !(candidate instanceof MultiPoint<?>)
+                && !(GeometryType.POINT.equals(collection.getElementType()))
                 && collection.getNumGeometries() >= 2;
     }
 

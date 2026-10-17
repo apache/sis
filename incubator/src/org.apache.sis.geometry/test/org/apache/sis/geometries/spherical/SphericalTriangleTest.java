@@ -16,7 +16,7 @@
  */
 package org.apache.sis.geometries.spherical;
 
-import org.apache.sis.geometries.surface.Sphere;
+import org.apache.sis.geometries.internal.shared.DefaultSphere;
 import org.apache.sis.maths.ReadOnly;
 import org.apache.sis.maths.Vector3D;
 
@@ -47,7 +47,7 @@ public class SphericalTriangleTest {
      */
     @Test
     public void constructorTest() {
-        final SphericalTriangle triangle = new SphericalTriangle(new Sphere(3), a, b, c);
+        final SphericalTriangle triangle = new SphericalTriangle(new DefaultSphere(3), a, b, c);
         assertSame(a, triangle.getA());
         assertSame(b, triangle.getB());
         assertSame(c, triangle.getC());
@@ -58,7 +58,7 @@ public class SphericalTriangleTest {
      */
     @Test
     public void getCentroidTest() {
-        final SphericalTriangle triangle = new SphericalTriangle(new Sphere(3), a, b, c);
+        final SphericalTriangle triangle = new SphericalTriangle(new DefaultSphere(3), a, b, c);
         final ReadOnly.Vector<?> centroid = triangle.getCentroidVector();
         final double v = 1.0 / Math.sqrt(3.0);
         assertArrayEquals(new double[]{v, v, v}, centroid.toArrayDouble(), TOLERANCE);
@@ -71,7 +71,7 @@ public class SphericalTriangleTest {
      */
     @Test
     public void getSphericalExcessTest() {
-        final SphericalTriangle triangle = new SphericalTriangle(new Sphere(3), a, b, c);
+        final SphericalTriangle triangle = new SphericalTriangle(new DefaultSphere(3), a, b, c);
         assertEquals(Math.PI / 2, triangle.getSphericalExcess(), TOLERANCE);
     }
 
@@ -82,10 +82,10 @@ public class SphericalTriangleTest {
      */
     @Test
     public void getAreaTest() {
-        final SphericalTriangle triangle = new SphericalTriangle(new Sphere(3), a, b, c);
+        final SphericalTriangle triangle = new SphericalTriangle(new DefaultSphere(3), a, b, c);
         assertEquals(Math.PI / 2, triangle.getArea(), TOLERANCE);
 
-        final SphericalTriangle biggerTriangle = new SphericalTriangle(new Sphere(3, 2), a, b, c);
+        final SphericalTriangle biggerTriangle = new SphericalTriangle(new DefaultSphere(3, 2), a, b, c);
         assertEquals(Math.PI / 2 * 4, biggerTriangle.getArea(), TOLERANCE);
     }
 
@@ -94,7 +94,7 @@ public class SphericalTriangleTest {
      */
     @Test
     public void containsTest() {
-        final SphericalTriangle triangle = new SphericalTriangle(new Sphere(3), a, b, c);
+        final SphericalTriangle triangle = new SphericalTriangle(new DefaultSphere(3), a, b, c);
         assertTrue(triangle.contains(triangle.getA()));
         assertTrue(triangle.contains(triangle.getB()));
         assertTrue(triangle.contains(triangle.getC()));
@@ -109,7 +109,7 @@ public class SphericalTriangleTest {
      */
     @Test
     public void quadSubdivideTest() {
-        final SphericalTriangle triangle = new SphericalTriangle(new Sphere(3), a, b, c);
+        final SphericalTriangle triangle = new SphericalTriangle(new DefaultSphere(3), a, b, c);
         final SphericalTriangle[] children = triangle.quadSubdivide();
         assertEquals(4, children.length);
 
@@ -147,7 +147,7 @@ public class SphericalTriangleTest {
      */
     @Test
     public void subdivideByOneTest() {
-        final SphericalTriangle triangle = new SphericalTriangle(new Sphere(3), a, b, c);
+        final SphericalTriangle triangle = new SphericalTriangle(new DefaultSphere(3), a, b, c);
         final SphericalTriangle[] children = triangle.subdivide(1);
         assertEquals(1, children.length);
         assertSame(triangle, children[0]);
@@ -160,7 +160,7 @@ public class SphericalTriangleTest {
      */
     @Test
     public void subdivideTilesTheParentTest() {
-        final SphericalTriangle triangle = new SphericalTriangle(new Sphere(3), a, b, c);
+        final SphericalTriangle triangle = new SphericalTriangle(new DefaultSphere(3), a, b, c);
         for (final int n : new int[] {2, 3, 4, 5}) {
             final SphericalTriangle[] children = triangle.subdivide(n);
             assertEquals(n*n, children.length, "Subdivision by " + n);
@@ -188,7 +188,7 @@ public class SphericalTriangleTest {
      */
     @Test
     public void subdivideKeepsParentCornersTest() {
-        final SphericalTriangle triangle = new SphericalTriangle(new Sphere(3), a, b, c);
+        final SphericalTriangle triangle = new SphericalTriangle(new DefaultSphere(3), a, b, c);
         final SphericalTriangle[] children = triangle.subdivide(3);
         assertEquals(9, children.length);
         /*
@@ -206,7 +206,7 @@ public class SphericalTriangleTest {
      */
     @Test
     public void subdivideInvalidTest() {
-        final SphericalTriangle triangle = new SphericalTriangle(new Sphere(3), a, b, c);
+        final SphericalTriangle triangle = new SphericalTriangle(new DefaultSphere(3), a, b, c);
         assertThrows(IllegalArgumentException.class, () -> triangle.subdivide(0));
         assertThrows(IllegalArgumentException.class, () -> triangle.subdivide(-1));
     }

@@ -63,16 +63,6 @@ public non-sealed class DefaultLine extends AbstractGeometry implements Line {
     }
 
     @Override
-    public Point getRepresentativePoint() {
-        if (isEmpty()) {
-            // The empty set has no interior position.
-            return null;
-        }
-        //TODO : fallback on JTS until implemented
-        return (Point) fromJTS(asJTS().getInteriorPoint());
-    }
-
-    @Override
     public boolean isSimple() {
         //TODO : fallback on JTS until implemented
         return asJTS().isSimple();

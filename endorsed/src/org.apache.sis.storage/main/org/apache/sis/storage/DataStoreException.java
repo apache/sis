@@ -17,8 +17,7 @@
 package org.apache.sis.storage;
 
 import java.util.Locale;
-import org.opengis.util.InternationalString;
-import org.apache.sis.util.LocalizedException;
+import org.apache.sis.util.Localized;
 import org.apache.sis.util.Workaround;
 import org.apache.sis.storage.internal.Resources;
 import org.apache.sis.io.stream.IOUtilities;
@@ -27,25 +26,34 @@ import org.apache.sis.io.stream.IOUtilities;
 /**
  * Thrown when a {@link DataStore} cannot complete a read or write operation.
  *
- * <h2>Localization</h2>
- * The {@link #getMessage()} and {@link #getLocalizedMessage()} methods return the same message,
- * but sometimes in different languages. The general policy is that {@link #getMessage()} returns
- * the message in the JVM {@linkplain Locale#getDefault() default locale} while {@link #getLocalizedMessage()}
- * returns the message in the locale specified by the last call to {@link DataStore#setLocale(Locale)}.
+ * <p><b>Localization:</b>
+ * The exception {@linkplain #getMessage() message} is usually in a language
+ * determined by the <abbr>JVM</abbr>-wide {@linkplain Locale#getDefault() default locale}.
+ * In addition, a {@linkplain #getLocalizedMessage() localized message} may also be available in a
+ * language determined by the {@linkplain DataStore#getLocale() locale configured on the data store}.
  * In a client-server architecture, the former is typically the locale of the system administrator
- * while the latter is presumably the locale of the client connected to the server.
- * However, this policy is applied on a <em>best-effort</em> basis only.
+ * while the latter should be the locale of the client connected to the server.</p>
  *
  * @author  Johann Sorel (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
- * @version 0.8
+ * @version 1.8
  * @since   0.3
  */
-public class DataStoreException extends Exception implements LocalizedException {
+public class DataStoreException extends Exception implements Localized {
     /**
      * For cross-version compatibility.
      */
     private static final long serialVersionUID = -1778987176103191950L;
+
+    /**
+     * The effective locale of the localized message, or {@code null} if unspecified.
+     * This is the locale of the message returned by {@link #getLocalizedMessage()}.
+     * It is specified at construction time, then eventually replaced by the locale
+     * of the resource used for building the message.
+     *
+     * @see #getLocale()
+     */
+    private Locale locale;
 
     /**
      * The resources key as one of the {@link Resources.Keys} constant, or 0 if none.
@@ -122,9 +130,9 @@ public class DataStoreException extends Exception implements LocalizedException 
     }
 
     /**
-     * Workaround while waiting for JEP 447: Statements before super(…).
+     * Workaround while waiting for JEP 513: Flexible Constructor Bodies.
      */
-    @Workaround(library="JDK", version="1.8")
+    @Workaround(library="JDK", version="11", fixed="25")
     private DataStoreException(final Locale locale, final Object[] params) {
         this(locale, IOUtilities.errorMessageKey(params), params);
     }
@@ -137,7 +145,16 @@ public class DataStoreException extends Exception implements LocalizedException 
      * @param parameters  parameters to use for formatting the messages.
      */
     DataStoreException(final Locale locale, final short key, final Object... parameters) {
-        super(Resources.forLocale(locale).getString(key, parameters));
+        this(Resources.forLocale(locale), key, parameters);
+    }
+
+    /**
+     * Workaround while waiting for JEP 513: Flexible Constructor Bodies.
+     */
+    @Workaround(library="JDK", version="11", fixed="25")
+    private DataStoreException(final Resources resources, final short key, final Object[] parameters) {
+        super(resources.getString(key, parameters));
+        this.locale     = resources.getLocale();
         this.key        = key;
         this.parameters = parameters;
     }
@@ -179,16 +196,18 @@ public class DataStoreException extends Exception implements LocalizedException 
     }
 
     /**
-     * If this exception is capable to return the message in various locales, returns that message.
-     * Otherwise returns {@code null}.
+     * Returns the locale of the localized exception message, or {@code null} if unspecified.
+     * If non-null, this is the effective language of the string returned by {@link #getLocalizedMessage()}.
+     * This locale depends on the {@linkplain DataStore#getLocale() locale configured on the data store} and
+     * the resources available in Apache <abbr>SIS</abbr>.
      *
-     * @return the exception message, or {@code null} if this exception cannot produce international message.
+     * @return the locale of the localized message, or {@code null} if not explicitly defined.
      *
-     * @since 0.8
+     * @since 1.8
      */
     @Override
-    public InternationalString getInternationalMessage() {
-        return (key != 0) ? Resources.formatInternational(key, parameters) : null;
+    public Locale getLocale() {
+        return locale;
     }
 
     /**

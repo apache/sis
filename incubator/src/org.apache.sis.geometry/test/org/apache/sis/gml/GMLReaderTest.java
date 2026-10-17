@@ -20,7 +20,7 @@ import java.io.InputStream;
 import java.io.ByteArrayInputStream;
 import java.nio.charset.StandardCharsets;
 import org.apache.sis.geometries.Geometry;
-import org.apache.sis.geometries.curve.MultiLineString;
+import org.apache.sis.geometries.GeometryCollection;
 import org.apache.sis.storage.DataStoreContentException;
 
 // Test dependencies
@@ -99,7 +99,7 @@ public final class GMLReaderTest {
                 + "<gml:curveMember><gml:LineString><gml:posList>0.0 0.0 10.0 10.0</gml:posList></gml:LineString></gml:curveMember>"
                 + "</gml:MultiCurve>";
         final Geometry g = readInline(xml);
-        assertInstanceOf(MultiLineString.class, g);
+        assertInstanceOf(GeometryCollection.class, g);
     }
 
     /**

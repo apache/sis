@@ -17,9 +17,8 @@
 package org.apache.sis.storage;
 
 import java.util.Map;
-import org.apache.sis.setup.OptionKey;
 import org.apache.sis.util.collection.CheckedContainer;
-import static org.apache.sis.setup.OptionKey.*;
+import static org.apache.sis.storage.OptionKey.*;
 
 // Test dependencies
 import org.junit.jupiter.api.Test;

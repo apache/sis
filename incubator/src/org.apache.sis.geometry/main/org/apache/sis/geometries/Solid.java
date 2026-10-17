@@ -21,9 +21,9 @@ import javax.measure.Quantity;
 import org.apache.sis.geometries.internal.shared.DefaultSolid;
 import static org.opengis.annotation.Specification.ISO_19107;
 import org.opengis.annotation.UML;
-import org.opengis.geometry.DirectPosition;
 import org.apache.sis.geometries.solid.ParametricCurveSolid;
 import org.apache.sis.geometries.solid.Polyhedron;
+import org.apache.sis.maths.Array;
 
 
 /**
@@ -161,13 +161,13 @@ public sealed interface Solid extends Primitive
      *       {@linkplain #getBoundary() boundary} of this solid.</li>
      * </ul>
      *
-     * @return solid control points, possibly empty.
+     * @return solid control points, or {@code null} if none.
      *
      * @see ISO 19107:2019 - 6.4.28.6
      */
     @UML(identifier="controlPoint", specification=ISO_19107)
-    default List<DirectPosition> getControlPoints() {
-        throw new UnsupportedOperationException();
+    default Array getControlPoints() {
+        return null;
     }
 
     /**
@@ -180,7 +180,7 @@ public sealed interface Solid extends Primitive
      */
     @UML(identifier="interpolation", specification=ISO_19107)
     default SolidInterpolation getInterpolation() {
-        throw new UnsupportedOperationException();
+        return SolidInterpolation.NONE;
     }
 
     /**
@@ -200,7 +200,7 @@ public sealed interface Solid extends Primitive
      */
     @UML(identifier="knot", specification=ISO_19107)
     default List<double[]> getKnots() {
-        throw new UnsupportedOperationException();
+        return List.of();
     }
 
 }

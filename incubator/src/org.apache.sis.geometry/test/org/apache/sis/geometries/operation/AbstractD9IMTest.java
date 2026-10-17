@@ -29,11 +29,6 @@ import org.apache.sis.geometries.Point;
 import org.apache.sis.geometries.Surface;
 import org.apache.sis.geometries.adapter.WellKnownText;
 import org.apache.sis.geometries.curve.LineString;
-import org.apache.sis.geometries.curve.MultiCurve;
-import org.apache.sis.geometries.curve.MultiLineString;
-import org.apache.sis.geometries.point.MultiPoint;
-import org.apache.sis.geometries.surface.MultiPolygon;
-import org.apache.sis.geometries.surface.MultiSurface;
 import org.apache.sis.geometries.surface.Polygon;
 import org.apache.sis.referencing.CommonCRS;
 
@@ -249,31 +244,31 @@ public abstract class AbstractD9IMTest {
     /**
      * Two positions strictly inside {@link #SQUARE}.
      */
-    public static final MultiPoint<?> MULTI_POINT_INSIDE = (MultiPoint<?>) wkt("MULTIPOINT ((2 2), (5 5))");
+    public static final GeometryCollection<Point> MULTI_POINT_INSIDE = (GeometryCollection<Point>) wkt("MULTIPOINT ((2 2), (5 5))");
 
     /**
      * Two positions, one inside {@link #SQUARE} and one outside it. A set of positions straddling
      * a surface this way crosses it, which a single position can never do.
      */
-    public static final MultiPoint<?> MULTI_POINT_SPREAD = (MultiPoint<?>) wkt("MULTIPOINT ((5 5), (20 20))");
+    public static final GeometryCollection<Point> MULTI_POINT_SPREAD = (GeometryCollection<Point>) wkt("MULTIPOINT ((5 5), (20 20))");
 
     /**
      * The same position twice, which makes this set of positions not
      * {@linkplain Geometry#isSimple() simple}.
      */
-    public static final MultiPoint<?> MULTI_POINT_REPEATED = (MultiPoint<?>) wkt("MULTIPOINT ((5 5), (5 5))");
+    public static final GeometryCollection<Point> MULTI_POINT_REPEATED = (GeometryCollection<Point>) wkt("MULTIPOINT ((5 5), (5 5))");
 
     /**
      * Two disjoint curves of length 10 each, therefore of total length 20.
      */
-    public static final MultiLineString MULTI_LINE =
-            (MultiLineString) wkt("MULTILINESTRING ((0 0, 10 0), (0 20, 10 20))");
+    public static final GeometryCollection<LineString> MULTI_LINE =
+            (GeometryCollection<LineString>) wkt("MULTILINESTRING ((0 0, 10 0), (0 20, 10 20))");
 
     /**
      * Two disjoint squares of area 100 each, therefore of total area 200,
      * with their centroid half way between the two centroids.
      */
-    public static final MultiPolygon MULTI_POLYGON = (MultiPolygon) wkt("MULTIPOLYGON (((0 0, 10 0, 10 10, 0 10, 0 0)), ((20 20, 30 20, 30 30, 20 30, 20 20)))");
+    public static final GeometryCollection<Polygon> MULTI_POLYGON = (GeometryCollection<Polygon>) wkt("MULTIPOLYGON (((0 0, 10 0, 10 10, 0 10, 0 0)), ((20 20, 30 20, 30 30, 20 30, 20 20)))");
 
     /**
      * A heterogeneous collection of a position and a curve. Only the components of the largest
@@ -306,7 +301,7 @@ public abstract class AbstractD9IMTest {
         if (geometry instanceof Surface s) {
             return s.getArea().getValue().doubleValue();
         }
-        if (geometry instanceof MultiSurface<?> m) {
+        if (geometry instanceof GeometryCollection<?> m) {
             return m.getArea().getValue().doubleValue();
         }
         throw new AssertionError("Not a surface: " + geometry.getClass().getSimpleName());
@@ -322,7 +317,7 @@ public abstract class AbstractD9IMTest {
         if (geometry instanceof Curve c) {
             return c.getLength().getValue().doubleValue();
         }
-        if (geometry instanceof MultiCurve<?> m) {
+        if (geometry instanceof GeometryCollection<?> m) {
             return m.getLength().getValue().doubleValue();
         }
         throw new AssertionError("Not a curve: " + geometry.getClass().getSimpleName());
@@ -343,7 +338,7 @@ public abstract class AbstractD9IMTest {
      * @param  actual    the collection of points to verify.
      * @param  expected  the points which shall be in the given collection, in any order.
      */
-    public static void assertPositionsEqual(final MultiPoint<?> actual, final Point... expected) {
+    public static void assertPositionsEqual(final GeometryCollection<Point> actual, final Point... expected) {
         final List<String> remaining = new ArrayList<>(expected.length);
         for (final Point point : expected) {
             remaining.add(Arrays.toString(point.getPosition().toArrayDouble()));

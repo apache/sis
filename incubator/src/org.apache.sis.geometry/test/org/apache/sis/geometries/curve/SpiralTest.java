@@ -16,7 +16,14 @@
  */
 package org.apache.sis.geometries.curve;
 
+import java.net.URI;
+import java.util.List;
+import org.opengis.util.GenericName;
+import org.apache.sis.geometries.GeometryFactory;
+import org.apache.sis.measure.Range;
+
 // Test dependencies
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.apache.sis.geometries.GeometryTest;
@@ -49,8 +56,16 @@ public class SpiralTest extends GeometryTest {
     }
 
     @Test
-    @Disabled("Not implemented yet.")
     public void testGetTopologicDimension() {
+        final RealFunction curvature = new RealFunction() {
+            @Override public GenericName getName()      {return null;}
+            @Override public Range       getDomain()    {return null;}
+            @Override public List<URI>   getMetadata()  {return List.of();}
+            @Override public double      value(double r){return 0;}
+        };
+        final Spiral spiral = GeometryFactory.DEFAULT.createSpiral(
+                GeometryFactory.DEFAULT.createDataPoints(CRS_2D, 0,0), curvature, null, null);
+        assertEquals(1, spiral.getTopologicDimension());
     }
 
     @Test

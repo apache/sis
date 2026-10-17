@@ -144,7 +144,7 @@ import org.opengis.coordinate.MismatchedDimensionException;
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @author  Johann Sorel (Geomatys)
- * @version 1.7
+ * @version 1.8
  * @since   1.0
  */
 public class GridGeometry implements LenientComparable, Serializable {
@@ -1897,49 +1897,6 @@ public class GridGeometry implements LenientComparable, Serializable {
             tr = MathTransforms.identity(env.getDimension());
         }
         return new GridGeometry(extent, tr, tr, env, newResolution, 0);
-    }
-
-    /**
-     * Creates a one-, two- or three-dimensional coordinate reference system for cell indices in the grid.
-     * This method returns a CRS which is derived from the "real world" CRS or a subset of it.
-     * If the "real world" CRS is an instance of {@link org.opengis.referencing.crs.SingleCRS},
-     * then the derived CRS has the following properties:
-     *
-     * <ul>
-     *   <li>{@link DerivedCRS#getBaseCRS()} is {@link #getCoordinateReferenceSystem()}.</li>
-     *   <li>{@link DerivedCRS#getConversionFromBase()} is the inverse of {@link #getGridToCRS(PixelInCell)}.</li>
-     * </ul>
-     *
-     * Otherwise if the "real world" CRS is an instance of {@link org.opengis.referencing.crs.CompoundCRS},
-     * then only the first {@link org.opengis.referencing.crs.SingleCRS} (the head) is used.
-     * This is usually (but not necessarily) the horizontal component of the spatial CRS.
-     * The result is usually two-dimensional, but 1 and 3 dimensions are also possible.
-     *
-     * <p>Because of above relationship, it is possible to use the derived CRS in a chain of operations
-     * with (for example) {@link org.apache.sis.referencing.CRS#findOperation CRS.findOperation(…)}.</p>
-     *
-     * @param  name    name of the CRS to create.
-     * @param  anchor  the cell part to map (center or corner).
-     * @return a derived CRS for coordinates (cell indices) associated with the grid extent.
-     * @throws IncompleteGridGeometryException if the CRS or "grid to CRS" transform is missing.
-     *
-     * @since 1.3
-     *
-     * @deprecated Replaced by the more generic {@link #createGridCRS(Identifier, PixelInCell)} method.
-     */
-    @Deprecated(since = "1.7", forRemoval = true)
-    public DerivedCRS createImageCRS(final String name, final PixelInCell anchor) {
-        ArgumentChecks.ensureNonEmpty("name", name);
-        final var id = new org.apache.sis.referencing.ImmutableIdentifier(null, null, name);
-        try {
-            // Note: the `true` boolean argument can be removed after the removal of this method.
-            var builder = new GridCRSBuilder();
-            builder.derived = true;
-            final CoordinateReferenceSystem crs = builder.forCoverage(this, anchor, id);
-            return (DerivedCRS) org.apache.sis.referencing.CRS.getSingleComponents(crs).get(0);
-        } catch (FactoryException e) {
-            throw new BackingStoreException(e);
-        }
     }
 
     /**

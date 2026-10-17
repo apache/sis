@@ -101,7 +101,7 @@ dependencies {
 var srcDir = file("src")            // Must be the same as the hard-coded value in `BuildHelper.java`.
 tasks.compileJava {
     dependsOn(":geoapi:rebuild")
-    options.release.set(11)         // The version of both Java source code and compiled byte code.
+    options.release.set(12)         // The version of both Java source code and compiled byte code.
 }
 tasks.compileTestJava {
     options.compilerArgs.add("-source")         // "source", not "release", because we accept any target version.
@@ -489,6 +489,7 @@ signing {
         sign(publishing.publications["storage.xml"])
         sign(publishing.publications["storage.netcdf"])
         sign(publishing.publications["storage.geotiff"])
+        sign(publishing.publications["storage.geoheif"])
         sign(publishing.publications["storage.earthobservation"])
         sign(publishing.publications["cloud.aws"])
         sign(publishing.publications["profile.france"])

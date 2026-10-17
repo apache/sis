@@ -22,8 +22,10 @@ import org.opengis.annotation.UML;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import org.apache.sis.geometries.internal.shared.AbstractGeometry;
 import org.apache.sis.maths.NDArrays;
+import org.apache.sis.maths.NDRange;
 import org.apache.sis.maths.ReadOnly;
 import org.apache.sis.maths.Vector;
+import org.opengis.geometry.Envelope;
 
 
 /**
@@ -68,13 +70,13 @@ public final class Plane extends AbstractGeometry{
     }
 
     /**
-     * Creates a plane centered on the single position of the given sequence.
-     * The sequence is taken as-is, so the caller may give the plane the attributes
-     * carried by that sequence.
+     * Creates a plane centered on the single position of the given {@code DataPoints}.
+     * The {@code DataPoints} is taken as-is, so the caller may give the plane the attributes
+     * carried by that {@code DataPoints}.
      *
-     * @param  points  the position the plane is centered on, as a sequence of exactly one position.
+     * @param  points  the position the plane is centered on, as a {@code DataPoints} of exactly one position.
      * @param  normal  the direction the plane is perpendicular to, not null.
-     * @throws IllegalArgumentException if the given sequence does not hold exactly one position.
+     * @throws IllegalArgumentException if the given {@code DataPoints} does not hold exactly one position.
      */
     public Plane(DataPoints points, Vector<?> normal) {
         if (points.size() != 1) {
@@ -87,6 +89,11 @@ public final class Plane extends AbstractGeometry{
     @Override
     public GeometryType getGeometryType() {
         return GeometryType.PLANE;
+    }
+
+    @Override
+    public int getTopologicDimension() {
+        return getDimension();
     }
 
     public DataPoints getDataPoints() {
@@ -167,10 +174,10 @@ public final class Plane extends AbstractGeometry{
      * box is allowed to be larger than the geometry it contains, never smaller.</p>
      */
     @Override
-    public BBox getEnvelope() {
+    public Envelope getEnvelope() {
         final ReadOnly.Vector<?> position = getPosition();
         final int dim = normal.getDimension();
-        final BBox bbox = new BBox(dim);
+        final NDRange bbox = new NDRange(getCoordinateReferenceSystem());
         /*
          * Search the axis the normal is aligned with. There is one only if every other
          * dimension of the normal is null, in which case the plane is flat on it.
@@ -205,9 +212,12 @@ public final class Plane extends AbstractGeometry{
         return points.getCoordinateReferenceSystem();
     }
 
+    /**
+     * Returns the empty geometry: a plane extends to infinity in all its directions, so it has no edge.
+     */
     @Override
     public Geometry getBoundary() {
-        throw new UnsupportedOperationException("Not supported yet.");
+        return GeometryFactory.DEFAULT.createEmpty(getCoordinateReferenceSystem());
     }
 
     @Override

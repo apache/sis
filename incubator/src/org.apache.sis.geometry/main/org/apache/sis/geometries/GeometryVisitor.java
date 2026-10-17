@@ -18,11 +18,6 @@ package org.apache.sis.geometries;
 
 import org.apache.sis.geometries.curve.LineString;
 import org.apache.sis.geometries.curve.LinearRing;
-import org.apache.sis.geometries.curve.MultiCurve;
-import org.apache.sis.geometries.curve.MultiLineString;
-import org.apache.sis.geometries.point.MultiPoint;
-import org.apache.sis.geometries.surface.MultiPolygon;
-import org.apache.sis.geometries.surface.MultiSurface;
 import org.apache.sis.geometries.surface.Polygon;
 import org.apache.sis.geometries.surface.PolyhedralSurface;
 import org.apache.sis.geometries.surface.TIN;
@@ -48,11 +43,6 @@ public class GeometryVisitor {
         else if (geometry instanceof PolyhedralSurface candidate) visit(candidate);
         else if (geometry instanceof Surface candidate) visit(candidate);
 
-        else if (geometry instanceof MultiPolygon candidate) visit(candidate);
-        else if (geometry instanceof MultiLineString candidate) visit(candidate);
-        else if (geometry instanceof MultiSurface candidate) visit(candidate);
-        else if (geometry instanceof MultiCurve candidate) visit(candidate);
-        else if (geometry instanceof MultiPoint candidate) visit(candidate);
         else if (geometry instanceof GeometryCollection candidate) visit(candidate);
 
         else throw new IllegalArgumentException("Unknown geometry type " + geometry.getClass().getName());
@@ -97,36 +87,6 @@ public class GeometryVisitor {
     }
 
     public void visit(GeometryCollection geometry) {
-        for (int i = 0, n = geometry.getNumGeometries(); i < n; i++) {
-            visit(geometry.getGeometryN(i));
-        }
-    }
-
-    public void visit(MultiPolygon geometry) {
-        for (int i = 0, n = geometry.getNumGeometries(); i < n; i++) {
-            visit(geometry.getGeometryN(i));
-        }
-    }
-
-    public void visit(MultiLineString geometry) {
-        for (int i = 0, n = geometry.getNumGeometries(); i < n; i++) {
-            visit(geometry.getGeometryN(i));
-        }
-    }
-
-    public void visit(MultiSurface geometry) {
-        for (int i = 0, n = geometry.getNumGeometries(); i < n; i++) {
-            visit(geometry.getGeometryN(i));
-        }
-    }
-
-    public void visit(MultiCurve geometry) {
-        for (int i = 0, n = geometry.getNumGeometries(); i < n; i++) {
-            visit(geometry.getGeometryN(i));
-        }
-    }
-
-    public void visit(MultiPoint geometry) {
         for (int i = 0, n = geometry.getNumGeometries(); i < n; i++) {
             visit(geometry.getGeometryN(i));
         }

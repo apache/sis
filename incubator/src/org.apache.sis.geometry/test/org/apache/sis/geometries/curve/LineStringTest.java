@@ -16,10 +16,20 @@
  */
 package org.apache.sis.geometries.curve;
 
+import java.util.LinkedHashMap;
+import java.util.Map;
+import java.util.Set;
 import javax.measure.Quantity;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
+import org.apache.sis.geometries.AttributeInterpolation;
+import org.apache.sis.geometries.DataPointsType;
 import org.apache.sis.geometries.Geometry;
-import org.apache.sis.geometries.point.MultiPoint;
+import org.apache.sis.geometries.GeometryCollection;
+import org.apache.sis.geometries.GeometryFactory;
+import org.apache.sis.geometries.Point;
+import org.apache.sis.maths.Array;
+import org.apache.sis.maths.NDArrays;
+import org.apache.sis.measure.Quantities;
 import org.apache.sis.measure.Units;
 
 // Test dependencies
@@ -119,8 +129,8 @@ public abstract class LineStringTest extends GeometryTest {
     }
 
     @Test
-    @Disabled("Not implemented yet.")
     public void testGetTopologicDimension() {
+        assertEquals(1, createLineString(CRS_2D, SEGMENT).getTopologicDimension());
     }
 
     @Test
@@ -172,24 +182,27 @@ public abstract class LineStringTest extends GeometryTest {
     @Test
     public void testGetBoundary() {
         final Geometry boundary = createLineString(CRS_2D, SEGMENT).getBoundary();
-        final MultiPoint<?> ends = assertInstanceOf(MultiPoint.class, boundary,
+        final GeometryCollection<?> ends = assertInstanceOf(GeometryCollection.class, boundary,
                 "The boundary of an open curve is its two end positions.");
         assertEquals(2, ends.getNumGeometries());
     }
 
+    /**
+     * The knots of a line string are the indices of its data points.
+     */
     @Test
-    @Disabled("Not implemented yet.")
     public void testGetKnots() {
+        assertArrayEquals(new double[] {0, 1, 2}, createLineString(CRS_2D, 0,0, 10,0, 10,10).getKnots());
     }
 
     @Test
-    @Disabled("Not implemented yet.")
     public void testGetStartConstrParam() {
+        assertEquals(0, createLineString(CRS_2D, 0,0, 10,0, 10,10).getStartConstrParam());
     }
 
     @Test
-    @Disabled("Not implemented yet.")
     public void testGetEndConstrParam() {
+        assertEquals(2, createLineString(CRS_2D, 0,0, 10,0, 10,10).getEndConstrParam());
     }
 
     @Test
@@ -267,6 +280,62 @@ public abstract class LineStringTest extends GeometryTest {
     public void testSubCurve_Length_Length() {
     }
 
+    /**
+     * The point at a distance along a curve of two segments of length 10, the distance being given
+     * either in the unit of the axes or in percent of the length.
+     */
+    @Test
+    public void testSubCurve_Length() {
+        final LineString curve = createLineString(CRS_2D, 0,0, 10,0, 10,10);
+        assertPositionEquals( 0,  0, curve.subCurve(Quantities.create(  0, Units.PERCENT)));
+        assertPositionEquals(10,  5, curve.subCurve(Quantities.create( 75, Units.PERCENT)));
+        assertPositionEquals(10, 10, curve.subCurve(Quantities.create(100, Units.PERCENT)));
+        assertPositionEquals( 5,  0, curve.subCurve(Quantities.create(  5, Units.DEGREE)));
+        assertPositionEquals(10,  0, curve.subCurve(Quantities.create( 10, Units.DEGREE)));
+        assertPositionEquals(10,  8, curve.subCurve(Quantities.create( 18, Units.DEGREE)));
+    }
+
+    /**
+     * The attributes other than the position are kept, each computed as its attribute interpolation
+     * declares. The point at 80% lies at 60% of the second segment, between the values 10 and 30.
+     */
+    @Test
+    public void testSubCurve_LengthWithAttributes() {
+        final Map<String,Array> attributes = new LinkedHashMap<>();
+        attributes.put(DataPointsType.ATT_POSITION, NDArrays.of(CRS_2D, new double[] {0,0, 10,0, 10,10}));
+        attributes.put("nearest", NDArrays.of(1, new double[] {0, 10, 30}));
+        attributes.put("linear",  NDArrays.of(1, new double[] {0, 10, 30}));
+        attributes.put("leading", NDArrays.of(1, new double[] {0, 10, 30}));
+        final LineString curve = GeometryFactory.DEFAULT.createLineString(withInterpolations(
+                GeometryFactory.DEFAULT.createDataPoints(attributes),
+                Map.of("nearest", AttributeInterpolation.NEAREST,
+                       "linear",  AttributeInterpolation.LINEAR,
+                       "leading", AttributeInterpolation.LEADING)));
+
+        Point point = curve.subCurve(Quantities.create(80, Units.PERCENT));
+        assertPositionEquals(10, 6, point);
+        assertEquals(Set.of(DataPointsType.ATT_POSITION, "nearest", "linear", "leading"),
+                     Set.copyOf(point.getDataPointsType().getAttributeNames()));
+        assertEquals(30, point.getAttribute("nearest").get(0), TOLERANCE, "Value of the nearest point.");
+        assertEquals(22, point.getAttribute("linear" ).get(0), TOLERANCE, "Interpolated along the segment.");
+        assertEquals(10, point.getAttribute("leading").get(0), TOLERANCE, "Value of the segment start.");
+
+        point = curve.subCurve(Quantities.create(100, Units.PERCENT));
+        assertEquals(30, point.getAttribute("leading").get(0), TOLERANCE, "The end point has its own value.");
+    }
+
+    /**
+     * A distance outside the curve, or which cannot be expressed in the unit of the axes, is rejected.
+     */
+    @Test
+    public void testSubCurve_LengthOutside() {
+        final LineString curve = createLineString(CRS_2D, SEGMENT);
+        assertThrows(IllegalArgumentException.class, () -> curve.subCurve(Quantities.create(101, Units.PERCENT)));
+        assertThrows(IllegalArgumentException.class, () -> curve.subCurve(Quantities.create( -1, Units.DEGREE)));
+        assertThrows(IllegalArgumentException.class, () -> curve.subCurve(Quantities.create( 11, Units.DEGREE)));
+        assertThrows(IllegalArgumentException.class, () -> curve.subCurve(Quantities.create(  5, Units.METRE)));
+    }
+
     @Test
     @Disabled("Not implemented yet.")
     public void testGetOrientationSign() {
@@ -332,16 +401,12 @@ public abstract class LineStringTest extends GeometryTest {
     }
 
     /**
-     * Contrarily to the centroid, the returned position shall lie on the curve, but which position
-     * is returned is left to the implementation. The segment under test being horizontal, lying on
-     * it means having a null second ordinate and a first ordinate within the range of the segment.
+     * The point at middle distance along a curve made of a single segment is that segment's midpoint.
      */
     @Test
     public void testGetRepresentativePoint() {
-        final double[] position = createLineString(CRS_2D, SEGMENT).getRepresentativePoint()
-                                                                   .getPosition().toArrayDouble();
-        assertEquals(0, position[1], TOLERANCE, "The position shall lie on the segment.");
-        assertTrue(position[0] >= 0 && position[0] <= 10, "The position shall lie on the segment.");
+        assertPositionEquals(5, 0, createLineString(CRS_2D, SEGMENT).getRepresentativePoint());
+        assertPositionEquals(5, 5, createLineString(CRS_2D, DIAGONAL).getRepresentativePoint());
     }
 
     @Test

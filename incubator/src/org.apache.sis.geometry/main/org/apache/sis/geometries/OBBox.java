@@ -18,9 +18,10 @@ package org.apache.sis.geometries;
 
 import org.opengis.geometry.Envelope;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
-import org.apache.sis.geometries.DataPoints;
 import org.apache.sis.geometries.internal.shared.AbstractGeometry;
 import org.apache.sis.geometries.internal.shared.SinglePositionDataPoints;
+import org.apache.sis.maths.DataType;
+import org.apache.sis.maths.NDRange;
 import org.apache.sis.maths.Vectors;
 import org.apache.sis.maths.Vector;
 
@@ -61,6 +62,11 @@ public final class OBBox extends AbstractGeometry {
     @Override
     public GeometryType getGeometryType() {
         return GeometryType.BBOX;
+    }
+
+    @Override
+    public int getTopologicDimension() {
+        return isEmpty() ? -1 : getDimension();
     }
 
     @Override
@@ -124,7 +130,8 @@ public final class OBBox extends AbstractGeometry {
         final Vector<?> nxAxis = xAxis.copy().scale(-1);
         final Vector<?> nyAxis = yAxis.copy().scale(-1);
         final Vector<?> nzAxis = zAxis.copy().scale(-1);
-        final BBox env = new BBox(center,center);
+        final Vector<?> start = Vectors.create(getCoordinateReferenceSystem(), DataType.DOUBLE).set(center);
+        final NDRange env = new NDRange(start, start);
         final Vector<?> corner = center.copy();
         env.add(corner.set(center).add( xAxis).add( yAxis).add( zAxis));
         env.add(corner.set(center).add( xAxis).add( yAxis).add(nzAxis));
@@ -137,9 +144,21 @@ public final class OBBox extends AbstractGeometry {
         return env;
     }
 
+    /**
+     * Returns the six faces of this box, oriented outward.
+     */
     @Override
     public Geometry getBoundary() {
-        throw new UnsupportedOperationException("Not supported yet.");
+        final var corners = new Vector<?>[8];
+        for (int i = 0; i < corners.length; i++) {
+            final Vector<?> corner = center.copy();
+            corner.add(((i & 1) != 0) ? xAxis : xAxis.copy().scale(-1));
+            corner.add(((i & 2) != 0) ? yAxis : yAxis.copy().scale(-1));
+            corner.add(((i & 4) != 0) ? zAxis : zAxis.copy().scale(-1));
+            corners[i] = corner;
+        }
+        final boolean leftHanded = xAxis.dot(yAxis.cross(zAxis)) < 0;
+        return BBox.boxFaces(getCoordinateReferenceSystem(), corners, leftHanded);
     }
 
     /**
@@ -160,7 +179,7 @@ public final class OBBox extends AbstractGeometry {
     }
 
     /**
-     * Returns the center of this box, as a sequence of one position. The corners of the box are
+     * Returns the center of this box, as a {@code DataPoints} of one position. The corners of the box are
      * derived from that position and from its axes, so the center is the only position it holds.
      */
     @Override

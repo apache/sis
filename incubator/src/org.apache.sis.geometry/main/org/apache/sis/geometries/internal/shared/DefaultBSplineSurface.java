@@ -19,7 +19,6 @@ package org.apache.sis.geometries.internal.shared;
 import java.util.List;
 import java.util.Objects;
 import javax.measure.Quantity;
-import org.opengis.geometry.DirectPosition;
 import org.opengis.geometry.Envelope;
 import org.apache.sis.geometries.Curve;
 import org.apache.sis.geometries.DataPoints;
@@ -27,9 +26,8 @@ import org.apache.sis.geometries.Geometry;
 import org.apache.sis.geometries.curve.KnotType;
 import org.apache.sis.geometries.surface.BSplineSurface;
 import org.apache.sis.geometries.surface.BSplineSurfaceForm;
-
-// Specific to the geoapi-3.1 branch:
-import org.opengis.referencing.ReferenceIdentifier;
+import org.apache.sis.maths.Array;
+import org.apache.sis.maths.Vector;
 
 
 /**
@@ -49,9 +47,9 @@ public non-sealed class DefaultBSplineSurface extends AbstractGeometry implement
     protected final DataPoints points;
 
     /**
-     * Control points of the section curves, in row-major order, or an empty list if none.
+     * Control points in row-major order, or {@code null} if none.
      */
-    protected final List<DirectPosition> controlPoints;
+    protected final Array controlPoints;
 
     /**
      * Number of rows in the parameter grid.
@@ -105,12 +103,12 @@ public non-sealed class DefaultBSplineSurface extends AbstractGeometry implement
      *                        control points are expressed in homogeneous coordinates, which makes
      *                        it rational.
      */
-    public DefaultBSplineSurface(final DataPoints points, final List<DirectPosition> controlPoints,
+    public DefaultBSplineSurface(final DataPoints points, final Array controlPoints,
             final int rows, final int columns, final List<double[]> knots, final int degree,
             final KnotType knotSpec, final BSplineSurfaceForm surfaceForm, final boolean polynomial)
     {
         this.points        = Objects.requireNonNull(points);
-        this.controlPoints = (controlPoints == null) ? List.of() : List.copyOf(controlPoints);
+        this.controlPoints = controlPoints;
         this.rows          = rows;
         this.columns       = columns;
         this.knots         = (knots == null) ? List.of() : List.copyOf(knots);
@@ -161,7 +159,7 @@ public non-sealed class DefaultBSplineSurface extends AbstractGeometry implement
     }
 
     @Override
-    public List<DirectPosition> getControlPoints() {
+    public Array getControlPoints() {
         return controlPoints;
     }
 
@@ -176,7 +174,7 @@ public non-sealed class DefaultBSplineSurface extends AbstractGeometry implement
     }
 
     @Override
-    public DirectPosition getSurface(double u, double v) {
+    public Vector<?> getSurface(double u, double v) {
         throw new UnsupportedOperationException("Not supported yet.");
     }
 
@@ -185,18 +183,17 @@ public non-sealed class DefaultBSplineSurface extends AbstractGeometry implement
         throw new UnsupportedOperationException("Not supported yet.");
     }
 
+    /**
+     * Returns the envelope of the data points and of the control points, which contains this surface
+     * since a b-spline stays inside the convex hull of its control points.
+     */
     @Override
     public Envelope getEnvelope() {
-        throw new UnsupportedOperationException("Not supported yet.");
+        return controlHullEnvelope(points, controlPoints, !polynomial);
     }
 
     @Override
     public Geometry getBoundary() {
-        throw new UnsupportedOperationException("Not supported yet.");
-    }
-
-    @Override
-    public ReferenceIdentifier getName() {
         throw new UnsupportedOperationException("Not supported yet.");
     }
 

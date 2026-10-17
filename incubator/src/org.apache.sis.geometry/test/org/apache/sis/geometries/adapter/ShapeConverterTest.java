@@ -37,7 +37,6 @@ import org.apache.sis.geometries.Point;
 import org.apache.sis.geometries.DataPoints;
 import org.apache.sis.geometries.curve.LineString;
 import org.apache.sis.geometries.curve.LinearRing;
-import org.apache.sis.geometries.surface.MultiPolygon;
 import org.apache.sis.geometries.surface.Polygon;
 import org.apache.sis.maths.Vector2D;
 import org.apache.sis.maths.Vector;
@@ -199,7 +198,7 @@ public final class ShapeConverterTest {
             handler.dispose();
         }
         final Geometry geometry = ShapeConverter.create(shape, 0.1);
-        final MultiPolygon mp = assertInstanceOf(MultiPolygon.class, geometry);
+        final GeometryCollection<Polygon> mp = assertInstanceOf(GeometryCollection.class, geometry);
         /*
          * The "Labi" text contains 4 characters but `i` is split in two ploygons,
          * for a total of 5 polygons. Two letters ("a" and "b") are polyogns whith

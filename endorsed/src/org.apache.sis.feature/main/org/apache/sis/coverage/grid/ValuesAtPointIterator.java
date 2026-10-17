@@ -23,6 +23,7 @@ import java.util.function.Consumer;
 import java.util.function.IntFunction;
 import java.awt.image.Raster;
 import java.awt.image.RenderedImage;
+import org.apache.sis.util.Workaround;
 import org.apache.sis.util.internal.shared.Strings;
 import static org.apache.sis.coverage.grid.GridCoverage.BIDIMENSIONAL;
 
@@ -382,8 +383,9 @@ abstract class ValuesAtPointIterator implements Spliterator<double[]> {
         }
 
         /**
-         * Workaround for RFE #4093999 ("Relax constraint on placement of this()/super() call in constructors").
+         * Workaround while waiting for JEP 513: Flexible Constructor Bodies.
          */
+        @Workaround(library="JDK", version="11", fixed="25")
         private Slices(final GridCoverage coverage,
                        final long[]       nearestXY,
                        final int          limitOfXY,
@@ -403,7 +405,7 @@ abstract class ValuesAtPointIterator implements Spliterator<double[]> {
          * of applying the inverse of the "grid to CRS" transform on user supplied "real world" coordinates,
          * then resolving wraparounds. This constructor rounds these grid coordinates to nearest integers.
          *
-         * @todo Retrofit in above constructor after RFE #4093999.
+         * @todo Retrofit in above constructor after upgrade to JDK25.
          *
          * @param coverage          the coverage which will be evaluated.
          * @param gridCoords        the grid coordinates as floating-point numbers.
@@ -582,8 +584,9 @@ changeOfSlice:  while (numPoints != 0) {
         }
 
         /**
-         * Workaround for RFE #4093999 ("Relax constraint on placement of this()/super() call in constructors").
+         * Workaround while waiting for JEP 513: Flexible Constructor Bodies.
          */
+        @Workaround(library="JDK", version="11", fixed="25")
         private Image(final RenderedImage image,
                       final long[] nearestXY,
                       final int    limitOfXY,
@@ -603,7 +606,7 @@ changeOfSlice:  while (numPoints != 0) {
         /**
          * Creates a new iterator for the specified image.
          *
-         * @todo Retrofit in above constructor after RFE #4093999.
+         * @todo Retrofit in above constructor after upgrade to JDK25.
          *
          * @param parent     the parent iterator from which to inherit the grid coordinates.
          * @param limitOfXY  index after the last coordinate of the last point to evaluate.

@@ -17,15 +17,21 @@
 package org.apache.sis.geometries.internal.shared;
 
 import java.util.Objects;
+import javax.measure.Quantity;
 import org.opengis.geometry.Envelope;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import org.apache.sis.geometries.DataPoints;
 import org.apache.sis.geometries.DataPointsType;
+import org.apache.sis.geometries.Geometries;
+import org.apache.sis.geometries.GeometryFactory;
+import org.apache.sis.geometries.Point;
 import org.apache.sis.geometries.curve.BSplineCurve;
 import org.apache.sis.geometries.curve.FunctionArc;
 import org.apache.sis.geometries.curve.KnotType;
+import org.apache.sis.geometries.curve.LineString;
 import org.apache.sis.geometries.curve.SplineCurveForm;
 import org.apache.sis.maths.Array;
+import org.apache.sis.measure.Quantities;
 
 
 /**
@@ -127,6 +133,38 @@ public non-sealed class DefaultBSplineCurve extends AbstractGeometry implements 
     }
 
     /**
+     * Returns the start of the curve domain: the first knot, or the knot at index {@code degree} of a
+     * complete knot vector, or 0 if no knot is given since the knots are then uniform between 0 and 1.
+     */
+    @Override
+    public double getStartConstrParam() {
+        return domain()[0];
+    }
+
+    /**
+     * Returns the end of the curve domain: the last knot, or the knot at the index of the number of
+     * control points in a complete knot vector, or 1 if no knot is given.
+     */
+    @Override
+    public double getEndConstrParam() {
+        return domain()[1];
+    }
+
+    /**
+     * Returns the start and end of the curve domain, as used by the evaluator.
+     */
+    private double[] domain() {
+        if (knots.length == 0) {
+            return new double[] {0, 1};
+        }
+        final int count = (controlPoints != null) ? Math.toIntExact(controlPoints.getLength()) : points.size();
+        if (knots.length == count + degree + 1) {
+            return new double[] {knots[degree], knots[count]};
+        }
+        return new double[] {knots[0], knots[knots.length - 1]};
+    }
+
+    /**
      * Returns the number of intervals in the knot array, which is the number of arcs of this curve.
      */
     @Override
@@ -169,9 +207,64 @@ public non-sealed class DefaultBSplineCurve extends AbstractGeometry implements 
         return points.isEmpty();
     }
 
+    /**
+     * Returns the envelope of the data points and of the control points, which contains this curve
+     * since a b-spline stays inside the convex hull of its control points.
+     */
     @Override
     public Envelope getEnvelope() {
-        throw new UnsupportedOperationException("Not supported yet.");
+        return controlHullEnvelope(points, controlPoints, rational);
     }
 
+    /**
+     * Returns the arc length of this curve, integrated in the coordinate space of its control points.
+     *
+     * @throws UnsupportedOperationException if this curve is rational.
+     */
+    @Override
+    public Quantity<?> getLength() {
+        final double length = isEmpty() ? 0 : evaluator().length();
+        return Quantities.create(length, Geometries.getLinearUnit(this));
+    }
+
+    /**
+     * Returns the point at the given distance along this curve, in the unit of the coordinates or in
+     * percent of the length.
+     *
+     * @throws UnsupportedOperationException if this curve is rational.
+     */
+    @Override
+    public Point subCurve(final Quantity<?> dist) {
+        if (isEmpty()) {
+            return null;
+        }
+        return evaluator().subCurve(dist, Geometries.getLinearUnit(this));
+    }
+
+    /**
+     * Returns the arc length parameterization of this curve. The control points are the data points
+     * if no control point is given. The knots are either the complete knot vector, or the distinct
+     * knot values of a curve clamped at both ends.
+     */
+    private BSplineEvaluator evaluator() {
+        if (rational) {
+            throw new UnsupportedOperationException("Rational b-spline curves are not supported, use a NURBS curve.");
+        }
+        final DataPoints ctrl = (controlPoints != null)
+                ? BSplineEvaluator.asDataPoints(controlPoints, getCoordinateReferenceSystem()) : points;
+        final int count = ctrl.size();
+        final double[] kn = (knots.length == count + degree + 1) ? knots : BSplineEvaluator.clampedKnots(count, degree, knots);
+        return new BSplineEvaluator(ctrl, null, kn, degree);
+    }
+
+    /**
+     * Returns a polyline whose points are on this curve, including the positions at the knots.
+     */
+    @Override
+    public LineString asLine(final Quantity<?> spacing, final Quantity<?> offset) {
+        if (isEmpty()) {
+            return GeometryFactory.DEFAULT.createLineString(points);
+        }
+        return evaluator().asLine(this, spacing, offset);
+    }
 }

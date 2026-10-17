@@ -16,120 +16,107 @@
  */
 package org.apache.sis.geometries.surface;
 
-import java.util.Objects;
+import java.util.List;
 import static org.opengis.annotation.Specification.ISO_12113;
 import org.opengis.annotation.UML;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
-import org.apache.sis.geometries.BBox;
-import org.apache.sis.geometries.DataPoints;
 import org.apache.sis.geometries.DataPointsType;
 import org.apache.sis.geometries.Geometry;
 import org.apache.sis.geometries.GeometryFactory;
 import org.apache.sis.geometries.GeometryType;
-import org.apache.sis.geometries.internal.shared.AbstractGeometry;
+import org.apache.sis.geometries.Surface;
+import org.apache.sis.geometries.SurfaceInterpolation;
+import org.apache.sis.geometries.internal.shared.DefaultCapsule;
 import org.apache.sis.maths.DataType;
-import org.apache.sis.maths.NDArrays;
+import org.apache.sis.maths.NDRange;
 import org.apache.sis.maths.ReadOnly;
 import org.apache.sis.maths.Vectors;
 import org.apache.sis.maths.Vector;
+import org.opengis.geometry.Envelope;
 
 
 /**
  * A capsule (cylinder with hemispherical ends) defined by two "capping" spheres centered on two
  * positions, with potentially different radii.
  *
+ * <p>Constraints:</p>
+ * <ul>
+ *   <li>The {@linkplain #getDataPoints() data points} hold exactly two positions:
+ *       the center of the bottom sphere, then the center of the top one.</li>
+ * </ul>
  *
  * @author Johann Sorel (Geomatys)
  * @spec ISO_12113 KHR_implicit_shapes extension Capsule
  */
 @UML(identifier="Capsule", specification=ISO_12113)
-public final class Capsule extends AbstractGeometry{
+public sealed interface Capsule extends Surface
+        permits DefaultCapsule
+{
 
     /**
-     * Must contain two points : the center of the bottom sphere, then the center of the top one.
+     * Returns {@link GeometryType#CAPSULE}.
      */
-    private final DataPoints points;
-
-    private double radiusTop = 1.0;
-    private double radiusBottom = 1.0;
-
-    /**
-     * Creates a capsule whose capping spheres are centered on the two given positions.
-     * The reference system of the capsule is the one of those positions.
-     *
-     * @param  bottom  the center of the bottom sphere, not null.
-     * @param  top     the center of the top sphere, not null.
-     */
-    public Capsule(Vector<?> bottom, Vector<?> top) {
-        points = GeometryFactory.DEFAULT.createDataPoints(NDArrays.of(bottom.getSampleSystem(), bottom.getDataType(), 2));
-        points.setPosition(0, bottom);
-        points.setPosition(1, top);
-    }
-
-    /**
-     * Creates a capsule whose capping spheres are centered on the two positions of the given
-     * sequence. The sequence is taken as-is, so the caller may give the capsule the attributes
-     * carried by that sequence.
-     *
-     * @param  points  the centers of the bottom and top spheres, in that order.
-     * @throws IllegalArgumentException if the given sequence does not hold exactly two positions.
-     */
-    public Capsule(DataPoints points) {
-        if (points.size() != 2) {
-            throw new IllegalArgumentException("Capsule sequence must contain two points");
-        }
-        this.points = points;
-    }
-
     @Override
-    public GeometryType getGeometryType() {
+    default GeometryType getGeometryType() {
         return GeometryType.CAPSULE;
     }
 
-    public DataPoints getDataPoints() {
-        return points;
+    /**
+     * Returns {@code false}: a capsule always has its two sphere centers.
+     */
+    @Override
+    default boolean isEmpty() {
+        return false;
+    }
+
+    /**
+     * Returns {@link SurfaceInterpolation#SPHERICAL} for the two hemispherical ends
+     * and {@link SurfaceInterpolation#CONIC} for the band joining them.
+     */
+    @Override
+    default List<SurfaceInterpolation> getInterpolation() {
+        return List.of(SurfaceInterpolation.SPHERICAL, SurfaceInterpolation.CONIC);
     }
 
     /**
      * @return the center of the bottom sphere
      */
-    public ReadOnly.Vector<?> getBottom() {
-        return points.getPosition(0);
-    }
+    ReadOnly.Vector<?> getBottom();
 
     /**
      * @param position new center of the bottom sphere
      */
-    public void setBottom(ReadOnly.Vector<?> position) {
-        points.setPosition(0, position);
-    }
+    void setBottom(ReadOnly.Vector<?> position);
 
     /**
      * @return the center of the top sphere
      */
-    public ReadOnly.Vector<?> getTop() {
-        return points.getPosition(1);
-    }
+    ReadOnly.Vector<?> getTop();
 
     /**
      * @param position new center of the top sphere
      */
-    public void setTop(ReadOnly.Vector<?> position) {
-        points.setPosition(1, position);
-    }
+    void setTop(ReadOnly.Vector<?> position);
 
     /**
-     * Returns the vector going from the center of the bottom sphere to the center of the top one.
-     * It is built on doubles whatever the type of the positions, the direction and the length of
-     * an axis being real values even when the positions they are derived from are integers.
+     * @return capsule top sphere radius
      */
-    private Vector<?> getAxis() {
-        final ReadOnly.Vector<?> bottom = getBottom();
-        final Vector<?> axis = Vectors.create(bottom.getSampleSystem(), DataType.DOUBLE);
-        axis.set(getTop());
-        axis.subtract(bottom);
-        return axis;
-    }
+    double getRadiusTop();
+
+    /**
+     * @param radius new capsule top radius
+     */
+    void setRadiusTop(double radius);
+
+    /**
+     * @return capsule bottom sphere radius
+     */
+    double getRadiusBottom();
+
+    /**
+     * @param radius new capsule bottom radius
+     */
+    void setRadiusBottom(double radius);
 
     /**
      * The height is the length of the axis going from the center of the bottom sphere to the
@@ -138,41 +125,12 @@ public final class Capsule extends AbstractGeometry{
      *
      * @return the capsule height
      */
-    public double getHeight() {
-        return getAxis().length();
-    }
-
-    /**
-     * @return capsule top sphere radius
-     */
-    public double getRadiusTop() {
-        return radiusTop;
-    }
-
-    /**
-     * @param radius new capsule top radius
-     */
-    public void setRadiusTop(double radius) {
-        this.radiusTop = radius;
-    }
-
-    /**
-     * @return capsule bottom sphere radius
-     */
-    public double getRadiusBottom() {
-        return radiusBottom;
-    }
-
-    /**
-     * @param radius new capsule bottom radius
-     */
-    public void setRadiusBottom(double radius) {
-        this.radiusBottom = radius;
-    }
-
-    @Override
-    public boolean isEmpty() {
-        return false;
+    default double getHeight() {
+        final ReadOnly.Vector<?> bottom = getBottom();
+        final Vector<?> axis = Vectors.create(bottom.getSampleSystem(), DataType.DOUBLE);
+        axis.set(getTop());
+        axis.subtract(bottom);
+        return axis.length();
     }
 
     /**
@@ -184,11 +142,13 @@ public final class Capsule extends AbstractGeometry{
      * by the union of the two boxes bounding its spheres.</p>
      */
     @Override
-    public BBox getEnvelope() {
+    default Envelope getEnvelope() {
         final ReadOnly.Vector<?> bottom = getBottom();
         final ReadOnly.Vector<?> top = getTop();
-        final int dim = points.getDimension();
-        final BBox bbox = new BBox(dim);
+        final double radiusBottom = getRadiusBottom();
+        final double radiusTop = getRadiusTop();
+        final int dim = getDataPoints().getDimension();
+        final NDRange bbox = new NDRange(getCoordinateReferenceSystem());
         for (int i=0;i<dim;i++){
             final double b = bottom.get(i);
             final double t = top.get(i);
@@ -198,48 +158,27 @@ public final class Capsule extends AbstractGeometry{
         return bbox;
     }
 
+    /**
+     * Returns the empty geometry: a capsule is a closed surface, so it has no edge.
+     */
     @Override
-    public CoordinateReferenceSystem getCoordinateReferenceSystem() {
-        return points.getCoordinateReferenceSystem();
+    default Geometry getBoundary() {
+        return GeometryFactory.DEFAULT.createEmpty(getCoordinateReferenceSystem());
     }
 
     @Override
-    public Geometry getBoundary() {
-        throw new UnsupportedOperationException("Not supported yet.");
+    default CoordinateReferenceSystem getCoordinateReferenceSystem() {
+        return getDataPoints().getCoordinateReferenceSystem();
     }
 
     @Override
-    public void setCoordinateReferenceSystem(CoordinateReferenceSystem crs) throws IllegalArgumentException {
-        points.setCoordinateReferenceSystem(crs);
+    default void setCoordinateReferenceSystem(CoordinateReferenceSystem crs) throws IllegalArgumentException {
+        getDataPoints().setCoordinateReferenceSystem(crs);
     }
 
     @Override
-    public DataPointsType getDataPointsType() {
-        return points.getType();
+    default DataPointsType getDataPointsType() {
+        return getDataPoints().getType();
     }
 
-    @Override
-    public boolean equals(Object obj) {
-        if (obj == null) {
-            return false;
-        }
-        if (getClass() != obj.getClass()) {
-            return false;
-        }
-        final Capsule other = (Capsule) obj;
-        if (!Objects.equals(this.points, other.points)) {
-            return false;
-        }
-        return Double.doubleToLongBits(this.radiusTop) == Double.doubleToLongBits(other.radiusTop)
-            && Double.doubleToLongBits(this.radiusBottom) == Double.doubleToLongBits(other.radiusBottom);
-    }
-
-    @Override
-    public int hashCode() {
-        int hash = 3;
-        hash = 89 * hash + Objects.hashCode(this.points);
-        hash = 89 * hash + Double.hashCode(this.radiusTop);
-        hash = 89 * hash + Double.hashCode(this.radiusBottom);
-        return hash;
-    }
 }

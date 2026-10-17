@@ -16,7 +16,14 @@
  */
 package org.apache.sis.geometries.curve;
 
+import org.opengis.geometry.Envelope;
+import org.apache.sis.geometries.GeometryFactory;
+import org.apache.sis.maths.Vector;
+import org.apache.sis.maths.Vectors;
+
 // Test dependencies
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.apache.sis.geometries.GeometryTest;
@@ -84,8 +91,12 @@ public class ArcByBulgeTest extends GeometryTest {
     }
 
     @Test
-    @Disabled("Not implemented yet.")
     public void testGetTopologicDimension() {
+        final Vector<?> normal = Vectors.createDouble(2);
+        normal.set(new double[] {0, 1});
+        final ArcByBulge arc = GeometryFactory.DEFAULT.createArcByBulge(
+                GeometryFactory.DEFAULT.createDataPoints(CRS_2D, 0,0, 10,0), 2.0, normal);
+        assertEquals(1, arc.getTopologicDimension());
     }
 
     @Test
@@ -268,9 +279,62 @@ public class ArcByBulgeTest extends GeometryTest {
     public void testGetGeometryType2() {
     }
 
+    /**
+     * Creates a two-dimensional arc and returns its envelope.
+     */
+    private static Envelope envelope(final double x0, final double y0, final double x1, final double y1,
+                                     final double bulge, final double nx, final double ny)
+    {
+        final Vector<?> normal = Vectors.createDouble(2);
+        normal.set(new double[] {nx, ny});
+        return GeometryFactory.DEFAULT.createArcByBulge(
+                GeometryFactory.DEFAULT.createDataPoints(CRS_2D, x0, y0, x1, y1), bulge, normal).getEnvelope();
+    }
+
+    private static void assertEnvelope(final Envelope envelope, final double... bounds) {
+        final int dimension = bounds.length / 2;
+        assertEquals(dimension, envelope.getDimension());
+        for (int i = 0; i < dimension; i++) {
+            assertEquals(bounds[i],             envelope.getMinimum(i), TOLERANCE, "minimum");
+            assertEquals(bounds[i + dimension], envelope.getMaximum(i), TOLERANCE, "maximum");
+        }
+    }
+
     @Test
-    @Disabled("Not implemented yet.")
     public void testGetEnvelope() {
+        // Minor arc: the box of the end points, extended to the top of the arc.
+        assertEnvelope(envelope(0, 0, 10, 0,  2, 0, 1), 0,  0, 10, 2);
+        assertEquals(CRS_2D, envelope(0, 0, 10, 0, 2, 0, 1).getCoordinateReferenceSystem());
+        // A negative bulge bends the arc away from the normal.
+        assertEnvelope(envelope(0, 0, 10, 0, -2, 0, 1), 0, -2, 10, 0);
+        // The normal is neither normalized nor perpendicular to the chord: only its perpendicular part counts.
+        assertEnvelope(envelope(0, 0, 10, 0,  2, 3, 6), 0,  0, 10, 2);
+        // Half circle.
+        assertEnvelope(envelope(0, 0, 10, 0,  5, 0, 1), 0,  0, 10, 5);
+        // Major arc of radius 5.5625 centred on (5, 2.4375): it goes beyond the end points on both sides.
+        assertEnvelope(envelope(0, 0, 10, 0,  8, 0, 1), -0.5625, 0, 10.5625, 8);
+        // Null bulge: a straight segment.
+        assertEnvelope(envelope(0, 0, 10, 0,  0, 0, 1), 0,  0, 10, 0);
+        // Half circle on a diagonal chord, centred on (5, 5).
+        final double r = 5 * Math.sqrt(2);
+        assertEnvelope(envelope(0, 0, 10, 10, r, -1, 1), 5 - r, 0, 10, 5 + r);
+    }
+
+    @Test
+    public void testGetEnvelope3D() {
+        final Vector<?> normal = Vectors.createDouble(3);
+        normal.set(new double[] {0, 0, 1});
+        final ArcByBulge arc = GeometryFactory.DEFAULT.createArcByBulge(
+                GeometryFactory.DEFAULT.createDataPoints(CRS_3D, 0,0,0, 10,0,0), 2.0, normal);
+        assertEnvelope(arc.getEnvelope(), 0, 0, 0, 10, 0, 2);
+    }
+
+    @Test
+    public void testGetEnvelopeUndefinedArc() {
+        // A normal parallel to the chord does not tell which side the arc bulges towards.
+        assertThrows(IllegalStateException.class, () -> envelope(0, 0, 10, 0, 2, 1, 0));
+        // Two identical end points do not determine a circle.
+        assertThrows(IllegalStateException.class, () -> envelope(3, 3, 3, 3, 2, 0, 1));
     }
 
     @Test

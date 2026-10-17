@@ -163,11 +163,11 @@ public abstract class EmptyTest extends GeometryTest {
         final Empty empty = createEmpty(CRS_2D);
         assertEquals(-1, empty.getDimension(null), "Dimension of the whole geometry.");
         /*
-         * TODO: the empty set has no interior position, therefore no position where the dimension
-         * is unambiguous. Replace this check if a value is defined for that case.
+         * The empty set contains no position, so no position has a dimension in it:
+         * −1, as for a position outside the elements of a collection.
          */
         final DirectPosition position = new GeneralDirectPosition(CRS_2D);
-        assertThrows(UnsupportedOperationException.class, () -> empty.getDimension(position));
+        assertEquals(-1, empty.getDimension(position), "Dimension at a position.");
     }
 
     @Test

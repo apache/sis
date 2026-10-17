@@ -16,10 +16,12 @@
  */
 package org.apache.sis.referencing.factory.sql;
 
+import java.util.Map;
 import java.util.Set;
 import java.util.List;
 import java.util.ArrayList;
 import java.util.LinkedHashSet;
+import java.util.LinkedHashMap;
 import java.util.Collection;
 import java.util.Iterator;
 import java.sql.Statement;
@@ -54,6 +56,7 @@ import org.apache.sis.util.collection.Containers;
 import org.apache.sis.util.collection.BackingStoreException;
 import org.apache.sis.pending.jdk.JDK16;
 import org.apache.sis.pending.jdk.JDK19;
+import org.apache.sis.pending.jdk.JDK26;
 import org.apache.sis.metadata.internal.shared.ReferencingServices;
 import org.apache.sis.metadata.iso.citation.Citations;
 import org.apache.sis.referencing.IdentifiedObjects;
@@ -434,20 +437,22 @@ crs:    if (isInstance(CoordinateReferenceSystem.class, object)) {
          * so that buffer shall not contain valuable information yet.
          */
         final var buffer = new StringBuilder(350);     // Temporary buffer for building SQL query.
-        final Set<String> namePatterns;                // Name including aliases.
+        final Map<String, String> namePatterns;        // Name and aliases as keys, LIKE patterns as values.
         final String aliasSQL;
         if (ArraysExt.containsIdentity(filters, Condition.NAME)) {
-            namePatterns = new LinkedHashSet<>();
-            namePatterns.add(toDatumPattern(getName(object), buffer));
-            for (final GenericName id : object.getAlias()) {
-                namePatterns.add(toDatumPattern(id.tip().toString(), buffer));
+            namePatterns = new LinkedHashMap<>();
+            String name = getName(object);
+            namePatterns.put(name, toDatumPattern(name, buffer));
+            for (final GenericName alias : object.getAlias()) {
+                name = alias.tip().toString();
+                namePatterns.put(name, toDatumPattern(name, buffer));
             }
             buffer.setLength(0);
             buffer.append("SELECT OBJECT_CODE FROM \"Alias\" WHERE OBJECT_TABLE_NAME='")
                   .append(dao.translator.toActualTableName(source.table))
                   .append("' AND ");
             // PostgreSQL does not require explicit cast when the value is a literal instead of "?".
-            appendLikeNames(namePatterns, "ALIAS", buffer);
+            appendLikeNames(namePatterns, "ALIAS", dao.translator.supportsCollationInLike, buffer);
             aliasSQL = dao.translator.apply(buffer.toString());
             buffer.setLength(0);
         } else {
@@ -480,9 +485,11 @@ crs:    if (isInstance(CoordinateReferenceSystem.class, object)) {
          */
         try (Statement stmt = dao.connection.createStatement()) {
             if (namePatterns != null) {
-                if (isNext) buffer.append(" AND ");
-                isNext = false;
-                appendLikeNames(namePatterns, source.nameColumn, buffer);
+                if (isNext) {
+                    isNext = false;
+                    buffer.append(" AND ");
+                }
+                appendLikeNames(namePatterns, source.nameColumn, dao.translator.supportsCollationInLike, buffer);
                 try (ResultSet result = stmt.executeQuery(aliasSQL)) {
                     while (result.next()) {
                         final int code = result.getInt(1);
@@ -546,6 +553,15 @@ crs:    if (isInstance(CoordinateReferenceSystem.class, object)) {
      * Note that this rule replaces also the {@code %}, {@code _} and {@code '} characters,
      * thus avoiding the need to escape them.
      *
+     * <p>A trailing {@code '%'} character is added for including datum variants.
+     * For example if the name is <q>Nouvelle Triangulation Française</q>,
+     * we want to find the following:</p>
+     *
+     * <ul>
+     *   <li>EPSG:6275 — Nouvelle Triangulation Française</li>
+     *   <li>EPSG:6807 — Nouvelle Triangulation Française (Paris)</li>
+     * </ul>
+     *
      * <p>This method does not try to address case-insensitive and accent-insensitive searches.
      * This method assumes that the column uses a database collation ignoring cases and accents.
      * This method is used in complement to collation, for adding more flexibility in the punctuations.
@@ -594,18 +610,45 @@ crs:    if (isInstance(CoordinateReferenceSystem.class, object)) {
      *     (<column> LIKE '<pattern>' OR …)
      *     }
      *
+     * Theoretically, using only the above {@code LIKE} conditions should be sufficient.
+     * However, some databases support collations only during comparisons with {@code =}
+     * and ignores collations when using {@code LIKE}. If the databases is known to have
+     * this limitation, the {@code supportsCollationInLike} flag should be {@code false}
+     * for writing all conditions twice: once with {@code =} and once with {@code LIKE}.
+     * This duplication can mitigate the problem, but not fully resolve it.
+     *
      * This method assumes that {@code namePatterns} contains at least one element.
      *
      * @param  namePatterns  the patterns created by {@link #toDatumPattern(String, StringBuilder)}.
      * @param  column        column where the search for the names.
      * @param  buffer        buffer where to add the SQL fragment.
      */
-    private static void appendLikeNames(final Set<String> namePatterns, final String column, final StringBuilder buffer) {
-        String separator = "(";
-        for (final String pattern : namePatterns) {
-            buffer.append(separator).append(column).append(" LIKE '").append(pattern).append('\'');
-            separator = " OR ";
-        }
+    private static void appendLikeNames(final Map<String, String> namePatterns, final String column,
+                                        boolean supportsCollationInLike, final StringBuilder buffer)
+    {
+        buffer.append('(');
+        boolean isNext = false;
+        do {
+            for (final Map.Entry<String, String> entry : namePatterns.entrySet()) {
+                if (isNext) {
+                    buffer.append(" OR ");
+                }
+                String name;
+                String operator = " LIKE ";
+                if (supportsCollationInLike) {
+                    name = entry.getValue();    // LIKE pattern.
+                } else {
+                    name = entry.getKey();      // Original name.
+                    if (name.indexOf('%') < 0 && name.indexOf('_') < 0) {
+                        name += '%';            // On HSQLDB, LIKE works if the wildcard is only at the end.
+                    } else {
+                        operator = " = ";       // Collation does not fully work with LIKE clause on HSQLDB.
+                    }
+                }
+                buffer.append(column).append(operator).append(JDK26.enquoteLiteral(name));
+                isNext = true;
+            }
+        } while ((supportsCollationInLike = !supportsCollationInLike) == true);
         buffer.append(')');
     }
 

@@ -14,7 +14,7 @@ Installation
 ============
 
 For developing applications using the SIS library or for using on command-line,
-the only requirement is Java 11 or later, except the GDAL module which requires
+the only requirement is Java 12 or later, except the GDAL module which requires
 Java 22. For launching the desktop application, requirements are Java 22 or later
 and JavaFX 24 or later.
 

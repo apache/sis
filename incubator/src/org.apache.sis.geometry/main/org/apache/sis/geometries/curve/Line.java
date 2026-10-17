@@ -28,6 +28,9 @@ import org.apache.sis.geometries.DataPoints;
 import org.apache.sis.geometries.GeometryType;
 import org.apache.sis.geometries.Point;
 import org.apache.sis.geometries.DataPointsType;
+import org.apache.sis.geometries.Geometries;
+import org.apache.sis.geometries.internal.shared.CurveLinearizer;
+import org.apache.sis.geometries.internal.shared.Curves;
 import org.apache.sis.geometries.internal.shared.DefaultLine;
 import org.apache.sis.geometries.internal.shared.DefaultLineString;
 import org.apache.sis.maths.Array;
@@ -86,13 +89,27 @@ public sealed interface Line extends Curve
     }
 
     /**
-     * Returns {@code this}, since a line string is already a linear approximation of itself.
+     * Returns a line string with the points of this line, plus points added on its segments if needed
+     * for meeting the spacing. The attributes of the added points are interpolated between the ends of
+     * their segment. The offset is ignored, since the returned line has the shape of this line.
      *
      * @see ISO 19107:2019 - 6.4.18.17
      */
     @Override
     default LineString asLine(Quantity<?> spacing, Quantity<?> offset) {
-        return new DefaultLineString(getDataPoints());
+        return new DefaultLineString(CurveLinearizer.densify(this, getDataPoints(), spacing));
+    }
+
+    /**
+     * Returns the point at the given distance along the segments of this line.
+     * The distance is in the unit of the coordinate system axes, or in percent of the length.
+     *
+     * @return the point at the given distance, or {@code null} if this line is empty.
+     * @throws IllegalArgumentException if the distance is outside this line.
+     */
+    @Override
+    default Point subCurve(Quantity<?> dist) {
+        return Curves.alongPolyline(getDataPoints(), dist, Geometries.getLinearUnit(this));
     }
 
     /**

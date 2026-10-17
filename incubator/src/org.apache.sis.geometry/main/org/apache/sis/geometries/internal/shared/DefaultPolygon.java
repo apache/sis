@@ -22,6 +22,7 @@ import javax.measure.Quantity;
 import org.opengis.geometry.Envelope;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import org.apache.sis.geometries.Curve;
+import org.apache.sis.geometries.DataPoints;
 import org.apache.sis.geometries.Geometries;
 import org.apache.sis.geometries.Geometry;
 import org.apache.sis.geometries.GeometryFactory;
@@ -87,10 +88,20 @@ public non-sealed class DefaultPolygon extends AbstractGeometry implements Polyg
         return getExteriorRing().getEnvelope();
     }
 
+    /**
+     * Returns the area enclosed by the exterior ring minus the areas enclosed by the interior rings.
+     * The area is measured in the plane of the polygon, which may have any orientation in a
+     * 3-dimensional space.
+     *
+     * @see Curves#ringArea(DataPoints)
+     */
     @Override
     public Quantity<?> getArea() {
-        //TODO : fallback on JTS until implemented
-        return Quantities.create(asJTS().getArea(), Geometries.getAreaUnit(this));
+        double area = Curves.ringArea(exterior.getDataPoints());
+        for (final LinearRing interior : interiors) {
+            area -= Curves.ringArea(interior.getDataPoints());
+        }
+        return Quantities.create(area, Geometries.getAreaUnit(this));
     }
 
     @Override

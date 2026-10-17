@@ -269,9 +269,9 @@ public final class Logging {
         /*
          * The message is fetched using Exception.getMessage() instead of getLocalizedMessage()
          * because in a client-server architecture, we want the locale on the server-side instead
-         * than the locale on the client side. See LocalizedException policy.
+         * than the locale on the client side. See the policy documented in the `Exceptions` class.
          */
-        final StringBuilder buffer = new StringBuilder(256).append(Classes.getShortClassName(error));
+        final var buffer = new StringBuilder(256).append(Classes.getShortClassName(error));
         String message = error.getMessage();        // Targeted to system administrators (see above).
         if (message != null) {
             buffer.append(": ").append(message);

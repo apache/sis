@@ -19,6 +19,7 @@ package org.apache.sis.geometries.internal.shared;
 import org.apache.sis.geometries.DataPoints;
 import org.apache.sis.geometries.curve.EllipticArc;
 import org.apache.sis.maths.Array;
+import org.apache.sis.maths.Vector;
 
 
 /**
@@ -40,4 +41,19 @@ public non-sealed class DefaultEllipticArc extends DefaultConic implements Ellip
         super(points, controlPoints, cycle);
     }
 
+    /**
+     * Returns 4: an elliptic arc is determined by four data points.
+     */
+    @Override
+    protected int pointsPerArc() {
+        return 4;
+    }
+
+    /**
+     * Creates the elliptic arc going through the given four data points.
+     */
+    @Override
+    protected DefaultConicArc arc(final Vector<?>[] p) {
+        return new DefaultConicArc(p, true);
+    }
 }

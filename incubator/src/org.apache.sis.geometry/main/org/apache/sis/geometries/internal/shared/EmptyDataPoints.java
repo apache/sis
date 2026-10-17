@@ -25,11 +25,11 @@ import org.apache.sis.maths.Vector;
 
 
 /**
- * A sequence holding no position. This is what a geometry which has no position of its own
- * returns, so that asking any geometry for its positions answers an empty sequence rather
+ * A {@code DataPoints} holding no position. This is what a geometry which has no position of its own
+ * returns, so that asking any geometry for its positions answers an empty {@code DataPoints} rather
  * than failing.
  *
- * <p>Every accessor reports the sequence as empty: there is no index to read from or to write
+ * <p>Every accessor reports the {@code DataPoints} as empty: there is no index to read from or to write
  * to, so this class is modifiable in the same way an empty list is.</p>
  *
  * @author Johann Sorel (Geomatys)
@@ -40,7 +40,7 @@ public final class EmptyDataPoints implements DataPoints {
     private final DataPointsType type;
 
     /**
-     * Creates an empty sequence described by the given attributes.
+     * Creates an empty {@code DataPoints} described by the given attributes.
      *
      * @param  crs   the reference system the absent positions would be expressed in, not null.
      * @param  type  the attributes the absent positions would carry, not null.
@@ -51,7 +51,7 @@ public final class EmptyDataPoints implements DataPoints {
     }
 
     /**
-     * Creates an empty sequence in the given reference system, carrying no attribute.
+     * Creates an empty {@code DataPoints} in the given reference system, carrying no attribute.
      *
      * @param  crs  the reference system the absent positions would be expressed in, not null.
      */

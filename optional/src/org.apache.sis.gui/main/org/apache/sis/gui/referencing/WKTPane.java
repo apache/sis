@@ -72,6 +72,7 @@ final class WKTPane extends StringConverter<Convention> implements ChangeListene
     /**
      * Creates a new pane for showing CRS Well Known Text.
      */
+    @SuppressWarnings("LeakingThisInConstructor")
     WKTPane(final Locale locale) {
         final Convention[] sc = {           // Selected conventions in the order we want them to appear.
             Convention.WKT2_SIMPLIFIED,
@@ -110,11 +111,11 @@ final class WKTPane extends StringConverter<Convention> implements ChangeListene
             case WKT1_COMMON_UNITS: version = "GDAL 1-2"; break;
             default: return c.name();
         }
-        String text = vocabulary.getString(Vocabulary.Keys.Version_2, "WKT (Well Known Text)", version);
+        String label = vocabulary.getString(Vocabulary.Keys.Version_2, "WKT (Well Known Text)", version);
         if (simplified) {
-            text += " — " + vocabulary.getString(Vocabulary.Keys.Simplified);
+            label += " — " + vocabulary.getString(Vocabulary.Keys.Simplified);
         }
-        return text;
+        return label;
     }
 
     /**

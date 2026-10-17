@@ -16,12 +16,18 @@
  */
 package org.apache.sis.geometries.internal.shared;
 
+import javax.measure.Quantity;
 import org.apache.sis.geometries.DataPoints;
+import org.apache.sis.geometries.Geometries;
+import org.apache.sis.geometries.GeometryFactory;
+import org.apache.sis.geometries.Point;
 import org.apache.sis.geometries.curve.Bezier;
 import org.apache.sis.geometries.curve.KnotType;
+import org.apache.sis.geometries.curve.LineString;
 import org.apache.sis.geometries.curve.SplineCurveForm;
 import org.apache.sis.maths.Array;
 import org.apache.sis.maths.Vector;
+import org.apache.sis.measure.Quantities;
 
 
 /**
@@ -55,4 +61,46 @@ public non-sealed class DefaultBezier extends DefaultPolynomialSpline implements
               derivativeAtStart, derivativeAtEnd, Math.max(0, degree - 1));
     }
 
+    /**
+     * Returns the arc length of this curve, integrated in the coordinate space of its control points.
+     */
+    @Override
+    public Quantity<?> getLength() {
+        final double length = isEmpty() ? 0 : evaluator().length();
+        return Quantities.create(length, Geometries.getLinearUnit(this));
+    }
+
+    /**
+     * Returns the point at the given distance along this curve, in the unit of the coordinates or in
+     * percent of the length.
+     */
+    @Override
+    public Point subCurve(final Quantity<?> dist) {
+        if (isEmpty()) {
+            return null;
+        }
+        return evaluator().subCurve(dist, Geometries.getLinearUnit(this));
+    }
+
+    /**
+     * Returns the arc length parameterization of this curve, as the B-spline whose knots of multiplicity
+     * {@code degree} delimit the Bézier pieces. The control points are the data points if no control
+     * point is given.
+     */
+    private BSplineEvaluator evaluator() {
+        final DataPoints ctrl = (controlPoints != null)
+                ? BSplineEvaluator.asDataPoints(controlPoints, getCoordinateReferenceSystem()) : points;
+        return new BSplineEvaluator(ctrl, null, BSplineEvaluator.bezierKnots(ctrl.size(), degree), degree);
+    }
+
+    /**
+     * Returns a polyline whose points are on this curve, including the positions at the knots.
+     */
+    @Override
+    public LineString asLine(final Quantity<?> spacing, final Quantity<?> offset) {
+        if (isEmpty()) {
+            return GeometryFactory.DEFAULT.createLineString(points);
+        }
+        return evaluator().asLine(this, spacing, offset);
+    }
 }

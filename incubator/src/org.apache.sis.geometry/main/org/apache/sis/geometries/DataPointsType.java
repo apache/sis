@@ -84,11 +84,26 @@ public interface DataPointsType {
 
     /**
      * Get how values should be interpolation in geometric operations.
+     * The default implementation returns:
+     *
+     * <ul>
+     *   <li>{@link AttributeInterpolation#LINEAR_NORMALIZED} for the {@linkplain #ATT_NORMAL normal}
+     *       and the {@linkplain #ATT_TANGENT tangent}, which are directions of unit length;</li>
+     *   <li>{@link AttributeInterpolation#LINEAR} for all other attributes, including the
+     *       {@linkplain #ATT_POSITION position}, which is what locates an interpolated point.</li>
+     * </ul>
      *
      * TODO : experimentale but needed
+     *
+     * @param  name  name of the attribute.
+     * @return interpolation of the attribute, never null.
      */
     default AttributeInterpolation getAttributeInterpolation(String name) {
-        return AttributeInterpolation.NEAREST;
+        switch (name) {
+            case ATT_NORMAL:
+            case ATT_TANGENT: return AttributeInterpolation.LINEAR_NORMALIZED;
+            default:          return AttributeInterpolation.LINEAR;
+        }
     }
 
     /**

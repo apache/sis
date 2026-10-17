@@ -19,9 +19,15 @@ package org.apache.sis.geometries.internal.shared;
 import java.util.HashMap;
 import java.util.Map;
 import org.opengis.geometry.Envelope;
+import org.apache.sis.geometries.DataPoints;
 import org.apache.sis.geometries.Geometries;
 import org.apache.sis.geometries.Geometry;
 import org.apache.sis.geometry.GeneralEnvelope;
+import org.apache.sis.maths.Array;
+import org.apache.sis.maths.DataType;
+import org.apache.sis.maths.NDRange;
+import org.apache.sis.maths.Vector;
+import org.apache.sis.maths.Vectors;
 
 
 /**
@@ -89,6 +95,41 @@ public abstract non-sealed class AbstractGeometry implements Geometry {
             union = add(union, geometry);
         }
         return union;
+    }
+
+    /**
+     * Returns the envelope of the given data points and control points, or {@code null} if both are empty.
+     * A spline whose basis functions are a partition of unity, such as a b-spline, stays inside the convex
+     * hull of its control points, so the returned envelope contains it.
+     *
+     * @param  points         data points of the spline, or {@code null} if none.
+     * @param  controlPoints  the control points, or {@code null} if none.
+     * @param  homogeneous    whether the control points have one more coordinate than the reference system,
+     *                        the weight by which the other coordinates are divided. Weights are assumed positive.
+     * @return envelope of the data points and of the control points, or {@code null} if there is none.
+     */
+    protected static Envelope controlHullEnvelope(final DataPoints points, final Array controlPoints,
+                                                  final boolean homogeneous)
+    {
+        NDRange envelope = (points == null || points.isEmpty()) ? null : new NDRange(points.getEnvelope());
+        final long n = (controlPoints != null) ? controlPoints.getLength() : 0;
+        for (long i = 0; i < n; i++) {
+            Vector<?> position = controlPoints.get(i);
+            if (homogeneous) {
+                final int dimension = position.getDimension() - 1;
+                final double weight = position.get(dimension);
+                position = Vectors.createDouble(dimension).set(position).scale(1 / weight);
+            }
+            if (envelope == null) {
+                final Vector<?> start = (points != null)
+                        ? Vectors.create(points.getCoordinateReferenceSystem(), DataType.DOUBLE).set(position)
+                        : position.copy(DataType.DOUBLE);
+                envelope = new NDRange(start, start);
+            } else {
+                envelope.add(position);
+            }
+        }
+        return envelope;
     }
 
     /**

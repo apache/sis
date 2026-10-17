@@ -17,6 +17,7 @@
 package org.apache.sis.geometries;
 
 // Test dependencies
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 
@@ -43,8 +44,13 @@ public class GeometryCollectionTest extends GeometryTest {
     }
 
     @Test
-    @Disabled("Not implemented yet.")
     public void testGetTopologicDimension() {
+        final Geometry point = GeometryFactory.DEFAULT.createPoint(CRS_2D, 1, 2);
+        final Geometry line  = GeometryFactory.DEFAULT.createLineString(
+                GeometryFactory.DEFAULT.createDataPoints(CRS_2D, 0,0, 10,0));
+        final GeometryCollection<Geometry> collection = GeometryFactory.DEFAULT.createGeometryCollection(CRS_2D, point, line);
+        assertEquals(1, collection.getTopologicDimension(),
+                     "The topological dimension of a collection is the maximum of the dimensions of its elements.");
     }
 
     @Test

@@ -16,7 +16,11 @@
  */
 package org.apache.sis.geometries.curve;
 
+import org.opengis.geometry.Envelope;
+import org.apache.sis.geometries.GeometryFactory;
+
 // Test dependencies
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.apache.sis.geometries.GeometryTest;
@@ -74,8 +78,10 @@ public class CircularStringTest extends GeometryTest {
     }
 
     @Test
-    @Disabled("Not implemented yet.")
     public void testGetTopologicDimension() {
+        final CircularString arc = GeometryFactory.DEFAULT.createCircularString(
+                GeometryFactory.DEFAULT.createDataPoints(CRS_2D, 0,0, 5,5, 10,0, 5,-5, 0,0));
+        assertEquals(1, arc.getTopologicDimension());
     }
 
     @Test
@@ -263,9 +269,51 @@ public class CircularStringTest extends GeometryTest {
     public void testGetGeometryType2() {
     }
 
+    /**
+     * Creates a two-dimensional circular string and returns its envelope.
+     */
+    private static Envelope envelope(final double... coordinates) {
+        return GeometryFactory.DEFAULT.createCircularString(
+                GeometryFactory.DEFAULT.createDataPoints(CRS_2D, coordinates)).getEnvelope();
+    }
+
+    private static void assertEnvelope(final Envelope envelope, final double... bounds) {
+        final int dimension = bounds.length / 2;
+        assertEquals(dimension, envelope.getDimension());
+        for (int i = 0; i < dimension; i++) {
+            assertEquals(bounds[i],             envelope.getMinimum(i), TOLERANCE, "minimum");
+            assertEquals(bounds[i + dimension], envelope.getMaximum(i), TOLERANCE, "maximum");
+        }
+    }
+
     @Test
-    @Disabled("Not implemented yet.")
     public void testGetEnvelope() {
+        // Half circle centred on (5, 0).
+        assertEnvelope(envelope(0,0, 5,5, 10,0), 0, 0, 10, 5);
+        assertEquals(CRS_2D, envelope(0,0, 5,5, 10,0).getCoordinateReferenceSystem());
+        // Minor arc: the box of the points, the middle point being the top of the arc.
+        assertEnvelope(envelope(0,0, 5,2, 10,0), 0, 0, 10, 2);
+        // Major arc of radius 5.5625 centred on (5, 2.4375): it goes beyond the end points on both sides.
+        assertEnvelope(envelope(0,0, 5,8, 10,0), -0.5625, 0, 10.5625, 8);
+        // Arc of the circle of radius 5 centred on (0, 0), from 0° to about 233° counter-clockwise.
+        // The middle point is not where the arc is the furthest from the chord.
+        assertEnvelope(envelope(5,0, 0,5, -3,-4), -5, -4, 5, 5);
+        // Same arc in the other direction.
+        assertEnvelope(envelope(-3,-4, 0,5, 5,0), -5, -4, 5, 5);
+        // Two arcs making a full circle.
+        assertEnvelope(envelope(0,0, 5,5, 10,0, 5,-5, 0,0), 0, -5, 10, 5);
+        // Collinear points: a straight segment.
+        assertEnvelope(envelope(0,0, 5,0, 10,0), 0, 0, 10, 0);
+        // Identical start and end points: a full circle whose diameter goes from them to the middle point.
+        assertEnvelope(envelope(0,0, 10,0, 0,0), 0, -5, 10, 5);
+    }
+
+    @Test
+    public void testGetEnvelope3D() {
+        // Half circle in the plane of the first and third axes.
+        final CircularString arc = GeometryFactory.DEFAULT.createCircularString(
+                GeometryFactory.DEFAULT.createDataPoints(CRS_3D, 0,0,0, 5,0,5, 10,0,0));
+        assertEnvelope(arc.getEnvelope(), 0, 0, 0, 10, 0, 5);
     }
 
     @Test

@@ -16,20 +16,21 @@
  */
 package org.apache.sis.geometries;
 
-import java.util.Set;
+import javax.measure.Quantity;
 import static org.opengis.annotation.Specification.ISO_19107;
 import org.opengis.annotation.UML;
+import org.opengis.geometry.DirectPosition;
 import org.opengis.geometry.Envelope;
-import org.apache.sis.geometries.curve.MultiCurve;
 import org.apache.sis.geometries.curve.ProductCurve;
 import org.apache.sis.geometries.internal.shared.ConcatenatedDataPoints;
 import org.apache.sis.geometries.internal.shared.DefaultGeometryCollection;
+import org.apache.sis.geometries.internal.shared.DefaultMultiPoint;
 import org.apache.sis.geometries.internal.shared.EmptyDataPoints;
+import org.apache.sis.geometries.mesh.MeshPrimitive;
 import org.apache.sis.geometries.mesh.MultiMeshPrimitive;
-import org.apache.sis.geometries.point.MultiPoint;
-import org.apache.sis.geometries.solid.MultiPolyhedron;
-import org.apache.sis.geometries.surface.MultiSurface;
 import org.apache.sis.geometry.GeneralEnvelope;
+import org.apache.sis.measure.Quantities;
+import org.apache.sis.measure.Units;
 
 
 /**
@@ -51,6 +52,24 @@ import org.apache.sis.geometry.GeneralEnvelope;
  * implementation which needs a genuine set of sets should use a plain array of geometries instead
  * of this interface.</p>
  *
+ * Deviation from OGC-SFA :<br>
+ * <ul>
+ *   <li>OGC-SFA defines several sub types of GeometryCollection, like MultiCurve, MultiSurface, MultiLineString, MultiPolygon, MultiPoint.
+ *   The subtypes defined : getLength, isClosed(), getArea().
+ *   Since ISO-19107:2019 covers a much larger scope of geometry, creating a subtype for each would duplicate the number of interfaces.
+ *   ISO-19107:2019 decided instead to have a single GeometryCollection and add a getElementType restricting the possible content
+ *   of the collection. The methods from OGC SFA are then moved on GeometryCollection but will raise an error if the collection element type
+ *   is not applicable.
+ *   </li>
+ * </ul>
+ * Deviation from ISO-19107 :<br>
+ * <ul>
+ *   <li>The returned type of getElementType() is expected to be a Set in ISO 19107, to make it more natural in Java and the Generics
+ *   this Set has been reduced to a single element, which must be the first common parent.
+ *   No use cases has arised to require this limitation to be redefined as a Set.
+ *   </li>
+ * </ul>
+ *
  * @param  <T>  type of the elements of this collection.
  *
  * @author Johann Sorel (Geomatys)
@@ -60,19 +79,24 @@ import org.apache.sis.geometry.GeneralEnvelope;
  */
 @UML(identifier="Collection", specification=ISO_19107)
 public sealed interface GeometryCollection<T extends Geometry> extends Geometry
-        permits MultiPoint,
-                MultiCurve,
-                MultiSurface,
-                MultiPolyhedron,
-                ProductCurve,
+        permits ProductCurve,
+                DefaultMultiPoint,
                 DefaultGeometryCollection,
-                MultiMeshPrimitive
+                MultiMeshPrimitive,
+                MeshPrimitive.Abs.Points,
+                MeshPrimitive.Abs.Lines
 {
 
     /**
      * Well-known text keyword of this geometry type.
      */
     static final String TYPE = "GEOMETRYCOLLECTION";
+    static final String TYPE_MULTICURVE = "MULTICURVE";
+    static final String TYPE_MULTILINESTRING = "MULTILINESTRING";
+    static final String TYPE_MULTISURFACE = "MULTISURFACE";
+    static final String TYPE_MULTIPOLYGON = "MULTIPOLYGON";
+    static final String TYPE_MULTIPOINT = "MULTIPOINT";
+    static final String TYPE_MULTIPOLYHEDRON = "MULTIPOLYHEDRON";
 
     /**
      * Returns {@link GeometryType#COLLECTION}.
@@ -96,12 +120,19 @@ public sealed interface GeometryCollection<T extends Geometry> extends Geometry
      *       restricts the allowed types.</li>
      * </ul>
      *
-     * @return geometry types allowed in this collection.
+     * Deviation from ISO-19107 :<br>
+     * <ul>
+     *   <li>The returned type is expected to be a Set in ISO 19107, to make it more natural in Java and the Generics
+     *   this Set has been reduced to a single element, which must be the first common parent.
+     *   </li>
+     * </ul>
+     *
+     * @return geometry type allowed in this collection.
      *
      * @see ISO 19107:2019 - 6.4.31.2
      */
     @UML(identifier="elementType", specification=ISO_19107)
-    Set<GeometryType> getElementType();
+    GeometryType getElementType();
 
     /**
      * Returns whether this collection has no element.
@@ -111,6 +142,45 @@ public sealed interface GeometryCollection<T extends Geometry> extends Geometry
     @Override
     default boolean isEmpty() {
         return getNumGeometries() == 0;
+    }
+
+    /**
+     * Returns the largest topological dimension among the elements of this collection which contain
+     * the given position, or −1 if none of them contains it. If the given position is null, returns
+     * the {@linkplain #getTopologicDimension() largest dimension} among all elements.
+     *
+     * <p>Containment is tested with {@link Geometry#intersects(Geometry)}, which may be unsupported
+     * for some element types.</p>
+     *
+     * @param  point  position where to evaluate the dimension, or null for the whole collection.
+     * @return topological dimension at the given position.
+     *
+     * @see ISO 19107:2019 - 6.4.4.25
+     */
+    @Override
+    default int getDimension(DirectPosition point) {
+        if (point == null) {
+            return getTopologicDimension();
+        }
+        Point position = null;
+        int dimension = -1;
+        for (int i = 0, n = getNumGeometries(); i < n; i++) {
+            final Geometry element = getGeometryN(i);
+            if (element.getTopologicDimension() <= dimension) {
+                continue;       // Cannot increase the result, no need to test containment.
+            }
+            if (element instanceof GeometryCollection<?> aggregate) {
+                dimension = Math.max(dimension, aggregate.getDimension(point));
+            } else {
+                if (position == null) {
+                    position = GeometryFactory.DEFAULT.createPoint(getCoordinateReferenceSystem(), point.getCoordinates());
+                }
+                if (element.intersects(position)) {
+                    dimension = element.getTopologicDimension();
+                }
+            }
+        }
+        return dimension;
     }
 
     /**
@@ -202,6 +272,86 @@ public sealed interface GeometryCollection<T extends Geometry> extends Geometry
             elements[i] = getGeometryN(i);
         }
         return ConcatenatedDataPoints.of(elements);
+    }
+
+    /**
+     * Returns TRUE if this MultiCurve is closed [StartPoint () = EndPoint () for each Curve in this MultiCurve].
+     *
+     * Can be called only if collection element type is made of Curve.
+     *
+     * @see OGC Simple Feature Access 1.2.1 - 6.1.8.2
+     * @return true if multicurve is closed.
+     */
+    default boolean isClosed() {
+        if (!GeometryType.CURVE.isAssignableFrom(getElementType())) {
+            throw new IllegalArgumentException("Collection must be composed of " + GeometryType.CURVE + " to call this method.");
+        }
+        for (int i = 0, n = getNumGeometries(); i < n; i++) {
+            if (!((Curve) getGeometryN(i)).isClosed()) {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    /**
+     * The Length of this MultiCurve which is equal to the sum of the lengths of the element Curves.
+     * The unit of measurement is the one of the first element,
+     * or dimensionless if this MultiCurve has no element.
+     *
+     * Can be called only if collection element type is made of Curve.
+     *
+     * @see OGC Simple Feature Access 1.2.1 - 6.1.8.2
+     * @return length of the multicurve.
+     */
+    default Quantity<?> getLength() {
+        if (!GeometryType.CURVE.isAssignableFrom(getElementType())) {
+            throw new IllegalArgumentException("Collection must be composed of " + GeometryType.CURVE + " to call this method.");
+        }
+        final int n = getNumGeometries();
+        if (n == 0) {
+            return Quantities.create(0, Units.UNITY);
+        }
+        Quantity<?> length = ((Curve) getGeometryN(0)).getLength();
+        for (int i = 1; i < n; i++) {
+            length = Geometries.add(length, ((Curve)getGeometryN(i)).getLength());
+        }
+        return length;
+    }
+
+    /**
+     * The area of this MultiSurface, as measured in the spatial reference system of this MultiSurface.
+     * The unit of measurement is the one of the first element,
+     * or dimensionless if this MultiSurface has no element.
+     *
+     * Can be called only if collection element type is made of Surface.
+     *
+     * @see OGC Simple Feature Access 1.2.1 - 6.1.13.2
+     * @return area of the surface.
+     */
+    default Quantity<?> getArea() {
+        if (!GeometryType.SURFACE.isAssignableFrom(getElementType())) {
+            throw new IllegalArgumentException("Collection must be composed of " + GeometryType.SURFACE + " to call this method.");
+        }
+        final int n = getNumGeometries();
+        if (n == 0) {
+            return Quantities.create(0, Units.UNITY);
+        }
+        Quantity<?> area = ((Surface)getGeometryN(0)).getArea();
+        for (int i = 1; i < n; i++) {
+            area = Geometries.add(area,  ((Surface)getGeometryN(i)).getArea());
+        }
+        return area;
+    }
+
+    /**
+     * A Point guaranteed to be on this MultiSurface.
+     *
+     * @see OGC Simple Feature Access 1.2.1 - 6.1.13.2
+     * @return point guaranteed to be on this MultiSurface.
+     */
+    default Point getPointOnSurface() {
+        return getRepresentativePoint();
     }
 
 }

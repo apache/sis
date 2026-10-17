@@ -25,15 +25,11 @@ import org.apache.sis.geometries.GeometryCollection;
 import org.apache.sis.geometries.GeometryFactory;
 import org.apache.sis.geometries.Point;
 import org.apache.sis.geometries.DataPointsType;
+import org.apache.sis.geometries.GeometryType;
 import org.apache.sis.geometries.curve.CircularString;
 import org.apache.sis.geometries.curve.CompoundCurve;
 import org.apache.sis.geometries.curve.LineString;
-import org.apache.sis.geometries.curve.MultiCurve;
-import org.apache.sis.geometries.curve.MultiLineString;
-import org.apache.sis.geometries.point.MultiPoint;
 import org.apache.sis.geometries.surface.CurvePolygon;
-import org.apache.sis.geometries.surface.MultiPolygon;
-import org.apache.sis.geometries.surface.MultiSurface;
 import org.apache.sis.geometries.surface.Polygon;
 import org.apache.sis.geometries.surface.PolyhedralSurface;
 import org.apache.sis.geometries.surface.TIN;
@@ -71,9 +67,13 @@ public final class WellKnownTextTest {
      * that geometry gives the text back. Every text given here is in the canonical form the
      * encoder writes, so the round trip is an equality and not merely an equivalence.
      */
-    private void assertRoundTrip(final Class<? extends Geometry> type, final String text) {
+    private void assertRoundTrip(final Class<? extends Geometry> type, GeometryType elementType, final String text) {
         final Geometry geometry = wkt.decode(text);
         assertInstanceOf(type, geometry, text);
+        if (elementType != null) {
+            GeometryCollection col = (GeometryCollection) geometry;
+            assertEquals(elementType, col.getElementType());
+        }
         assertEquals(text, wkt.encode(geometry), "Round trip of " + text);
         assertEquals(text, geometry.asText(), "Geometry.asText() of " + text);
     }
@@ -83,17 +83,17 @@ public final class WellKnownTextTest {
      */
     @Test
     public void testRoundTrip2D() {
-        assertRoundTrip(Point.class,              "POINT (1 2)");
-        assertRoundTrip(LineString.class,         "LINESTRING (0 0, 1 1, 2 0)");
-        assertRoundTrip(CircularString.class,     "CIRCULARSTRING (0 0, 1 1, 2 0)");
-        assertRoundTrip(CompoundCurve.class,      "COMPOUNDCURVE ((0 0, 1 1), CIRCULARSTRING (1 1, 2 2, 3 1))");
-        assertRoundTrip(Polygon.class,            "POLYGON ((0 0, 4 0, 4 4, 0 4, 0 0), (1 1, 2 1, 2 2, 1 2, 1 1))");
-        assertRoundTrip(Triangle.class,           "TRIANGLE ((0 0, 1 0, 0 1, 0 0))");
-        assertRoundTrip(CurvePolygon.class,       "CURVEPOLYGON (CIRCULARSTRING (0 0, 2 0, 2 2, 0 2, 0 0))");
-        assertRoundTrip(MultiPoint.class,         "MULTIPOINT ((1 2), (3 4))");
-        assertRoundTrip(MultiLineString.class,    "MULTILINESTRING ((0 0, 1 1), (2 2, 3 3))");
-        assertRoundTrip(MultiPolygon.class,       "MULTIPOLYGON (((0 0, 1 0, 1 1, 0 0)), ((2 2, 3 2, 3 3, 2 2)))");
-        assertRoundTrip(GeometryCollection.class, "GEOMETRYCOLLECTION (POINT (1 2), LINESTRING (0 0, 1 1))");
+        assertRoundTrip(Point.class,              null, "POINT (1 2)");
+        assertRoundTrip(LineString.class,         null, "LINESTRING (0 0, 1 1, 2 0)");
+        assertRoundTrip(CircularString.class,     null, "CIRCULARSTRING (0 0, 1 1, 2 0)");
+        assertRoundTrip(CompoundCurve.class,      null, "COMPOUNDCURVE ((0 0, 1 1), CIRCULARSTRING (1 1, 2 2, 3 1))");
+        assertRoundTrip(Polygon.class,            null, "POLYGON ((0 0, 4 0, 4 4, 0 4, 0 0), (1 1, 2 1, 2 2, 1 2, 1 1))");
+        assertRoundTrip(Triangle.class,           null, "TRIANGLE ((0 0, 1 0, 0 1, 0 0))");
+        assertRoundTrip(CurvePolygon.class,       null, "CURVEPOLYGON (CIRCULARSTRING (0 0, 2 0, 2 2, 0 2, 0 0))");
+        assertRoundTrip(GeometryCollection.class, GeometryType.POINT, "MULTIPOINT ((1 2), (3 4))");
+        assertRoundTrip(GeometryCollection.class, GeometryType.LINESTRING, "MULTILINESTRING ((0 0, 1 1), (2 2, 3 3))");
+        assertRoundTrip(GeometryCollection.class, GeometryType.POLYGON, "MULTIPOLYGON (((0 0, 1 0, 1 1, 0 0)), ((2 2, 3 2, 3 3, 2 2)))");
+        assertRoundTrip(GeometryCollection.class, GeometryType.GEOMETRY, "GEOMETRYCOLLECTION (POINT (1 2), LINESTRING (0 0, 1 1))");
     }
 
     /**
@@ -102,14 +102,10 @@ public final class WellKnownTextTest {
      */
     @Test
     public void testRoundTripCurvedAndPatches() {
-        assertRoundTrip(MultiCurve.class,
-                "MULTICURVE (LINESTRING (0 0, 1 1), CIRCULARSTRING (1 1, 2 2, 3 1))");
-        assertRoundTrip(MultiSurface.class,
-                "MULTISURFACE (POLYGON ((0 0, 1 0, 1 1, 0 0)), CURVEPOLYGON (CIRCULARSTRING (0 0, 2 0, 2 2, 0 2, 0 0)))");
-        assertRoundTrip(PolyhedralSurface.class,
-                "POLYHEDRALSURFACE Z (((0 0 0, 1 0 0, 1 1 0, 0 0 0)), ((0 0 0, 1 1 0, 0 1 0, 0 0 0)))");
-        assertRoundTrip(TIN.class,
-                "TIN Z (((0 0 0, 1 0 0, 1 1 0, 0 0 0)), ((0 0 0, 1 1 0, 0 1 0, 0 0 0)))");
+        assertRoundTrip(GeometryCollection.class, GeometryType.CURVE, "MULTICURVE (LINESTRING (0 0, 1 1), CIRCULARSTRING (1 1, 2 2, 3 1))");
+        assertRoundTrip(GeometryCollection.class, GeometryType.SURFACE, "MULTISURFACE (POLYGON ((0 0, 1 0, 1 1, 0 0)), CURVEPOLYGON (CIRCULARSTRING (0 0, 2 0, 2 2, 0 2, 0 0)))");
+        assertRoundTrip(PolyhedralSurface.class, null, "POLYHEDRALSURFACE Z (((0 0 0, 1 0 0, 1 1 0, 0 0 0)), ((0 0 0, 1 1 0, 0 1 0, 0 0 0)))");
+        assertRoundTrip(TIN.class, null,  "TIN Z (((0 0 0, 1 0 0, 1 1 0, 0 0 0)), ((0 0 0, 1 1 0, 0 1 0, 0 0 0)))");
     }
 
     /**
@@ -117,19 +113,19 @@ public final class WellKnownTextTest {
      */
     @Test
     public void testDimensionFlags() {
-        assertRoundTrip(Point.class,      "POINT Z (1 2 3)");
-        assertRoundTrip(Point.class,      "POINT M (1 2 3)");
-        assertRoundTrip(Point.class,      "POINT ZM (1 2 3 4)");
-        assertRoundTrip(LineString.class, "LINESTRING Z (0 0 0, 1 1 1)");
-        assertRoundTrip(LineString.class, "LINESTRING M (0 0 5, 1 1 6)");
-        assertRoundTrip(LineString.class, "LINESTRING ZM (0 0 0 5, 1 1 1 6)");
-        assertRoundTrip(MultiPoint.class, "MULTIPOINT ZM ((1 2 3 4), (5 6 7 8))");
-        assertRoundTrip(Polygon.class,    "POLYGON Z ((0 0 0, 1 0 0, 1 1 0, 0 0 0))");
+        assertRoundTrip(Point.class,      null, "POINT Z (1 2 3)");
+        assertRoundTrip(Point.class,      null, "POINT M (1 2 3)");
+        assertRoundTrip(Point.class,      null, "POINT ZM (1 2 3 4)");
+        assertRoundTrip(LineString.class, null, "LINESTRING Z (0 0 0, 1 1 1)");
+        assertRoundTrip(LineString.class, null, "LINESTRING M (0 0 5, 1 1 6)");
+        assertRoundTrip(LineString.class, null, "LINESTRING ZM (0 0 0 5, 1 1 1 6)");
+        assertRoundTrip(GeometryCollection.class, GeometryType.POINT, "MULTIPOINT ZM ((1 2 3 4), (5 6 7 8))");
+        assertRoundTrip(Polygon.class,    null, "POLYGON Z ((0 0 0, 1 0 0, 1 1 0, 0 0 0))");
         /*
          * A geometry collection repeats the flag on each of its members, since each member
          * carries its own keyword.
          */
-        assertRoundTrip(GeometryCollection.class, "GEOMETRYCOLLECTION Z (POINT Z (1 2 3))");
+        assertRoundTrip(GeometryCollection.class, GeometryType.GEOMETRY, "GEOMETRYCOLLECTION Z (POINT Z (1 2 3))");
     }
 
     /**
@@ -159,17 +155,17 @@ public final class WellKnownTextTest {
      */
     @Test
     public void testEmpty() {
-        assertRoundTrip(LineString.class,         "LINESTRING EMPTY");
-        assertRoundTrip(CircularString.class,     "CIRCULARSTRING EMPTY");
-        assertRoundTrip(CompoundCurve.class,      "COMPOUNDCURVE EMPTY");
-        assertRoundTrip(Polygon.class,            "POLYGON EMPTY");
-        assertRoundTrip(Triangle.class,           "TRIANGLE EMPTY");
-        assertRoundTrip(CurvePolygon.class,       "CURVEPOLYGON EMPTY");
-        assertRoundTrip(TIN.class,                "TIN EMPTY");
-        assertRoundTrip(MultiPoint.class,         "MULTIPOINT EMPTY");
-        assertRoundTrip(MultiLineString.class,    "MULTILINESTRING EMPTY");
-        assertRoundTrip(MultiPolygon.class,       "MULTIPOLYGON EMPTY");
-        assertRoundTrip(GeometryCollection.class, "GEOMETRYCOLLECTION EMPTY");
+        assertRoundTrip(LineString.class,         null, "LINESTRING EMPTY");
+        assertRoundTrip(CircularString.class,     null, "CIRCULARSTRING EMPTY");
+        assertRoundTrip(CompoundCurve.class,      null, "COMPOUNDCURVE EMPTY");
+        assertRoundTrip(Polygon.class,            null, "POLYGON EMPTY");
+        assertRoundTrip(Triangle.class,           null, "TRIANGLE EMPTY");
+        assertRoundTrip(CurvePolygon.class,       null, "CURVEPOLYGON EMPTY");
+        assertRoundTrip(TIN.class,                null, "TIN EMPTY");
+        assertRoundTrip(GeometryCollection.class, GeometryType.POINT, "MULTIPOINT EMPTY");
+        assertRoundTrip(GeometryCollection.class, GeometryType.LINESTRING, "MULTILINESTRING EMPTY");
+        assertRoundTrip(GeometryCollection.class, GeometryType.POLYGON, "MULTIPOLYGON EMPTY");
+        assertRoundTrip(GeometryCollection.class, GeometryType.GEOMETRY, "GEOMETRYCOLLECTION EMPTY");
     }
 
     /**

@@ -16,6 +16,7 @@
  */
 package org.apache.sis.geometries.point;
 
+import org.apache.sis.geometries.GeometryCollection;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import org.apache.sis.geometries.Point;
 
@@ -52,7 +53,7 @@ public abstract class MultiPointTest extends GeometryTest {
      * @param  coordinates  the coordinates of the positions, in the axis order of the given system.
      * @return a new set holding the given positions, never null.
      */
-    protected abstract MultiPoint<?> createMultiPoint(CoordinateReferenceSystem crs, double... coordinates);
+    protected abstract GeometryCollection<Point> createMultiPoint(CoordinateReferenceSystem crs, double... coordinates);
 
     @Test
     @Disabled("Not implemented yet.")

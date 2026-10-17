@@ -16,13 +16,14 @@
  */
 package org.apache.sis.geometries.internal.shared;
 
-import java.util.Set;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import org.apache.sis.geometries.Geometry;
 import org.apache.sis.geometries.GeometryCollection;
 import org.apache.sis.geometries.GeometryFactory;
 import org.apache.sis.geometries.GeometryType;
 import org.apache.sis.geometries.Point;
+import org.apache.sis.geometries.Geometries;
+import org.apache.sis.util.ArgumentChecks;
 
 
 /**
@@ -37,7 +38,7 @@ public non-sealed class DefaultGeometryCollection<T extends Geometry> extends Ab
     /**
      * The coordinate reference system to report when this collection is empty.
      * Ignored when at least one geometry is present, in which case the first
-     * geometry is authoritative. May be {@code null}.
+     * geometry is authoritative. Never null.
      */
     private CoordinateReferenceSystem fallbackCRS;
 
@@ -52,12 +53,12 @@ public non-sealed class DefaultGeometryCollection<T extends Geometry> extends Ab
     public DefaultGeometryCollection(GeometryType elementType, CoordinateReferenceSystem fallbackCRS, T[] geometries) {
         this.elementType = elementType;
         this.geometries  = geometries;
-        this.fallbackCRS = fallbackCRS;
+        this.fallbackCRS = (fallbackCRS != null) ? fallbackCRS : Geometries.getUndefinedCRS(2);
     }
 
     @Override
-    public Set<GeometryType> getElementType() {
-        return Set.of(elementType);
+    public GeometryType getElementType() {
+        return elementType;
     }
 
     @Override
@@ -67,6 +68,7 @@ public non-sealed class DefaultGeometryCollection<T extends Geometry> extends Ab
 
     @Override
     public void setCoordinateReferenceSystem(CoordinateReferenceSystem crs) throws IllegalArgumentException {
+        ArgumentChecks.ensureNonNull("crs", crs);
         fallbackCRS = crs;
         for (T c : geometries) {
             c.setCoordinateReferenceSystem(crs);

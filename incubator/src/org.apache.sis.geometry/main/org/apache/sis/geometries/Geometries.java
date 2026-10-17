@@ -54,6 +54,7 @@ import org.apache.sis.geometry.wrapper.jts.JTS;
 import org.apache.sis.maths.Array;
 import org.apache.sis.maths.Matrix3D;
 import org.apache.sis.maths.NDArrays;
+import org.apache.sis.maths.NDRange;
 import org.apache.sis.maths.SampleSystem;
 import org.apache.sis.maths.Vector3D;
 import org.apache.sis.maths.Vectors;
@@ -128,6 +129,19 @@ public final class Geometries {
      * X(right), Y(forward), Z(up)
      */
     public static final CoordinateReferenceSystem PSEUDOGEO_3D = createCartesianCRS3D(X_RIGHT, Y_FORWARD, Z_UP);
+
+    /**
+     * Returns the given reference system, or the undefined reference system of the given dimension
+     * if the given one is null. The reference system of a geometry is never null, so this method is
+     * used by geometries built on coordinates which may carry no reference system.
+     *
+     * @param  crs        the reference system, or {@code null}.
+     * @param  dimension  number of dimensions of the undefined reference system to use if {@code crs} is null.
+     * @return the given reference system, or an undefined one if {@code null}.
+     */
+    public static CoordinateReferenceSystem orUndefinedCRS(final CoordinateReferenceSystem crs, final int dimension) {
+        return (crs != null) ? crs : getUndefinedCRS(dimension);
+    }
 
     /**
      * Get an undefined CRS whic cannot be converted to any other CRS.
@@ -249,8 +263,9 @@ public final class Geometries {
 
     public static MeshPrimitive createBox(Envelope geom) {
 
-        final Vector lower = Vectors.castOrCopy(geom.getLowerCorner());
-        final Vector upper = Vectors.castOrCopy(geom.getUpperCorner());
+        final var box = new NDRange(geom);
+        final Vector lower = box.getLower();
+        final Vector upper = box.getUpper();
 
         final int dim = lower.getDimension();
 
@@ -703,8 +718,7 @@ public final class Geometries {
      * {@linkplain Surface#getPerimeter() perimeter}, are expressed.
      *
      * @param  geom  the geometry from which to get the coordinate unit.
-     * @return unit of the first coordinate system axis, or {@link Units#UNITY} if the geometry
-     *         has no coordinate reference system.
+     * @return unit of the first coordinate system axis.
      */
     @SuppressWarnings("rawtypes")
     public static Unit getLinearUnit(final Geometry geom) {
@@ -716,8 +730,8 @@ public final class Geometries {
      * geometry is expressed, as the product of the units of the two first coordinate system axes.
      *
      * @param  geom  the geometry from which to get the area unit.
-     * @return product of the units of the two first axes, or {@link Units#UNITY} if the geometry
-     *         has no coordinate reference system or if that system is not at least 2-dimensional.
+     * @return product of the units of the two first axes, or {@link Units#UNITY} if the
+     *         coordinate reference system is not at least 2-dimensional.
      */
     @SuppressWarnings("rawtypes")
     public static Unit getAreaUnit(final Geometry geom) {
@@ -729,8 +743,8 @@ public final class Geometries {
      * geometry is expressed, as the product of the units of the three first coordinate system axes.
      *
      * @param  geom  the geometry from which to get the volume unit.
-     * @return product of the units of the three first axes, or {@link Units#UNITY} if the geometry
-     *         has no coordinate reference system or if that system is not at least 3-dimensional.
+     * @return product of the units of the three first axes, or {@link Units#UNITY} if the
+     *         coordinate reference system is not at least 3-dimensional.
      */
     @SuppressWarnings("rawtypes")
     public static Unit getVolumeUnit(final Geometry geom) {
@@ -745,15 +759,11 @@ public final class Geometries {
      * @param  geom  the geometry from which to get the units.
      * @param  n     number of leading axes to multiply.
      * @return product of the units of the {@code n} first axes, or {@link Units#UNITY} if the
-     *         geometry has no coordinate reference system or has less than {@code n} dimensions.
+     *         geometry has less than {@code n} dimensions.
      */
     @SuppressWarnings("rawtypes")
     private static Unit productOfAxisUnits(final Geometry geom, final int n) {
-        final CoordinateReferenceSystem crs = geom.getCoordinateReferenceSystem();
-        if (crs == null) {
-            return Units.UNITY;
-        }
-        final CoordinateSystem cs = crs.getCoordinateSystem();
+        final CoordinateSystem cs = geom.getCoordinateReferenceSystem().getCoordinateSystem();
         if (cs.getDimension() < n) {
             return Units.UNITY;
         }

@@ -124,12 +124,11 @@ public class DefaultCompoundCS extends AbstractCS {
     }
 
     /**
-     * This is a work around for RFE #4093999 in Sun's bug database
-     * ("Relax constraint on placement of this()/super() call in constructors").
+     * Workaround while waiting for JEP 513: Flexible Constructor Bodies.
      *
      * @param  components  the coordinate systems.
      */
-    @Workaround(library="JDK", version="7", fixed="25")
+    @Workaround(library="JDK", version="11", fixed="25")
     private DefaultCompoundCS(final CoordinateSystem[] components, final CoordinateSystemAxis[] axes) {
         super(Map.of(NAME_KEY, AxisDirections.appendTo(new StringBuilder(60).append("Compound CS"), axes)), axes);
         this.components = List.of(components);

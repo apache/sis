@@ -16,24 +16,29 @@
  */
 package org.apache.sis.geometries.operation;
 
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
+import javax.measure.Quantity;
+import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import org.apache.sis.geometries.DataPoints;
 import org.apache.sis.geometries.Geometry;
 import org.apache.sis.geometries.GeometryCollection;
 import org.apache.sis.geometries.Point;
 import org.apache.sis.geometries.DataPointsType;
 import org.apache.sis.geometries.curve.LineString;
-import org.apache.sis.geometries.curve.MultiLineString;
 import org.apache.sis.geometries.internal.shared.ArrayDataPoints;
 import org.apache.sis.geometries.mesh.MeshPrimitive;
 import org.apache.sis.geometries.mesh.MultiMeshPrimitive;
 import org.apache.sis.geometries.operation.triangulate.EarClipping;
-import org.apache.sis.geometries.point.MultiPoint;
+import org.apache.sis.geometries.solid.Polyhedron;
 import org.apache.sis.geometries.surface.Polygon;
+import org.apache.sis.geometries.surface.PolyhedralSurface;
 import org.apache.sis.maths.Array;
 import org.apache.sis.maths.NDArrays;
+import org.apache.sis.maths.Vector;
 
 
 /**
@@ -87,9 +92,67 @@ public final class ToPrimitive {
     }
 
     /**
+     * Transform PolyhedralSurface, including TIN, to Primitive.
+     * Each patch is triangulated and all triangles are merged in a single non-indexed mesh.
+     */
+    public static MeshPrimitive.Triangles toPrimitive(PolyhedralSurface<?> geometry) throws OperationException {
+        final List<Polygon> faces = new ArrayList<>();
+        for (int i = 0, n = geometry.getNumPatches(); i < n; i++) {
+            faces.add(geometry.getPatchN(i));
+        }
+        return triangles(geometry.getCoordinateReferenceSystem(), faces);
+    }
+
+    /**
+     * Transform a Polyhedron to a Triangles primitive.
+     * The faces of the exterior shell and of all the interior shells are triangulated together
+     * in a single mesh, each face keeping its orientation.
+     */
+    public static MeshPrimitive.Triangles toPrimitive(Polyhedron geometry) throws OperationException {
+        final List<Polygon> faces = new ArrayList<>();
+        final List<GeometryCollection<Polygon>> shells = new ArrayList<>();
+        shells.add(geometry.getExteriorShell());
+        shells.addAll(geometry.getInteriorShells());
+        for (final GeometryCollection<Polygon> shell : shells) {
+            for (int i = 0, n = shell.getNumGeometries(); i < n; i++) {
+                faces.add(shell.getGeometryN(i));
+            }
+        }
+        return triangles(geometry.getCoordinateReferenceSystem(), faces);
+    }
+
+    /**
+     * Triangulates the given polygons into a single mesh of triangles, without index.
+     */
+    private static MeshPrimitive.Triangles triangles(final CoordinateReferenceSystem crs, final List<Polygon> faces) {
+        final int dimension = crs.getCoordinateSystem().getDimension();
+        final EarClipping triangulator = new EarClipping();
+        final List<double[]> triangles = new ArrayList<>();
+        for (final Polygon face : faces) {
+            //the returned list is reused by the next call, so the coordinates are copied now.
+            for (final Vector<?>[] triangle : triangulator.triangulate(face)) {
+                final double[] coordinates = new double[3 * dimension];
+                for (int v = 0; v < 3; v++) {
+                    for (int d = 0; d < dimension; d++) {
+                        coordinates[v * dimension + d] = triangle[v].get(d);
+                    }
+                }
+                triangles.add(coordinates);
+            }
+        }
+        final double[] positions = new double[triangles.size() * 3 * dimension];
+        for (int i = 0; i < triangles.size(); i++) {
+            System.arraycopy(triangles.get(i), 0, positions, i * 3 * dimension, 3 * dimension);
+        }
+        final MeshPrimitive.Triangles primitive = new MeshPrimitive.Triangles();
+        primitive.setPositions(NDArrays.of(crs, positions));
+        return primitive;
+    }
+
+    /**
      * Transform MultiPoint to Primitive.
      */
-    public static MeshPrimitive.Points toPrimitive(MultiPoint geometry) throws OperationException {
+    public static MeshPrimitive.Points toPrimitivePoint(GeometryCollection<Point> geometry) throws OperationException {
         final ArrayDataPoints array = toArraySequence(geometry.getDataPoints());
         final MeshPrimitive.Points primitive = new MeshPrimitive.Points();
         for (String name : array.getAttributeNames()) {
@@ -100,10 +163,16 @@ public final class ToPrimitive {
 
     /**
      * Transform MultiLineString to Primitive.
-     * If all LineString are Lines, the return a single Primitive.lines otherwise return a MultiPrimitive.
+     * If all LineString are Lines and no spacing is given, the return a single Primitive.lines
+     * otherwise return a MultiPrimitive.
+     *
+     * @param spacing maximal distance between two points of a line strip, or zero or {@code null} for no limit.
+     * @param offset  ignored for line strings, which are their own linear approximation.
      */
-    public static Geometry toPrimitive(MultiLineString geometry) throws OperationException {
-        boolean allLines = true;
+    public static Geometry toPrimitiveLine(GeometryCollection<LineString> geometry, Quantity<?> spacing, Quantity<?> offset)
+            throws OperationException
+    {
+        boolean allLines = (spacing == null || spacing.getValue().doubleValue() == 0);
         final int numGeometries = geometry.getNumGeometries();
         for (int i = 0; i < numGeometries && allLines; i++) {
             allLines &= geometry.getGeometryN(i).isLine();
@@ -129,7 +198,7 @@ public final class ToPrimitive {
         } else {
             final MultiMeshPrimitive<MeshPrimitive> mp = new MultiMeshPrimitive(geometry.getCoordinateReferenceSystem());
             for (int i = 0; i < numGeometries; i++) {
-                final Geometry p = toPrimitive(geometry.getGeometryN(i));
+                final Geometry p = toPrimitive(geometry.getGeometryN(i).asLine(spacing, offset));
                 if (p instanceof org.apache.sis.geometries.mesh.MultiMeshPrimitive<?> subm) {
                     mp.append(subm.getComponents());
                 } else if (p instanceof org.apache.sis.geometries.mesh.MeshPrimitive cd){
@@ -142,11 +211,16 @@ public final class ToPrimitive {
 
     /**
      * Transform GeometryCollection to Primitive.
+     *
+     * @param spacing maximal distance along a curve between two points of its line strip, or zero or {@code null}.
+     * @param offset  maximal distance between a curve and its line strip, or zero or {@code null}.
      */
-    public static MultiMeshPrimitive toPrimitive(GeometryCollection geometry) throws OperationException {
+    public static MultiMeshPrimitive toPrimitive(GeometryCollection geometry, Quantity<?> spacing, Quantity<?> offset)
+            throws OperationException
+    {
         final MultiMeshPrimitive<MeshPrimitive> mp = new MultiMeshPrimitive(geometry.getCoordinateReferenceSystem());
         for (int i = 0, n = geometry.getNumGeometries(); i < n; i++) {
-            final Geometry p = new GeometryProcessor().toPrimitive(geometry.getGeometryN(i));
+            final Geometry p = new GeometryProcessor().toPrimitive(geometry.getGeometryN(i), spacing, offset);
             if (p instanceof org.apache.sis.geometries.mesh.MultiMeshPrimitive<?> subm) {
                 mp.append(subm.getComponents());
             } else if (p instanceof org.apache.sis.geometries.mesh.MeshPrimitive cd){

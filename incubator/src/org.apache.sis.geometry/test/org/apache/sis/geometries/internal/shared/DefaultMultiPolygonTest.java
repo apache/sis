@@ -18,9 +18,10 @@ package org.apache.sis.geometries.internal.shared;
 
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import org.apache.sis.geometries.DataPoints;
+import org.apache.sis.geometries.GeometryCollection;
+import org.apache.sis.geometries.GeometryType;
 import org.apache.sis.maths.NDArrays;
 import org.apache.sis.maths.SampleSystem;
-import org.apache.sis.geometries.surface.MultiPolygon;
 import org.apache.sis.geometries.surface.Polygon;
 
 // Test dependencies
@@ -35,12 +36,12 @@ import org.apache.sis.geometries.surface.MultiPolygonTest;
 public class DefaultMultiPolygonTest extends MultiPolygonTest {
 
     @Override
-    protected MultiPolygon createMultiPolygon(final CoordinateReferenceSystem crs, final double[]... rings) {
+    protected GeometryCollection<Polygon> createMultiPolygon(final CoordinateReferenceSystem crs, final double[]... rings) {
         final Polygon[] elements = new Polygon[rings.length];
         for (int i = 0; i < elements.length; i++) {
             elements[i] = new DefaultPolygon(new DefaultLinearRing(sequence(crs, rings[i])));
         }
-        return new DefaultMultiPolygon(crs, elements);
+        return new DefaultGeometryCollection(GeometryType.POLYGON, crs, elements);
     }
 
     /**

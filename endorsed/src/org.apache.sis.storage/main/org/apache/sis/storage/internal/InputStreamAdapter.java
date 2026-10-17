@@ -169,7 +169,7 @@ public final class InputStreamAdapter extends InputStream implements Markable {
      * @param  count  number of bytes to skip.
      * @throws IOException if an I/O error occurs.
      */
-//  @Override       // Pending JDK12.
+    @Override
     public void skipNBytes(final long count) throws IOException {
         input.seek(Math.addExact(input.getStreamPosition(), count));
     }

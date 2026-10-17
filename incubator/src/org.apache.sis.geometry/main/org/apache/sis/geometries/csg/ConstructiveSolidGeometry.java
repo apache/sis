@@ -70,12 +70,14 @@ public final class ConstructiveSolidGeometry extends AbstractGeometry {
         throw new UnsupportedOperationException("Not supported yet.");
     }
 
-    /**
-     * Returns an empty sequence: this geometry is a placeholder and holds no position yet.
-     */
     @Override
     public DataPoints getDataPoints() {
         return new EmptyDataPoints(getCoordinateReferenceSystem());
+    }
+
+    @Override
+    public int getTopologicDimension() {
+        throw new UnsupportedOperationException("Not supported yet.");
     }
 
 }

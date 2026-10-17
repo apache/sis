@@ -37,14 +37,9 @@ import org.apache.sis.geometries.curve.Clothoid;
 import org.apache.sis.geometries.curve.CompoundCurve;
 import org.apache.sis.geometries.curve.LineString;
 import org.apache.sis.geometries.curve.LinearRing;
-import org.apache.sis.geometries.curve.MultiCurve;
-import org.apache.sis.geometries.curve.MultiLineString;
 import org.apache.sis.geometries.internal.shared.ArrayDataPoints;
 import org.apache.sis.geometries.internal.shared.DefaultPoint;
-import org.apache.sis.geometries.point.MultiPoint;
 import org.apache.sis.geometries.surface.CurvePolygon;
-import org.apache.sis.geometries.surface.MultiPolygon;
-import org.apache.sis.geometries.surface.MultiSurface;
 import org.apache.sis.geometries.surface.Polygon;
 import org.apache.sis.geometries.surface.PolyhedralSurface;
 import org.apache.sis.geometries.surface.TIN;
@@ -84,21 +79,21 @@ public final class SIS extends org.apache.sis.geometry.wrapper.Geometries<Geomet
      */
     private static final Class<?>[] CLASSES = {
         Point.class,
-        MultiPoint.class,
+        GeometryCollection.class,
         Circle.class,
         CircularString.class,
         Clothoid.class,
         CompoundCurve.class,
         LineString.class,
-        MultiLineString.class,
-        MultiCurve.class,
+        GeometryCollection.class,
+        GeometryCollection.class,
         Triangle.class,
         Polygon.class,
         CurvePolygon.class,
         TIN.class,
         PolyhedralSurface.class,
-        MultiPolygon.class,
-        MultiSurface.class,
+        GeometryCollection.class,
+        GeometryCollection.class,
         GeometryCollection.class,
         Curve.class,
         Surface.class,
@@ -145,19 +140,20 @@ public final class SIS extends org.apache.sis.geometry.wrapper.Geometries<Geomet
             case CURVE : return Curve.class;
             case CURVEPOLYGON : return CurvePolygon.class;
             case GEOMETRY : return Geometry.class;
-            case GEOMETRYCOLLECTION : return GeometryCollection.class;
             case LINESTRING : return LineString.class;
-            case MULTICURVE : return MultiCurve.class;
-            case MULTILINESTRING : return MultiLineString.class;
-            case MULTIPOINT : return MultiPoint.class;
-            case MULTIPOLYGON : return MultiPolygon.class;
-            case MULTISURFACE : return MultiSurface.class;
             case POINT : return Point.class;
             case POLYGON : return Polygon.class;
             case POLYHEDRALSURFACE : return PolyhedralSurface.class;
             case SURFACE : return Surface.class;
             case TIN : return TIN.class;
             case TRIANGLE : return Triangle.class;
+            //collection types
+            case GEOMETRYCOLLECTION : return GeometryCollection.class;
+            case MULTICURVE : return GeometryCollection.class;
+            case MULTILINESTRING : return GeometryCollection.class;
+            case MULTIPOINT : return GeometryCollection.class;
+            case MULTIPOLYGON : return GeometryCollection.class;
+            case MULTISURFACE : return GeometryCollection.class;
             //todo
             case BREPSOLID :
             case COMPOUNDSURFACE :
@@ -286,7 +282,7 @@ public final class SIS extends org.apache.sis.geometry.wrapper.Geometries<Geomet
      * @return the collection of points for the given coordinate values.
      */
     @Override
-    public MultiPoint<?> createMultiPoint(final boolean isFloat, final Dimensions dimensions, final DoubleBuffer coordinates) {
+    public GeometryCollection<Point> createMultiPoint(final boolean isFloat, final Dimensions dimensions, final DoubleBuffer coordinates) {
         final int count = coordinates.remaining() / dimensions.count;
         return GeometryFactory.DEFAULT.createMultiPoint(readDataPoints(isFloat, dimensions, count, coordinates));
     }
@@ -399,7 +395,7 @@ public final class SIS extends org.apache.sis.geometry.wrapper.Geometries<Geomet
      *       desired target type.</li>
      *   <li>Otherwise, if {@code type} is {@link GeometryType#POLYGON}, then the components shall be
      *       a {@link LineString}[] with the first ring taken as the shell and all other rings as holes.</li>
-     *   <li>Otherwise, the components shall be a {@link DataPoints} sequence, an {@link Array} of
+     *   <li>Otherwise, the components shall be a {@link DataPoints}, an {@link Array} of
      *       positions, or an array or collection of {@link Point} or {@link Vector} instances.</li>
      * </ul>
      *
@@ -506,7 +502,7 @@ public final class SIS extends org.apache.sis.geometry.wrapper.Geometries<Geomet
     }
 
     /**
-     * Reads the given number of coordinate tuples from the given buffer as a sequence of positions.
+     * Reads the given number of coordinate tuples from the given buffer as a {@code DataPoints}.
      * The buffer position is advanced by {@code dimensions.count} × {@code count}.
      *
      * @param  isFloat      whether to store the coordinates as single-precision numbers.
@@ -533,7 +529,7 @@ public final class SIS extends org.apache.sis.geometry.wrapper.Geometries<Geomet
     }
 
     /**
-     * Returns the given coordinate tuples as a sequence of positions.
+     * Returns the given coordinate tuples as a {@code DataPoints}.
      *
      * @param  tuples      the coordinate tuples, each of {@code dimensions.count} values.
      * @param  isFloat     whether to store the coordinates as single-precision numbers.
@@ -558,14 +554,14 @@ public final class SIS extends org.apache.sis.geometry.wrapper.Geometries<Geomet
     }
 
     /**
-     * Returns the given coordinates as a sequence of positions carrying the measures, if any,
+     * Returns the given coordinates as a {@code DataPoints} carrying the measures, if any,
      * as their {@value DataPointsType#ATT_M} attribute.
      *
      * @param  isFloat    whether to store the values as single-precision numbers.
      * @param  spatial    the number of spatial dimensions of the positions.
      * @param  positions  the spatial coordinates, as {@code spatial} values per position.
      * @param  measures   one measure per position, or {@code null} if the positions have no measure.
-     * @return the sequence of the given positions.
+     * @return the {@code DataPoints} of the given positions.
      */
     private static ArrayDataPoints toDataPoints(final boolean isFloat, final int spatial,
                                                 final double[] positions, final double[] measures)
@@ -593,8 +589,8 @@ public final class SIS extends org.apache.sis.geometry.wrapper.Geometries<Geomet
     }
 
     /**
-     * Returns the given components as a sequence of positions. The components can be a
-     * {@link DataPoints} sequence, an {@link Array} of positions, or an array or collection
+     * Returns the given components as a {@code DataPoints}. The components can be a
+     * {@link DataPoints}, an {@link Array} of positions, or an array or collection
      * of {@link Point} or {@link Vector} instances.
      *
      * @param  components  the components to read.

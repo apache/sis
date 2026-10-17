@@ -22,6 +22,7 @@ import java.io.ByteArrayInputStream;
 import java.io.InputStream;
 import java.io.IOException;
 import java.io.File;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 
@@ -131,7 +132,7 @@ public class Initializer {
      */
     public static void reload(Path path) throws IOException {
         path = path.normalize();
-        final StringBuilder buffer = new StringBuilder(600);
+        final var buffer = new StringBuilder(600);
         for (String line : Files.readAllLines(path)) {
             if (!(line = line.trim()).isEmpty() && line.charAt(0) != '#') {
                 final int base = buffer.length();
@@ -140,7 +141,7 @@ public class Initializer {
                     final int i = buffer.indexOf(PATTERN, base + PATTERN_PROPERTY.length());
                     if (i >= 0) {
                         Path parent = path;
-                        for (int j=Math.min(parent.getNameCount(), 2); --j >= 0;) {
+                        for (int j = Math.min(parent.getNameCount(), 2); --j >= 0;) {
                             parent = parent.getParent();
                         }
                         String replacement = (parent != null) ? parent.toString() : ".";
@@ -150,6 +151,7 @@ public class Initializer {
                 }
             }
         }
-        LogManager.getLogManager().readConfiguration(new ByteArrayInputStream(buffer.toString().getBytes()));
+        LogManager.getLogManager().readConfiguration(new ByteArrayInputStream(
+                buffer.toString().getBytes(StandardCharsets.ISO_8859_1)));
     }
 }

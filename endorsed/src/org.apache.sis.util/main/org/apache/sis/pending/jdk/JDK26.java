@@ -14,25 +14,28 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.sis.geometries.internal.shared;
-
-import org.opengis.referencing.crs.CoordinateReferenceSystem;
-import org.apache.sis.geometries.surface.MultiPolygon;
-import org.apache.sis.geometries.surface.Polygon;
+package org.apache.sis.pending.jdk;
 
 
 /**
+ * Place holder for some functionalities defined in a JDK more recent than the targeted version.
  *
- * @author Johann Sorel (Geomatys)
+ * @author  Martin Desruisseaux (Geomatys)
  */
-public non-sealed class DefaultMultiPolygon extends DefaultMultiSurface<Polygon> implements MultiPolygon {
-
-    public DefaultMultiPolygon(Polygon[] geometries) {
-        super(geometries);
+public final class JDK26 {
+    /**
+     * Do not allow instantiation of this class.
+     */
+    private JDK26() {
     }
 
-    public DefaultMultiPolygon(CoordinateReferenceSystem fallbackCRS, Polygon[] geometries) {
-        super(fallbackCRS, geometries);
+    /**
+     * Placeholder for {@code Connection.enquoteLiteral(String)}.
+     *
+     * @param  value  the string to encode.
+     * @return the quoted value.
+     */
+    public static String enquoteLiteral(String value) {
+        return '\'' + value.replace("'", "''") + '\'';
     }
-
 }

@@ -156,15 +156,15 @@ final class PositionListBuilder {
     }
 
     /**
-     * Builds the point sequence for the accumulated tuples.
+     * Builds the {@code DataPoints} for the accumulated tuples.
      *
      * <p>The coordinate reference system of the result is derived from {@code inScope} and from the
      * accumulated tuple width by {@link GMLCRS#forDimension GMLCRS.forDimension(…)}: the two must
-     * agree, because an Apache SIS point sequence reports one dimension only.</p>
+     * agree, because a {@code DataPoints} reports one dimension only.</p>
      *
      * @param  inScope  the CRS resolved for the enclosing GML element, or {@code null} if the
      *                  document declared none at any enclosing level.
-     * @return the point sequence, possibly empty.
+     * @return the {@code DataPoints}, possibly empty.
      * @throws DataStoreContentException if the accumulated tuple width contradicts {@code inScope}.
      * @throws DataStoreReferencingException if the CRS needed to reconcile the two cannot be created.
      */
@@ -172,7 +172,7 @@ final class PositionListBuilder {
             throws DataStoreContentException, DataStoreReferencingException
     {
         /*
-         * An empty sequence still needs a CRS, since `ArraySequence` rejects a null one. Two
+         * An empty `DataPoints` still needs a CRS, since `ArrayDataPoints` rejects a null one. Two
          * dimensions is the GML default, and is what `srsDimension` defaults to as well.
          */
         if (count == 0) {

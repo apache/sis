@@ -22,11 +22,15 @@ import static org.opengis.annotation.Specification.ISO_19107;
 import org.opengis.annotation.UML;
 import org.opengis.geometry.DirectPosition;
 import org.apache.sis.geometries.internal.shared.DefaultReversedSurface;
+import org.apache.sis.geometries.surface.Capsule;
 import org.apache.sis.geometries.surface.CurvePolygon;
+import org.apache.sis.geometries.surface.Cylinder;
 import org.apache.sis.geometries.surface.ParametricCurveSurface;
 import org.apache.sis.geometries.surface.Polygon;
 import org.apache.sis.geometries.surface.PolyhedralSurface;
+import org.apache.sis.maths.Array;
 import org.apache.sis.maths.Vector;
+import org.apache.sis.measure.Quantities;
 
 
 /**
@@ -66,7 +70,9 @@ import org.apache.sis.maths.Vector;
  */
 @UML(identifier="Surface", specification=ISO_19107)
 public sealed interface Surface extends Orientable
-        permits CurvePolygon,
+        permits Capsule,
+                CurvePolygon,
+                Cylinder,
                 ParametricCurveSurface,
                 Polygon,
                 PolyhedralSurface,
@@ -81,6 +87,21 @@ public sealed interface Surface extends Orientable
     @Override
     default int getTopologicDimension() {
         return 2;
+    }
+
+    /**
+     * Returns this surface with the opposite orientation, i.e. with its up-normal flipped.
+     *
+     * @see ISO 19107:2019 - 6.4.15.3
+     */
+    @Override
+    default Surface getReverse() {
+        /*
+         * A view of this surface carrying the opposite orientation sign, for the same reason as
+         * `Curve.getReverse()`: reversing changes no coordinate. `DefaultReversedSurface` returns
+         * this surface back from its own `getReverse()`, so wrapping never nests.
+         */
+        return GeometryFactory.DEFAULT.createReversed(this);
     }
 
     /**
@@ -172,8 +193,7 @@ public sealed interface Surface extends Orientable
      */
     @UML(identifier="interpolation", specification=ISO_19107)
     default List<SurfaceInterpolation> getInterpolation() {
-        //TODO
-        throw new UnsupportedOperationException();
+        return List.of(SurfaceInterpolation.PLANAR);
     }
 
     /**
@@ -188,8 +208,7 @@ public sealed interface Surface extends Orientable
      */
     @UML(identifier="numDerivativesBoundary", specification=ISO_19107)
     default Integer getNumDerivativesBoundary() {
-        //TODO
-        throw new UnsupportedOperationException();
+        return 0;
     }
 
     /**
@@ -202,8 +221,7 @@ public sealed interface Surface extends Orientable
      */
     @UML(identifier="numDerivativeInterior", specification=ISO_19107)
     default Integer getNumDerivativeInterior() {
-        //TODO
-        throw new UnsupportedOperationException();
+        return 0;
     }
 
     /**
@@ -218,8 +236,17 @@ public sealed interface Surface extends Orientable
      */
     @UML(identifier="perimeter", specification=ISO_19107)
     default Quantity<?> getPerimeter() {
-        //TODO
-        throw new UnsupportedOperationException();
+        final Geometry boundary = getBoundary();
+        if (boundary instanceof Curve c) {
+            return c.getLength();
+        }
+        if (boundary instanceof GeometryCollection<?> c && c.getNumGeometries() != 0) {
+            return c.getLength();
+        }
+        if (boundary.isEmpty()) {
+            return Quantities.create(0, Geometries.getLinearUnit(this));
+        }
+        throw new UnsupportedOperationException("Unsupported boundary type: " + boundary.getGeometryType());
     }
 
     /**
@@ -240,14 +267,13 @@ public sealed interface Surface extends Orientable
      * Positions used to build the geometry of this surface, the way they are used depending on the interpolation.
      * Control points do not necessarily lie on the surface.
      *
-     * @return surface control points, possibly empty.
+     * @return surface control points, or {@code null} if none.
      *
      * @see ISO 19107:2019 - 6.4.25.9
      */
     @UML(identifier="controlPoint", specification=ISO_19107)
-    default List<DirectPosition> getControlPoints() {
-        //TODO
-        throw new UnsupportedOperationException();
+    default Array getControlPoints() {
+        return null;
     }
 
     /**
@@ -268,8 +294,7 @@ public sealed interface Surface extends Orientable
      */
     @UML(identifier="knot", specification=ISO_19107)
     default List<double[]> getKnots() {
-        //TODO
-        throw new UnsupportedOperationException();
+        return List.of();
     }
 
     /**

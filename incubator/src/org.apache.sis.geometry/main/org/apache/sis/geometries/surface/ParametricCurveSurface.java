@@ -21,11 +21,17 @@ import static org.opengis.annotation.Specification.ISO_19107;
 import org.opengis.annotation.UML;
 import org.opengis.geometry.DirectPosition;
 import org.opengis.referencing.ReferenceSystem;
+import org.apache.sis.referencing.NamedIdentifier;
 import org.apache.sis.geometries.Curve;
 import org.apache.sis.geometries.DataPoints;
 import org.apache.sis.geometries.GeometryType;
 import org.apache.sis.geometries.Surface;
 import org.apache.sis.geometries.SurfaceInterpolation;
+import org.apache.sis.maths.Array;
+import org.apache.sis.maths.Vector;
+
+// Specific to the geoapi-3.1 branch:
+import org.opengis.referencing.ReferenceIdentifier;
 
 
 /**
@@ -106,18 +112,18 @@ public sealed interface ParametricCurveSurface extends Surface, ReferenceSystem
      *
      * <p>Constraints:</p>
      * <ul>
-     *   <li>The list holds {@link #getRows()} × {@link #getColumns()} positions,
+     *   <li>The array holds {@link #getRows()} × {@link #getColumns()} positions,
      *       stored in row-major order.</li>
      *   <li>Control points do not necessarily lie on this surface.</li>
      * </ul>
      *
-     * @return surface control points, possibly empty.
+     * @return surface control points, or {@code null} if none.
      *
      * @see ISO 19107:2019 - 8.3.2.6
      */
     @UML(identifier="controlPoints", specification=ISO_19107)
     @Override
-    List<DirectPosition> getControlPoints();
+    Array getControlPoints();
 
     /**
      * Positions of this surface at the knots of the parameter grid, so that the data point at
@@ -126,7 +132,7 @@ public sealed interface ParametricCurveSurface extends Surface, ReferenceSystem
      *
      * <p>Constraints:</p>
      * <ul>
-     *   <li>The sequence holds {@link #getRows()} × {@link #getColumns()} positions,
+     *   <li>The {@code DataPoints} holds {@link #getRows()} × {@link #getColumns()} positions,
      *       stored in row-major order.</li>
      * </ul>
      *
@@ -227,7 +233,17 @@ public sealed interface ParametricCurveSurface extends Surface, ReferenceSystem
      * @see ISO 19107:2019 - 8.3.2.11
      */
     @UML(identifier="surface", specification=ISO_19107)
-    DirectPosition getSurface(double u, double v);
+    Vector<?> getSurface(double u, double v);
 
+    /**
+     * Returns the name of this surface used as a reference system for its parameter space.
+     * The default implementation returns the name of the {@linkplain #getGeometryType() geometry type}.
+     *
+     * @return name of the parameter space of this surface.
+     */
+    @Override
+    default ReferenceIdentifier getName() {
+        return new NamedIdentifier(null, getGeometryType().name());
+    }
 
 }

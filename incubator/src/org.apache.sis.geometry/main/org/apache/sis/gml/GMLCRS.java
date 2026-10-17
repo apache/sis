@@ -171,7 +171,7 @@ final class GMLCRS {
     /**
      * Returns the local name of the GML element the given geometry was read from, or {@code null}
      * if unknown. Never throws: point views returned by
-     * {@link org.apache.sis.geometries.PointSequence#getPoint(int)} implement
+     * {@link org.apache.sis.geometries.DataPoints#getPoint(int)} implement
      * {@link org.apache.sis.geometries.Point} directly rather than through
      * {@code AbstractGeometry}, so their {@code userProperties()} is null.
      */

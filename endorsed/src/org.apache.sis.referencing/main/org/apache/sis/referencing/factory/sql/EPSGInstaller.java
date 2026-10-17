@@ -63,10 +63,14 @@ final class EPSGInstaller extends ScriptRunner {
     /**
      * Creates a new runner which will execute the statements using the given connection.
      * This constructor creates immediately a schema of the given name in the database.
+     * Replacements are prepared for features not supported by the target database,
+     * such as enumerations and collations.
      *
      * @param  connection  the connection to the database.
      * @param  schema      the schema, or {@code null} for any, or empty for none.
      * @throws SQLException if an error occurred while executing a SQL statement.
+     *
+     * @see <a href="https://hsqldb.org/doc/guide/databaseobjects-chapt.html#dbc_collations">HSQLDB collations</a>
      */
     public EPSGInstaller(final Connection connection, final String schema) throws SQLException {
         super(connection, schema == null ? Constants.EPSG : schema.isEmpty() ? null : schema, 100);

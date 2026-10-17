@@ -16,16 +16,20 @@
  */
 package org.apache.sis.geometries.internal.shared;
 
+import java.util.List;
 import java.util.Objects;
 import javax.measure.Quantity;
 import org.opengis.geometry.Envelope;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import org.apache.sis.geometries.DataPoints;
 import org.apache.sis.geometries.Geometry;
+import org.apache.sis.geometries.GeometryCollection;
+import org.apache.sis.geometries.GeometryFactory;
 import org.apache.sis.geometries.GeometryType;
 import org.apache.sis.geometries.Orientable;
 import org.apache.sis.geometries.Primitive;
 import org.apache.sis.geometries.Surface;
+import org.apache.sis.geometries.SurfaceInterpolation;
 import org.apache.sis.geometries.DataPointsType;
 
 
@@ -58,8 +62,16 @@ public non-sealed class DefaultReversedSurface extends AbstractGeometry implemen
     }
 
     @Override
-    public Orientable getReverse() {
+    public Surface getReverse() {
         return base;
+    }
+
+    /**
+     * Returns the interpolations of the base surface: reversing a surface does not change how it is built.
+     */
+    @Override
+    public List<SurfaceInterpolation> getInterpolation() {
+        return base.getInterpolation();
     }
 
     /**
@@ -104,9 +116,25 @@ public non-sealed class DefaultReversedSurface extends AbstractGeometry implemen
         return base.getEnvelope();
     }
 
+    /**
+     * Returns the boundary of the base surface with each curve reversed, so that this surface,
+     * whose up-normal is flipped, stays on the left of its boundary.
+     */
     @Override
     public Geometry getBoundary() {
-        throw new UnsupportedOperationException("Not supported yet.");
+        final Geometry boundary = base.getBoundary();
+        if (boundary instanceof Orientable o) {
+            return o.getReverse();
+        }
+        if (boundary instanceof GeometryCollection<?> c) {
+            final var reversed = new Geometry[c.getNumGeometries()];
+            for (int i = 0; i < reversed.length; i++) {
+                final Geometry g = c.getGeometryN(i);
+                reversed[i] = (g instanceof Orientable o) ? o.getReverse() : g;
+            }
+            return GeometryFactory.DEFAULT.createGeometryCollection(c.getElementType(), c.getCoordinateReferenceSystem(), reversed);
+        }
+        return boundary;
     }
 
     @Override

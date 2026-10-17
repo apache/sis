@@ -55,19 +55,30 @@ public final class Frustrum extends AbstractGeometry {
         return planes;
     }
 
+    /**
+     * Returns the reference system of the planes, taken from the first one.
+     */
     @Override
     public CoordinateReferenceSystem getCoordinateReferenceSystem() {
-        throw new UnsupportedOperationException("Not supported yet.");
+        return planes[0].getCoordinateReferenceSystem();
     }
 
+    /**
+     * Sets the reference system of all the planes.
+     */
     @Override
     public void setCoordinateReferenceSystem(CoordinateReferenceSystem crs) throws IllegalArgumentException {
-        throw new UnsupportedOperationException("Not supported yet.");
+        for (final Plane plane : planes) {
+            plane.setCoordinateReferenceSystem(crs);
+        }
     }
 
+    /**
+     * Returns the type of the data points of the planes, taken from the first one.
+     */
     @Override
     public DataPointsType getDataPointsType() {
-        throw new UnsupportedOperationException("Not supported yet.");
+        return planes[0].getDataPointsType();
     }
 
     @Override
@@ -87,6 +98,14 @@ public final class Frustrum extends AbstractGeometry {
     @Override
     public DataPoints getDataPoints() {
         return ConcatenatedDataPoints.of(planes);
+    }
+
+    /**
+     * Returns 3: a frustum is the volume enclosed by its planes.
+     */
+    @Override
+    public int getTopologicDimension() {
+        return 3;
     }
 
 }

@@ -16,6 +16,7 @@
  */
 package org.apache.sis.geometries;
 
+import javax.print.attribute.standard.MediaSize.ISO;
 import org.apache.sis.geometries.curve.Arc;
 import org.apache.sis.geometries.curve.ArcByBulge;
 import org.apache.sis.geometries.curve.ArcByCenterPoint;
@@ -32,32 +33,27 @@ import org.apache.sis.geometries.curve.Geodesic;
 import org.apache.sis.geometries.curve.Line;
 import org.apache.sis.geometries.curve.LineString;
 import org.apache.sis.geometries.curve.LinearRing;
-import org.apache.sis.geometries.curve.MultiCurve;
-import org.apache.sis.geometries.curve.MultiLineString;
 import org.apache.sis.geometries.curve.NurbCurve;
 import org.apache.sis.geometries.curve.OffsetCurve;
 import org.apache.sis.geometries.curve.PolynomialSpline;
 import org.apache.sis.geometries.curve.ProductCurve;
+import org.apache.sis.geometries.curve.Ray;
 import org.apache.sis.geometries.curve.Rhumb;
 import org.apache.sis.geometries.curve.Spiral;
 import org.apache.sis.geometries.curve.SplineCurve;
-import org.apache.sis.geometries.point.MultiPoint;
 import org.apache.sis.geometries.solid.BSplineSolid;
-import org.apache.sis.geometries.surface.Capsule;
-import org.apache.sis.geometries.surface.Cylinder;
-import org.apache.sis.geometries.surface.Ellipsoid;
 import org.apache.sis.geometries.solid.Frustrum;
-import org.apache.sis.geometries.solid.MultiPolyhedron;
 import org.apache.sis.geometries.solid.Polyhedron;
-import org.apache.sis.geometries.surface.Sphere;
 import org.apache.sis.geometries.surface.BSplineSurface;
 import org.apache.sis.geometries.surface.BilinearGrid;
+import org.apache.sis.geometries.surface.Capsule;
 import org.apache.sis.geometries.surface.CurvePolygon;
-import org.apache.sis.geometries.surface.MultiPolygon;
-import org.apache.sis.geometries.surface.MultiSurface;
+import org.apache.sis.geometries.surface.Cylinder;
+import org.apache.sis.geometries.surface.Ellipsoid;
 import org.apache.sis.geometries.surface.NurbSurface;
 import org.apache.sis.geometries.surface.Polygon;
 import org.apache.sis.geometries.surface.PolyhedralSurface;
+import org.apache.sis.geometries.surface.Sphere;
 import org.apache.sis.geometries.surface.TIN;
 import org.apache.sis.geometries.surface.Triangle;
 import static org.opengis.annotation.Specification.ISO_19107;
@@ -100,10 +96,6 @@ public enum GeometryType {
      * A single location, of topological dimension 0.
      */
     POINT(Point.class),
-    /**
-     * A collection of points.
-     */
-    MULTIPOINT(MultiPoint.class),
 
     //curve types
     /**
@@ -202,14 +194,6 @@ public enum GeometryType {
      * A curve interpolated by non-uniform rational B-spline basis functions.
      */
     NURBSCURVE(NurbCurve.class),
-    /**
-     * A collection of curves.
-     */
-    MULTICURVE(MultiCurve.class),
-    /**
-     * A collection of {@linkplain #LINESTRING}.
-     */
-    MULTILINESTRING(MultiLineString.class),
 
     //surface types
     /**
@@ -248,14 +232,6 @@ public enum GeometryType {
      * A surface interpolated by non-uniform rational B-spline basis functions.
      */
     NURBSSURFACE(NurbSurface.class),
-    /**
-     * A collection of {@linkplain #POLYGON}.
-     */
-    MULTIPOLYGON(MultiPolygon.class),
-    /**
-     * A collection of surfaces.
-     */
-    MULTISURFACE(MultiSurface.class),
 
     //solid types
     /**
@@ -266,10 +242,6 @@ public enum GeometryType {
      * A solid bounded by planar faces.
      */
     POLYHEDRON(Polyhedron.class),
-    /**
-     * A collection of {@linkplain #POLYHEDRON}.
-     */
-    MULTIPOLYHEDRON(MultiPolyhedron.class),
     /**
      * A solid interpolated by B-spline basis functions.
      */

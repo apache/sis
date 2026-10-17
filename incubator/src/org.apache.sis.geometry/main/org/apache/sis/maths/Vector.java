@@ -174,9 +174,7 @@ public interface Vector<T extends Vector <T>> extends ReadOnly.Vector<T>{
      * @return tuple copy.
      */
     default T copy() {
-        T tuple = (T) Vectors.create(getSampleSystem(), getDataType());
-        tuple.set(this);
-        return tuple;
+        return (T) ReadOnly.Vector.super.copy();
     }
 
     /**
@@ -242,6 +240,19 @@ public interface Vector<T extends Vector <T>> extends ReadOnly.Vector<T>{
      */
     default T scale(double scale) {
         set( Vectors.scale(toArrayDouble(), scale));
+        return (T) this;
+    }
+
+    /**
+     * Remove from this vector its component along the given unit vector.
+     * The result is the projection of this vector on the hyperplane perpendicular to the given vector.
+     *
+     * @param unit unit vector, of length 1
+     * @return this vector
+     */
+    default T perpendicular(ReadOnly.Vector<?> unit) {
+        final double[] u = unit.toArrayDouble();
+        set( Vectors.subtract(toArrayDouble(), Vectors.scale(u, dot(unit))));
         return (T) this;
     }
 

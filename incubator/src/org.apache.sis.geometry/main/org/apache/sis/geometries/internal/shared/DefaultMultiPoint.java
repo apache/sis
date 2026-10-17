@@ -24,14 +24,15 @@ import org.apache.sis.geometries.Geometry;
 import org.apache.sis.geometries.GeometryFactory;
 import org.apache.sis.geometries.Point;
 import org.apache.sis.geometries.DataPointsType;
-import org.apache.sis.geometries.point.MultiPoint;
+import org.apache.sis.geometries.GeometryCollection;
+import org.apache.sis.geometries.GeometryType;
 
 
 /**
  *
  * @author Johann Sorel (Geomatys)
  */
-public non-sealed class DefaultMultiPoint extends AbstractGeometry implements MultiPoint<Point> {
+public non-sealed class DefaultMultiPoint extends AbstractGeometry implements GeometryCollection<Point> {
 
     private final DataPoints points;
 
@@ -131,4 +132,10 @@ public non-sealed class DefaultMultiPoint extends AbstractGeometry implements Mu
         }
         return Objects.equals(points, ((DefaultMultiPoint) obj).points);
     }
+
+    @Override
+    public GeometryType getElementType() {
+        return GeometryType.POINT;
+    }
+
 }

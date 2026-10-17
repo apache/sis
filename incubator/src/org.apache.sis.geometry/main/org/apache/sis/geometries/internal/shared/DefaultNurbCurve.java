@@ -18,15 +18,23 @@ package org.apache.sis.geometries.internal.shared;
 
 import java.util.Arrays;
 import java.util.List;
-import org.apache.sis.geometries.BBox;
+import javax.measure.Quantity;
 import org.apache.sis.geometries.DataPoints;
 import org.apache.sis.geometries.DataPointsType;
+import org.apache.sis.geometries.Geometries;
+import org.apache.sis.geometries.GeometryFactory;
+import org.apache.sis.geometries.Point;
+import org.apache.sis.geometries.curve.LineString;
 import org.apache.sis.geometries.curve.NurbCurve;
 import org.apache.sis.geometries.operation.DeBoorAlgorithm;
 import org.apache.sis.maths.Array;
+import org.apache.sis.maths.DataType;
 import org.apache.sis.maths.NDArrays;
+import org.apache.sis.maths.NDRange;
 import org.apache.sis.maths.Vector;
 import org.apache.sis.maths.Vectors;
+import org.apache.sis.measure.Quantities;
+import org.opengis.geometry.Envelope;
 
 
 /**
@@ -67,6 +75,22 @@ public non-sealed class DefaultNurbCurve extends AbstractGeometry implements Nur
         return knots.clone();
     }
 
+    /**
+     * Returns the start of the curve domain, which is the knot at index {@code degree}.
+     */
+    @Override
+    public double getStartConstrParam() {
+        return domainStart();
+    }
+
+    /**
+     * Returns the end of the curve domain, which is the knot at the index of the number of control points.
+     */
+    @Override
+    public double getEndConstrParam() {
+        return domainEnd();
+    }
+
     @Override
     public DataPoints getDataPoints() {
         return points;
@@ -85,7 +109,7 @@ public non-sealed class DefaultNurbCurve extends AbstractGeometry implements Nur
      * Point C(u) of the curve at the given parameter.
      */
     public Vector<?> evaluate(final double u) {
-        final int spatialDim = controlPoints.length;
+        final int spatialDim = controlPoints[0].getDimension();
         final Vector<?>[] hom = new Vector<?>[nbCtrlPts];
         for (int i = 0; i < nbCtrlPts; i++) {
             hom[i] = toHomogeneous(getControlPoint(i), weights[i]);
@@ -135,6 +159,28 @@ public non-sealed class DefaultNurbCurve extends AbstractGeometry implements Nur
             result[c] = (Cwp.get(c) - wp * Cu[c]) / w;
         }
         return Vectors.createDouble(result.length).set(result);
+    }
+
+    /**
+     * Returns the arc length of this curve, integrated in the coordinate space of its control points.
+     */
+    @Override
+    public Quantity<?> getLength() {
+        final double length = isEmpty() ? 0 : new BSplineEvaluator(points, weights, knots, degree).length();
+        return Quantities.create(length, Geometries.getLinearUnit(this));
+    }
+
+    /**
+     * Returns the point at the given distance along this curve, in the unit of the coordinates or in
+     * percent of the length. Attributes are blended with the basis functions when interpolated linearly,
+     * or taken from the control point of largest weight.
+     */
+    @Override
+    public Point subCurve(final Quantity<?> dist) {
+        if (isEmpty()) {
+            return null;
+        }
+        return new BSplineEvaluator(points, weights, knots, degree).subCurve(dist, Geometries.getLinearUnit(this));
     }
 
     public double domainStart() {
@@ -267,8 +313,9 @@ public non-sealed class DefaultNurbCurve extends AbstractGeometry implements Nur
      * @return the bounding box of this curve
      */
     @Override
-    public BBox getEnvelope() {
-        final BBox bbox = new BBox(controlPoints[0], controlPoints[0]);
+    public Envelope getEnvelope() {
+        final Vector<?> start = Vectors.create(getCoordinateReferenceSystem(), DataType.DOUBLE).set(controlPoints[0]);
+        final NDRange bbox = new NDRange(start, start);
         for (final Vector<?> p : controlPoints) {
             bbox.add(p);
         }
@@ -307,5 +354,16 @@ public non-sealed class DefaultNurbCurve extends AbstractGeometry implements Nur
 
     static Vector<?> fromHomogeneous(final Vector<?> h, final int spatialDim) {
         return h.shrink(spatialDim).scale(1.0 / h.get(spatialDim));
+    }
+
+    /**
+     * Returns a polyline whose points are on this curve, including the positions at the knots.
+     */
+    @Override
+    public LineString asLine(final Quantity<?> spacing, final Quantity<?> offset) {
+        if (isEmpty()) {
+            return GeometryFactory.DEFAULT.createLineString(points);
+        }
+        return new BSplineEvaluator(points, weights, knots, degree).asLine(this, spacing, offset);
     }
 }

@@ -25,6 +25,7 @@ import com.sun.star.lang.XServiceInfo;
 import com.sun.star.lang.XServiceName;
 import com.sun.star.uno.XComponentContext;
 import com.sun.star.lib.uno.helper.WeakBase;
+import org.apache.sis.pending.jdk.JDK19;
 import org.apache.sis.util.Classes;
 import org.apache.sis.util.Exceptions;
 import org.apache.sis.util.resources.Vocabulary;
@@ -133,7 +134,7 @@ public abstract class CalcAddins extends WeakBase implements XServiceName, XServ
                 String language = locale.Language; if (language == null) language = "";
                 String country  = locale.Country;  if (country  == null) country  = "";
                 String variant  = locale.Variant;  if (variant  == null) variant  = "";
-                javaLocale = new java.util.Locale(language, country, variant);
+                javaLocale = JDK19.localeOf(language, country, variant);
             } else {
                 javaLocale = java.util.Locale.getDefault();
             }
@@ -148,20 +149,6 @@ public abstract class CalcAddins extends WeakBase implements XServiceName, XServ
      */
     final String noResultString() {
         return Vocabulary.forLocale(getJavaLocale()).getString(Vocabulary.Keys.NotKnown);
-    }
-
-    /**
-     * Returns the minimal length of the specified arrays. In the special case where one array
-     * has a length of 1, we assume that this single element will be repeated for all elements
-     * in the other array.
-     */
-    static int getMinimalLength(final Object[] array1, final Object[] array2) {
-        if (array1 == null || array2 == null) {
-            return 0;
-        }
-        if (array1.length == 1) return array2.length;
-        if (array2.length == 1) return array1.length;
-        return Math.min(array1.length, array2.length);
     }
 
     /**
@@ -187,8 +174,9 @@ public abstract class CalcAddins extends WeakBase implements XServiceName, XServ
      * @param exception  the exception.
      */
     final void reportException(final String method, final Exception exception) {
+        @SuppressWarnings("LocalVariableHidesMemberVariable")
         final Logger logger = getLogger();
-        final LogRecord record = new LogRecord(Level.WARNING, getLocalizedMessage(exception));
+        final var record = new LogRecord(Level.WARNING, getLocalizedMessage(exception));
         record.setLoggerName(logger.getName());
         record.setSourceClassName(getClass().getCanonicalName());
         record.setSourceMethodName(method);

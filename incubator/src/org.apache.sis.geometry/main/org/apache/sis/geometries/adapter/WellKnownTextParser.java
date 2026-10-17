@@ -37,12 +37,7 @@ import org.apache.sis.geometries.curve.CircularString;
 import org.apache.sis.geometries.curve.CompoundCurve;
 import org.apache.sis.geometries.curve.LinearRing;
 import org.apache.sis.geometries.curve.LineString;
-import org.apache.sis.geometries.curve.MultiCurve;
-import org.apache.sis.geometries.curve.MultiLineString;
-import org.apache.sis.geometries.point.MultiPoint;
 import org.apache.sis.geometries.surface.CurvePolygon;
-import org.apache.sis.geometries.surface.MultiPolygon;
-import org.apache.sis.geometries.surface.MultiSurface;
 import org.apache.sis.geometries.surface.Polygon;
 import org.apache.sis.geometries.surface.PolyhedralSurface;
 import org.apache.sis.geometries.surface.TIN;
@@ -216,11 +211,11 @@ final class WellKnownTextParser {
             case CurvePolygon.TYPE:       return parseCurvePolygon();
             case PolyhedralSurface.TYPE:  return parsePolyhedralSurface();
             case TIN.TYPE:                return parseTIN();
-            case MultiPoint.TYPE:         return parseMultiPoint();
-            case MultiLineString.TYPE:    return parseMultiLineString();
-            case MultiCurve.TYPE:         return parseMultiCurve();
-            case MultiPolygon.TYPE:       return parseMultiPolygon();
-            case MultiSurface.TYPE:       return parseMultiSurface();
+            case GeometryCollection.TYPE_MULTIPOINT:         return parseMultiPoint();
+            case GeometryCollection.TYPE_MULTILINESTRING:    return parseMultiLineString();
+            case GeometryCollection.TYPE_MULTICURVE:         return parseMultiCurve();
+            case GeometryCollection.TYPE_MULTIPOLYGON:       return parseMultiPolygon();
+            case GeometryCollection.TYPE_MULTISURFACE:       return parseMultiSurface();
             case GeometryCollection.TYPE:
             case "GEOMCOLLECTION":        return parseGeometryCollection();      // Alias in use in some databases.
             default: throw error("Well-Known Text defines no geometry type named \"" + keyword + '"');
@@ -231,7 +226,7 @@ final class WellKnownTextParser {
      * Parses {@code (1 2)} or {@code EMPTY}.
      *
      * <p>{@code POINT EMPTY} does not map to a {@link Point}: the Apache SIS model has no empty
-     * point, since a point sequence of length 0 is not a valid position of a point and
+     * point, since a {@code DataPoints} of length 0 is not a valid position of a point and
      * {@link GeometryFactory#createPoint(CoordinateReferenceSystem)} builds a point at the origin
      * rather than an absent one. It maps to {@link Empty} instead, the geometry which stands for
      * the empty point set whatever its type, and which is written back as
@@ -313,7 +308,7 @@ final class WellKnownTextParser {
      * Parses {@code ((1 2), (3 4))} or {@code (1 2, 3 4)} or {@code EMPTY}. The grammar allows
      * the parentheses around each point to be omitted, and both forms are accepted here.
      */
-    private MultiPoint<?> parseMultiPoint() {
+    private GeometryCollection<Point> parseMultiPoint() {
         if (readEmpty()) {
             return GeometryFactory.DEFAULT.createMultiPoint(crs());
         }
@@ -322,7 +317,7 @@ final class WellKnownTextParser {
         do {
             if (readEmpty()) {
                 // See parsePoint(): there is no empty point to put in the collection.
-                throw error("A " + MultiPoint.TYPE + " cannot hold an empty point");
+                throw error("A " + GeometryCollection.TYPE_MULTIPOINT + " cannot hold an empty point");
             } else if (peek() == '(') {
                 points.add(GeometryFactory.DEFAULT.createPoint(readSinglePosition()));
             } else {
@@ -338,7 +333,7 @@ final class WellKnownTextParser {
     /**
      * Parses {@code ((1 2, 3 4), (5 6, 7 8))} or {@code EMPTY}.
      */
-    private MultiLineString parseMultiLineString() {
+    private GeometryCollection<LineString> parseMultiLineString() {
         if (readEmpty()) {
             return GeometryFactory.DEFAULT.createMultiLineString(crs());
         }
@@ -354,7 +349,7 @@ final class WellKnownTextParser {
     /**
      * Parses {@code (((…), (…)), ((…)))} or {@code EMPTY}.
      */
-    private MultiPolygon parseMultiPolygon() {
+    private GeometryCollection<Polygon> parseMultiPolygon() {
         if (readEmpty()) {
             return GeometryFactory.DEFAULT.createMultiPolygon(crs());
         }
@@ -372,7 +367,7 @@ final class WellKnownTextParser {
      * {@code MULTILINESTRING}, the members may be of any curve type and therefore keep their
      * keyword, except a line string which may be written as a bare coordinate list.
      */
-    private MultiCurve<Curve> parseMultiCurve() {
+    private GeometryCollection<Curve> parseMultiCurve() {
         if (readEmpty()) {
             return GeometryFactory.DEFAULT.<Curve>createMultiCurve(crs());
         }
@@ -389,7 +384,7 @@ final class WellKnownTextParser {
      * Parses {@code (CURVEPOLYGON (…), ((…)))} or {@code EMPTY}: as in a {@code MULTICURVE},
      * the members keep their keyword except a polygon, which may be written as a bare ring list.
      */
-    private MultiSurface<Surface> parseMultiSurface() {
+    private GeometryCollection<Surface> parseMultiSurface() {
         if (readEmpty()) {
             return GeometryFactory.DEFAULT.<Surface>createMultiSurface(crs());
         }
@@ -399,7 +394,7 @@ final class WellKnownTextParser {
             if (peek() == '(') {
                 members.add(readPolygonBody());
             } else {
-                members.add(expectType(parseGeometry(), Surface.class, MultiSurface.TYPE));
+                members.add(expectType(parseGeometry(), Surface.class, GeometryCollection.TYPE_MULTISURFACE));
             }
         } while (accept(','));
         expect(')');
@@ -669,7 +664,7 @@ final class WellKnownTextParser {
         }
 
         /**
-         * Builds the point sequence of the accumulated tuples, possibly empty.
+         * Builds the {@code DataPoints} of the accumulated tuples, possibly empty.
          */
         DataPoints build() {
             final int posWidth = positionDimension();
@@ -699,7 +694,7 @@ final class WellKnownTextParser {
         }
 
         /**
-         * Returns a sequence holding both the positions and the measures.
+         * Returns a {@code DataPoints} holding both the positions and the measures.
          */
         private DataPoints createSequence(final Array positions, final Array measures) {
             final Map<String,Array> attributes = new LinkedHashMap<>(4);

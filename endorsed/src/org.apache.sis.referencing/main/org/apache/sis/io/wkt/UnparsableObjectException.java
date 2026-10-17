@@ -18,15 +18,13 @@ package org.apache.sis.io.wkt;
 
 import java.util.Locale;
 import java.text.ParseException;
-import org.opengis.util.InternationalString;
-import org.apache.sis.util.LocalizedException;
+import org.apache.sis.util.Localized;
+import org.apache.sis.util.Workaround;
 import org.apache.sis.util.resources.Errors;
 
 
 /**
- * Thrown when a <i>Well Known Text</i> (WKT) cannot be parsed.
- *
- * <h2>Localization</h2>
+ * Thrown when a <i>Well Known Text</i> (<abbr>WKT</abbr>) cannot be parsed.
  * This exception may contain the error message in two languages:
  *
  * <ul>
@@ -38,14 +36,24 @@ import org.apache.sis.util.resources.Errors;
  * </ul>
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 0.8
+ * @version 1.8
  * @since   0.8
  */
-public class UnparsableObjectException extends ParseException implements LocalizedException {
+public class UnparsableObjectException extends ParseException implements Localized {
     /**
      * For cross-version compatibility.
      */
     private static final long serialVersionUID = 5949195205739826024L;
+
+    /**
+     * The effective locale of the localized message, or {@code null} if unspecified.
+     * This is the locale of the message returned by {@link #getLocalizedMessage()}.
+     * It is specified at construction time, then eventually replaced by the locale
+     * of the resource used for building the message.
+     *
+     * @see #getLocale()
+     */
+    private Locale locale;
 
     /**
      * The resources key as one of the {@link Errors.Keys} constant, or 0 if none.
@@ -80,9 +88,18 @@ public class UnparsableObjectException extends ParseException implements Localiz
      * @param  errorOffset  the position where the error is found while parsing.
      */
     UnparsableObjectException(final Locale locale, final short key, final Object[] parameters, final int errorOffset) {
-        super(Errors.forLocale(locale).getString(key, parameters), errorOffset);
-        this.parameters = parameters;
+        this(Errors.forLocale(locale), key, parameters, errorOffset);
+    }
+
+    /**
+     * Workaround while waiting for JEP 513: Flexible Constructor Bodies.
+     */
+    @Workaround(library="JDK", version="11", fixed="25")
+    private UnparsableObjectException(final Errors resources, final short key, final Object[] parameters, final int errorOffset) {
+        super(resources.getString(key, parameters), errorOffset);
+        this.locale     = resources.getLocale();
         this.key        = key;
+        this.parameters = parameters;
     }
 
     /**
@@ -110,14 +127,18 @@ public class UnparsableObjectException extends ParseException implements Localiz
     }
 
     /**
-     * If this exception is capable to return the message in various locales, returns that message.
-     * Otherwise returns {@code null}.
+     * Returns the locale of the localized exception message, or {@code null} if unspecified.
+     * If non-null, this is the effective language of the string returned by {@link #getLocalizedMessage()}.
+     * This locale depends on the {@linkplain WKTFormat#getLocale() locale configured on the WKT parser} and
+     * the resources available in Apache <abbr>SIS</abbr>.
      *
-     * @return the exception message, or {@code null} if this exception cannot produce international message.
+     * @return the locale of the localized message, or {@code null} if not explicitly defined.
+     *
+     * @since 1.8
      */
     @Override
-    public InternationalString getInternationalMessage() {
-        return (key != 0) ? Errors.formatInternational(key, parameters) : null;
+    public Locale getLocale() {
+        return locale;
     }
 
     /**

@@ -21,7 +21,6 @@ import javax.measure.Quantity;
 import org.apache.sis.geometries.DataPoints;
 import org.apache.sis.geometries.DataPointsType;
 import org.apache.sis.geometries.Geometry;
-import org.opengis.geometry.DirectPosition;
 import org.opengis.geometry.Envelope;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import org.apache.sis.geometries.GeometryCollection;
@@ -29,6 +28,7 @@ import org.apache.sis.geometries.GeometryFactory;
 import org.apache.sis.geometries.GeometryType;
 import org.apache.sis.geometries.Solid;
 import org.apache.sis.geometries.Surface;
+import org.apache.sis.geometries.Geometries;
 import org.apache.sis.geometry.GeneralEnvelope;
 
 
@@ -57,7 +57,7 @@ public non-sealed class DefaultSolid extends AbstractGeometry implements Solid {
 
     @Override
     public CoordinateReferenceSystem getCoordinateReferenceSystem() {
-        return boundaries.get(0).getCoordinateReferenceSystem();
+        return boundaries.isEmpty() ? Geometries.getUndefinedCRS(3) : boundaries.get(0).getCoordinateReferenceSystem();
     }
 
     @Override
@@ -110,9 +110,12 @@ public non-sealed class DefaultSolid extends AbstractGeometry implements Solid {
         return GeometryFactory.DEFAULT.createGeometryCollection(GeometryType.SURFACE, getCoordinateReferenceSystem(), boundaries.toArray(Surface[]::new));
     }
 
+    /**
+     * Returns the sum of the areas of the boundary surfaces.
+     */
     @Override
     public Quantity<?> getArea() {
-        throw new UnsupportedOperationException("Not supported yet.");
+        return getBoundary().getArea();
     }
 
     @Override
@@ -120,13 +123,4 @@ public non-sealed class DefaultSolid extends AbstractGeometry implements Solid {
         throw new UnsupportedOperationException("Not supported yet.");
     }
 
-    @Override
-    public List<DirectPosition> getControlPoints() {
-        throw new UnsupportedOperationException("Not supported yet.");
-    }
-
-    @Override
-    public List<double[]> getKnots() {
-        throw new UnsupportedOperationException("Not supported yet.");
-    }
 }

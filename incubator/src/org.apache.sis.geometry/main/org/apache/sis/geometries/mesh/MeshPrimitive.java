@@ -32,7 +32,6 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.opengis.geometry.Envelope;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
-import org.apache.sis.geometries.BBox;
 import org.apache.sis.geometries.DataPoints;
 import org.apache.sis.geometries.Geometries;
 import org.apache.sis.geometries.Geometry;
@@ -40,9 +39,8 @@ import org.apache.sis.geometries.GeometryFactory;
 import org.apache.sis.geometries.GeometryType;
 import org.apache.sis.geometries.Point;
 import org.apache.sis.geometries.DataPointsType;
+import org.apache.sis.geometries.GeometryCollection;
 import org.apache.sis.geometries.curve.LineString;
-import org.apache.sis.geometries.curve.MultiLineString;
-import org.apache.sis.geometries.point.MultiPoint;
 import org.apache.sis.geometries.surface.TIN;
 import org.apache.sis.geometries.surface.Triangle;
 import org.apache.sis.geometry.GeneralEnvelope;
@@ -51,6 +49,7 @@ import org.apache.sis.maths.Cursor;
 import org.apache.sis.maths.DataType;
 import org.apache.sis.maths.Maths;
 import org.apache.sis.maths.NDArrays;
+import org.apache.sis.maths.NDRange;
 import org.apache.sis.maths.ReadOnly;
 import org.apache.sis.maths.SampleSystem;
 import org.apache.sis.maths.Vector;
@@ -1140,19 +1139,24 @@ public sealed interface MeshPrimitive extends Geometry
         }
 
         @Override
-        public BBox getAttributeRange(String name) {
+        public NDRange getAttributeRange(String name) {
             return NDArrays.computeRange(NDArrays.subset(primitive.getAttribute(name),index));
         }
     }
 
-    public static final class Points extends Abs implements MultiPoint<Point>{
+    public static final class Points extends Abs implements GeometryCollection<Point>{
         public Points() {
             super(Type.POINTS);
         }
 
         @Override
         public GeometryType getGeometryType() {
-            return GeometryType.MULTIPOINT;
+            return GeometryType.COLLECTION;
+        }
+
+        @Override
+        public GeometryType getElementType() {
+            return GeometryType.POINT;
         }
 
         @Override
@@ -1166,11 +1170,17 @@ public sealed interface MeshPrimitive extends Geometry
             final int[] indices = (index == null) ? new int[]{n} : index.toArrayInt(n, 1);
             return new Sequence(this, indices).getPoint(0);
         }
+
     }
 
-    public static final class Lines extends Abs implements MultiLineString {
+    public static final class Lines extends Abs implements GeometryCollection<LineString> {
         public Lines() {
             super(Type.LINES);
+        }
+
+        @Override
+        public GeometryType getElementType() {
+            return GeometryType.LINESTRING;
         }
 
         @Override
@@ -1184,6 +1194,7 @@ public sealed interface MeshPrimitive extends Geometry
             final int[] indices = (index == null) ? new int[]{n*2, n*2+1} : index.toArrayInt(n*2, 2);
             return GeometryFactory.DEFAULT.createLineString(new Sequence(this, indices));
         }
+
     }
 
     public static final class LineLoop extends Abs implements LineString {

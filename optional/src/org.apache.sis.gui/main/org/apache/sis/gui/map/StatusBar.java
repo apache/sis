@@ -126,7 +126,7 @@ import org.opengis.coordinate.MismatchedDimensionException;
  * {@link #setLocalCoordinates(double, double)} explicitly instead.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.7
+ * @version 1.8
  * @since   1.1
  */
 public class StatusBar extends Widget implements EventHandler<MouseEvent> {
@@ -1692,20 +1692,6 @@ public class StatusBar extends Widget implements EventHandler<MouseEvent> {
             message.setText(text);
             message.setTooltip(tooltip);
         }
-    }
-
-    /**
-     * Shows or hides an informative message on the status bar.
-     * The message should be temporary, for example for telling that a loading is in progress.
-     *
-     * @param  text  the message to show, or {@code null} if none.
-     *
-     * @since 1.3
-     * @deprecated Renamed {@link #setProgressMessage(String)}.
-     */
-    @Deprecated(since = "1.7", forRemoval = true)
-    public void setInfoMessage(String text) {
-        setProgressMessage(text);
     }
 
     /**

@@ -22,7 +22,6 @@ import java.util.List;
 import java.util.Map;
 import javax.measure.Quantity;
 import javax.measure.Unit;
-import org.opengis.geometry.DirectPosition;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import org.opengis.referencing.crs.SingleCRS;
 import org.apache.sis.geometries.cs.Bearing;
@@ -43,13 +42,12 @@ import org.apache.sis.geometries.curve.Geodesic;
 import org.apache.sis.geometries.curve.KnotType;
 import org.apache.sis.geometries.curve.LineString;
 import org.apache.sis.geometries.curve.LinearRing;
-import org.apache.sis.geometries.curve.MultiCurve;
-import org.apache.sis.geometries.curve.MultiLineString;
 import org.apache.sis.geometries.curve.NurbCurve;
 import org.apache.sis.geometries.curve.OffsetCurve;
 import org.apache.sis.geometries.curve.PolynomialSpline;
 import org.apache.sis.geometries.curve.ProductCurve;
 import org.apache.sis.geometries.curve.RealFunction;
+import org.apache.sis.geometries.curve.Ray;
 import org.apache.sis.geometries.curve.Rhumb;
 import org.apache.sis.geometries.curve.Spiral;
 import org.apache.sis.geometries.curve.SplineCurveForm;
@@ -62,6 +60,7 @@ import org.apache.sis.geometries.internal.shared.DefaultBSplineCurve;
 import org.apache.sis.geometries.internal.shared.DefaultBSplineSurface;
 import org.apache.sis.geometries.internal.shared.DefaultBezier;
 import org.apache.sis.geometries.internal.shared.DefaultBilinearGrid;
+import org.apache.sis.geometries.internal.shared.DefaultCapsule;
 import org.apache.sis.geometries.internal.shared.DefaultCircle;
 import org.apache.sis.geometries.internal.shared.DefaultCircularString;
 import org.apache.sis.geometries.internal.shared.DefaultClothoid;
@@ -69,18 +68,15 @@ import org.apache.sis.geometries.internal.shared.DefaultCompoundCurve;
 import org.apache.sis.geometries.internal.shared.DefaultConic;
 import org.apache.sis.geometries.internal.shared.DefaultCubicSpline;
 import org.apache.sis.geometries.internal.shared.DefaultCurvePolygon;
+import org.apache.sis.geometries.internal.shared.DefaultCylinder;
+import org.apache.sis.geometries.internal.shared.DefaultEllipsoid;
 import org.apache.sis.geometries.internal.shared.DefaultEllipticArc;
 import org.apache.sis.geometries.internal.shared.DefaultEmpty;
 import org.apache.sis.geometries.internal.shared.DefaultGeodesic;
 import org.apache.sis.geometries.internal.shared.DefaultGeometryCollection;
 import org.apache.sis.geometries.internal.shared.DefaultLineString;
 import org.apache.sis.geometries.internal.shared.DefaultLinearRing;
-import org.apache.sis.geometries.internal.shared.DefaultMultiCurve;
-import org.apache.sis.geometries.internal.shared.DefaultMultiLineString;
 import org.apache.sis.geometries.internal.shared.DefaultMultiPoint;
-import org.apache.sis.geometries.internal.shared.DefaultMultiPolygon;
-import org.apache.sis.geometries.internal.shared.DefaultMultiPolyhedron;
-import org.apache.sis.geometries.internal.shared.DefaultMultiSurface;
 import org.apache.sis.geometries.internal.shared.DefaultNurbCurve;
 import org.apache.sis.geometries.internal.shared.DefaultNurbSurface;
 import org.apache.sis.geometries.internal.shared.DefaultOffsetCurve;
@@ -91,17 +87,18 @@ import org.apache.sis.geometries.internal.shared.DefaultPolyhedron;
 import org.apache.sis.geometries.internal.shared.DefaultPolynomialSpline;
 import org.apache.sis.geometries.internal.shared.DefaultPrism;
 import org.apache.sis.geometries.internal.shared.DefaultProductCurve;
-import org.apache.sis.geometries.internal.shared.DefaultRawMultiPoint;
+import org.apache.sis.geometries.internal.shared.DefaultRay;
 import org.apache.sis.geometries.internal.shared.DefaultReversedCurve;
 import org.apache.sis.geometries.internal.shared.DefaultReversedSurface;
 import org.apache.sis.geometries.internal.shared.DefaultRhumb;
 import org.apache.sis.geometries.internal.shared.DefaultSolid;
+import org.apache.sis.geometries.internal.shared.DefaultSphere;
 import org.apache.sis.geometries.internal.shared.DefaultSpiral;
 import org.apache.sis.geometries.internal.shared.DefaultTriangle;
 import org.apache.sis.geometries.internal.shared.DefaultTriangulatedSurface;
-import org.apache.sis.geometries.point.MultiPoint;
+import org.apache.sis.geometries.surface.Capsule;
+import org.apache.sis.geometries.surface.Cylinder;
 import org.apache.sis.geometries.surface.Ellipsoid;
-import org.apache.sis.geometries.solid.MultiPolyhedron;
 import org.apache.sis.geometries.solid.Polyhedron;
 import org.apache.sis.geometries.surface.Sphere;
 import org.apache.sis.geometries.solid.BSplineSolid;
@@ -109,8 +106,6 @@ import org.apache.sis.geometries.surface.BSplineSurface;
 import org.apache.sis.geometries.surface.BSplineSurfaceForm;
 import org.apache.sis.geometries.surface.BilinearGrid;
 import org.apache.sis.geometries.surface.CurvePolygon;
-import org.apache.sis.geometries.surface.MultiPolygon;
-import org.apache.sis.geometries.surface.MultiSurface;
 import org.apache.sis.geometries.surface.NurbSurface;
 import org.apache.sis.geometries.surface.Polygon;
 import org.apache.sis.geometries.surface.PolyhedralSurface;
@@ -188,6 +183,22 @@ public final class GeometryFactory {
     }
 
     /**
+     * Creates a {@code DataPoints} of the given size holding the attributes declared by the given type.
+     * All the values are initialized to zero.
+     *
+     * @param  type  the attributes of the {@code DataPoints}, which shall include the position.
+     * @param  size  number of points in the {@code DataPoints}.
+     * @return a new {@code DataPoints} of the given size.
+     */
+    public DataPoints createDataPoints(DataPointsType type, int size) {
+        final Map<String,Array> attributes = new LinkedHashMap<>();
+        for (final String name : type.getAttributeNames()) {
+            attributes.put(name, NDArrays.of(type.getAttributeSystem(name), type.getAttributeType(name), size));
+        }
+        return createDataPoints(attributes);
+    }
+
+    /**
      * Returns a copy of the given DataPoints.
      */
     public DataPoints createDataPoints(final DataPoints source) {
@@ -232,16 +243,15 @@ public final class GeometryFactory {
         return new DefaultPoint(sequence);
     }
 
-    public MultiPoint createMultiPoint(DataPoints sequence) {
-        return new DefaultMultiPoint(sequence);
-    }
-
-    public MultiPoint createMultiPoint(Point ... geometries) {
-        return new DefaultRawMultiPoint(geometries);
-    }
-
-    public MultiPoint createMultiPoint(CoordinateReferenceSystem crs, Point ... geometries) {
-        return new DefaultRawMultiPoint(crs, geometries);
+    /**
+     * Creates a point holding the attributes declared by the given type.
+     * All the values are initialized to zero.
+     *
+     * @param  type  the attributes of the point, which shall include the position.
+     * @return a new point.
+     */
+    public Point createPoint(DataPointsType type) {
+        return createPoint(createDataPoints(type, 1));
     }
 
     // ////////////////////////////////////////////////////////////////////////
@@ -518,22 +528,6 @@ public final class GeometryFactory {
         return new DefaultReversedCurve(base);
     }
 
-    public MultiLineString createMultiLineString(LineString ... geometries) {
-        return new DefaultMultiLineString(geometries);
-    }
-
-    public MultiLineString createMultiLineString(CoordinateReferenceSystem crs, LineString ... geometries) {
-        return new DefaultMultiLineString(crs, geometries);
-    }
-
-    public <T extends Curve> MultiCurve<T> createMultiCurve(T ... geometries) {
-        return new DefaultMultiCurve<>(geometries);
-    }
-
-    public <T extends Curve> MultiCurve<T> createMultiCurve(CoordinateReferenceSystem crs, T ... geometries) {
-        return new DefaultMultiCurve<>(crs, geometries);
-    }
-
     // ////////////////////////////////////////////////////////////////////////
     // Surfaces ///////////////////////////////////////////////////////////////
     // ////////////////////////////////////////////////////////////////////////
@@ -578,7 +572,7 @@ public final class GeometryFactory {
      * @param  columns        number of columns in the parameter grid.
      * @param  knots          knot values, one sequence per surface parameter, or {@code null} if none.
      */
-    public BilinearGrid createBilinearGrid(DataPoints points, List<DirectPosition> controlPoints,
+    public BilinearGrid createBilinearGrid(DataPoints points, Array controlPoints,
             int rows, int columns, List<double[]> knots)
     {
         return new DefaultBilinearGrid(points, controlPoints, rows, columns, knots);
@@ -602,7 +596,7 @@ public final class GeometryFactory {
      * @param  polynomial     {@code true} if the surface is polynomial, {@code false} if the control
      *                        points are expressed in homogeneous coordinates, making it rational.
      */
-    public BSplineSurface createBSplineSurface(DataPoints points, List<DirectPosition> controlPoints,
+    public BSplineSurface createBSplineSurface(DataPoints points, Array controlPoints,
             int rows, int columns, List<double[]> knots, int degree, KnotType knotSpec,
             BSplineSurfaceForm surfaceForm, boolean polynomial)
     {
@@ -628,33 +622,83 @@ public final class GeometryFactory {
     }
 
     /**
-     * Creates a sphere of the given radius centered on the single position of the given sequence.
-     * The sequence is taken as-is, so the caller may give the sphere the attributes carried by it.
+     * Creates a sphere of the given radius centered on the single position of the given {@code DataPoints}.
+     * The {@code DataPoints} is taken as-is, so the caller may give the sphere the attributes carried by it.
      *
-     * @param  points  the center of the sphere, as a sequence of exactly one position.
+     * @param  points  the center of the sphere, as a {@code DataPoints} of exactly one position.
      * @param  radius  radius of the sphere, must be positive.
      * @return the sphere of the given center and radius.
-     * @throws IllegalArgumentException if the given sequence does not hold exactly one position.
+     * @throws IllegalArgumentException if the given {@code DataPoints} does not hold exactly one position.
      */
     public Sphere createSphere(DataPoints points, double radius) {
-        return new Sphere(points, radius);
+        return new DefaultSphere(points, radius);
     }
 
     /**
      * Creates an ellipsoid of the given semi-axes centered on the single position of the given
-     * sequence. The sequence is taken as-is, so the caller may give the ellipsoid the attributes
-     * carried by it. An ellipsoid whose semi-axes are all equal is a {@linkplain #createSphere
-     * sphere} of that radius.
+     * {@code DataPoints}. The {@code DataPoints} is taken as-is, so the caller may give the
+     * ellipsoid the attributes carried by it. An ellipsoid whose semi-axes are all equal is a
+     * {@linkplain #createSphere sphere} of that radius.
      *
-     * @param  points    the center of the ellipsoid, as a sequence of exactly one position.
+     * @param  points    the center of the ellipsoid, as a {@code DataPoints} of exactly one position.
      * @param  semiAxes  length of the semi-axis along each axis of the coordinate system,
      *                   one value per dimension. Each of them must be positive.
      * @return the ellipsoid of the given center and semi-axes.
-     * @throws IllegalArgumentException if the given sequence does not hold exactly one position,
+     * @throws IllegalArgumentException if the given {@code DataPoints} does not hold exactly one position,
      *         or if the number of semi-axes is not the number of dimensions.
      */
     public Ellipsoid createEllipsoid(DataPoints points, double... semiAxes) {
-        return new Ellipsoid(points, semiAxes);
+        return new DefaultEllipsoid(points, semiAxes);
+    }
+
+    /**
+     * Creates a capsule whose capping spheres are centered on the two given positions.
+     * The reference system of the capsule is the one of those positions.
+     *
+     * @param  bottom  the center of the bottom sphere, not null.
+     * @param  top     the center of the top sphere, not null.
+     * @return the capsule between the two given positions.
+     */
+    public Capsule createCapsule(Vector<?> bottom, Vector<?> top) {
+        return new DefaultCapsule(bottom, top);
+    }
+
+    /**
+     * Creates a capsule whose capping spheres are centered on the two positions of the given
+     * {@code DataPoints}. The {@code DataPoints} is taken as-is, so the caller may give the
+     * capsule the attributes carried by it.
+     *
+     * @param  points  the centers of the bottom and top spheres, in that order.
+     * @return the capsule between the two positions of the given {@code DataPoints}.
+     * @throws IllegalArgumentException if the given {@code DataPoints} does not hold exactly two positions.
+     */
+    public Capsule createCapsule(DataPoints points) {
+        return new DefaultCapsule(points);
+    }
+
+    /**
+     * Creates a cylinder along the axis joining the two given positions.
+     * The reference system of the cylinder is the one of those positions.
+     *
+     * @param  bottom  the center of the bottom circle, not null.
+     * @param  top     the center of the top circle, not null.
+     * @return the cylinder between the two given positions.
+     */
+    public Cylinder createCylinder(Vector<?> bottom, Vector<?> top) {
+        return new DefaultCylinder(bottom, top);
+    }
+
+    /**
+     * Creates a cylinder along the axis joining the two positions of the given {@code DataPoints}.
+     * The {@code DataPoints} is taken as-is, so the caller may give the cylinder the attributes
+     * carried by it.
+     *
+     * @param  points  the centers of the bottom and top circles, in that order.
+     * @return the cylinder between the two positions of the given {@code DataPoints}.
+     * @throws IllegalArgumentException if the given {@code DataPoints} does not hold exactly two positions.
+     */
+    public Cylinder createCylinder(DataPoints points) {
+        return new DefaultCylinder(points);
     }
 
     /**
@@ -665,22 +709,6 @@ public final class GeometryFactory {
         return new DefaultReversedSurface(base);
     }
 
-    public MultiPolygon createMultiPolygon(Polygon ... geometries) {
-        return new DefaultMultiPolygon(geometries);
-    }
-
-    public MultiPolygon createMultiPolygon(CoordinateReferenceSystem crs, Polygon ... geometries) {
-        return new DefaultMultiPolygon(crs, geometries);
-    }
-
-    public <T extends Surface> MultiSurface<T> createMultiSurface(T ... geometries) {
-        return new DefaultMultiSurface<>(geometries);
-    }
-
-    public <T extends Surface> MultiSurface<T> createMultiSurface(CoordinateReferenceSystem crs, T ... geometries) {
-        return new DefaultMultiSurface<>(crs, geometries);
-    }
-
     // ////////////////////////////////////////////////////////////////////////
     // Solids /////////////////////////////////////////////////////////////////
     // ////////////////////////////////////////////////////////////////////////
@@ -689,7 +717,7 @@ public final class GeometryFactory {
         return new DefaultSolid(surfaces);
     }
 
-    public Polyhedron createPolyhedron(MultiPolygon exteriorShell, List<MultiPolygon> interiorShells) {
+    public Polyhedron createPolyhedron(GeometryCollection<Polygon> exteriorShell, List<GeometryCollection<Polygon>> interiorShells) {
         return new DefaultPolyhedron(exteriorShell, interiorShells);
     }
 
@@ -703,7 +731,7 @@ public final class GeometryFactory {
      * @param  columns        number of vertical columns in the parameter grid.
      * @param  files          number of depth files in the parameter grid.
      */
-    public BSplineSolid createBSolidSpline(DataPoints points, List<DirectPosition> controlPoints,
+    public BSplineSolid createBSolidSpline(DataPoints points, Array controlPoints,
             int rows, int columns, int files)
     {
         return new DefaultBSplineSolid(points, controlPoints, rows, columns, files);
@@ -720,17 +748,61 @@ public final class GeometryFactory {
         return new DefaultPrism(base, extrusionRange, extrusionCrs);
     }
 
-    public MultiPolyhedron createMultiPolyhedron(Polyhedron ... solids) {
-        return new DefaultMultiPolyhedron(solids);
-    }
-
-    public MultiPolyhedron createMultiPolyhedron(CoordinateReferenceSystem crs, Polyhedron ... solids) {
-        return new DefaultMultiPolyhedron(crs, solids);
-    }
-
     // ////////////////////////////////////////////////////////////////////////
     // Heterogeneous collections //////////////////////////////////////////////
     // ////////////////////////////////////////////////////////////////////////
+
+    public GeometryCollection<Point> createMultiPoint(DataPoints sequence) {
+        return new DefaultMultiPoint(sequence);
+    }
+
+    public GeometryCollection<Point> createMultiPoint(Point ... geometries) {
+        return new DefaultGeometryCollection<>(GeometryType.POINT, geometries);
+    }
+
+    public GeometryCollection<Point> createMultiPoint(CoordinateReferenceSystem crs, Point ... geometries) {
+        return new DefaultGeometryCollection(GeometryType.POINT, crs, geometries);
+    }
+
+    public GeometryCollection<LineString> createMultiLineString(LineString ... geometries) {
+        return new DefaultGeometryCollection(GeometryType.LINESTRING, geometries);
+    }
+
+    public GeometryCollection<LineString> createMultiLineString(CoordinateReferenceSystem crs, LineString ... geometries) {
+        return new DefaultGeometryCollection(GeometryType.LINESTRING, crs, geometries);
+    }
+
+    public <T extends Curve> GeometryCollection<T> createMultiCurve(T ... geometries) {
+        return new DefaultGeometryCollection<>(GeometryType.CURVE, geometries);
+    }
+
+    public <T extends Curve> GeometryCollection<T> createMultiCurve(CoordinateReferenceSystem crs, T ... geometries) {
+        return new DefaultGeometryCollection<>(GeometryType.CURVE, crs, geometries);
+    }
+
+    public GeometryCollection<Polygon> createMultiPolygon(Polygon ... geometries) {
+        return new DefaultGeometryCollection<>(GeometryType.POLYGON, geometries);
+    }
+
+    public GeometryCollection<Polygon> createMultiPolygon(CoordinateReferenceSystem crs, Polygon ... geometries) {
+        return new DefaultGeometryCollection<Polygon>(GeometryType.POLYGON, crs, geometries);
+    }
+
+    public <T extends Surface> GeometryCollection<T> createMultiSurface(T ... geometries) {
+        return new DefaultGeometryCollection<>(GeometryType.SURFACE, geometries);
+    }
+
+    public <T extends Surface> GeometryCollection<T> createMultiSurface(CoordinateReferenceSystem crs, T ... geometries) {
+        return new DefaultGeometryCollection<>(GeometryType.SURFACE, crs, geometries);
+    }
+
+    public GeometryCollection<Polyhedron> createMultiPolyhedron(Polyhedron ... solids) {
+        return new DefaultGeometryCollection(GeometryType.POLYHEDRON, solids);
+    }
+
+    public GeometryCollection<Polyhedron> createMultiPolyhedron(CoordinateReferenceSystem crs, Polyhedron ... solids) {
+        return new DefaultGeometryCollection(GeometryType.POLYHEDRON, crs, solids);
+    }
 
     public <T extends Geometry> GeometryCollection<T> createGeometryCollection(T ... geometries) {
         return new DefaultGeometryCollection<>(GeometryType.GEOMETRY, geometries);
@@ -758,20 +830,20 @@ public final class GeometryFactory {
      * @return the ray starting from the given position.
      */
     public Ray createRay(Vector<?> position, Vector<?> direction) {
-        return new Ray(position, direction);
+        return new DefaultRay(position, direction);
     }
 
     /**
-     * Creates a ray starting from the single position of the given sequence.
-     * The sequence is taken as-is, so the caller may give the ray the attributes carried by it.
+     * Creates a ray starting from the single position of the given {@code DataPoints}.
+     * The {@code DataPoints} is taken as-is, so the caller may give the ray the attributes carried by it.
      *
-     * @param  points     the position the ray starts from, as a sequence of exactly one position.
+     * @param  points     the position the ray starts from, as a {@code DataPoints} of exactly one position.
      * @param  direction  the direction the ray extends toward, not null.
-     * @return the ray starting from the position of the given sequence.
-     * @throws IllegalArgumentException if the given sequence does not hold exactly one position.
+     * @return the ray starting from the position of the given {@code DataPoints}.
+     * @throws IllegalArgumentException if the given {@code DataPoints} does not hold exactly one position.
      */
     public Ray createRay(DataPoints points, Vector<?> direction) {
-        return new Ray(points, direction);
+        return new DefaultRay(points, direction);
     }
 
     /**
@@ -791,13 +863,13 @@ public final class GeometryFactory {
     }
 
     /**
-     * Creates a plane centered on the single position of the given sequence.
-     * The sequence is taken as-is, so the caller may give the plane the attributes carried by it.
+     * Creates a plane centered on the single position of the given {@code DataPoints}.
+     * The {@code DataPoints} is taken as-is, so the caller may give the plane the attributes carried by it.
      *
-     * @param  points  the position the plane is centered on, as a sequence of exactly one position.
+     * @param  points  the position the plane is centered on, as a {@code DataPoints} of exactly one position.
      * @param  normal  the direction the plane is perpendicular to, not null.
-     * @return the plane centered on the position of the given sequence.
-     * @throws IllegalArgumentException if the given sequence does not hold exactly one position.
+     * @return the plane centered on the position of the given {@code DataPoints}.
+     * @throws IllegalArgumentException if the given {@code DataPoints} does not hold exactly one position.
      */
     public Plane createPlane(DataPoints points, Vector<?> normal) {
         return new Plane(points, normal);
@@ -818,13 +890,13 @@ public final class GeometryFactory {
     }
 
     /**
-     * Creates a hyperplane passing by the single position of the given sequence.
-     * The sequence is taken as-is, so the caller may give the hyperplane the attributes carried by it.
+     * Creates a hyperplane passing by the single position of the given {@code DataPoints}.
+     * The {@code DataPoints} is taken as-is, so the caller may give the hyperplane the attributes carried by it.
      *
-     * @param  points  a position the hyperplane passes by, as a sequence of exactly one position.
+     * @param  points  a position the hyperplane passes by, as a {@code DataPoints} of exactly one position.
      * @param  normal  the direction the hyperplane is perpendicular to, not null.
-     * @return the hyperplane passing by the position of the given sequence.
-     * @throws IllegalArgumentException if the given sequence does not hold exactly one position.
+     * @return the hyperplane passing by the position of the given {@code DataPoints}.
+     * @throws IllegalArgumentException if the given {@code DataPoints} does not hold exactly one position.
      */
     public HyperPlane createHyperPlane(DataPoints points, Vector<?> normal) {
         return new HyperPlane(points, normal);

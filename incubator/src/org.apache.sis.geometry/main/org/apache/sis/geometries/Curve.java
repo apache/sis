@@ -32,6 +32,7 @@ import org.apache.sis.geometries.curve.Line;
 import org.apache.sis.geometries.curve.LineString;
 import org.apache.sis.geometries.curve.OffsetCurve;
 import org.apache.sis.geometries.curve.ProductCurve;
+import org.apache.sis.geometries.curve.Ray;
 import org.apache.sis.geometries.curve.Rhumb;
 import org.apache.sis.geometries.curve.Spiral;
 import org.apache.sis.geometries.internal.shared.DefaultReversedCurve;
@@ -43,7 +44,7 @@ import org.apache.sis.measure.Units;
 
 /**
  * A 1-dimensional geometric primitive, continuous image of an open real interval,
- * usually stored as a sequence of points with the subtype specifying the interpolation between them.
+ * usually stored as {@code DataPoints} with the subtype specifying the interpolation between them.
  *
  * <p>A curve is connected and has a measurable length. Its orientation is given by its
  * parameterization, consistently with the tangent which always points in the forward direction.
@@ -79,6 +80,7 @@ public sealed interface Curve extends Orientable
                 LineString,
                 OffsetCurve,
                 ProductCurve,
+                Ray,
                 Rhumb,
                 Spiral,
                 DefaultReversedCurve
@@ -157,6 +159,22 @@ public sealed interface Curve extends Orientable
         final DataPoints points = getDataPoints();
         if (points.isEmpty()) return null;
         return points.getPoint(points.size()-1);
+    }
+
+    /**
+     * Returns the point at the middle of this curve, i.e. at 50% of its {@linkplain #getLength() length}.
+     *
+     * @return the point at middle distance along this curve, or {@code null} if this curve is empty.
+     *
+     * @see #subCurve(Quantity)
+     * @see ISO 19107:2019 - 6.4.4.19
+     */
+    @Override
+    default Point getRepresentativePoint() {
+        if (isEmpty()) {
+            return null;
+        }
+        return subCurve(Quantities.create(50, Units.PERCENT));
     }
 
     /**
@@ -254,14 +272,21 @@ public sealed interface Curve extends Orientable
      *   <li>In a composite curve, the last knot of a segment is the first knot of the next segment.</li>
      * </ul>
      *
+     * <p>By default, the knot space is the sequence of integers starting at 0: the knot of
+     * each data point is its index. Curves with another construction parameterization,
+     * such as splines, override this method.</p>
+     *
      * @return knot values in the construction (knot) space.
      *
      * @see ISO 19107:2019 - 6.4.18.4
      */
     @UML(identifier="knot", specification=ISO_19107)
     default double[] getKnots() {
-        //TODO
-        throw new UnsupportedOperationException();
+        final double[] knots = new double[getDataPoints().size()];
+        for (int i = 0; i < knots.length; i++) {
+            knots[i] = i;
+        }
+        return knots;
     }
 
     /**
@@ -279,8 +304,7 @@ public sealed interface Curve extends Orientable
      */
     @UML(identifier="interpolation", specification=ISO_19107)
     default CurveInterpolation getInterpolation() {
-        //TODO
-        throw new UnsupportedOperationException();
+        return CurveInterpolation.LINEAR;
     }
 
     /**
@@ -293,14 +317,16 @@ public sealed interface Curve extends Orientable
      *       necessarily smaller than the {@linkplain #getEndConstrParam() end parameter}.</li>
      * </ul>
      *
-     * @return construction parameter of the start point.
+     * <p>By default, this is the first {@linkplain #getKnots() knot}.</p>
+     *
+     * @return construction parameter of the start point, or NaN if this curve has no knot.
      *
      * @see ISO 19107:2019 - 6.4.18.15
      */
     @UML(identifier="startConstrParam", specification=ISO_19107)
     default double getStartConstrParam() {
-        //TODO
-        throw new UnsupportedOperationException();
+        final double[] knots = getKnots();
+        return (knots.length != 0) ? knots[0] : Double.NaN;
     }
 
     /**
@@ -313,14 +339,16 @@ public sealed interface Curve extends Orientable
      *       necessarily greater than the {@linkplain #getStartConstrParam() start parameter}.</li>
      * </ul>
      *
-     * @return construction parameter of the end point.
+     * <p>By default, this is the last {@linkplain #getKnots() knot}.</p>
+     *
+     * @return construction parameter of the end point, or NaN if this curve has no knot.
      *
      * @see ISO 19107:2019 - 6.4.18.15
      */
     @UML(identifier="endConstrParam", specification=ISO_19107)
     default double getEndConstrParam() {
-        //TODO
-        throw new UnsupportedOperationException();
+        final double[] knots = getKnots();
+        return (knots.length != 0) ? knots[knots.length - 1] : Double.NaN;
     }
 
     /**
@@ -489,8 +517,7 @@ public sealed interface Curve extends Orientable
      */
     @UML(identifier="asLine", specification=ISO_19107)
     default LineString asLine(Quantity<?> spacing, Quantity<?> offset) {
-        //TODO
-        throw new UnsupportedOperationException();
+        throw new UnsupportedOperationException("Linear approximation of " + getGeometryType() + " curves is not supported yet.");
     }
 
     /**
@@ -663,6 +690,27 @@ public sealed interface Curve extends Orientable
      */
     @UML(identifier="Curve", specification=ISO_19107)
     default Curve subCurve(double cparam1, double cparam2) {
+        //TODO
+        throw new UnsupportedOperationException();
+    }
+
+    /**
+     * Extracts the portion of this curve at given length.
+     *
+     * <p>Difference with ISO 19107: declared as a copy constructor in the standard,
+     * with a start and end parameter, this version gets only one point.</p>
+     *
+     * <p>Difference with ISO-19107, the Length type has been changed to Quantity to
+     * handle temporal geometries and crs-less geometries.</p>
+     *
+     * <p>To get the start or end point use the Percent unit, 0 or 100</p>
+     *
+     * @param  dist length parameter where is the returned point.
+     * @return the ppoint at given length.
+     *
+     * @see derived from ISO 19107:2019 - 6.4.18.22
+     */
+    default Point subCurve(Quantity<?> dist) {
         //TODO
         throw new UnsupportedOperationException();
     }

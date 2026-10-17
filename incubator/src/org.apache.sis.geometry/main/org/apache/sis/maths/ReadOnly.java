@@ -186,9 +186,18 @@ public final class ReadOnly {
          * @return tuple copy.
          */
         default org.apache.sis.maths.Vector<?> copy() {
-            org.apache.sis.maths.Vector<?> tuple = Vectors.create(getSampleSystem(), getDataType());
-            tuple.set(this);
-            return tuple;
+            return Vectors.create(getSampleSystem(), getDataType()).set(this);
+        }
+
+        /**
+         * Create a copy of this tuple, with values stored in the given data type.
+         * The copy has the same sample system as this tuple.
+         *
+         * @param  dataType  data type of the copy values.
+         * @return tuple copy.
+         */
+        default org.apache.sis.maths.Vector<?> copy(DataType dataType) {
+            return Vectors.create(getSampleSystem(), dataType).set(this);
         }
 
         /**

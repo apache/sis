@@ -16,22 +16,29 @@
  */
 package org.apache.sis.geometries.surface;
 
-import java.util.Objects;
+import java.util.ArrayList;
+import java.util.List;
+import javax.measure.Quantity;
 import static org.opengis.annotation.Specification.ISO_12113;
 import org.opengis.annotation.UML;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
-import org.apache.sis.geometries.BBox;
-import org.apache.sis.geometries.DataPoints;
 import org.apache.sis.geometries.DataPointsType;
+import org.apache.sis.geometries.Geometries;
 import org.apache.sis.geometries.Geometry;
 import org.apache.sis.geometries.GeometryFactory;
 import org.apache.sis.geometries.GeometryType;
-import org.apache.sis.geometries.internal.shared.AbstractGeometry;
+import org.apache.sis.geometries.Surface;
+import org.apache.sis.geometries.SurfaceInterpolation;
+import org.apache.sis.geometries.curve.Circle;
+import org.apache.sis.geometries.internal.shared.DefaultCylinder;
 import org.apache.sis.maths.DataType;
 import org.apache.sis.maths.NDArrays;
+import org.apache.sis.maths.NDRange;
 import org.apache.sis.maths.ReadOnly;
 import org.apache.sis.maths.Vectors;
 import org.apache.sis.maths.Vector;
+import org.apache.sis.measure.Quantities;
+import org.opengis.geometry.Envelope;
 
 
 /**
@@ -43,86 +50,109 @@ import org.apache.sis.maths.Vector;
  *
  * ISO 19107 : classified as a conic surface
  *
+ * <p>A cylinder is either {@linkplain #isClosed() closed} by two disks at its ends, which makes it
+ * the boundary of a volume as in the KHR_implicit_shapes extension, or open, in which case it is
+ * only the lateral surface that ISO 19107 defines.</p>
+ *
+ * <p>Constraints:</p>
+ * <ul>
+ *   <li>The {@linkplain #getDataPoints() data points} hold exactly two positions:
+ *       the center of the bottom circle, then the center of the top one.</li>
+ * </ul>
+ *
  * @author Johann Sorel (Geomatys)
  * @spec ISO_19107 section 8.5.4  Cylinder
  * @spec ISO_19107 section 8.5.3  Cone
  * @spec ISO_12113 KHR_implicit_shapes extension Cylinder
  */
 @UML(identifier="Cylinder", specification=ISO_12113)
-public final class Cylinder extends AbstractGeometry{
+public sealed interface Cylinder extends Surface
+        permits DefaultCylinder
+{
 
     /**
-     * Must contain two points : the center of the bottom circle, then the center of the top one.
+     * Returns {@link GeometryType#CYLINDER}.
      */
-    private final DataPoints points;
-
-    private double radiusTop = 1.0;
-    private double radiusBottom = 1.0;
-
-    /**
-     * Creates a cylinder along the axis joining the two given positions.
-     * The reference system of the cylinder is the one of those positions.
-     *
-     * @param  bottom  the center of the bottom circle, not null.
-     * @param  top     the center of the top circle, not null.
-     */
-    public Cylinder(Vector<?> bottom, Vector<?> top) {
-        points = GeometryFactory.DEFAULT.createDataPoints(NDArrays.of(bottom.getSampleSystem(), bottom.getDataType(), 2));
-        points.setPosition(0, bottom);
-        points.setPosition(1, top);
-    }
-
-    /**
-     * Creates a cylinder along the axis joining the two positions of the given sequence.
-     * The sequence is taken as-is, so the caller may give the cylinder the attributes
-     * carried by that sequence.
-     *
-     * @param  points  the centers of the bottom and top circles, in that order.
-     * @throws IllegalArgumentException if the given sequence does not hold exactly two positions.
-     */
-    public Cylinder(DataPoints points) {
-        if (points.size() != 2) {
-            throw new IllegalArgumentException("Cylinder sequence must contain two points");
-        }
-        this.points = points;
-    }
-
     @Override
-    public GeometryType getGeometryType() {
+    default GeometryType getGeometryType() {
         return GeometryType.CYLINDER;
     }
 
-    public DataPoints getDataPoints() {
-        return points;
+    /**
+     * Returns {@link SurfaceInterpolation#CONIC}, since ISO 19107 classifies cylinders and cones
+     * as conic surfaces, followed by {@link SurfaceInterpolation#PLANAR} for the end disks if this
+     * cylinder is {@linkplain #isClosed() closed}.
+     *
+     * @see ISO 19107:2019 - 8.5.3, 8.5.4
+     */
+    @Override
+    default List<SurfaceInterpolation> getInterpolation() {
+        return isClosed() ? List.of(SurfaceInterpolation.CONIC, SurfaceInterpolation.PLANAR)
+                          : List.of(SurfaceInterpolation.CONIC);
+    }
+
+    /**
+     * Returns whether this cylinder is closed by a disk at each of its ends.
+     * An end whose radius is zero, the apex of a cone, needs no disk.
+     *
+     * @return {@code true} if the ends are closed by disks, or {@code false} for the lateral surface only.
+     */
+    boolean isClosed();
+
+    /**
+     * Sets whether this cylinder is closed by a disk at each of its ends.
+     *
+     * @param closed {@code true} to close the ends by disks, or {@code false} for the lateral surface only.
+     */
+    void setClosed(boolean closed);
+
+    /**
+     * Returns {@code false}: a cylinder always has its two circle centers.
+     */
+    @Override
+    default boolean isEmpty() {
+        return false;
     }
 
     /**
      * @return the center of the bottom circle
      */
-    public ReadOnly.Vector<?> getBottom() {
-        return points.getPosition(0);
-    }
+    ReadOnly.Vector<?> getBottom();
 
     /**
      * @param position new center of the bottom circle
      */
-    public void setBottom(ReadOnly.Vector<?> position) {
-        points.setPosition(0, position);
-    }
+    void setBottom(ReadOnly.Vector<?> position);
 
     /**
      * @return the center of the top circle
      */
-    public ReadOnly.Vector<?> getTop() {
-        return points.getPosition(1);
-    }
+    ReadOnly.Vector<?> getTop();
 
     /**
      * @param position new center of the top circle
      */
-    public void setTop(ReadOnly.Vector<?> position) {
-        points.setPosition(1, position);
-    }
+    void setTop(ReadOnly.Vector<?> position);
+
+    /**
+     * @return cylinder top circle radius
+     */
+    double getRadiusTop();
+
+    /**
+     * @param radius new cylinder top radius
+     */
+    void setRadiusTop(double radius);
+
+    /**
+     * @return cylinder bottom circle radius
+     */
+    double getRadiusBottom();
+
+    /**
+     * @param radius new cylinder bottom radius
+     */
+    void setRadiusBottom(double radius);
 
     /**
      * Returns the vector going from the center of the bottom circle to the center of the top one.
@@ -144,36 +174,8 @@ public final class Cylinder extends AbstractGeometry{
      *
      * @return the cylinder height
      */
-    public double getHeight() {
+    default double getHeight() {
         return getAxis().length();
-    }
-
-    /**
-     * @return cylinder top circle radius
-     */
-    public double getRadiusTop() {
-        return radiusTop;
-    }
-
-    /**
-     * @param radius new cylinder top radius
-     */
-    public void setRadiusTop(double radius) {
-        this.radiusTop = radius;
-    }
-
-    /**
-     * @return cylinder bottom circle radius
-     */
-    public double getRadiusBottom() {
-        return radiusBottom;
-    }
-
-    /**
-     * @param radius new cylinder bottom radius
-     */
-    public void setRadiusBottom(double radius) {
-        this.radiusBottom = radius;
     }
 
     /**
@@ -181,13 +183,8 @@ public final class Cylinder extends AbstractGeometry{
      *
      * @return true if cylinder is a cone, top or bottom radius is 0.0.
      */
-    public boolean isCone() {
-        return radiusBottom == 0.0 || radiusTop == 0.0;
-    }
-
-    @Override
-    public boolean isEmpty() {
-        return false;
+    default boolean isCone() {
+        return getRadiusBottom() == 0.0 || getRadiusTop() == 0.0;
     }
 
     /**
@@ -200,13 +197,15 @@ public final class Cylinder extends AbstractGeometry{
      * has no axis to speak of, and is then bounded by its radii on every axis.</p>
      */
     @Override
-    public BBox getEnvelope() {
+    default Envelope getEnvelope() {
         final ReadOnly.Vector<?> bottom = getBottom();
         final ReadOnly.Vector<?> top = getTop();
+        final double radiusBottom = getRadiusBottom();
+        final double radiusTop = getRadiusTop();
         final Vector<?> axis = getAxis();
         final double height = axis.length();
-        final int dim = points.getDimension();
-        final BBox bbox = new BBox(dim);
+        final int dim = getDataPoints().getDimension();
+        final NDRange bbox = new NDRange(getCoordinateReferenceSystem());
         for (int i=0;i<dim;i++){
             final double b = bottom.get(i);
             final double t = top.get(i);
@@ -223,48 +222,122 @@ public final class Cylinder extends AbstractGeometry{
         return bbox;
     }
 
+    /**
+     * Returns the area of the lateral surface, π(r₁ + r₂)⋅√(h² + (r₁ − r₂)²) where <var>h</var> is the
+     * {@linkplain #getHeight() height}, plus the areas π<var>r</var>² of the two end disks if this
+     * cylinder is {@linkplain #isClosed() closed}.
+     *
+     * @throws UnsupportedOperationException if this cylinder is not 3-dimensional.
+     */
     @Override
-    public CoordinateReferenceSystem getCoordinateReferenceSystem() {
-        return points.getCoordinateReferenceSystem();
-    }
-
-    @Override
-    public Geometry getBoundary() {
-        throw new UnsupportedOperationException("Not supported yet.");
-    }
-
-    @Override
-    public void setCoordinateReferenceSystem(CoordinateReferenceSystem crs) throws IllegalArgumentException {
-        points.setCoordinateReferenceSystem(crs);
-    }
-
-    @Override
-    public DataPointsType getDataPointsType() {
-        return points.getType();
-    }
-
-    @Override
-    public boolean equals(Object obj) {
-        if (obj == null) {
-            return false;
+    default Quantity<?> getArea() {
+        if (getDataPoints().getDimension() != 3) {
+            throw new UnsupportedOperationException("The area of a cylinder is computed in 3 dimensions only.");
         }
-        if (getClass() != obj.getClass()) {
-            return false;
+        final double r1 = getRadiusBottom();
+        final double r2 = getRadiusTop();
+        final double h  = getHeight();
+        double area = Math.PI * (r1 + r2) * Math.hypot(h, r1 - r2);
+        if (isClosed()) {
+            area += Math.PI * (r1*r1 + r2*r2);
         }
-        final Cylinder other = (Cylinder) obj;
-        if (!Objects.equals(this.points, other.points)) {
-            return false;
+        return Quantities.create(area, Geometries.getAreaUnit(this));
+    }
+
+    /**
+     * Returns the empty geometry if this cylinder is {@linkplain #isClosed() closed},
+     * or the circles at its ends otherwise.
+     *
+     * <p>The circles of an open cylinder are oriented so that the lateral surface is on their left
+     * when seen from its outward normal: the bottom circle turns counterclockwise around the axis
+     * going from the bottom to the top, and the top circle clockwise. An end whose radius is zero,
+     * the apex of a cone, is a single point which bounds nothing, so it has no circle.</p>
+     *
+     * @return the empty geometry, or a collection of the end circles.
+     * @throws UnsupportedOperationException if this cylinder is open and not 3-dimensional.
+     * @throws IllegalStateException if this cylinder is open and its two positions are the same.
+     */
+    @Override
+    default Geometry getBoundary() {
+        final CoordinateReferenceSystem crs = getCoordinateReferenceSystem();
+        if (isClosed()) {
+            return GeometryFactory.DEFAULT.createEmpty(crs);
         }
-        return Double.doubleToLongBits(this.radiusTop) == Double.doubleToLongBits(other.radiusTop)
-            && Double.doubleToLongBits(this.radiusBottom) == Double.doubleToLongBits(other.radiusBottom);
+        if (getDataPoints().getDimension() != 3) {
+            throw new UnsupportedOperationException("The boundary of an open cylinder is computed in 3 dimensions only.");
+        }
+        final Vector<?> axis = getAxis();
+        final double height = axis.length();
+        if (!(height > 0)) {
+            throw new IllegalStateException("The cylinder has no axis, its two positions are the same.");
+        }
+        axis.scale(1 / height);
+        /*
+         * Builds (u, w, axis) as a right-handed orthonormal basis. The vector `u` is derived from the
+         * coordinate axis which is the most perpendicular to the cylinder axis, for numerical stability.
+         */
+        int k = 0;
+        for (int i = 1; i < 3; i++) {
+            if (Math.abs(axis.get(i)) < Math.abs(axis.get(k))) k = i;
+        }
+        final Vector<?> u = Vectors.create(axis.getSampleSystem(), DataType.DOUBLE);
+        u.set(k, 1);
+        u.subtract(axis.copy().scale(axis.get(k)));
+        u.normalize();
+        final Vector<?> w = axis.cross(u);
+        final var circles = new ArrayList<Circle>(2);
+        final double radiusBottom = getRadiusBottom();
+        final double radiusTop = getRadiusTop();
+        if (radiusBottom > 0) {
+            circles.add(circle(getBottom(), radiusBottom, u, w));
+        }
+        if (radiusTop > 0) {
+            circles.add(circle(getTop(), radiusTop, u, w.copy().scale(-1)));
+        }
+        return GeometryFactory.DEFAULT.createMultiCurve(crs, circles.toArray(Circle[]::new));
+    }
+
+    /**
+     * Returns the circle of the given center and radius in the plane of the two given unit vectors,
+     * turning from {@code u} toward {@code w}. The circle is made of four quarter arcs, since a
+     * single arc of a circle shall stay below a half turn.
+     */
+    private static Circle circle(final ReadOnly.Vector<?> center, final double radius,
+                                 final ReadOnly.Vector<?> u, final ReadOnly.Vector<?> w)
+    {
+        final var points  = new ArrayList<Vector<?>>(5);
+        final var centers = new ArrayList<Vector<?>>(4);
+        final ReadOnly.Vector<?>[] directions = {u, w, u.copy().scale(-1), w.copy().scale(-1), u};
+        for (final ReadOnly.Vector<?> direction : directions) {
+            final Vector<?> p = Vectors.create(center.getSampleSystem(), DataType.DOUBLE);
+            p.set(center);
+            p.add(direction.copy().scale(radius));
+            points.add(p);
+        }
+        for (int i = 0; i < 4; i++) {
+            final Vector<?> c = Vectors.create(center.getSampleSystem(), DataType.DOUBLE);
+            c.set(center);
+            centers.add(c);
+        }
+        final GeometryFactory factory = GeometryFactory.DEFAULT;
+        return factory.createCircle(
+                factory.createDataPoints(NDArrays.of(points, center.getSampleSystem(), DataType.DOUBLE)),
+                NDArrays.of(centers, center.getSampleSystem(), DataType.DOUBLE), null);
     }
 
     @Override
-    public int hashCode() {
-        int hash = 3;
-        hash = 89 * hash + Objects.hashCode(this.points);
-        hash = 89 * hash + Double.hashCode(this.radiusTop);
-        hash = 89 * hash + Double.hashCode(this.radiusBottom);
-        return hash;
+    default CoordinateReferenceSystem getCoordinateReferenceSystem() {
+        return getDataPoints().getCoordinateReferenceSystem();
     }
+
+    @Override
+    default void setCoordinateReferenceSystem(CoordinateReferenceSystem crs) throws IllegalArgumentException {
+        getDataPoints().setCoordinateReferenceSystem(crs);
+    }
+
+    @Override
+    default DataPointsType getDataPointsType() {
+        return getDataPoints().getType();
+    }
+
 }

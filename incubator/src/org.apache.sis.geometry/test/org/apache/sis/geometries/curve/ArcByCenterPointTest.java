@@ -16,7 +16,15 @@
  */
 package org.apache.sis.geometries.curve;
 
+import javax.measure.Unit;
+import org.opengis.geometry.Envelope;
+import org.apache.sis.geometries.GeometryFactory;
+import org.apache.sis.geometries.Point;
+import org.apache.sis.measure.Units;
+
 // Test dependencies
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.apache.sis.geometries.GeometryTest;
@@ -94,8 +102,10 @@ public class ArcByCenterPointTest extends GeometryTest {
     }
 
     @Test
-    @Disabled("Not implemented yet.")
     public void testGetTopologicDimension() {
+        final Point center = GeometryFactory.DEFAULT.createPoint(CRS_2D, 10, 20);
+        final ArcByCenterPoint arc = GeometryFactory.DEFAULT.createArcByCenterPoint(center, 5.0, null, 0.0, 90.0);
+        assertEquals(1, arc.getTopologicDimension());
     }
 
     @Test
@@ -283,9 +293,53 @@ public class ArcByCenterPointTest extends GeometryTest {
     public void testGetGeometryType2() {
     }
 
+    /**
+     * Creates an arc around (10, 20) and returns its envelope.
+     */
+    private static Envelope envelope(final double radius, final Unit<?> unit, final double startAngle, final double endAngle) {
+        final Point center = GeometryFactory.DEFAULT.createPoint(CRS_2D, 10, 20);
+        return GeometryFactory.DEFAULT.createArcByCenterPoint(center, radius, unit, startAngle, endAngle).getEnvelope();
+    }
+
+    private static void assertEnvelope(final Envelope envelope, final double xmin, final double ymin,
+                                       final double xmax, final double ymax)
+    {
+        assertEquals(CRS_2D, envelope.getCoordinateReferenceSystem());
+        assertEquals(xmin, envelope.getMinimum(0), TOLERANCE, "xmin");
+        assertEquals(ymin, envelope.getMinimum(1), TOLERANCE, "ymin");
+        assertEquals(xmax, envelope.getMaximum(0), TOLERANCE, "xmax");
+        assertEquals(ymax, envelope.getMaximum(1), TOLERANCE, "ymax");
+    }
+
     @Test
-    @Disabled("Not implemented yet.")
     public void testGetEnvelope() {
+        final double d = 5 * Math.sqrt(0.5);
+        // Quarter arc between two extremes: the envelope is the box of its end points.
+        assertEnvelope(envelope(5, null,   0,  90), 10,     20,     15,     25);
+        // Arc crossing the extreme in the direction of the second axis.
+        assertEnvelope(envelope(5, null,  45, 135), 10 - d, 20 + d, 10 + d, 25);
+        // Arc crossing the extreme in the direction of the first axis, at angle 0.
+        assertEnvelope(envelope(5, null, -45,  45), 10 + d, 20 - d, 15,     20 + d);
+        // Same arc, with angles beyond 360°.
+        assertEnvelope(envelope(5, null, 315, 405), 10 + d, 20 - d, 15,     20 + d);
+        // Clockwise sweep over the same quarter as the first case.
+        assertEnvelope(envelope(5, null,  90,   0), 10,     20,     15,     25);
+        // Clockwise sweep from 90° to -90° through 0°, not through 180°.
+        assertEnvelope(envelope(5, null,  90, -90), 10,     15,     15,     25);
+        // Sweep of more than half a turn, crossing three extremes.
+        assertEnvelope(envelope(5, null,  45, 315), 5,      15,     10 + d, 25);
+        // Full circle.
+        assertEnvelope(envelope(5, null,   0, 360), 5,      15,     15,     25);
+        // Degenerated arc: a single position.
+        assertEnvelope(envelope(5, null,  90,  90), 10,     25,     10,     25);
+    }
+
+    @Test
+    public void testGetEnvelopeWithRadiusUnit() {
+        // 300 arc-minutes are 5 degrees, the unit of the axes of `CRS_2D`.
+        assertEnvelope(envelope(300, Units.ARC_MINUTE, 0, 360), 5, 15, 15, 25);
+        // A radius in metres cannot be converted to degrees without a geodesic computation.
+        assertThrows(UnsupportedOperationException.class, () -> envelope(5, Units.METRE, 0, 90));
     }
 
     @Test

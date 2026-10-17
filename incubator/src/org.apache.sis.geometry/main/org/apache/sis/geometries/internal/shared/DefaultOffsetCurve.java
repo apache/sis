@@ -17,7 +17,9 @@
 package org.apache.sis.geometries.internal.shared;
 
 import java.util.Objects;
+import javax.measure.IncommensurableException;
 import javax.measure.Quantity;
+import javax.measure.Unit;
 import org.opengis.geometry.Envelope;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import org.apache.sis.geometries.Curve;
@@ -25,7 +27,9 @@ import org.apache.sis.geometries.DataPoints;
 import org.apache.sis.geometries.DataPointsType;
 import org.apache.sis.geometries.cs.Bearing;
 import org.apache.sis.geometries.curve.OffsetCurve;
+import org.apache.sis.geometry.GeneralEnvelope;
 import org.apache.sis.maths.Array;
+import org.apache.sis.measure.Units;
 
 
 /**
@@ -114,9 +118,36 @@ public non-sealed class DefaultOffsetCurve extends AbstractGeometry implements O
         return baseCurve.isEmpty();
     }
 
+    /**
+     * Returns the envelope of the base curve expanded by the offset distance on every axis.
+     * This envelope contains this curve, but may be larger than needed since the curve is
+     * offset on one side only and not along every axis.
+     *
+     * @throws UnsupportedOperationException if the distance unit cannot be converted to the unit of an axis.
+     */
     @Override
     public Envelope getEnvelope() {
-        throw new UnsupportedOperationException("Not supported yet.");
+        final Envelope baseEnvelope = baseCurve.getEnvelope();
+        if (baseEnvelope == null) {
+            return null;
+        }
+        final var envelope = new GeneralEnvelope(baseEnvelope);
+        final CoordinateReferenceSystem crs = baseCurve.getCoordinateReferenceSystem();
+        final double value = Math.abs(distance.getValue().doubleValue());
+        for (int i = 0, n = envelope.getDimension(); i < n; i++) {
+            double d = value;
+            final Unit<?> axisUnit = crs.getCoordinateSystem().getAxis(i).getUnit();
+            if (axisUnit != null && !Units.UNITY.equals(distance.getUnit())) {
+                try {
+                    d = distance.getUnit().getConverterToAny(axisUnit).convert(value);
+                } catch (IncommensurableException e) {
+                    throw new UnsupportedOperationException("The offset distance in " + distance.getUnit()
+                            + " cannot be converted to the unit of axis " + i + " (" + axisUnit + ").", e);
+                }
+            }
+            envelope.setRange(i, envelope.getMinimum(i) - d, envelope.getMaximum(i) + d);
+        }
+        return envelope;
     }
 
 }

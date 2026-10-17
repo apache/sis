@@ -27,6 +27,10 @@ import org.apache.sis.geometries.DataPoints;
 import org.apache.sis.geometries.GeometryType;
 import org.apache.sis.geometries.Point;
 import org.apache.sis.geometries.DataPointsType;
+import org.apache.sis.geometries.Geometries;
+import org.apache.sis.geometries.GeometryFactory;
+import org.apache.sis.geometries.internal.shared.CurveLinearizer;
+import org.apache.sis.geometries.internal.shared.Curves;
 import org.apache.sis.geometries.internal.shared.DefaultLineString;
 import org.apache.sis.geometries.mesh.MeshPrimitive;
 import org.apache.sis.geometries.operation.triangulate.delaunay.OrientedEdge;
@@ -90,13 +94,31 @@ public sealed interface LineString extends Curve
     }
 
     /**
-     * Returns {@code this}, since a line string is already a linear approximation of itself.
+     * Returns this line string, with points added on its segments if needed for meeting the spacing.
+     * The attributes of the added points are interpolated between the ends of their segment.
+     * The offset is ignored, since the returned line is this line string.
+     *
+     * @return {@code this} if no point needs to be added, otherwise a new line string.
      *
      * @see ISO 19107:2019 - 6.4.18.17
      */
     @Override
     default LineString asLine(Quantity<?> spacing, Quantity<?> offset) {
-        return this;
+        final DataPoints points = getDataPoints();
+        final DataPoints densified = CurveLinearizer.densify(this, points, spacing);
+        return (densified == points) ? this : GeometryFactory.DEFAULT.createLineString(densified);
+    }
+
+    /**
+     * Returns the point at the given distance along the segments of this line string.
+     * The distance is in the unit of the coordinate system axes, or in percent of the length.
+     *
+     * @return the point at the given distance, or {@code null} if this line string is empty.
+     * @throws IllegalArgumentException if the distance is outside this line string.
+     */
+    @Override
+    default Point subCurve(Quantity<?> dist) {
+        return Curves.alongPolyline(getDataPoints(), dist, Geometries.getLinearUnit(this));
     }
 
     /**

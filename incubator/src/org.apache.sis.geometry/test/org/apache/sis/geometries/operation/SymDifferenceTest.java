@@ -17,9 +17,11 @@
 package org.apache.sis.geometries.operation;
 
 import org.apache.sis.geometries.Geometry;
-import org.apache.sis.geometries.point.MultiPoint;
+import org.apache.sis.geometries.GeometryCollection;
 
 // Test dependencies
+import org.apache.sis.geometries.GeometryType;
+import org.apache.sis.geometries.Point;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertInstanceOf;
 import static org.junit.jupiter.api.Assertions.assertNull;
@@ -85,8 +87,9 @@ public class SymDifferenceTest extends AbstractD9IMTest {
     @Test
     public void testDistinctPoints() {
         final Geometry result = new GeometryProcessor().symDifference(POINT_A, POINT_B);
-        assertInstanceOf(MultiPoint.class, result, "No position is shared by the two points.");
-        final MultiPoint<?> points = (MultiPoint<?>) result;
+        assertInstanceOf(GeometryCollection.class, result, "No position is shared by the two points.");
+        final GeometryCollection<Point> points = (GeometryCollection<Point>) result;
+        assertEquals(GeometryType.POINT, points.getElementType());
         assertEquals(CRS_2D, points.getCoordinateReferenceSystem());
         assertEquals(2, points.getNumGeometries());
         assertPositionsEqual(points, POINT_A, POINT_B);

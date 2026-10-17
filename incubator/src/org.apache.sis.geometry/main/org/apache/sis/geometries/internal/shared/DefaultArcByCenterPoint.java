@@ -16,11 +16,20 @@
  */
 package org.apache.sis.geometries.internal.shared;
 
+import java.util.List;
+import java.util.function.DoubleFunction;
+import javax.measure.IncommensurableException;
+import javax.measure.Quantity;
 import javax.measure.Unit;
 import org.opengis.geometry.Envelope;
 import org.apache.sis.geometries.DataPoints;
 import org.apache.sis.geometries.Point;
 import org.apache.sis.geometries.curve.ArcByCenterPoint;
+import org.apache.sis.geometries.curve.LineString;
+import org.apache.sis.maths.DataType;
+import org.apache.sis.maths.NDRange;
+import org.apache.sis.maths.ReadOnly;
+import org.apache.sis.maths.Vector;
 
 
 /**
@@ -93,13 +102,100 @@ public non-sealed class DefaultArcByCenterPoint extends AbstractGeometry impleme
         return endAngle;
     }
 
+    /**
+     * Returns the smallest envelope containing this arc. That envelope contains the start and end points,
+     * plus each point where the arc reaches an extreme along the first or second axis. Those extremes are
+     * at the multiples of 90° the arc sweeps over.
+     *
+     * @throws UnsupportedOperationException if the radius unit cannot be converted to the unit of an axis,
+     *         for example a radius in metres around a centre in a geographic reference system.
+     */
     @Override
     public Envelope getEnvelope() {
-        throw new UnsupportedOperationException("Not supported yet.");
+        // Axes after the first two keep the coordinates of the centre.
+        final Vector<?> position = center.getPosition().copy(DataType.DOUBLE);
+        final double cx = position.get(0);
+        final double cy = position.get(1);
+        final double rx = radius(0);
+        final double ry = radius(1);
+        // The sweep direction does not change the positions covered by the arc.
+        final double lo = Math.min(startAngle, endAngle);
+        final double hi = Math.max(startAngle, endAngle);
+        // The centre is not on the arc: the envelope starts from an end point, not from the centre.
+        double t = Math.toRadians(lo);
+        position.set(0, cx + rx * Math.cos(t));
+        position.set(1, cy + ry * Math.sin(t));
+        final var envelope = new NDRange(position, position);
+        t = Math.toRadians(hi);
+        add(envelope, position, cx + rx * Math.cos(t), cy + ry * Math.sin(t));
+        // Any sweep of 360° or more contains the four extremes, so the loop stops after one turn.
+        final double last = Math.min(hi, lo + 360);
+        for (double q = Math.ceil(lo / 90) * 90; q <= last; q += 90) {
+            switch (Math.floorMod((long) (q / 90), 4)) {
+                case 0:  add(envelope, position, cx + rx, cy); break;
+                case 1:  add(envelope, position, cx, cy + ry); break;
+                case 2:  add(envelope, position, cx - rx, cy); break;
+                default: add(envelope, position, cx, cy - ry); break;
+            }
+        }
+        return envelope;
     }
 
     /**
-     * Returns the center of this arc, as a sequence of one position. An arc by center point is
+     * Returns a polyline whose points are on this arc, from its start angle to its end angle.
+     *
+     * @throws UnsupportedOperationException if the radius unit cannot be converted to the unit of an axis.
+     */
+    @Override
+    public LineString asLine(final Quantity<?> spacing, final Quantity<?> offset) {
+        final ReadOnly.Vector<?> c = center.getPosition();
+        final double cx = c.get(0);
+        final double cy = c.get(1);
+        final double rx = radius(0);
+        final double ry = radius(1);
+        final DoubleFunction<Vector<?>> function = (angle) -> {
+            final double t = Math.toRadians(angle);
+            final Vector<?> position = c.copy(DataType.DOUBLE);
+            position.set(0, cx + rx * Math.cos(t));
+            position.set(1, cy + ry * Math.sin(t));
+            return position;
+        };
+        return CurveLinearizer.linearize(this, spacing, offset,
+                List.of(new CurveLinearizer.Piece(function, new double[] {startAngle, endAngle}, null)));
+    }
+
+    /**
+     * Adds to the envelope the given position, with its first two coordinates replaced by the given ones.
+     * The other coordinates are those of the centre.
+     */
+    private static void add(final NDRange envelope, final Vector<?> position,
+                            final double x, final double y)
+    {
+        position.set(0, x);
+        position.set(1, y);
+        envelope.add(position);
+    }
+
+    /**
+     * Returns the radius expressed in the unit of the given axis.
+     *
+     * @throws UnsupportedOperationException if the radius unit cannot be converted to the axis unit.
+     */
+    private double radius(final int axis) {
+        final Unit<?> axisUnit = getCoordinateReferenceSystem().getCoordinateSystem().getAxis(axis).getUnit();
+        if (radiusUnit == null || axisUnit == null) {
+            return radius;
+        }
+        try {
+            return radiusUnit.getConverterToAny(axisUnit).convert(radius);
+        } catch (IncommensurableException e) {
+            throw new UnsupportedOperationException("The radius in " + radiusUnit
+                    + " cannot be converted to the unit of axis " + axis + " (" + axisUnit + ").", e);
+        }
+    }
+
+    /**
+     * Returns the center of this arc, as a {@code DataPoints} of one position. An arc by center point is
      * defined by that position and by angles, so the center is the only position it holds.
      */
     @Override
