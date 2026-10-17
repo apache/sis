@@ -31,7 +31,6 @@ import org.apache.sis.geometries.SurfaceInterpolation;
 import org.apache.sis.geometries.internal.shared.DefaultSphere;
 import org.apache.sis.maths.NDRange;
 import org.apache.sis.maths.ReadOnly;
-import org.apache.sis.maths.Vector;
 import org.apache.sis.measure.Quantities;
 
 

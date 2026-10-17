@@ -19,6 +19,7 @@ package org.apache.sis.geometries.adapter;
 import java.nio.ByteOrder;
 import java.util.Arrays;
 import java.util.function.IntFunction;
+import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import org.apache.sis.geometries.DataPoints;
 import org.apache.sis.geometries.DataPointsType;
 import org.apache.sis.geometries.Empty;
@@ -37,7 +38,6 @@ import org.apache.sis.geometries.surface.TIN;
 import org.apache.sis.geometries.surface.Triangle;
 import org.apache.sis.maths.Vector;
 import org.apache.sis.util.ArgumentChecks;
-import org.opengis.referencing.crs.CoordinateReferenceSystem;
 
 
 /**

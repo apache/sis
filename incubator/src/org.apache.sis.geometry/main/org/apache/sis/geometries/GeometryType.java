@@ -17,6 +17,8 @@
 package org.apache.sis.geometries;
 
 import javax.print.attribute.standard.MediaSize.ISO;
+import static org.opengis.annotation.Specification.ISO_19107;
+import org.opengis.annotation.UML;
 import org.apache.sis.geometries.curve.Arc;
 import org.apache.sis.geometries.curve.ArcByBulge;
 import org.apache.sis.geometries.curve.ArcByCenterPoint;
@@ -56,8 +58,6 @@ import org.apache.sis.geometries.surface.PolyhedralSurface;
 import org.apache.sis.geometries.surface.Sphere;
 import org.apache.sis.geometries.surface.TIN;
 import org.apache.sis.geometries.surface.Triangle;
-import static org.opengis.annotation.Specification.ISO_19107;
-import org.opengis.annotation.UML;
 
 
 /**

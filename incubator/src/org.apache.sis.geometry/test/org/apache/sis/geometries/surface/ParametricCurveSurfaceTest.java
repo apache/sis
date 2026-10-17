@@ -16,12 +16,13 @@
  */
 package org.apache.sis.geometries.surface;
 
+import org.apache.sis.geometries.internal.shared.DefaultSphere;
+
 // Test dependencies
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.apache.sis.geometries.GeometryTest;
-import org.apache.sis.geometries.internal.shared.DefaultSphere;
 
 
 /**

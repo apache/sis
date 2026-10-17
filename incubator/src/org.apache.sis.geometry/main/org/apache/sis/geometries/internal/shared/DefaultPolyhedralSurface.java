@@ -20,9 +20,9 @@ import org.opengis.geometry.Envelope;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import org.apache.sis.geometries.DataPointsType;
 import org.apache.sis.geometries.Geometry;
+import org.apache.sis.geometries.Geometries;
 import org.apache.sis.geometries.surface.Polygon;
 import org.apache.sis.geometries.surface.PolyhedralSurface;
-import org.apache.sis.geometries.Geometries;
 import org.apache.sis.util.ArgumentChecks;
 
 

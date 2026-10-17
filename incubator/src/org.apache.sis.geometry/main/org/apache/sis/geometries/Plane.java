@@ -20,12 +20,12 @@ import java.util.Objects;
 import static org.opengis.annotation.Specification.ISO_12113;
 import org.opengis.annotation.UML;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
+import org.opengis.geometry.Envelope;
 import org.apache.sis.geometries.internal.shared.AbstractGeometry;
 import org.apache.sis.maths.NDArrays;
 import org.apache.sis.maths.NDRange;
 import org.apache.sis.maths.ReadOnly;
 import org.apache.sis.maths.Vector;
-import org.opengis.geometry.Envelope;
 
 
 /**
