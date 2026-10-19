@@ -129,8 +129,8 @@ public sealed interface Triangle extends Polygon
     @Override
     default Envelope getEnvelope() {
         final DataPoints exterior = getExteriorRing().getDataPoints();
-        final Vector<?> first = Vectors.create(getCoordinateReferenceSystem(), DataType.DOUBLE).set(exterior.getPosition(0));
-        final NDRange env = new NDRange(first, first);
+        final Vector<?> first = Vectors.create(getDimension(), DataType.DOUBLE).set(exterior.getPosition(0));
+        final NDRange env = new NDRange(getCoordinateReferenceSystem(), first, first);
         env.add(exterior.getPosition(1));
         env.add(exterior.getPosition(2));
         return env;

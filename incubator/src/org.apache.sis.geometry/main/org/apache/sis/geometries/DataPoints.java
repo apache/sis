@@ -290,9 +290,10 @@ public interface DataPoints {
         if (isEmpty()) {
             return null;
         }
-        final Vector<?> start = Vectors.create(getType().getAttributeSystem(name), getType().getAttributeType(name))
+        final SampleSystem system = getType().getAttributeSystem(name);
+        final Vector<?> start = Vectors.create(system.getSize(), getType().getAttributeType(name))
                                        .set(getAttribute(0, name));
-        final NDRange env = new NDRange(start, start);
+        final NDRange env = new NDRange(system, start, start);
         for (int i = 1, n = size(); i < n; i++) {
             env.add(getAttribute(i, name));
         }

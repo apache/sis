@@ -45,7 +45,7 @@ public final class WTriangle extends AbstractGeometry implements Triangle {
     private final LinearRing ring = GeometryFactory.DEFAULT.createLinearRing(new DataPoints() {
         @Override
         public CoordinateReferenceSystem getCoordinateReferenceSystem() {
-            return Geometries.orUndefinedCRS(p0.getCoordinateReferenceSystem(), p0.getDimension());
+            return Geometries.orUndefinedCRS(crs, p0.getDimension());
         }
 
         @Override
@@ -146,11 +146,16 @@ public final class WTriangle extends AbstractGeometry implements Triangle {
     public final Vector<?> p1;
     public final Vector<?> p2;
 
+    /**
+     * Reference system of the triangle points, may be null.
+     */
+    private final CoordinateReferenceSystem crs;
     private final List<Candidate> candidates;
     private Candidate max;
     private final BiFunction<Vector,Triangle,Double> errorCalculator;
 
-    public WTriangle(Edge e0, Edge e1, Edge e2, BiFunction<Vector,Triangle,Double> errorCalculator) {
+    public WTriangle(CoordinateReferenceSystem crs, Edge e0, Edge e1, Edge e2, BiFunction<Vector,Triangle,Double> errorCalculator) {
+        this.crs = crs;
         this.errorCalculator = errorCalculator;
 
         candidates = new ArrayList<>();

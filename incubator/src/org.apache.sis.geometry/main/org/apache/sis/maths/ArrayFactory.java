@@ -166,7 +166,7 @@ public interface ArrayFactory {
                 if (ite.hasNext()) {
                     final Object o = ite.next();
                     if (o instanceof Vector<?> t) {
-                        return t.getSampleSystem();
+                        return SampleSystem.ofSize(t.getDimension());
                     } else if (o != null && o.getClass().isArray()) {
                         final int size = java.lang.reflect.Array.getLength(o);
                         return SampleSystem.ofSize(size);
@@ -180,7 +180,7 @@ public interface ArrayFactory {
                     final int size = java.lang.reflect.Array.getLength(values);
                     if (size != 0) {
                         final ReadOnly.Vector tuple = (ReadOnly.Vector) java.lang.reflect.Array.get(values, 0);
-                        return tuple.getSampleSystem();
+                        return SampleSystem.ofSize(tuple.getDimension());
                     }
                 }
             }
@@ -296,7 +296,7 @@ public interface ArrayFactory {
                 if (fill instanceof ReadOnly.Vector<?> t) {
                     f = t.copy();
                 } else if (fill.getClass().isArray()) {
-                    f = Vectors.create(system, target.getDataType());
+                    f = Vectors.create(system.getSize(), target.getDataType());
                     for (int i = 0; i < nbDim; i++) {
                         f.set(i, java.lang.reflect.Array.getDouble(fill, i));
                     }

@@ -23,12 +23,7 @@ package org.apache.sis.maths;
  */
 public abstract class VectorND<T extends VectorND<T>> extends AbstractVector<T> {
 
-    public VectorND(int size) {
-        super(size);
-    }
-
-    protected VectorND(SampleSystem type) {
-        super(type);
+    public VectorND() {
     }
 
     public static class Byte extends VectorND<Byte> {
@@ -36,22 +31,14 @@ public abstract class VectorND<T extends VectorND<T>> extends AbstractVector<T> 
         public final byte[] values;
 
         public Byte(int size) {
-            super(size);
             this.values = new byte[size];
         }
 
-        public Byte(SampleSystem type) {
-            super(type);
-            this.values = new byte[type.getSize()];
-        }
-
         public Byte(byte[] array) {
-            super(array.length);
             this.values = array.clone();
         }
 
         public Byte(ReadOnly.Vector<?> tuple) {
-            super(tuple.getSampleSystem());
             this.values = new byte[tuple.getDimension()];
             set(tuple);
         }
@@ -99,22 +86,14 @@ public abstract class VectorND<T extends VectorND<T>> extends AbstractVector<T> 
         public final byte[] values;
 
         public UByte(int size) {
-            super(size);
             this.values = new byte[size];
         }
 
-        public UByte(SampleSystem type) {
-            super(type);
-            this.values = new byte[type.getSize()];
-        }
-
         public UByte(byte[] array) {
-            super(array.length);
             this.values = array.clone();
         }
 
         public UByte(ReadOnly.Vector<?> tuple) {
-            super(tuple.getSampleSystem());
             this.values = new byte[tuple.getDimension()];
             set(tuple);
         }
@@ -162,22 +141,14 @@ public abstract class VectorND<T extends VectorND<T>> extends AbstractVector<T> 
         public final short[] values;
 
         public Short(int size) {
-            super(size);
             this.values = new short[size];
         }
 
-        public Short(SampleSystem type) {
-            super(type);
-            this.values = new short[type.getSize()];
-        }
-
         public Short(short[] array) {
-            super(array.length);
             this.values = array.clone();
         }
 
         public Short(ReadOnly.Vector<?> tuple) {
-            super(tuple.getSampleSystem());
             this.values = new short[tuple.getDimension()];
             set(tuple);
         }
@@ -225,22 +196,14 @@ public abstract class VectorND<T extends VectorND<T>> extends AbstractVector<T> 
         public final short[] values;
 
         public UShort(int size) {
-            super(size);
             this.values = new short[size];
         }
 
-        public UShort(SampleSystem type) {
-            super(type);
-            this.values = new short[type.getSize()];
-        }
-
         public UShort(short[] array) {
-            super(array.length);
             this.values = array.clone();
         }
 
         public UShort(ReadOnly.Vector<?> tuple) {
-            super(tuple.getSampleSystem());
             this.values = new short[tuple.getDimension()];
             set(tuple);
         }
@@ -288,22 +251,14 @@ public abstract class VectorND<T extends VectorND<T>> extends AbstractVector<T> 
         public final int[] values;
 
         public Int(int size) {
-            super(size);
             this.values = new int[size];
         }
 
-        public Int(SampleSystem type) {
-            super(type);
-            this.values = new int[type.getSize()];
-        }
-
         public Int(int[] array) {
-            super(array.length);
             this.values = array.clone();
         }
 
         public Int(ReadOnly.Vector<?> tuple) {
-            super(tuple.getSampleSystem());
             this.values = new int[tuple.getDimension()];
             set(tuple);
         }
@@ -351,22 +306,14 @@ public abstract class VectorND<T extends VectorND<T>> extends AbstractVector<T> 
         public final int[] values;
 
         public UInt(int size) {
-            super(size);
             this.values = new int[size];
         }
 
-        public UInt(SampleSystem type) {
-            super(type);
-            this.values = new int[type.getSize()];
-        }
-
         public UInt(int[] array) {
-            super(array.length);
             this.values = array.clone();
         }
 
         public UInt(ReadOnly.Vector<?> tuple) {
-            super(tuple.getSampleSystem());
             this.values = new int[tuple.getDimension()];
             set(tuple);
         }
@@ -414,22 +361,14 @@ public abstract class VectorND<T extends VectorND<T>> extends AbstractVector<T> 
         public final long[] values;
 
         public Long(int size) {
-            super(size);
             this.values = new long[size];
         }
 
-        public Long(SampleSystem type) {
-            super(type);
-            this.values = new long[type.getSize()];
-        }
-
         public Long(long[] array) {
-            super(array.length);
             this.values = array.clone();
         }
 
         public Long(ReadOnly.Vector<?> tuple) {
-            super(tuple.getSampleSystem());
             this.values = new long[tuple.getDimension()];
             set(tuple);
         }
@@ -477,22 +416,14 @@ public abstract class VectorND<T extends VectorND<T>> extends AbstractVector<T> 
         public final float[] values;
 
         public Float(int size) {
-            super(size);
             this.values = new float[size];
         }
 
-        public Float(SampleSystem type) {
-            super(type);
-            this.values = new float[type.getSize()];
-        }
-
         public Float(float[] array) {
-            super(array.length);
             this.values = array.clone();
         }
 
         public Float(ReadOnly.Vector<?> tuple) {
-            super(tuple.getSampleSystem());
             this.values = new float[tuple.getDimension()];
             set(tuple);
         }
@@ -535,28 +466,19 @@ public abstract class VectorND<T extends VectorND<T>> extends AbstractVector<T> 
         public final double[] values;
 
         public Double(int size) {
-            super(size);
             this.values = new double[size];
         }
 
-        public Double(SampleSystem type) {
-            super(type);
-            this.values = new double[type.getSize()];
-        }
-
         public Double(double[] array) {
-            super(array.length);
             this.values = array.clone();
         }
 
         public Double(float[] array) {
-            super(array.length);
             this.values = new double[array.length];
             set(array);
         }
 
         public Double(ReadOnly.Vector<?> tuple) {
-            super(tuple.getSampleSystem());
             this.values = new double[tuple.getDimension()];
             set(tuple);
         }

@@ -24,11 +24,6 @@ package org.apache.sis.maths;
 public abstract class Vector4D<T extends Vector4D<T>> extends AbstractVector<T> {
 
     public Vector4D() {
-        super(4);
-    }
-
-    protected Vector4D(SampleSystem type) {
-        super(type);
     }
 
     @Override
@@ -46,19 +41,6 @@ public abstract class Vector4D<T extends Vector4D<T>> extends AbstractVector<T> 
         public Byte() {
         }
 
-        public Byte(SampleSystem type) {
-            super(type);
-            ensureDimension(type, 4);
-        }
-
-        public Byte(SampleSystem type, byte x, byte y, byte z, byte w) {
-            this(type);
-            this.x = x;
-            this.y = y;
-            this.z = z;
-            this.w = w;
-        }
-
         public Byte(byte x, byte y, byte z, byte w) {
             this.x = x;
             this.y = y;
@@ -74,29 +56,8 @@ public abstract class Vector4D<T extends Vector4D<T>> extends AbstractVector<T> 
         }
 
         public Byte(ReadOnly.Vector<?> tuple) {
-            super(tuple.getSampleSystem());
-            ensureDimension(type, 4);
+            ensureDimension(tuple, 4);
             set(tuple);
-        }
-
-        /**
-         * Copy constructor which does not check type.
-         */
-        private Byte(byte x, byte y, byte z,  byte w, SampleSystem type) {
-            super(type);
-            this.x = x;
-            this.y = y;
-            this.z = z;
-            this.w = w;
-        }
-
-        /**
-         * Package private benchmarked performance constructor which does not check type.
-         * @param type must be of the correct size, it is not verified
-         * @param none not used, to differenciate with public constructor
-         */
-        Byte(SampleSystem type, boolean none) {
-            super(type);
         }
 
         @Override
@@ -260,7 +221,7 @@ public abstract class Vector4D<T extends Vector4D<T>> extends AbstractVector<T> 
 
         @Override
         public Byte copy() {
-            return new Byte(x, y, z, w, type);
+            return new Byte(x, y, z, w);
         }
 
         @Override
@@ -280,19 +241,6 @@ public abstract class Vector4D<T extends Vector4D<T>> extends AbstractVector<T> 
         public UByte() {
         }
 
-        public UByte(SampleSystem type) {
-            super(type);
-            ensureDimension(type, 4);
-        }
-
-        public UByte(SampleSystem type, byte x, byte y, byte z, byte w) {
-            this(type);
-            this.x = x;
-            this.y = y;
-            this.z = z;
-            this.w = w;
-        }
-
         public UByte(byte x, byte y, byte z, byte w) {
             this.x = x;
             this.y = y;
@@ -308,29 +256,8 @@ public abstract class Vector4D<T extends Vector4D<T>> extends AbstractVector<T> 
         }
 
         public UByte(ReadOnly.Vector<?> tuple) {
-            super(tuple.getSampleSystem());
-            ensureDimension(type, 4);
+            ensureDimension(tuple, 4);
             set(tuple);
-        }
-
-        /**
-         * Copy constructor which does not check type.
-         */
-        private UByte(byte x, byte y, byte z, byte w, SampleSystem type) {
-            super(type);
-            this.x = x;
-            this.y = y;
-            this.z = z;
-            this.w = w;
-        }
-
-        /**
-         * Package private benchmarked performance constructor which does not check type.
-         * @param type must be of the correct size, it is not verified
-         * @param none not used, to differenciate with public constructor
-         */
-        UByte(SampleSystem type, boolean none) {
-            super(type);
         }
 
         @Override
@@ -451,7 +378,7 @@ public abstract class Vector4D<T extends Vector4D<T>> extends AbstractVector<T> 
 
         @Override
         public UByte copy() {
-            return new UByte(x, y, z, w, type);
+            return new UByte(x, y, z, w);
         }
 
         @Override
@@ -471,19 +398,6 @@ public abstract class Vector4D<T extends Vector4D<T>> extends AbstractVector<T> 
         public Short() {
         }
 
-        public Short(SampleSystem type) {
-            super(type);
-            ensureDimension(type, 4);
-        }
-
-        public Short(SampleSystem type, short x, short y, short z, short w) {
-            this(type);
-            this.x = x;
-            this.y = y;
-            this.z = z;
-            this.w = w;
-        }
-
         public Short(short x, short y, short z, short w) {
             this.x = x;
             this.y = y;
@@ -499,29 +413,8 @@ public abstract class Vector4D<T extends Vector4D<T>> extends AbstractVector<T> 
         }
 
         public Short(ReadOnly.Vector<?> tuple) {
-            super(tuple.getSampleSystem());
-            ensureDimension(type, 4);
+            ensureDimension(tuple, 4);
             set(tuple);
-        }
-
-        /**
-         * Copy constructor which does not check crs.
-         */
-        private Short(short x, short y, short z,  short w, SampleSystem type) {
-            super(type);
-            this.x = x;
-            this.y = y;
-            this.z = z;
-            this.w = w;
-        }
-
-        /**
-         * Package private benchmarked performance constructor which does not check type.
-         * @param type must be of the correct size, it is not verified
-         * @param none not used, to differenciate with public constructor
-         */
-        Short(SampleSystem type, boolean none) {
-            super(type);
         }
 
         @Override
@@ -685,7 +578,7 @@ public abstract class Vector4D<T extends Vector4D<T>> extends AbstractVector<T> 
 
         @Override
         public Short copy() {
-            return new Short(x, y, z, w, type);
+            return new Short(x, y, z, w);
         }
 
         @Override
@@ -705,19 +598,6 @@ public abstract class Vector4D<T extends Vector4D<T>> extends AbstractVector<T> 
         public UShort() {
         }
 
-        public UShort(SampleSystem type) {
-            super(type);
-            ensureDimension(type, 4);
-        }
-
-        public UShort(SampleSystem type, short x, short y, short z, short w) {
-            this(type);
-            this.x = x;
-            this.y = y;
-            this.z = z;
-            this.w = w;
-        }
-
         public UShort(short x, short y, short z, short w) {
             this.x = x;
             this.y = y;
@@ -733,29 +613,8 @@ public abstract class Vector4D<T extends Vector4D<T>> extends AbstractVector<T> 
         }
 
         public UShort(ReadOnly.Vector<?> tuple) {
-            super(tuple.getSampleSystem());
-            ensureDimension(type, 4);
+            ensureDimension(tuple, 4);
             set(tuple);
-        }
-
-        /**
-         * Copy constructor which does not check type.
-         */
-        private UShort(short x, short y, short z, short w, SampleSystem type) {
-            super(type);
-            this.x = x;
-            this.y = y;
-            this.z = z;
-            this.w = w;
-        }
-
-        /**
-         * Package private benchmarked performance constructor which does not check type.
-         * @param type must be of the correct size, it is not verified
-         * @param none not used, to differenciate with public constructor
-         */
-        UShort(SampleSystem type, boolean none) {
-            super(type);
         }
 
         @Override
@@ -934,7 +793,7 @@ public abstract class Vector4D<T extends Vector4D<T>> extends AbstractVector<T> 
 
         @Override
         public UShort copy() {
-            return new UShort(x, y, z, w, type);
+            return new UShort(x, y, z, w);
         }
 
         @Override
@@ -954,19 +813,6 @@ public abstract class Vector4D<T extends Vector4D<T>> extends AbstractVector<T> 
         public Int() {
         }
 
-        public Int(SampleSystem type) {
-            super(type);
-            ensureDimension(type, 4);
-        }
-
-        public Int(SampleSystem type, int x, int y, int z, int w) {
-            this(type);
-            this.x = x;
-            this.y = y;
-            this.z = z;
-            this.w = w;
-        }
-
         public Int(int x, int y, int z, int w) {
             this.x = x;
             this.y = y;
@@ -982,29 +828,8 @@ public abstract class Vector4D<T extends Vector4D<T>> extends AbstractVector<T> 
         }
 
         public Int(ReadOnly.Vector<?> tuple) {
-            super(tuple.getSampleSystem());
-            ensureDimension(type, 4);
+            ensureDimension(tuple, 4);
             set(tuple);
-        }
-
-        /**
-         * Copy constructor which does not check type.
-         */
-        private Int(int x, int y, int z, int w, SampleSystem type) {
-            super(type);
-            this.x = x;
-            this.y = y;
-            this.z = z;
-            this.w = w;
-        }
-
-        /**
-         * Package private benchmarked performance constructor which does not check type.
-         * @param type must be of the correct size, it is not verified
-         * @param none not used, to differenciate with public constructor
-         */
-        Int(SampleSystem type, boolean none) {
-            super(type);
         }
 
         @Override
@@ -1168,7 +993,7 @@ public abstract class Vector4D<T extends Vector4D<T>> extends AbstractVector<T> 
 
         @Override
         public Int copy() {
-            return new Int(x, y, z, w, type);
+            return new Int(x, y, z, w);
         }
 
         @Override
@@ -1188,19 +1013,6 @@ public abstract class Vector4D<T extends Vector4D<T>> extends AbstractVector<T> 
         public UInt() {
         }
 
-        public UInt(SampleSystem type) {
-            super(type);
-            ensureDimension(type, 4);
-        }
-
-        public UInt(SampleSystem type, int x, int y, int z, int w) {
-            this(type);
-            this.x = x;
-            this.y = y;
-            this.z = z;
-            this.w = w;
-        }
-
         public UInt(int x, int y, int z, int w) {
             this.x = x;
             this.y = y;
@@ -1216,29 +1028,8 @@ public abstract class Vector4D<T extends Vector4D<T>> extends AbstractVector<T> 
         }
 
         public UInt(ReadOnly.Vector<?> tuple) {
-            super(tuple.getSampleSystem());
-            ensureDimension(type, 4);
+            ensureDimension(tuple, 4);
             set(tuple);
-        }
-
-        /**
-         * Copy constructor which does not check type.
-         */
-        private UInt(int x, int y, int z, int w, SampleSystem type) {
-            super(type);
-            this.x = x;
-            this.y = y;
-            this.z = z;
-            this.w = w;
-        }
-
-        /**
-         * Package private benchmarked performance constructor which does not check type.
-         * @param type must be of the correct size, it is not verified
-         * @param none not used, to differenciate with public constructor
-         */
-        UInt(SampleSystem type, boolean none) {
-            super(type);
         }
 
         @Override
@@ -1379,7 +1170,7 @@ public abstract class Vector4D<T extends Vector4D<T>> extends AbstractVector<T> 
 
         @Override
         public UInt copy() {
-            return new UInt(x, y, z, w, type);
+            return new UInt(x, y, z, w);
         }
 
         @Override
@@ -1399,19 +1190,6 @@ public abstract class Vector4D<T extends Vector4D<T>> extends AbstractVector<T> 
         public Long() {
         }
 
-        public Long(SampleSystem type) {
-            super(type);
-            ensureDimension(type, 4);
-        }
-
-        public Long(SampleSystem type, long x, long y, long z, long w) {
-            this(type);
-            this.x = x;
-            this.y = y;
-            this.z = z;
-            this.w = w;
-        }
-
         public Long(long x, long y, long z, long w) {
             this.x = x;
             this.y = y;
@@ -1427,29 +1205,8 @@ public abstract class Vector4D<T extends Vector4D<T>> extends AbstractVector<T> 
         }
 
         public Long(ReadOnly.Vector<?> tuple) {
-            super(tuple.getSampleSystem());
-            ensureDimension(type, 4);
+            ensureDimension(tuple, 4);
             set(tuple);
-        }
-
-        /**
-         * Copy constructor which does not check type.
-         */
-        private Long(long x, long y, long z, long w, SampleSystem type) {
-            super(type);
-            this.x = x;
-            this.y = y;
-            this.z = z;
-            this.w = w;
-        }
-
-        /**
-         * Package private benchmarked performance constructor which does not check type.
-         * @param type must be of the correct size, it is not verified
-         * @param none not used, to differenciate with public constructor
-         */
-        Long(SampleSystem type, boolean none) {
-            super(type);
         }
 
         @Override
@@ -1570,7 +1327,7 @@ public abstract class Vector4D<T extends Vector4D<T>> extends AbstractVector<T> 
 
         @Override
         public Long copy() {
-            return new Long(x, y, z, w, type);
+            return new Long(x, y, z, w);
         }
 
         @Override
@@ -1590,19 +1347,6 @@ public abstract class Vector4D<T extends Vector4D<T>> extends AbstractVector<T> 
         public Float() {
         }
 
-        public Float(SampleSystem type) {
-            super(type);
-            ensureDimension(type, 4);
-        }
-
-        public Float(SampleSystem type, float x, float y, float z, float w) {
-            this(type);
-            this.x = x;
-            this.y = y;
-            this.z = z;
-            this.w = w;
-        }
-
         public Float(float x, float y, float z, float w) {
             this.x = x;
             this.y = y;
@@ -1618,29 +1362,8 @@ public abstract class Vector4D<T extends Vector4D<T>> extends AbstractVector<T> 
         }
 
         public Float(ReadOnly.Vector<?> tuple) {
-            super(tuple.getSampleSystem());
-            ensureDimension(type, 4);
+            ensureDimension(tuple, 4);
             set(tuple);
-        }
-
-        /**
-         * Copy constructor which does not check type.
-         */
-        private Float(float x, float y, float z,  float w, SampleSystem type) {
-            super(type);
-            this.x = x;
-            this.y = y;
-            this.z = z;
-            this.w = w;
-        }
-
-        /**
-         * Package private benchmarked performance constructor which does not check type.
-         * @param type must be of the correct size, it is not verified
-         * @param none not used, to differenciate with public constructor
-         */
-        Float(SampleSystem type, boolean none) {
-            super(type);
         }
 
         @Override
@@ -1814,7 +1537,7 @@ public abstract class Vector4D<T extends Vector4D<T>> extends AbstractVector<T> 
 
         @Override
         public Float copy() {
-            return new Float(x, y, z, w, type);
+            return new Float(x, y, z, w);
         }
 
         @Override
@@ -1832,19 +1555,6 @@ public abstract class Vector4D<T extends Vector4D<T>> extends AbstractVector<T> 
         public double w;
 
         public Double() {
-        }
-
-        public Double(SampleSystem type) {
-            super(type);
-            ensureDimension(type, 4);
-        }
-
-        public Double(SampleSystem type, double x, double y, double z, double w) {
-            this(type);
-            this.x = x;
-            this.y = y;
-            this.z = z;
-            this.w = w;
         }
 
         public Double(double x, double y, double z, double w) {
@@ -1869,29 +1579,8 @@ public abstract class Vector4D<T extends Vector4D<T>> extends AbstractVector<T> 
         }
 
         public Double(ReadOnly.Vector<?> tuple) {
-            super(tuple.getSampleSystem());
-            ensureDimension(type, 4);
+            ensureDimension(tuple, 4);
             set(tuple);
-        }
-
-        /**
-         * Copy constructor which does not check type.
-         */
-        private Double(double x, double y, double z,  double w, SampleSystem type) {
-            super(type);
-            this.x = x;
-            this.y = y;
-            this.z = z;
-            this.w = w;
-        }
-
-        /**
-         * Package private benchmarked performance constructor which does not check type.
-         * @param type must be of the correct size, it is not verified
-         * @param none not used, to differenciate with public constructor
-         */
-        Double(SampleSystem type, boolean none) {
-            super(type);
         }
 
         @Override
@@ -2065,7 +1754,7 @@ public abstract class Vector4D<T extends Vector4D<T>> extends AbstractVector<T> 
 
         @Override
         public Double copy() {
-            return new Double(x, y, z, w, type);
+            return new Double(x, y, z, w);
         }
 
         @Override

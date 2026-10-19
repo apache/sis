@@ -311,7 +311,7 @@ final class BSplineEvaluator {
                 sum[c] += w * positions[i][c];
             }
         }
-        final Vector<?> position = Vectors.create(SampleSystem.of(controls.getCoordinateReferenceSystem()), DataType.DOUBLE);
+        final Vector<?> position = Vectors.create(controls.getDimension(), DataType.DOUBLE);
         for (int c = 0; c < dim; c++) {
             position.set(c, sum[c] / W);
         }

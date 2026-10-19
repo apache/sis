@@ -295,7 +295,7 @@ public sealed interface PreparedTIN extends TIN
         private Evaluator(PreparedTIN tin) {
             this.tin = tin;
             this.tincrs = tin.getCoordinateReferenceSystem();
-            target = Vectors.createDouble(tincrs);
+            target = Vectors.createDouble(tincrs.getCoordinateSystem().getDimension());
             env = new GeneralEnvelope(tincrs);
         }
 
@@ -307,8 +307,24 @@ public sealed interface PreparedTIN extends TIN
             this.epsilon = epsilon;
         }
 
+        /**
+         * Evaluates the TIN at the given position, assumed in the reference system of the TIN.
+         *
+         * @param dp position to evaluate
+         * @return point on the TIN at the given position, or empty if outside of the TIN
+         */
         public Optional<Point> evaluate(Vector<?> dp) throws CannotEvaluateException {
-            final CoordinateReferenceSystem dpCrs = dp.getCoordinateReferenceSystem();
+            return evaluate(null, dp);
+        }
+
+        /**
+         * Evaluates the TIN at the given position, transforming it to the reference system of the TIN if needed.
+         *
+         * @param dpCrs reference system of the position, null if the same as the TIN
+         * @param dp position to evaluate
+         * @return point on the TIN at the given position, or empty if outside of the TIN
+         */
+        public Optional<Point> evaluate(final CoordinateReferenceSystem dpCrs, Vector<?> dp) throws CannotEvaluateException {
             final MathTransform transform;
             if (dpCrs == null) {
                 //do nothing, we expect the same crs as the surface

@@ -102,7 +102,7 @@ public interface NDArray {
      * @return tuple values, tuple is a copy.
      */
     default Vector<?> get(long[] index) {
-        Vector tuple = Vectors.create(getSampleSystem(), getDataType());
+        Vector tuple = Vectors.create(getDimension(), getDataType());
         get(index, tuple);
         return tuple;
     }

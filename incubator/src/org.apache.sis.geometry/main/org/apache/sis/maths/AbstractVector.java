@@ -17,9 +17,6 @@
 package org.apache.sis.maths;
 
 import java.util.Arrays;
-import org.opengis.referencing.crs.CoordinateReferenceSystem;
-import org.apache.sis.util.ArgumentChecks;
-import org.apache.sis.referencing.CRS;
 
 
 /**
@@ -28,25 +25,7 @@ import org.apache.sis.referencing.CRS;
  */
 abstract class AbstractVector<T extends AbstractVector<T>> implements Vector<T> {
 
-    protected final SampleSystem type;
-
-    public AbstractVector(int dimension) {
-        this.type = SampleSystem.ofSize(dimension);
-    }
-
-    public AbstractVector(SampleSystem type) {
-        ArgumentChecks.ensureNonNull("type", type);
-        this.type = type;
-    }
-
-    public AbstractVector(CoordinateReferenceSystem crs) {
-        ArgumentChecks.ensureNonNull("crs", crs);
-        this.type = SampleSystem.of(crs);
-    }
-
-    @Override
-    public SampleSystem getSampleSystem() {
-        return type;
+    public AbstractVector() {
     }
 
     @Override
@@ -87,10 +66,6 @@ abstract class AbstractVector<T extends AbstractVector<T>> implements Vector<T> 
                 }
             }
         }
-        //checking crs is expensive, do it last
-        if (!CRS.equivalent(getCoordinateReferenceSystem(), other.getCoordinateReferenceSystem())) {
-            return false;
-        }
         return true;
     }
 
@@ -100,28 +75,15 @@ abstract class AbstractVector<T extends AbstractVector<T>> implements Vector<T> 
     }
 
     /**
-     * Check if given type has the expected number of dimensions.
+     * Check if given vector has the expected number of dimensions.
      *
-     * @param typetype to verify
+     * @param vector vector to verify
      * @param dimension expected dimension
      * throws IllegalArgumentException if dimension do not match
      */
-    protected static void ensureDimension(SampleSystem type, int dimension) {
-        if (type.getSize() != dimension) {
-            throw new IllegalArgumentException("CoordinateReferenceSystem dimension must be " + dimension);
-        }
-    }
-
-    /**
-     * Check if given CRS has the expected number of dimensions.
-     *
-     * @param crs Coordinate system to verify
-     * @param dimension expected dimension
-     * throws IllegalArgumentException if dimension do not match
-     */
-    protected static void ensureDimension(CoordinateReferenceSystem crs, int dimension) {
-        if (crs.getCoordinateSystem().getDimension() != dimension) {
-            throw new IllegalArgumentException("CoordinateReferenceSystem dimension must be " + dimension);
+    protected static void ensureDimension(ReadOnly.Vector<?> vector, int dimension) {
+        if (vector.getDimension() != dimension) {
+            throw new IllegalArgumentException("Vector dimension must be " + dimension);
         }
     }
 }

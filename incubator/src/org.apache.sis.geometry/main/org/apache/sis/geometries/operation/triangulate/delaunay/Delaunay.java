@@ -250,7 +250,7 @@ public final class Delaunay {
         final Envelope envelope = buffer(points.getEnvelope(), 10.0);
         final double envelopeMinX = envelope.getMinimum(0);
         final double envelopeMinY = envelope.getMinimum(1);
-        final Vector<?> A = Vectors.create(positions.getSampleSystem(), positions.getDataType());
+        final Vector<?> A = Vectors.create(positions.getDimension(), positions.getDataType());
         A.set(0, envelopeMinX);
         A.set(1, envelopeMinY);
         final Vector<?> B = A.copy();

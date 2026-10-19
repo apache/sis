@@ -47,17 +47,25 @@ public final class SinglePositionDataPoints implements DataPoints {
     private final Supplier<Vector<?>> position;
 
     /**
+     * How to reach the reference system of the geometry this view is built on.
+     * Vectors do not carry a reference system, so it is read from the geometry.
+     */
+    private final Supplier<CoordinateReferenceSystem> crs;
+
+    /**
      * Creates a view over the position the given supplier reads.
      *
+     * @param  crs       how to read the reference system of the geometry, not null.
      * @param  position  how to read the position of the geometry, not null.
      */
-    public SinglePositionDataPoints(final Supplier<Vector<?>> position) {
+    public SinglePositionDataPoints(final Supplier<CoordinateReferenceSystem> crs, final Supplier<Vector<?>> position) {
+        this.crs = crs;
         this.position = position;
     }
 
     @Override
     public CoordinateReferenceSystem getCoordinateReferenceSystem() {
-        return position.get().getSampleSystem().getCoordinateReferenceSystem();
+        return crs.get();
     }
 
     @Override
@@ -68,14 +76,13 @@ public final class SinglePositionDataPoints implements DataPoints {
     /**
      * {@inheritDoc}
      *
-     * <p>The type is derived from the position, which carries its own sample system and data
-     * type, so that this {@code DataPoints} describes the single attribute it holds.</p>
+     * <p>The type is derived from the reference system of the geometry and from the data type
+     * of the position, so that this {@code DataPoints} describes the single attribute it holds.</p>
      */
     @Override
     public DataPointsType getType() {
-        final Vector<?> p = position.get();
-        final SampleSystem ss = p.getSampleSystem();
-        final DataType dt = p.getDataType();
+        final SampleSystem ss = SampleSystem.of(crs.get());
+        final DataType dt = position.get().getDataType();
         final DataPointsType.Template type = new DataPointsType.Template();
         type.addOrReplaceAttribute(DataPointsType.ATT_POSITION, ss, dt);
         return type;

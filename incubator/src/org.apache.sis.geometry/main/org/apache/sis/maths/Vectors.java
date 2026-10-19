@@ -36,175 +36,126 @@ import org.apache.sis.util.ArgumentChecks;
  */
 public final class Vectors {
 
-    public static Vector<?> create(CoordinateReferenceSystem crs, DataType dataType) {
-        return create(SampleSystem.of(crs), dataType);
-    }
-
-    public static Vector<?> create(SampleSystem type, DataType dataType) {
-        final int size = type.getSize();
+    public static Vector<?> create(int size, DataType dataType) {
         switch (dataType) {
             case BYTE :
                 return switch (size) {
-                    case 1 -> new Vector1D.Byte(type, false);
-                    case 2 -> new Vector2D.Byte(type, false);
-                    case 3 -> new Vector3D.Byte(type, false);
-                    case 4 -> new Vector4D.Byte(type, false);
-                    default -> new VectorND.Byte(type);
+                    case 1 -> new Vector1D.Byte();
+                    case 2 -> new Vector2D.Byte();
+                    case 3 -> new Vector3D.Byte();
+                    case 4 -> new Vector4D.Byte();
+                    default -> new VectorND.Byte(size);
                 };
             case UBYTE :
                 return switch (size) {
-                    case 1 -> new Vector1D.UByte(type, false);
-                    case 2 -> new Vector2D.UByte(type, false);
-                    case 3 -> new Vector3D.UByte(type, false);
-                    case 4 -> new Vector4D.UByte(type, false);
-                    default -> new VectorND.UByte(type);
+                    case 1 -> new Vector1D.UByte();
+                    case 2 -> new Vector2D.UByte();
+                    case 3 -> new Vector3D.UByte();
+                    case 4 -> new Vector4D.UByte();
+                    default -> new VectorND.UByte(size);
                 };
             case SHORT :
                 return switch (size) {
-                    case 1 -> new Vector1D.Short(type, false);
-                    case 2 -> new Vector2D.Short(type, false);
-                    case 3 -> new Vector3D.Short(type, false);
-                    case 4 -> new Vector4D.Short(type, false);
-                    default -> new VectorND.Short(type);
+                    case 1 -> new Vector1D.Short();
+                    case 2 -> new Vector2D.Short();
+                    case 3 -> new Vector3D.Short();
+                    case 4 -> new Vector4D.Short();
+                    default -> new VectorND.Short(size);
                 };
             case USHORT :
                 return switch (size) {
-                    case 1 -> new Vector1D.UShort(type, false);
-                    case 2 -> new Vector2D.UShort(type, false);
-                    case 3 -> new Vector3D.UShort(type, false);
-                    case 4 -> new Vector4D.UShort(type, false);
-                    default -> new VectorND.UShort(type);
+                    case 1 -> new Vector1D.UShort();
+                    case 2 -> new Vector2D.UShort();
+                    case 3 -> new Vector3D.UShort();
+                    case 4 -> new Vector4D.UShort();
+                    default -> new VectorND.UShort(size);
                 };
             case INT :
                 return switch (size) {
-                    case 1 -> new Vector1D.Int(type, false);
-                    case 2 -> new Vector2D.Int(type, false);
-                    case 3 -> new Vector3D.Int(type, false);
-                    case 4 -> new Vector4D.Int(type, false);
-                    default -> new VectorND.Int(type);
+                    case 1 -> new Vector1D.Int();
+                    case 2 -> new Vector2D.Int();
+                    case 3 -> new Vector3D.Int();
+                    case 4 -> new Vector4D.Int();
+                    default -> new VectorND.Int(size);
                 };
             case UINT :
                 return switch (size) {
-                    case 1 -> new Vector1D.UInt(type, false);
-                    case 2 -> new Vector2D.UInt(type, false);
-                    case 3 -> new Vector3D.UInt(type, false);
-                    case 4 -> new Vector4D.UInt(type, false);
-                    default -> new VectorND.UInt(type);
+                    case 1 -> new Vector1D.UInt();
+                    case 2 -> new Vector2D.UInt();
+                    case 3 -> new Vector3D.UInt();
+                    case 4 -> new Vector4D.UInt();
+                    default -> new VectorND.UInt(size);
                 };
             case LONG :
                 return switch (size) {
-                    case 1 -> new Vector1D.Long(type, false);
-                    case 2 -> new Vector2D.Long(type, false);
-                    case 3 -> new Vector3D.Long(type, false);
-                    case 4 -> new Vector4D.Long(type, false);
-                    default -> new VectorND.Long(type);
+                    case 1 -> new Vector1D.Long();
+                    case 2 -> new Vector2D.Long();
+                    case 3 -> new Vector3D.Long();
+                    case 4 -> new Vector4D.Long();
+                    default -> new VectorND.Long(size);
                 };
             case FLOAT :
                 return switch (size) {
-                    case 1 -> new Vector1D.Float(type, false);
-                    case 2 -> new Vector2D.Float(type, false);
-                    case 3 -> new Vector3D.Float(type, false);
-                    case 4 -> new Vector4D.Float(type, false);
-                    default -> new VectorND.Float(type);
+                    case 1 -> new Vector1D.Float();
+                    case 2 -> new Vector2D.Float();
+                    case 3 -> new Vector3D.Float();
+                    case 4 -> new Vector4D.Float();
+                    default -> new VectorND.Float(size);
                 };
             case DOUBLE :
                 return switch (size) {
-                    case 1 -> new Vector1D.Double(type, false);
-                    case 2 -> new Vector2D.Double(type, false);
-                    case 3 -> new Vector3D.Double(type, false);
-                    case 4 -> new Vector4D.Double(type, false);
-                    default -> new VectorND.Double(type);
+                    case 1 -> new Vector1D.Double();
+                    case 2 -> new Vector2D.Double();
+                    case 3 -> new Vector3D.Double();
+                    case 4 -> new Vector4D.Double();
+                    default -> new VectorND.Double(size);
                 };
             default :
                 throw new UnsupportedOperationException("Unexpected data type");
         }
     }
 
-    public static Vector<?> create(int dimension, DataType dataType) {
-        return create(SampleSystem.ofSize(dimension), dataType);
-    }
-
     public static Vector<?> createByte(int dimension) {
-        return create(SampleSystem.ofSize(dimension), DataType.BYTE);
-    }
-
-    public static Vector<?> createByte(CoordinateReferenceSystem crs) {
-        return create(crs, DataType.BYTE);
+        return create(dimension, DataType.BYTE);
     }
 
     public static Vector<?> createUByte(int dimension) {
-        return create(SampleSystem.ofSize(dimension), DataType.UBYTE);
-    }
-
-    public static Vector<?> createUByte(CoordinateReferenceSystem crs) {
-        return create(crs, DataType.UBYTE);
+        return create(dimension, DataType.UBYTE);
     }
 
     public static Vector<?> createShort(int dimension) {
-        return create(SampleSystem.ofSize(dimension), DataType.SHORT);
-    }
-
-    public static Vector<?> createShort(CoordinateReferenceSystem crs) {
-        return create(crs, DataType.SHORT);
+        return create(dimension, DataType.SHORT);
     }
 
     public static Vector<?> createUShort(int dimension) {
-        return create(SampleSystem.ofSize(dimension), DataType.USHORT);
-    }
-
-    public static Vector<?> createUShort(CoordinateReferenceSystem crs) {
-        return create(crs, DataType.USHORT);
+        return create(dimension, DataType.USHORT);
     }
 
     public static Vector<?> createInt(int dimension) {
-        return create(SampleSystem.ofSize(dimension), DataType.INT);
-    }
-
-    public static Vector<?> createInt(CoordinateReferenceSystem crs) {
-        return create(crs, DataType.INT);
+        return create(dimension, DataType.INT);
     }
 
     public static Vector<?> createUInt(int dimension) {
-        return create(SampleSystem.ofSize(dimension), DataType.UINT);
-    }
-
-    public static Vector<?> createUInt(CoordinateReferenceSystem crs) {
-        return create(crs, DataType.UINT);
+        return create(dimension, DataType.UINT);
     }
 
     public static Vector<?> createLong(int dimension) {
-        return create(SampleSystem.ofSize(dimension), DataType.LONG);
-    }
-
-    public static Vector<?> createLong(CoordinateReferenceSystem crs) {
-        return create(crs, DataType.LONG);
+        return create(dimension, DataType.LONG);
     }
 
     public static Vector<?> createFloat(int dimension) {
-        return create(SampleSystem.ofSize(dimension), DataType.FLOAT);
-    }
-
-    public static Vector<?> createFloat(CoordinateReferenceSystem crs) {
-        return create(crs, DataType.FLOAT);
+        return create(dimension, DataType.FLOAT);
     }
 
     public static Vector<?> createDouble(int dimension) {
-        return create(SampleSystem.ofSize(dimension), DataType.DOUBLE);
-    }
-
-    public static Vector<?> createDouble(CoordinateReferenceSystem crs) {
-        return create(crs, DataType.DOUBLE);
+        return create(dimension, DataType.DOUBLE);
     }
 
     public static Vector<?> castOrCopy(DirectPosition pos) {
         if (pos instanceof Vector) {
             return (Vector) pos;
         } else {
-            final CoordinateReferenceSystem crs = pos.getCoordinateReferenceSystem();
-            final SampleSystem type = crs != null ? SampleSystem.of(pos.getCoordinateReferenceSystem()) :
-                   SampleSystem.ofSize(pos.getDimension());
-            final DataType dt = DataType.DOUBLE;
-            final Vector v = create(type, dt);
+            final Vector v = create(pos.getDimension(), DataType.DOUBLE);
             v.set(pos);
             return v;
         }
@@ -214,13 +165,23 @@ public final class Vectors {
         if (pos instanceof Vector) {
             return (Vector) pos;
         } else {
-            CoordinateReferenceSystem crs = pos.getCoordinateReferenceSystem();
-            return crs == null ? new WrapDirectPostion(pos, pos.getDimension()) : new WrapDirectPostion(pos);
+            return new WrapDirectPostion(pos);
         }
     }
 
     public static DirectPosition asDirectPostion(Vector<?> tuple) {
-        return new AsDirectPosition(tuple);
+        return new AsDirectPosition(tuple, null);
+    }
+
+    /**
+     * Create a direct position view of the given tuple, in the given reference system.
+     *
+     * @param tuple not null
+     * @param crs reference system of the position, may be null
+     * @return direct position view of the tuple.
+     */
+    public static DirectPosition asDirectPostion(Vector<?> tuple, CoordinateReferenceSystem crs) {
+        return new AsDirectPosition(tuple, crs);
     }
     /**
      * Create an unmodifiable view of the given tuple.
@@ -236,13 +197,7 @@ public final class Vectors {
 
         private final DirectPosition pos;
 
-        public WrapDirectPostion(DirectPosition pos, int size) {
-            super(size);
-            this.pos = pos;
-        }
-
         public WrapDirectPostion(DirectPosition pos) {
-            super(pos.getCoordinateReferenceSystem());
             this.pos = pos;
         }
 
@@ -275,14 +230,16 @@ public final class Vectors {
     private static class AsDirectPosition implements DirectPosition {
 
         private final Vector tuple;
+        private final CoordinateReferenceSystem crs;
 
-        public AsDirectPosition(Vector tuple) {
+        public AsDirectPosition(Vector tuple, CoordinateReferenceSystem crs) {
             this.tuple = tuple;
+            this.crs = crs;
         }
 
         @Override
         public CoordinateReferenceSystem getCoordinateReferenceSystem() {
-            return tuple.getCoordinateReferenceSystem();
+            return crs;
         }
 
         @Override

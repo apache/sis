@@ -125,7 +125,7 @@ public non-sealed class DefaultArcByCenterPoint extends AbstractGeometry impleme
         double t = Math.toRadians(lo);
         position.set(0, cx + rx * Math.cos(t));
         position.set(1, cy + ry * Math.sin(t));
-        final var envelope = new NDRange(position, position);
+        final var envelope = new NDRange(getCoordinateReferenceSystem(), position, position);
         t = Math.toRadians(hi);
         add(envelope, position, cx + rx * Math.cos(t), cy + ry * Math.sin(t));
         // Any sweep of 360° or more contains the four extremes, so the loop stops after one turn.

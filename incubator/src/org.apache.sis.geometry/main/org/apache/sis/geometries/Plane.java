@@ -25,6 +25,7 @@ import org.apache.sis.geometries.internal.shared.AbstractGeometry;
 import org.apache.sis.maths.NDArrays;
 import org.apache.sis.maths.NDRange;
 import org.apache.sis.maths.ReadOnly;
+import org.apache.sis.maths.SampleSystem;
 import org.apache.sis.maths.Vector;
 
 
@@ -58,13 +59,13 @@ public final class Plane extends AbstractGeometry{
 
     /**
      * Creates a plane centered on the given position.
-     * The reference system of the plane is the one of that position.
      *
+     * @param  crs       reference system of the plane, or {@code null} for an undefined one.
      * @param  position  the position the plane is centered on, not null.
      * @param  normal    the direction the plane is perpendicular to, not null.
      */
-    public Plane(Vector<?> position, Vector<?> normal) {
-        points = GeometryFactory.DEFAULT.createDataPoints(NDArrays.of(position.getSampleSystem(), position.getDataType(), 1));
+    public Plane(CoordinateReferenceSystem crs, Vector<?> position, Vector<?> normal) {
+        points = GeometryFactory.DEFAULT.createDataPoints(NDArrays.of(SampleSystem.of(Geometries.orUndefinedCRS(crs, position.getDimension())), position.getDataType(), 1));
         points.setPosition(0, position);
         this.normal = normal;
     }

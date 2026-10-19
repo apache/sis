@@ -192,7 +192,7 @@ public abstract class AbstractDggrsTest {
                     final Vector corner = ps.getPosition(i);
 
                     calculator.setStartPoint(center);
-                    calculator.setEndPoint(Vectors.asDirectPostion(corner));
+                    calculator.setEndPoint(Vectors.asDirectPostion(corner, ps.getCoordinateReferenceSystem()));
                     double distance = calculator.getGeodesicDistance();
                     calculator.setGeodesicDistance(distance * 0.99);
                     final Vector2D.Double candidateInside = new Vector2D.Double(calculator.getEndPoint().getCoordinates());

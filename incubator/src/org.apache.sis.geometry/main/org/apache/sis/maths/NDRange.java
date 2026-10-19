@@ -21,7 +21,6 @@ import org.opengis.coordinate.MismatchedDimensionException;
 import org.opengis.geometry.DirectPosition;
 import org.opengis.geometry.Envelope;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
-import org.apache.sis.referencing.CRS;
 import org.apache.sis.util.ArgumentChecks;
 
 
@@ -38,30 +37,64 @@ import org.apache.sis.util.ArgumentChecks;
  * @author Johann Sorel (Geomatys)
  */
 public final class NDRange implements Envelope {
+
     /**
-     * Lower and upper bounds, of the same dimension and sample system.
+     * Sample system of the bounds, of the same dimension than the bounds.
+     */
+    private final SampleSystem system;
+
+    /**
+     * Lower and upper bounds, of the same dimension.
      */
     private final Vector<?> lower, upper;
 
     /**
-     * Creates a range between the given bounds.
+     * Creates a range between the given bounds, in the given reference system.
+     *
+     * @param  crs    reference system of the bounds, or {@code null} if unspecified.
+     * @param  lower  lower bound in each dimension.
+     * @param  upper  upper bound in each dimension.
+     * @throws MismatchedDimensionException if the two bounds do not have the same dimension.
+     * @throws IllegalArgumentException if a lower bound is greater than the upper bound.
+     */
+    public NDRange(final CoordinateReferenceSystem crs, final ReadOnly.Vector<?> lower, final ReadOnly.Vector<?> upper) {
+        this(system(crs, lower.getDimension()), lower, upper);
+    }
+
+    /**
+     * Creates a range between the given bounds, in an unspecified reference system.
      *
      * @param  lower  lower bound in each dimension.
      * @param  upper  upper bound in each dimension.
      * @throws MismatchedDimensionException if the two bounds do not have the same dimension.
-     * @throws IllegalArgumentException if the two bounds are not in the same reference system,
-     *         or if a lower bound is greater than the upper bound.
+     * @throws IllegalArgumentException if a lower bound is greater than the upper bound.
      */
     public NDRange(final ReadOnly.Vector<?> lower, final ReadOnly.Vector<?> upper) {
+        this(SampleSystem.ofSize(lower.getDimension()), lower, upper);
+    }
+
+    /**
+     * Creates a range between the given bounds, in the given sample system.
+     *
+     * @param  system sample system of the bounds.
+     * @param  lower  lower bound in each dimension.
+     * @param  upper  upper bound in each dimension.
+     * @throws MismatchedDimensionException if the two bounds do not have the same dimension.
+     * @throws IllegalArgumentException if a lower bound is greater than the upper bound.
+     */
+    public NDRange(SampleSystem system, final ReadOnly.Vector<?> lower, final ReadOnly.Vector<?> upper) {
+        ArgumentChecks.ensureNonNull("system", system);
         ArgumentChecks.ensureNonNull("lower", lower);
         ArgumentChecks.ensureNonNull("upper", upper);
+        this.system = system;
         final int dimension = lower.getDimension();
         if (upper.getDimension() != dimension) {
             throw new MismatchedDimensionException("The lower bound has " + dimension
                     + " dimensions but the upper bound has " + upper.getDimension() + '.');
         }
-        if (!CRS.equivalent(lower.getCoordinateReferenceSystem(), upper.getCoordinateReferenceSystem())) {
-            throw new IllegalArgumentException("The lower and upper bounds are in different reference systems.");
+        if (system.getSize() != dimension) {
+            throw new MismatchedDimensionException("The sample system has " + system.getSize()
+                    + " dimensions but the bounds have " + dimension + '.');
         }
         for (int i = 0; i < dimension; i++) {
             if (lower.get(i) > upper.get(i)) {
@@ -89,7 +122,7 @@ public final class NDRange implements Envelope {
      * @param  dataType   data type of the bounds.
      */
     public NDRange(final int dimension, final DataType dataType) {
-        this(Vectors.create(positive(dimension), Objects.requireNonNull(dataType, "dataType")));
+        this(SampleSystem.ofSize(dimension), Vectors.create(positive(dimension), Objects.requireNonNull(dataType, "dataType")));
     }
 
     /**
@@ -108,7 +141,7 @@ public final class NDRange implements Envelope {
      * @param  dataType  data type of the bounds.
      */
     public NDRange(final CoordinateReferenceSystem crs, final DataType dataType) {
-        this(Vectors.create(Objects.requireNonNull(crs, "crs"), Objects.requireNonNull(dataType, "dataType")));
+        this(SampleSystem.of(crs), Vectors.create(crs.getCoordinateSystem().getDimension(), dataType));
     }
 
     /**
@@ -127,7 +160,14 @@ public final class NDRange implements Envelope {
      * @param  dataType  data type of the bounds.
      */
     public NDRange(final SampleSystem system, final DataType dataType) {
-        this(Vectors.create(Objects.requireNonNull(system, "system"), Objects.requireNonNull(dataType, "dataType")));
+        this(system, Vectors.create(system.getSize(), dataType));
+    }
+
+    /**
+     * Returns the sample system of the given reference system, or an undefined one if the CRS is null.
+     */
+    private static SampleSystem system(final CoordinateReferenceSystem crs, final int dimension) {
+        return (crs != null) ? SampleSystem.of(crs) : SampleSystem.ofSize(dimension);
     }
 
     /**
@@ -141,7 +181,8 @@ public final class NDRange implements Envelope {
     /**
      * Creates a range whose two bounds are the given vector, which is used directly for the lower bound.
      */
-    private NDRange(final Vector<?> bound) {
+    private NDRange(SampleSystem system, final Vector<?> bound) {
+        this.system = system;
         lower = bound;
         upper = bound.copy();
     }
@@ -153,9 +194,9 @@ public final class NDRange implements Envelope {
      * @param  envelope  the envelope to copy.
      */
     public NDRange(final Envelope envelope) {
-        final CoordinateReferenceSystem crs = envelope.getCoordinateReferenceSystem();
         final int dimension = envelope.getDimension();
-        lower = (crs != null) ? Vectors.create(crs, DataType.DOUBLE) : Vectors.createDouble(dimension);
+        system = system(envelope.getCoordinateReferenceSystem(), dimension);
+        lower = Vectors.createDouble(dimension);
         upper = lower.copy();
         for (int i = 0; i < dimension; i++) {
             lower.set(i, envelope.getMinimum(i));
@@ -168,7 +209,7 @@ public final class NDRange implements Envelope {
      */
     @Override
     public CoordinateReferenceSystem getCoordinateReferenceSystem() {
-        return lower.getCoordinateReferenceSystem();
+        return system.getCoordinateReferenceSystem();
     }
 
     /**
@@ -202,7 +243,7 @@ public final class NDRange implements Envelope {
      */
     @Override
     public DirectPosition getLowerCorner() {
-        return Vectors.asDirectPostion(lower.copy());
+        return Vectors.asDirectPostion(lower.copy(), getCoordinateReferenceSystem());
     }
 
     /**
@@ -210,7 +251,7 @@ public final class NDRange implements Envelope {
      */
     @Override
     public DirectPosition getUpperCorner() {
-        return Vectors.asDirectPostion(upper.copy());
+        return Vectors.asDirectPostion(upper.copy(), getCoordinateReferenceSystem());
     }
 
     @Override
@@ -421,16 +462,17 @@ public final class NDRange implements Envelope {
     }
 
     /**
-     * Returns whether the given object is a range with the same bounds.
+     * Returns whether the given object is a range with the same bounds and sample system.
      */
     @Override
     public boolean equals(final Object obj) {
-        return (obj instanceof NDRange other) && lower.equals(other.lower) && upper.equals(other.upper);
+        return (obj instanceof NDRange other) && lower.equals(other.lower) && upper.equals(other.upper)
+                && system.equals(other.system);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(lower, upper);
+        return Objects.hash(lower, upper, system);
     }
 
     /**

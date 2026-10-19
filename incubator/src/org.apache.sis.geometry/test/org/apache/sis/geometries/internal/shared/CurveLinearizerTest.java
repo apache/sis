@@ -259,8 +259,8 @@ public class CurveLinearizerTest extends GeometryTest {
     public void testInvalid() {
         final var arc = F.createArcByCenterPoint(F.createPoint(CRS_2D, 10, 20), 5, null, 0, 90);
         assertThrows(IllegalArgumentException.class, () -> arc.asLine(degrees(-1), null));
-        final Vector<?> origin = Vectors.createDouble(CRS_2D).set(new double[] {0, 0});
-        final Vector<?> direction = Vectors.createDouble(CRS_2D).set(new double[] {1, 0});
-        assertThrows(UnsupportedOperationException.class, () -> F.createRay(origin, direction).asLine(null, null));
+        final Vector<?> origin = Vectors.createDouble(2).set(new double[] {0, 0});
+        final Vector<?> direction = Vectors.createDouble(2).set(new double[] {1, 0});
+        assertThrows(UnsupportedOperationException.class, () -> F.createRay(CRS_2D, origin, direction).asLine(null, null));
     }
 }

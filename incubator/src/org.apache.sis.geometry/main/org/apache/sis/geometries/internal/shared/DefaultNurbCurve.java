@@ -313,8 +313,8 @@ public non-sealed class DefaultNurbCurve extends AbstractGeometry implements Nur
      */
     @Override
     public NDRange getEnvelope() {
-        final Vector<?> start = Vectors.create(getCoordinateReferenceSystem(), DataType.DOUBLE).set(controlPoints[0]);
-        final NDRange bbox = new NDRange(start, start);
+        final Vector<?> start = Vectors.create(controlPoints[0].getDimension(), DataType.DOUBLE).set(controlPoints[0]);
+        final NDRange bbox = new NDRange(getCoordinateReferenceSystem(), start, start);
         for (final Vector<?> p : controlPoints) {
             bbox.add(p);
         }

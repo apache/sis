@@ -260,8 +260,8 @@ public sealed interface Point extends Primitive
 
     @Override
     default Envelope getEnvelope() {
-        final Vector<?> position = Vectors.create(getCoordinateReferenceSystem(), DataType.DOUBLE).set(getPosition());
-        return new NDRange(position, position);
+        final Vector<?> position = Vectors.create(getDimension(), DataType.DOUBLE).set(getPosition());
+        return new NDRange(getCoordinateReferenceSystem(), position, position);
     }
 
     /**

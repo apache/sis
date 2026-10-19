@@ -17,11 +17,14 @@
 package org.apache.sis.geometries.internal.shared;
 
 import java.util.Objects;
+import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import org.apache.sis.geometries.DataPoints;
+import org.apache.sis.geometries.Geometries;
 import org.apache.sis.geometries.GeometryFactory;
 import org.apache.sis.geometries.curve.Ray;
 import org.apache.sis.maths.NDArrays;
 import org.apache.sis.maths.ReadOnly;
+import org.apache.sis.maths.SampleSystem;
 import org.apache.sis.maths.Vector;
 
 
@@ -41,13 +44,13 @@ public non-sealed class DefaultRay extends AbstractGeometry implements Ray {
 
     /**
      * Creates a ray starting from the given position.
-     * The reference system of the ray is the one of that position.
      *
+     * @param  crs        reference system of the ray, or {@code null} for an undefined one.
      * @param  position   the position the ray starts from, not null.
      * @param  direction  the direction the ray extends toward, not null.
      */
-    public DefaultRay(Vector<?> position, Vector<?> direction) {
-        points = GeometryFactory.DEFAULT.createDataPoints(NDArrays.of(position.getSampleSystem(), position.getDataType(), 1));
+    public DefaultRay(CoordinateReferenceSystem crs, Vector<?> position, Vector<?> direction) {
+        points = GeometryFactory.DEFAULT.createDataPoints(NDArrays.of(SampleSystem.of(Geometries.orUndefinedCRS(crs, position.getDimension())), position.getDataType(), 1));
         points.setPosition(0, position);
         this.direction = direction;
     }

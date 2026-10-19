@@ -109,7 +109,7 @@ public final class Intersection {
             @Override
             protected void visit(MeshPrimitive.Vertex vertex) {
                 if (isVisited(vertex)) return;
-                final Optional<Point> opt = evaluator.evaluate(vertex.getPosition());
+                final Optional<Point> opt = evaluator.evaluate(vertex.getCoordinateReferenceSystem(), vertex.getPosition());
                 if (opt.isEmpty()) return;
                 final Point point = opt.get();
                 final long index = vertex.getIndex();

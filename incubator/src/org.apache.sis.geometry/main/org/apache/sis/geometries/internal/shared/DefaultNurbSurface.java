@@ -33,6 +33,7 @@ import org.apache.sis.maths.Array;
 import org.apache.sis.maths.DataType;
 import org.apache.sis.maths.NDArrays;
 import org.apache.sis.maths.NDRange;
+import org.apache.sis.maths.SampleSystem;
 import org.apache.sis.maths.Vector;
 import org.apache.sis.maths.Vectors;
 
@@ -45,14 +46,19 @@ import org.apache.sis.maths.Vectors;
  */
 public non-sealed class DefaultNurbSurface extends AbstractGeometry implements NurbSurface {
 
+    /**
+     * Reference system of the control points, or {@code null} if unspecified.
+     */
+    private final CoordinateReferenceSystem crs;
     final Vector<?>[][] controlPoints;
     final double[][] weights;
     final double[] knotsU;
     final double[] knotsV;
     final int degree;
 
-    public DefaultNurbSurface(final Vector<?>[][] controlPoints, final double[][] weights,
+    public DefaultNurbSurface(final CoordinateReferenceSystem crs, final Vector<?>[][] controlPoints, final double[][] weights,
             final double[] knotsU, final double[] knotsV, final int degree) {
+        this.crs = crs;
         this.controlPoints = controlPoints;
         this.weights = weights;
         this.knotsU = knotsU;
@@ -234,7 +240,7 @@ public non-sealed class DefaultNurbSurface extends AbstractGeometry implements N
 
             final DataPoints colDp = new ArrayDataPoints(
                 NDArrays.of(List.of(colCtrl),
-                colCtrl[0].getSampleSystem(),
+                SampleSystem.of(getCoordinateReferenceSystem()),
                 colCtrl[0].getDataType()));
             final DefaultNurbCurve[] halves = new DefaultNurbCurve(colDp, colW, knotsU, degree).subdivide(u);
 
@@ -257,8 +263,8 @@ public non-sealed class DefaultNurbSurface extends AbstractGeometry implements N
         }
 
         return new DefaultNurbSurface[]{
-            new DefaultNurbSurface(leftCtrl, leftW, leftKnots, knotsV, degree),
-            new DefaultNurbSurface(rightCtrl, rightW, rightKnots, knotsV, degree)
+            new DefaultNurbSurface(crs, leftCtrl, leftW, leftKnots, knotsV, degree),
+            new DefaultNurbSurface(crs, rightCtrl, rightW, rightKnots, knotsV, degree)
         };
     }
 
@@ -275,7 +281,7 @@ public non-sealed class DefaultNurbSurface extends AbstractGeometry implements N
 
             final DataPoints dp = new ArrayDataPoints(
                 NDArrays.of(List.of(controlPoints[i]),
-                controlPoints[i][0].getSampleSystem(),
+                SampleSystem.of(getCoordinateReferenceSystem()),
                 controlPoints[i][0].getDataType()));
 
             final DefaultNurbCurve[] halves = new DefaultNurbCurve(dp, weights[i], knotsV, degree).subdivide(v);
@@ -295,8 +301,8 @@ public non-sealed class DefaultNurbSurface extends AbstractGeometry implements N
         }
 
         return new DefaultNurbSurface[]{
-            new DefaultNurbSurface(leftCtrl, leftW, knotsU, leftKnots, degree),
-            new DefaultNurbSurface(rightCtrl, rightW, knotsU, rightKnots, degree)
+            new DefaultNurbSurface(crs, leftCtrl, leftW, knotsU, leftKnots, degree),
+            new DefaultNurbSurface(crs, rightCtrl, rightW, knotsU, rightKnots, degree)
         };
     }
 
@@ -306,8 +312,7 @@ public non-sealed class DefaultNurbSurface extends AbstractGeometry implements N
      */
     @Override
     public CoordinateReferenceSystem getCoordinateReferenceSystem() {
-        final Vector<?> first = controlPoints[0][0];
-        return Geometries.orUndefinedCRS(first.getCoordinateReferenceSystem(), first.getDimension());
+        return Geometries.orUndefinedCRS(crs, controlPoints[0][0].getDimension());
     }
 
     /**
@@ -316,8 +321,8 @@ public non-sealed class DefaultNurbSurface extends AbstractGeometry implements N
      * @return the bounding box of this surface
      */
     public NDRange getEnvelope() {
-        final Vector<?> start = Vectors.create(getCoordinateReferenceSystem(), DataType.DOUBLE).set(controlPoints[0][0]);
-        final NDRange bbox = new NDRange(start, start);
+        final Vector<?> start = Vectors.create(controlPoints[0][0].getDimension(), DataType.DOUBLE).set(controlPoints[0][0]);
+        final NDRange bbox = new NDRange(getCoordinateReferenceSystem(), start, start);
         for (final Vector<?>[] row : controlPoints) {
             for (final Vector<?> p : row) {
                 bbox.add(p);
@@ -392,8 +397,7 @@ public non-sealed class DefaultNurbSurface extends AbstractGeometry implements N
         for (final Vector<?>[] row : controlPoints) {
             positions.addAll(Arrays.asList(row));
         }
-        final Vector<?> first = controlPoints[0][0];
-        return NDArrays.of(positions, first.getSampleSystem(), first.getDataType());
+        return NDArrays.of(positions, SampleSystem.of(getCoordinateReferenceSystem()), controlPoints[0][0].getDataType());
     }
 
     @Override

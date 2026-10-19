@@ -25,6 +25,7 @@ import org.apache.sis.geometries.internal.shared.AbstractGeometry;
 import org.apache.sis.maths.NDArrays;
 import org.apache.sis.maths.NDRange;
 import org.apache.sis.maths.ReadOnly;
+import org.apache.sis.maths.SampleSystem;
 import org.apache.sis.maths.Vector;
 
 
@@ -46,13 +47,13 @@ public final class HyperPlane extends AbstractGeometry{
 
     /**
      * Creates a hyperplane passing by the given position.
-     * The reference system of the hyperplane is the one of that position.
      *
+     * @param  crs       reference system of the hyperplane, or {@code null} for an undefined one.
      * @param  position  a position the hyperplane passes by, not null.
      * @param  normal    the direction the hyperplane is perpendicular to, not null.
      */
-    public HyperPlane(Vector<?> position, Vector<?> normal) {
-        points = GeometryFactory.DEFAULT.createDataPoints(NDArrays.of(position.getSampleSystem(), position.getDataType(), 1));
+    public HyperPlane(CoordinateReferenceSystem crs, Vector<?> position, Vector<?> normal) {
+        points = GeometryFactory.DEFAULT.createDataPoints(NDArrays.of(SampleSystem.of(Geometries.orUndefinedCRS(crs, position.getDimension())), position.getDataType(), 1));
         points.setPosition(0, position);
         this.normal = normal;
     }

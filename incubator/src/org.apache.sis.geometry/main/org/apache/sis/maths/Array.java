@@ -73,7 +73,7 @@ public interface Array extends NDArray {
      * @return tuple values, tuple is a copy.
      */
     default Vector<?> get(long index) {
-        Vector<?> tuple = Vectors.create(getSampleSystem(), getDataType());
+        Vector<?> tuple = Vectors.create(getDimension(), getDataType());
         get(index, tuple);
         return tuple;
     }
@@ -298,7 +298,7 @@ public interface Array extends NDArray {
      */
     default Vector<?>[] toArray(long offset, long nbTuple) {
         return stream(false).skip(offset).limit(nbTuple)
-                .map((Vector<?> t) -> Vectors.create(t.getSampleSystem(), t.getDataType()).set(t))
+                .map((Vector<?> t) -> Vectors.create(t.getDimension(), t.getDataType()).set(t))
                 .toArray(Vector<?>[]::new);
     }
 

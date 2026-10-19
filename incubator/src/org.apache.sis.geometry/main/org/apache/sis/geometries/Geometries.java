@@ -268,6 +268,7 @@ public final class Geometries {
         final Vector upper = box.getUpper();
 
         final int dim = lower.getDimension();
+        final SampleSystem system = SampleSystem.of(orUndefinedCRS(box.getCoordinateReferenceSystem(), dim));
 
         if (dim == 2) {
             /*
@@ -289,7 +290,7 @@ public final class Geometries {
                 maxx,maxy
             };
 
-            final Array positions = NDArrays.of(SampleSystem.of(lower.getCoordinateReferenceSystem()), values);
+            final Array positions = NDArrays.of(system, values);
             final Array index = NDArrays.ofUnsigned(1, new int[]{0,1,2,3});
 
             final MeshPrimitive primitive = new MeshPrimitive.TriangleStrip();
@@ -314,7 +315,7 @@ public final class Geometries {
             final Vector3D.Double uuu = new Vector3D.Double(maxx, maxy, maxz);
             final Vector3D.Double luu = new Vector3D.Double(minx, maxy, maxz);
 
-            final Array positions = NDArrays.of(SampleSystem.of(lower.getCoordinateReferenceSystem()), new double[24*3]);
+            final Array positions = NDArrays.of(system, new double[24*3]);
             //back
             positions.set(0, lll);
             positions.set(1, ull);

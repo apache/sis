@@ -265,7 +265,7 @@ public final class JTSAdapter {
 
         @Override
         public Vector getPosition(int index) {
-            final Vector v = Vectors.create(crs, DataType.DOUBLE);
+            final Vector v = Vectors.create(crs.getCoordinateSystem().getDimension(), DataType.DOUBLE);
             for (int i = 0; i < dim; i++) {
                 v.set(i, jts.getOrdinate(index, i));
             }

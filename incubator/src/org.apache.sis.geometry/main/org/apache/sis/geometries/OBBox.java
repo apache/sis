@@ -34,7 +34,8 @@ import org.apache.sis.maths.Vector;
  */
 public final class OBBox extends AbstractGeometry {
 
-    private Vector<?> center;
+    private CoordinateReferenceSystem crs;
+    private final Vector<?> center;
     private final Vector<?> xAxis;
     private final Vector<?> yAxis;
     private final Vector<?> zAxis;
@@ -53,7 +54,8 @@ public final class OBBox extends AbstractGeometry {
         if (crs.getCoordinateSystem().getDimension() != 3) {
             throw new IllegalArgumentException("Oriented BBox only support 3 dimensions.");
         }
-        center = Vectors.createDouble(crs);
+        this.crs = crs;
+        center = Vectors.createDouble(3);
         xAxis = Vectors.createDouble(3);
         yAxis = Vectors.createDouble(3);
         zAxis = Vectors.createDouble(3);
@@ -76,7 +78,7 @@ public final class OBBox extends AbstractGeometry {
 
     @Override
     public CoordinateReferenceSystem getCoordinateReferenceSystem() {
-        return center.getCoordinateReferenceSystem();
+        return crs;
     }
 
     @Override
@@ -84,9 +86,7 @@ public final class OBBox extends AbstractGeometry {
         if (cs.getCoordinateSystem().getDimension() != getCoordinateReferenceSystem().getCoordinateSystem().getDimension()) {
             throw new IllegalArgumentException("New CRS dimension must be the same as previous CRS");
         }
-        Vector v = Vectors.create(cs, center.getDataType());
-        v.set(center);
-        center = v;
+        crs = cs;
     }
 
     @Override
@@ -130,8 +130,8 @@ public final class OBBox extends AbstractGeometry {
         final Vector<?> nxAxis = xAxis.copy().scale(-1);
         final Vector<?> nyAxis = yAxis.copy().scale(-1);
         final Vector<?> nzAxis = zAxis.copy().scale(-1);
-        final Vector<?> start = Vectors.create(getCoordinateReferenceSystem(), DataType.DOUBLE).set(center);
-        final NDRange env = new NDRange(start, start);
+        final Vector<?> start = Vectors.create(getDimension(), DataType.DOUBLE).set(center);
+        final NDRange env = new NDRange(crs, start, start);
         final Vector<?> corner = center.copy();
         env.add(corner.set(center).add( xAxis).add( yAxis).add( zAxis));
         env.add(corner.set(center).add( xAxis).add( yAxis).add(nzAxis));
@@ -184,7 +184,7 @@ public final class OBBox extends AbstractGeometry {
      */
     @Override
     public DataPoints getDataPoints() {
-        return new SinglePositionDataPoints(this::getCenter);
+        return new SinglePositionDataPoints(this::getCoordinateReferenceSystem, this::getCenter);
     }
 
 }

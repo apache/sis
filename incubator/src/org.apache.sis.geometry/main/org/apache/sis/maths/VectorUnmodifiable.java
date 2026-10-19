@@ -17,7 +17,6 @@
 package org.apache.sis.maths;
 
 import org.opengis.geometry.DirectPosition;
-import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import org.apache.sis.util.ArgumentChecks;
 
 
@@ -31,14 +30,8 @@ final class VectorUnmodifiable extends AbstractVector<VectorUnmodifiable> {
     private final Vector<?> parent;
 
     public VectorUnmodifiable(Vector<?> parent) {
-        super(parent.getSampleSystem());
         ArgumentChecks.ensureNonNull("parent", parent);
         this.parent = parent;
-    }
-
-    @Override
-    public SampleSystem getSampleSystem() {
-        return parent.getSampleSystem();
     }
 
     @Override
@@ -159,11 +152,6 @@ final class VectorUnmodifiable extends AbstractVector<VectorUnmodifiable> {
     @Override
     public boolean isAll(double value) {
         return parent.isAll(value);
-    }
-
-    @Override
-    public CoordinateReferenceSystem getCoordinateReferenceSystem() {
-        return parent.getCoordinateReferenceSystem();
     }
 
 }

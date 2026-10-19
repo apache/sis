@@ -16,8 +16,6 @@
  */
 package org.apache.sis.maths;
 
-import org.opengis.referencing.crs.CoordinateReferenceSystem;
-import org.apache.sis.referencing.CRS;
 import org.apache.sis.referencing.operation.matrix.MatrixSIS;
 
 
@@ -33,23 +31,9 @@ public final class ReadOnly {
     public static interface Vector<T extends Vector<T>> {
 
         /**
-         * @return sample system, never null.
-         */
-        SampleSystem getSampleSystem();
-
-        /**
          * @return sample system size.
          */
-        default int getDimension() {
-            return getSampleSystem().getSize();
-        }
-
-        /**
-         * @return sample system CRS, may be null.
-         */
-        default CoordinateReferenceSystem getCoordinateReferenceSystem() {
-            return getSampleSystem().getCoordinateReferenceSystem();
-        }
+        int getDimension();
 
         /**
          * @return data type of primitives in this array
@@ -186,7 +170,7 @@ public final class ReadOnly {
          * @return tuple copy.
          */
         default org.apache.sis.maths.Vector<?> copy() {
-            return Vectors.create(getSampleSystem(), getDataType()).set(this);
+            return Vectors.create(getDimension(), getDataType()).set(this);
         }
 
         /**
@@ -197,7 +181,7 @@ public final class ReadOnly {
          * @return tuple copy.
          */
         default org.apache.sis.maths.Vector<?> copy(DataType dataType) {
-            return Vectors.create(getSampleSystem(), dataType).set(this);
+            return Vectors.create(getDimension(), dataType).set(this);
         }
 
         /**
@@ -221,7 +205,7 @@ public final class ReadOnly {
         }
 
         /**
-         * Tuples are equal when all samples and CRS match.
+         * Tuples are equal when all samples match.
          */
         @Override
         boolean equals(Object candidate);
@@ -232,7 +216,7 @@ public final class ReadOnly {
          * Tuples are a key element in OpenGL and GPU which have variable bits representation of numbers
          * including half-floats, oct-compression, normalisation, quantization, unsigned values and more.
          *
-         * This equality test checks values and CRS but does not verify that data types are identical.
+         * This equality test checks values but does not verify that data types are identical.
          * This behavior allows to compare Tuple following their contract ignoring the storage backend.
          *
          * @param obj second tuple to test against
@@ -264,10 +248,6 @@ public final class ReadOnly {
                         return false;
                     }
                 }
-            }
-            //checking crs is expensive, do it last
-            if (!CRS.equivalent(getCoordinateReferenceSystem(), other.getCoordinateReferenceSystem())) {
-                return false;
             }
             return true;
         }
@@ -318,7 +298,6 @@ public final class ReadOnly {
 
         /**
          * Increase size of the tuple by one value.
-         * Vector CRS will be lost.
          *
          * @param d last dimension value
          * @return Vector
@@ -335,7 +314,6 @@ public final class ReadOnly {
 
         /**
          * Decrease size of the tuple by one value.
-         * Vector CRS will be lost.
          *
          * @param size number of dimension to preserve
          * @return Vector
@@ -352,7 +330,6 @@ public final class ReadOnly {
          * Create a new tuple with the values of the given axes, in the given order.
          * Axes can be omitted or repeated, for example {@code swizzle(1, 0)} swaps the
          * two first values and {@code swizzle(0, 0, 0)} repeats the first one.
-         * Vector CRS will be lost.
          *
          * @param axes indices of the values of this tuple to copy, one per dimension of the result
          * @return Vector of dimension {@code axes.length}

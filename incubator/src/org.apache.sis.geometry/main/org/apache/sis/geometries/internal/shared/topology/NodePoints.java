@@ -277,7 +277,7 @@ public final class NodePoints implements DataPoints, DataPointsType {
     @Override
     public Vector<?> getPosition(final int index) {
         Objects.checkIndex(index, size);
-        return Vectors.createDouble(crs).set(coordinates, index * dimension);
+        return Vectors.createDouble(dimension).set(coordinates, index * dimension);
     }
 
     /**

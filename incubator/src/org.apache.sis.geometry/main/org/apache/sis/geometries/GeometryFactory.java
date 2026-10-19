@@ -581,7 +581,7 @@ public final class GeometryFactory {
     /**
      * Creates a rational or polynomial parametric surface represented by control points, b-spline
      * basis functions and possibly weights. For the rational flavour carrying a weight per control
-     * point, see {@link #createNurbSurface(Vector[][], double[][], double[], double[], int)}.
+     * point, see {@link #createNurbSurface(CoordinateReferenceSystem, Vector[][], double[][], double[], double[], int)}.
      *
      * @param  points         positions at the knots of the parameter grid, in row-major order.
      *                        There shall be {@code rows} × {@code columns} of them.
@@ -608,6 +608,7 @@ public final class GeometryFactory {
      * Creates a NURBS surface, i.e. the tensor product of two directions each having its own knot
      * vector, over a grid of weighted control points.
      *
+     * @param  crs            reference system of the control points, or {@code null} for an undefined one.
      * @param  controlPoints  control points as a grid, the first index running along <var>u</var>
      *                        and the second one along <var>v</var>.
      * @param  weights        weight of each control point, in the same layout as the control points.
@@ -615,10 +616,10 @@ public final class GeometryFactory {
      * @param  knotsV         knot values along the <var>v</var> parameter.
      * @param  degree         degree of the basis functions.
      */
-    public NurbSurface createNurbSurface(Vector<?>[][] controlPoints, double[][] weights,
+    public NurbSurface createNurbSurface(CoordinateReferenceSystem crs, Vector<?>[][] controlPoints, double[][] weights,
             double[] knotsU, double[] knotsV, int degree)
     {
-        return new DefaultNurbSurface(controlPoints, weights, knotsU, knotsV, degree);
+        return new DefaultNurbSurface(crs, controlPoints, weights, knotsU, knotsV, degree);
     }
 
     /**
@@ -653,14 +654,14 @@ public final class GeometryFactory {
 
     /**
      * Creates a capsule whose capping spheres are centered on the two given positions.
-     * The reference system of the capsule is the one of those positions.
      *
+     * @param  crs     reference system of the capsule, or {@code null} for an undefined one.
      * @param  bottom  the center of the bottom sphere, not null.
      * @param  top     the center of the top sphere, not null.
      * @return the capsule between the two given positions.
      */
-    public Capsule createCapsule(Vector<?> bottom, Vector<?> top) {
-        return new DefaultCapsule(bottom, top);
+    public Capsule createCapsule(CoordinateReferenceSystem crs, Vector<?> bottom, Vector<?> top) {
+        return new DefaultCapsule(crs, bottom, top);
     }
 
     /**
@@ -678,14 +679,14 @@ public final class GeometryFactory {
 
     /**
      * Creates a cylinder along the axis joining the two given positions.
-     * The reference system of the cylinder is the one of those positions.
      *
+     * @param  crs     reference system of the cylinder, or {@code null} for an undefined one.
      * @param  bottom  the center of the bottom circle, not null.
      * @param  top     the center of the top circle, not null.
      * @return the cylinder between the two given positions.
      */
-    public Cylinder createCylinder(Vector<?> bottom, Vector<?> top) {
-        return new DefaultCylinder(bottom, top);
+    public Cylinder createCylinder(CoordinateReferenceSystem crs, Vector<?> bottom, Vector<?> top) {
+        return new DefaultCylinder(crs, bottom, top);
     }
 
     /**
@@ -823,14 +824,14 @@ public final class GeometryFactory {
     /**
      * Creates a ray starting from the given position.
      * A ray is a line which extends to infinity in one direction only.
-     * The reference system of the ray is the one of the given position.
      *
+     * @param  crs        reference system of the ray, or {@code null} for an undefined one.
      * @param  position   the position the ray starts from, not null.
      * @param  direction  the direction the ray extends toward, not null.
      * @return the ray starting from the given position.
      */
-    public Ray createRay(Vector<?> position, Vector<?> direction) {
-        return new DefaultRay(position, direction);
+    public Ray createRay(CoordinateReferenceSystem crs, Vector<?> position, Vector<?> direction) {
+        return new DefaultRay(crs, position, direction);
     }
 
     /**
@@ -849,17 +850,17 @@ public final class GeometryFactory {
     /**
      * Creates a plane centered on the given position and perpendicular to the given normal.
      * A plane is a sheet with no side, both of its faces belonging to it; for a surface which
-     * divides the space in two, see {@link #createHyperPlane(Vector, Vector)}. The plane is
+     * divides the space in two, see {@link #createHyperPlane(CoordinateReferenceSystem, Vector, Vector)}. The plane is
      * unbounded until {@link Plane#setSizeX(double)} and {@link Plane#setSizeZ(double)} give it
      * finite extents, making it a quad.
-     * The reference system of the plane is the one of the given position.
      *
+     * @param  crs       reference system of the plane, or {@code null} for an undefined one.
      * @param  position  the position the plane is centered on, not null.
      * @param  normal    the direction the plane is perpendicular to, not null.
      * @return the plane centered on the given position.
      */
-    public Plane createPlane(Vector<?> position, Vector<?> normal) {
-        return new Plane(position, normal);
+    public Plane createPlane(CoordinateReferenceSystem crs, Vector<?> position, Vector<?> normal) {
+        return new Plane(crs, position, normal);
     }
 
     /**
@@ -877,16 +878,16 @@ public final class GeometryFactory {
 
     /**
      * Creates a hyperplane passing by the given position and perpendicular to the given normal.
-     * Unlike a {@linkplain #createPlane(Vector, Vector) plane}, a hyperplane divides the geometric
+     * Unlike a {@linkplain #createPlane(CoordinateReferenceSystem, Vector, Vector) plane}, a hyperplane divides the geometric
      * space in two, and therefore has a side.
-     * The reference system of the hyperplane is the one of the given position.
      *
+     * @param  crs       reference system of the hyperplane, or {@code null} for an undefined one.
      * @param  position  a position the hyperplane passes by, not null.
      * @param  normal    the direction the hyperplane is perpendicular to, not null.
      * @return the hyperplane passing by the given position.
      */
-    public HyperPlane createHyperPlane(Vector<?> position, Vector<?> normal) {
-        return new HyperPlane(position, normal);
+    public HyperPlane createHyperPlane(CoordinateReferenceSystem crs, Vector<?> position, Vector<?> normal) {
+        return new HyperPlane(crs, position, normal);
     }
 
     /**

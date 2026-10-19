@@ -117,7 +117,7 @@ public final class BBox extends GeneralEnvelope implements Geometry {
      * @return a copy of the lower corner.
      */
     public Vector<?> getLower() {
-        final Vector<?> corner = Vectors.create(getCoordinateReferenceSystem(), DataType.DOUBLE);
+        final Vector<?> corner = Vectors.create(getDimension(), DataType.DOUBLE);
         for (int i = 0, n = getDimension(); i < n; i++) {
             corner.set(i, getLower(i));
         }
@@ -131,7 +131,7 @@ public final class BBox extends GeneralEnvelope implements Geometry {
      * @return a copy of the upper corner.
      */
     public Vector<?> getUpper() {
-        final Vector<?> corner = Vectors.create(getCoordinateReferenceSystem(), DataType.DOUBLE);
+        final Vector<?> corner = Vectors.create(getDimension(), DataType.DOUBLE);
         for (int i = 0, n = getDimension(); i < n; i++) {
             corner.set(i, getUpper(i));
         }
@@ -208,7 +208,7 @@ public final class BBox extends GeneralEnvelope implements Geometry {
             case 3: {
                 final var corners = new Vector<?>[8];
                 for (int i = 0; i < corners.length; i++) {
-                    final Vector<?> corner = Vectors.create(crs, DataType.DOUBLE);
+                    final Vector<?> corner = Vectors.create(3, DataType.DOUBLE);
                     for (int k = 0; k < 3; k++) {
                         corner.set(k, ((i & (1 << k)) != 0) ? getMaximum(k) : getMinimum(k));
                     }

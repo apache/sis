@@ -1160,7 +1160,7 @@ public final class ArrayFactoryJava implements ArrayFactory {
 
         @Override
         public Vector get(long index) {
-            final Vector buffer = Vectors.create(type, DataType.FLOAT);
+            final Vector buffer = Vectors.create(type.getSize(), DataType.FLOAT);
             return buffer.set(array, Math.toIntExact(index * dimension));
         }
 
@@ -1309,7 +1309,7 @@ public final class ArrayFactoryJava implements ArrayFactory {
 
         @Override
         public Vector get(long index) {
-            final Vector buffer = Vectors.create(type, DataType.DOUBLE);
+            final Vector buffer = Vectors.create(type.getSize(), DataType.DOUBLE);
             return buffer.set(array, Math.toIntExact(index * dimension));
         }
 

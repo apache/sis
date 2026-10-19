@@ -21,6 +21,8 @@ import javax.measure.quantity.Angle;
 import static org.opengis.annotation.Specification.ISO_19107;
 import org.opengis.annotation.UML;
 import org.apache.sis.geometries.internal.shared.DefaultBearing;
+import org.apache.sis.maths.Sample;
+import org.apache.sis.maths.SampleSystem;
 import org.apache.sis.maths.Vector;
 
 
@@ -203,6 +205,26 @@ public interface Bearing extends ReferenceDirection {
      * @see ISO 19107:2019 - 6.2.22.6
      */
     static Bearing ofDirection(final Vector<?> direction,
+                               final ReferenceDirection reference, final Rotation rotation)
+    {
+        return ofDirection(new Sample(SampleSystem.ofSize(direction.getDimension()), direction), reference, rotation);
+    }
+
+    /**
+     * Creates a bearing in the direction of the given vector, with the given reference and sense.
+     * The sample system of the given sample locates the axes, so that a bearing has the same azimuth
+     * whatever the order of the axes of its coordinate system.
+     *
+     * @param  direction  vector giving the direction of the bearing with its sample system, not null.
+     * @param  reference  direction from which the azimuth is measured, not null.
+     * @param  rotation   sense in which the azimuth is measured, not null.
+     * @return a bearing in the direction of the given vector.
+     * @throws IllegalArgumentException if the vector has a coordinate which is not finite, if its
+     *         length is zero, or if the reference direction refers to the bearing being created.
+     *
+     * @see ISO 19107:2019 - 6.2.22.6
+     */
+    static Bearing ofDirection(final Sample direction,
                                final ReferenceDirection reference, final Rotation rotation)
     {
         return new DefaultBearing(direction, reference, rotation);

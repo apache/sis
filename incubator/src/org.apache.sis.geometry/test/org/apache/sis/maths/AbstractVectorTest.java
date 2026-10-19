@@ -264,7 +264,7 @@ public abstract class AbstractVectorTest {
         for (final DataType dataType : new DataType[] {DataType.DOUBLE, DataType.FLOAT, DataType.SHORT}) {
             final Vector<?> copy = tuple.copy(dataType);
             assertEquals(dataType, copy.getDataType());
-            assertEquals(tuple.getSampleSystem(), copy.getSampleSystem());
+            assertEquals(tuple.getDimension(), copy.getDimension());
             assertArrayEquals(tuple.toArrayDouble(), copy.toArrayDouble(), TOLERANCE);
             //the copy is independent of the original tuple
             copy.set(0, 100);

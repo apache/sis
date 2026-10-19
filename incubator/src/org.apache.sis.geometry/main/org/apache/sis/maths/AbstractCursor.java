@@ -27,7 +27,6 @@ abstract class AbstractCursor extends AbstractVector implements Cursor {
     protected long offset = -1;
 
     AbstractCursor(Array array) {
-        super(array.getSampleSystem());
         this.array = array;
     }
 

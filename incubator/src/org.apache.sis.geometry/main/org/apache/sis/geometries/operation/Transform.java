@@ -141,10 +141,10 @@ public final class Transform {
 
                 //transform normal and tangent with local matrix at each point
                 if (normals != null || tangents != null) {
-                    final Vector<?> pos = Vectors.create(positions.getSampleSystem(), positions.getDataType());
+                    final Vector<?> pos = Vectors.create(positions.getDimension(), positions.getDataType());
 
-                    final Vector<?> nor = (normals == null) ? null : Vectors.create(normals.getSampleSystem(), normals.getDataType());
-                    final Vector<?> tag = (tangents == null) ? null : Vectors.create(tangents.getSampleSystem(), tangents.getDataType());
+                    final Vector<?> nor = (normals == null) ? null : Vectors.create(normals.getDimension(), normals.getDataType());
+                    final Vector<?> tag = (tangents == null) ? null : Vectors.create(tangents.getDimension(), tangents.getDataType());
                     for (long i = 0, n = positions.getLength(); i < n; i++) {
                         positions.get(i, pos);
                         final MatrixSIS matrix = MatrixSIS.castOrCopy(transform.derivative(Vectors.asDirectPostion(pos)));

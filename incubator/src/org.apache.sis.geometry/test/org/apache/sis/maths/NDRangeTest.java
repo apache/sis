@@ -37,11 +37,11 @@ public class NDRangeTest {
     private static final CoordinateReferenceSystem CRS = CommonCRS.WGS84.geographic3D();
 
     private static Vector<?> vector(double... values) {
-        return Vectors.create(CRS, DataType.DOUBLE).set(values);
+        return Vectors.create(values.length, DataType.DOUBLE).set(values);
     }
 
     private static NDRange range() {
-        return new NDRange(vector(1, 2, 3), vector(4, 6, 3));
+        return new NDRange(CRS, vector(1, 2, 3), vector(4, 6, 3));
     }
 
     @Test
@@ -108,8 +108,8 @@ public class NDRangeTest {
     public void testInvalid() {
         assertThrows(MismatchedDimensionException.class, () -> new NDRange(vector(1, 2, 3), Vectors.createDouble(2)));
         assertThrows(IllegalArgumentException.class, () -> new NDRange(vector(5, 2, 3), vector(4, 6, 3)));
-        assertThrows(IllegalArgumentException.class, () -> new NDRange(vector(1, 2, 3),
-                Vectors.create(CommonCRS.WGS84.geocentric(), DataType.DOUBLE).set(new double[] {4, 6, 3})));
+        assertThrows(MismatchedDimensionException.class, () -> new NDRange(CommonCRS.WGS84.geographic(),
+                vector(1, 2, 3), vector(4, 6, 3)));
     }
 
     /**
@@ -129,7 +129,7 @@ public class NDRangeTest {
         assertArrayEquals(new double[] {4, 6, 10}, range.getUpper().toArrayDouble());
         // A position inside the range does not change it.
         range.add(vector(2, 3, 5));
-        assertEquals(new NDRange(vector(0, 2, 3), vector(4, 6, 10)), range);
+        assertEquals(new NDRange(CRS, vector(0, 2, 3), vector(4, 6, 10)), range);
         // A NaN coordinate is ignored.
         range.add(vector(Double.NaN, 8, 5));
         assertArrayEquals(new double[] {4, 8, 10}, range.getUpper().toArrayDouble());
