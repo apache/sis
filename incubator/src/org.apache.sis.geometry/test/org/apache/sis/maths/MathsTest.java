@@ -16,6 +16,8 @@
  */
 package org.apache.sis.maths;
 
+import java.util.Arrays;
+
 // Test dependencies
 import static org.junit.jupiter.api.Assertions.*;
 import org.junit.jupiter.api.Disabled;
@@ -196,6 +198,50 @@ public class MathsTest {
         assertArrayEquals(new double[] {0, -8, 0}, Maths.calculatePolygonNormal(
                 NDArrays.of(3, new double[] {0,1,0, 1,1,0, 2,1,0, 2,1,2, 0,1,2, 0,1,0})), EPSILON);
         assertThrows(IllegalArgumentException.class, () -> Maths.calculatePolygonNormal(NDArrays.of(2, new double[] {0,0, 1,0, 0,1})));
+    }
+
+    /**
+     * Tests {@link Maths#projectionAxes(double[])} on the normals of the six faces of a cube.
+     * The axis left out is the one of the normal, and the order of the two others depends on its sign.
+     */
+    @Test
+    public void testProjectionAxes() {
+        assertArrayEquals(new int[] {0, 1, 2}, Maths.projectionAxes(new double[] { 0,  0,  1}));
+        assertArrayEquals(new int[] {1, 0, 2}, Maths.projectionAxes(new double[] { 0,  0, -1}));
+        assertArrayEquals(new int[] {1, 2, 0}, Maths.projectionAxes(new double[] { 1,  0,  0}));
+        assertArrayEquals(new int[] {2, 1, 0}, Maths.projectionAxes(new double[] {-1,  0,  0}));
+        assertArrayEquals(new int[] {2, 0, 1}, Maths.projectionAxes(new double[] { 0,  1,  0}));
+        assertArrayEquals(new int[] {0, 2, 1}, Maths.projectionAxes(new double[] { 0, -1,  0}));
+        assertArrayEquals(new int[] {0, 1, 2}, Maths.projectionAxes(new double[] { 0,  0,  0}), "A zero normal gives the (x,y) plane.");
+        assertArrayEquals(new int[] {0, 1, 2}, Maths.projectionAxes(new double[] { 1,  1,  1}), "Ties leave out z first.");
+        assertThrows(IllegalArgumentException.class, () -> Maths.projectionAxes(new double[] {0, 1}));
+    }
+
+    /**
+     * Tests that {@link Maths#projectionAxes(double[])} keeps the orientation: a triangle whose normal has the
+     * direction given to the method is counterclockwise once projected, and the reversed triangle clockwise.
+     */
+    @Test
+    public void testProjectionAxesOrientation() {
+        final double[][] normals = {
+            {0, 0, 1}, {0, 0, -1}, {1, 0, 0}, {-1, 0, 0}, {0, 1, 0}, {0, -1, 0},
+            {1, 2, 3}, {-3, 1, -2}, {0.5, -4, 0.1}, {-0.2, 0.3, -0.25}
+        };
+        for (final double[] normal : normals) {
+            //two vectors of the plane such as t1 × t2 has the direction of the normal.
+            final double[] other = (Math.abs(normal[0]) < 0.9 * Vectors.length(normal)) ? new double[] {1, 0, 0} : new double[] {0, 1, 0};
+            final double[] t1 = Vectors.cross(normal, other);
+            final double[] t2 = Vectors.cross(normal, t1);
+            final Vector<?> a = vector(0.3, -1.7, 2.1);
+            final Vector<?> b = vector(a.get(0) + t1[0], a.get(1) + t1[1], a.get(2) + t1[2]);
+            final Vector<?> c = vector(a.get(0) + t2[0], a.get(1) + t2[1], a.get(2) + t2[2]);
+            final int[] axes = Maths.projectionAxes(normal);
+            final String message = Arrays.toString(normal);
+            assertTrue(Maths.lineSide(a.swizzle(axes), b.swizzle(axes), c.swizzle(axes)) > 0, message);
+            assertTrue(Maths.lineSide(a.swizzle(axes), c.swizzle(axes), b.swizzle(axes)) < 0, message);
+            assertEquals(Math.abs(normal[axes[2]]), Math.max(Math.abs(normal[0]), Math.max(Math.abs(normal[1]), Math.abs(normal[2]))),
+                         message + ": the axis left out shall be the largest component of the normal.");
+        }
     }
 
     @Test

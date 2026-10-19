@@ -138,6 +138,35 @@ public final class Maths {
         return normal;
     }
 
+    /**
+     * Returns the order of the coordinates for projecting a planar figure on a coordinate plane without changing
+     * its orientation, to be given to {@link Vector#swizzle(int...)}. The projection plane is made of the two first
+     * axes of the returned order. The last axis is the one along which the normal is the largest, so that a figure
+     * perpendicular to another coordinate plane is not degenerate. The two first axes are ordered so that a figure
+     * seen counterclockwise from the side where the normal points is counterclockwise in the projection plane.
+     * For example, a triangle (a,b,c) whose normal (b−a)×(c−a) has the direction of the given normal is on the
+     * left side of {@linkplain #lineSide(ReadOnly.Vector, ReadOnly.Vector, ReadOnly.Vector) line side} once projected,
+     * and a ring is counterclockwise in the projection plane of its {@linkplain #calculatePolygonNormal(Array) normal}.
+     *
+     * <p>The orientation is kept because each component of the normal is twice the area of the figure projected
+     * on the coordinate plane of the two following axes in cyclic order, positive if counterclockwise. A zero
+     * normal gives the (x,y) plane.</p>
+     *
+     * @param normal normal of the plane. Only the three first components are used, and only their direction matters.
+     * @return the order of the three axes: the two axes of the projection plane, then the axis left out.
+     * @throws IllegalArgumentException if the normal has less than 3 components
+     */
+    public static int[] projectionAxes(double[] normal) {
+        if (normal.length < 3) {
+            throw new IllegalArgumentException("The normal shall have at least 3 components, found " + normal.length + ".");
+        }
+        final double nx = Math.abs(normal[0]), ny = Math.abs(normal[1]), nz = Math.abs(normal[2]);
+        final int drop = (nz >= nx && nz >= ny) ? 2 : (nx >= ny) ? 0 : 1;
+        //the cyclic order keeps the handedness, then swapping the plane axes reverses the orientation.
+        final int u = (drop + 1) % 3, v = (drop + 2) % 3;
+        return (normal[drop] < 0) ? new int[] {v, u, drop} : new int[] {u, v, drop};
+    }
+
     public static double[] subtract(float[] A, float[] B){
         return new double[] {
             A[0] - (double) B[0],

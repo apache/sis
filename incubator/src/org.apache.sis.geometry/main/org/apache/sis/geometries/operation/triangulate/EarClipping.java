@@ -25,6 +25,7 @@ import java.util.stream.IntStream;
 import org.apache.sis.geometries.DataPoints;
 import org.apache.sis.geometries.DataPointsType;
 import org.apache.sis.geometries.mesh.MeshPrimitive;
+import org.apache.sis.geometries.operation.OperationException;
 import org.apache.sis.geometries.surface.Polygon;
 import org.apache.sis.maths.Array;
 import org.apache.sis.maths.Maths;
@@ -44,9 +45,18 @@ import org.apache.sis.util.ArraysExt;
  * the polygon: the triangles reference the vertices instead of copying their positions, so that
  * all the attributes of the vertices are kept.</p>
  *
+ * <p>The triangles have the orientation of the exterior ring of the polygon: seen from any side,
+ * they turn in the same direction as the exterior ring, so a face of a solid keeps its normal.</p>
+ *
  * @author Johann Sorel
  */
 public class EarClipping {
+
+    /**
+     * Largest area, relative to the square of the size of the polygon, enclosed by vertices left without ear.
+     * Those vertices are aligned or along the cuts joining the holes, and the area is the rounding errors.
+     */
+    private static final double AREA_TOLERANCE = 1E-10;
 
     /**
      * Result of a triangulation: the vertices of the triangles, and the triangles as indices of those vertices.
@@ -79,10 +89,16 @@ public class EarClipping {
 
     /**
      * Indices in {@link #source} of the vertices of the ring joining the holes to the exterior ring, without
-     * repeated consecutive positions and without the closing position. The ring is clockwise in the plane
-     * of the triangulation.
+     * repeated consecutive positions and without the closing position. The ring has the orientation of the
+     * exterior ring.
      */
     private int[] ring;
+
+    /**
+     * Whether the {@linkplain #ring} is clockwise in the plane of the triangulation.
+     * The triangles are cut in the direction of the ring, so they have the same orientation.
+     */
+    private boolean clockwise;
 
     /**
      * For each vertex of the {@linkplain #ring}, the previous and next vertices which are not cut yet.
@@ -105,8 +121,10 @@ public class EarClipping {
      *
      * @param geometry geometry to triangulate
      * @return the vertices of the triangles and their indices.
+     * @throws OperationException if the polygon cannot be triangulated, which happens with an invalid polygon
+     *         such as a polygon whose exterior ring intersects itself.
      */
-    public Triangulation triangulateIndexed(Polygon geometry) {
+    public Triangulation triangulateIndexed(Polygon geometry) throws OperationException {
         source = geometry.getDataPoints();
         final int[] axes = workingAxes(geometry.getExteriorRing().getDataPoints().getAttributeArray(DataPointsType.ATT_POSITION));
         working = new Vector<?>[source.size()];
@@ -118,8 +136,10 @@ public class EarClipping {
 
     /**
      * Triangulates the given polygon into an indexed mesh holding all the attributes of the polygon.
+     *
+     * @throws OperationException if the polygon cannot be triangulated.
      */
-    public MeshPrimitive.Triangles toMesh(Polygon polygon) {
+    public MeshPrimitive.Triangles toMesh(Polygon polygon) throws OperationException {
         final Triangulation triangulation = triangulateIndexed(polygon);
         final DataPoints vertices = triangulation.vertices();
         final MeshPrimitive.Triangles mesh = new MeshPrimitive.Triangles();
@@ -133,20 +153,16 @@ public class EarClipping {
     /**
      * Returns the order of the coordinates to use for triangulating a polygon with the given positions,
      * to be given to {@link Vector#swizzle(int...)}. The triangulation works on the two first coordinates
-     * of that order. The axis along which the {@linkplain Maths#calculatePolygonNormal(Array) normal of the
-     * polygon} is the largest is moved after the two axes of the projection plane, so that a vertical polygon
-     * is not degenerate. If the polygon can be triangulated in its (x,y) plane, the order is unchanged.
+     * of that order. With three or more dimensions, the three first axes are in the {@linkplain Maths#projectionAxes
+     * projection order} of the {@linkplain Maths#calculatePolygonNormal(Array) normal of the polygon}: the axis along
+     * which the normal is the largest goes after the two axes of the projection plane, so that a vertical polygon is
+     * not degenerate, and the polygon is counterclockwise in that plane. The other axes keep their order.
+     * In two dimensions, the order is unchanged.
      */
     static int[] workingAxes(final Array positions) {
-        final int dim = positions.getDimension();
-        final int[] axes = ArraysExt.range(0, dim);
-        if (dim >= 3) {
-            final double[] normal = Maths.calculatePolygonNormal(positions);
-            final double nx = Math.abs(normal[0]), ny = Math.abs(normal[1]), nz = Math.abs(normal[2]);
-            final int drop = (nz >= nx && nz >= ny) ? 2 : (nx >= ny) ? 0 : 1;
-            //shift the following axes of the plane to the place of the dropped axis, which goes after them.
-            System.arraycopy(axes, drop + 1, axes, drop, 2 - drop);
-            axes[2] = drop;
+        final int[] axes = ArraysExt.range(0, positions.getDimension());
+        if (axes.length >= 3) {
+            System.arraycopy(Maths.projectionAxes(Maths.calculatePolygonNormal(positions)), 0, axes, 0, 3);
         }
         return axes;
     }
@@ -174,14 +190,13 @@ public class EarClipping {
      * ring, which stays a valid polygon, until only one triangle is left.
      *
      * @param joined  indices in {@link #source} of the ring positions, the last one at the location of the first one.
+     * @throws OperationException if the vertices left without ear still enclose an area.
      */
-    private void run(final int[] joined) {
+    private void run(final int[] joined) throws OperationException {
         //remove the repeated consecutive positions, and the closing position which repeats the first one.
         ring = IntStream.range(0, joined.length - 1).filter((i) -> !working[joined[i]].equals(working[joined[i + 1]]))
                         .map((i) -> joined[i]).toArray();
-        if (!Maths.isClockWise(Arrays.stream(joined).mapToObj((i) -> working[i]).toList())) {
-            ArraysExt.reverse(ring);
-        }
+        clockwise = Maths.isClockWise(Arrays.stream(joined).mapToObj((i) -> working[i]).toList());
         final int n = ring.length;
         previous = new int[n];
         next     = new int[n];
@@ -192,9 +207,12 @@ public class EarClipping {
         angles = new Angle[n];
         Arrays.fill(angles, Angle.UNKNOWN);
 
-        //walk around the ring, until a whole turn finds no ear, which should not happen if the geometry is correct.
-        int vertex = 0;
-        for (int remaining = n, attempts = 0; remaining >= 3 && attempts < remaining; vertex = next[vertex]) {
+        /*
+         * Walk around the ring, until a whole turn finds no ear. With a valid polygon, this happens only when
+         * the vertices left enclose no area, for example when they are aligned along the cut joining a hole.
+         */
+        int vertex = 0, remaining = n;
+        for (int attempts = 0; remaining >= 3 && attempts < remaining; vertex = next[vertex]) {
             if (isConvex(vertex) && isEar(vertex)) {
                 triangles.add(new int[] {ring[previous[vertex]], ring[vertex], ring[next[vertex]]});
                 //unlink the vertex, the angles at its neighbors may change.
@@ -208,6 +226,37 @@ public class EarClipping {
                 attempts++;
             }
         }
+        if (remaining >= 3 && !isDegenerate(vertex)) {
+            throw new OperationException("Cannot triangulate the polygon: no ear found among the " + remaining
+                    + " vertices left, the polygon may be invalid, for example with a ring intersecting itself.");
+        }
+    }
+
+    /**
+     * Returns whether the vertices which are not cut yet enclose no area, compared to the size of the polygon.
+     * The area is computed relatively to one of those vertices, for reducing the rounding errors.
+     *
+     * @param start  a vertex which is not cut yet.
+     */
+    private boolean isDegenerate(final int start) {
+        final Vector<?> origin = position(start);
+        final double ox = origin.get(0), oy = origin.get(1);
+        double area = 0;            // twice the signed area.
+        int vertex = start;
+        do {
+            final Vector<?> a = position(vertex), b = position(next[vertex]);
+            area += (a.get(0) - ox) * (b.get(1) - oy) - (b.get(0) - ox) * (a.get(1) - oy);
+            vertex = next[vertex];
+        } while (vertex != start);
+        double xmin = Double.POSITIVE_INFINITY, xmax = Double.NEGATIVE_INFINITY;
+        double ymin = Double.POSITIVE_INFINITY, ymax = Double.NEGATIVE_INFINITY;
+        for (final int index : ring) {
+            final Vector<?> p = working[index];
+            xmin = Math.min(xmin, p.get(0)); xmax = Math.max(xmax, p.get(0));
+            ymin = Math.min(ymin, p.get(1)); ymax = Math.max(ymax, p.get(1));
+        }
+        final double size = Math.max(xmax - xmin, ymax - ymin);
+        return Math.abs(area) / 2 <= AREA_TOLERANCE * size * size;
     }
 
     /**
@@ -222,7 +271,7 @@ public class EarClipping {
      */
     private boolean isConvex(final int vertex) {
         if (angles[vertex] == Angle.UNKNOWN) {
-            final boolean convex = Maths.isConvex(position(previous[vertex]), position(vertex), position(next[vertex]), true);
+            final boolean convex = Maths.isConvex(position(previous[vertex]), position(vertex), position(next[vertex]), clockwise);
             angles[vertex] = convex ? Angle.CONVEX : Angle.CONCAVE;
         }
         return angles[vertex] == Angle.CONVEX;
