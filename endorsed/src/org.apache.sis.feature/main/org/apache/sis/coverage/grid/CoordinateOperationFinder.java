@@ -339,9 +339,10 @@ final class CoordinateOperationFinder extends CoordinateOperationContext {
                 /*
                  * Unconditionally create the operation even if the CRS are equivalent. A non-null operation
                  * trigs the check for wraparound axes, which is necessary even if the transform is identity.
+                 * Note that the envelope may be undefined.
                  */
-                addAreaOfInterest(source.envelope);
-                addAreaOfInterest(target.envelope);
+                if (source.isDefined(GridGeometry.ENVELOPE)) addAreaOfInterest(source.getEnvelope());
+                if (target.isDefined(GridGeometry.ENVELOPE)) addAreaOfInterest(target.getEnvelope());
                 changeOfCRS = CRS.findOperation(source.getCoordinateMetadata(), target.getCoordinateMetadata(), this);
             } catch (BackingStoreException e) {
                 throw e.unwrapOrRethrow(TransformException.class);

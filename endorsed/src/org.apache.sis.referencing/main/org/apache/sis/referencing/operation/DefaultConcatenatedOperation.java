@@ -302,8 +302,14 @@ final class DefaultConcatenatedOperation extends AbstractCoordinateOperation imp
                 final var nested = ((ConcatenatedOperation) op).getOperations().toArray(CoordinateOperation[]::new);
                 previous = initialize(properties, nested, flattened, null, previous, false, setAccuracy);
             } else {
-                // Note: operation (source, target) may be in reverse order, but it should be taken as metadata.
-                if (!step.isIdentity()) {
+                /*
+                 * We can skip identity transforms only if the operation is a conversion.
+                 * We do not want to skip the tests for transformations, because there is
+                 * may a change of datum and we want to keep the positional accuracy metadata.
+                 *
+                 * Note: operation (source, target) may be in reverse order, but it should be taken as metadata.
+                 */
+                if (!(step.isIdentity() && step instanceof Conversion)) {
                     flattened.add(op);
                 }
                 previous = target;          // For next iteration cycle.
