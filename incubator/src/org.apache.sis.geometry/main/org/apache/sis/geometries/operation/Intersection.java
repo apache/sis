@@ -18,6 +18,7 @@ package org.apache.sis.geometries.operation;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Comparator;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Optional;
@@ -39,10 +40,12 @@ import org.apache.sis.geometries.surface.PreparedTIN;
 import org.apache.sis.geometries.surface.Triangle;
 import org.apache.sis.maths.Array;
 import org.apache.sis.maths.Cursor;
+import org.apache.sis.maths.Maths;
 import org.apache.sis.maths.Matrices;
 import org.apache.sis.maths.NDArrays;
 import org.apache.sis.maths.ReadOnly;
 import org.apache.sis.maths.Vector;
+import org.apache.sis.maths.Vectors;
 import static org.apache.sis.maths.Maths.clamp;
 
 
@@ -206,6 +209,552 @@ public final class Intersection {
         final GeometryCollection<LineString> mline = GeometryFactory.DEFAULT.createMultiLineString(segments.toArray(LineString[]::new));
         final MeshPrimitive intersection = (MeshPrimitive) new GeometryProcessor().toPrimitive(mline, null, null);
         return intersection;
+    }
+
+    /**
+     * Intersection of two segments in a plane. Each point of the intersection is given by its position on both
+     * segments, as a ratio from 0 at the start of the segment to 1 at its end. A ratio is exactly 0 or 1 when the
+     * point is an end of the segment.
+     *
+     * @param type           whether the segments are disjoint, meet at one point, or overlap along their common line.
+     * @param startOnFirst   ratio on the first segment of the single point, or of the start of the overlap, NaN if none.
+     * @param endOnFirst     ratio on the first segment of the end of the overlap, greater than {@code startOnFirst},
+     *                       or {@code startOnFirst} for a single point.
+     * @param startOnSecond  ratio on the second segment of the point at {@code startOnFirst}.
+     * @param endOnSecond    ratio on the second segment of the point at {@code endOnFirst}.
+     *
+     * @see #segmentSegment2D(double[], double[], double[], double[], int[])
+     */
+    public record SegmentSegment(Type type, double startOnFirst, double endOnFirst, double startOnSecond, double endOnSecond) {
+        /**
+         * Kinds of intersection of two segments.
+         */
+        public enum Type {
+            /** The segments do not intersect. */
+            NONE,
+            /** The segments cross or touch at a single point. */
+            POINT,
+            /** The segments are on the same line and share a part of it. */
+            OVERLAP
+        }
+
+        /**
+         * The intersection of disjoint segments.
+         */
+        public static final SegmentSegment NONE = new SegmentSegment(Type.NONE, Double.NaN, Double.NaN, Double.NaN, Double.NaN);
+
+        /**
+         * Returns the intersection made of a single point, at the given ratios on the two segments.
+         */
+        static SegmentSegment point(final double onFirst, final double onSecond) {
+            return new SegmentSegment(Type.POINT, onFirst, onFirst, onSecond, onSecond);
+        }
+    }
+
+    /**
+     * Point where a segment touches a triangle, located on both. Edge <var>i</var> of the triangle goes from
+     * its corner <var>i</var> to its corner (<var>i</var>+1) modulo 3.
+     *
+     * @param type     where the point is on the triangle, or why there is no point.
+     * @param feature  index of the edge or of the corner of the triangle on which the point is, or -1.
+     * @param ratio    position of the point on the segment, from 0 at its start to 1 at its end,
+     *                 exactly 0 or 1 if the point is an end of the segment. NaN if there is no point.
+     *
+     * @see #segmentTriangle(double[], double[], double[], double[], double[], double)
+     * @see #segmentInTriangle2D(double[], double[], double[], double[], double[], int[])
+     */
+    public record SegmentTriangle(Type type, int feature, double ratio) {
+        /**
+         * Where a segment touches a triangle.
+         */
+        public enum Type {
+            /** The segment does not touch the triangle. */
+            NONE,
+            /** The segment lies in the plane of the triangle, and shall be intersected with it in that plane. */
+            COPLANAR,
+            /** The segment touches the triangle inside it. */
+            INTERIOR,
+            /** The segment touches the triangle on the edge given by the feature index. */
+            EDGE,
+            /** The segment touches the triangle on the corner given by the feature index. */
+            VERTEX
+        }
+
+        /**
+         * A segment which does not touch the triangle.
+         */
+        public static final SegmentTriangle NONE = new SegmentTriangle(Type.NONE, -1, Double.NaN);
+
+        /**
+         * A segment in the plane of the triangle.
+         */
+        public static final SegmentTriangle COPLANAR = new SegmentTriangle(Type.COPLANAR, -1, Double.NaN);
+
+        /**
+         * Returns the point inside the triangle, on an edge or on a corner, from the number of edges on which
+         * the point is. This is used after testing the side of the point relative to the three edges.
+         *
+         * @param  zeros      number of edges on which the point is.
+         * @param  zeroEdge   index of an edge on which the point is.
+         * @param  otherEdge  index of an edge on which the point is not.
+         * @param  ratio      position of the point on the segment.
+         * @return the point, or {@code null} if it is on the three edges, which happens with a degenerate triangle.
+         */
+        static SegmentTriangle locate(final int zeros, final int zeroEdge, final int otherEdge, final double ratio) {
+            switch (zeros) {
+                case 0:  return new SegmentTriangle(Type.INTERIOR, -1, ratio);
+                case 1:  return new SegmentTriangle(Type.EDGE, zeroEdge, ratio);
+                case 2:  return new SegmentTriangle(Type.VERTEX, (otherEdge + 2) % 3, ratio);    // corner shared by the two other edges.
+                default: return null;
+            }
+        }
+    }
+
+    /**
+     * End of the intersection of two triangles: a point where an edge of one triangle touches the other triangle.
+     *
+     * @param edgeOfFirst  whether the edge belongs to the first triangle, the point being then on the second triangle.
+     * @param edge         index of the edge, which goes from the corner of same index to the next corner.
+     * @param contact      where the edge touches the other triangle, with the position of the point on the edge.
+     * @param position     coordinates of the point, interpolated on the edge.
+     *
+     * @see #triangleTriangle(double[], double[], double[], double[], double[], double[], double)
+     */
+    public record TriangleEdgeContact(boolean edgeOfFirst, int edge, SegmentTriangle contact, double[] position) {
+    }
+
+    /**
+     * Intersection of two triangles: nothing, a point or a segment, unless the triangles are in the same plane.
+     *
+     * @param type   kind of intersection.
+     * @param start  first end of the intersection, or {@code null} if the triangles are disjoint or coplanar.
+     * @param end    second end of the intersection, the same as {@code start} for a single point.
+     *
+     * @see #triangleTriangle(double[], double[], double[], double[], double[], double[], double)
+     */
+    public record TriangleTriangle(Type type, TriangleEdgeContact start, TriangleEdgeContact end) {
+        /**
+         * Kinds of intersection of two triangles.
+         */
+        public enum Type {
+            /** The triangles do not intersect. */
+            DISJOINT,
+            /** The triangles touch at a single point. */
+            POINT,
+            /** The triangles cross or touch along a segment. */
+            SEGMENT,
+            /** The triangles are in the same plane, and shall be intersected in that plane. */
+            COPLANAR
+        }
+
+        /** Intersection of disjoint triangles. */
+        public static final TriangleTriangle DISJOINT = new TriangleTriangle(Type.DISJOINT, null, null);
+
+        /** Intersection of triangles in the same plane. */
+        public static final TriangleTriangle COPLANAR = new TriangleTriangle(Type.COPLANAR, null, null);
+    }
+
+    /**
+     * Computes the intersection of two segments in the plane of the two given axes. The side tests are robust,
+     * so whether the segments intersect, and whether a point of the intersection is an end of a segment, are exact.
+     * Only the ratios of the points inside the segments are approximations.
+     *
+     * @param  a0    start of the first segment.
+     * @param  a1    end of the first segment.
+     * @param  b0    start of the second segment.
+     * @param  b1    end of the second segment.
+     * @param  axes  indices of the two coordinates of the plane, for example from {@link Maths#projectionAxes(double[])}.
+     * @return the intersection of the two segments.
+     */
+    public static SegmentSegment segmentSegment2D(double[] a0, double[] a1, double[] b0, double[] b1, int[] axes) {
+        final int u = axes[0], v = axes[1];
+        //sides of the ends of each segment relative to the line of the other segment.
+        final double d0 = side(b0, b1, a0, u, v), d1 = side(b0, b1, a1, u, v);
+        final double e0 = side(a0, a1, b0, u, v), e1 = side(a0, a1, b1, u, v);
+        if (sameSide(d0, d1) || sameSide(e0, e1)) {
+            return SegmentSegment.NONE;
+        }
+        if ((d0 == 0 && d1 == 0) || (e0 == 0 && e1 == 0)) {
+            return collinear(a0, a1, b0, b1, u, v);
+        }
+        return SegmentSegment.point(ratio(d0, d1), ratio(e0, e1));
+    }
+
+    /**
+     * Computes the intersection of two segments on the same line. The positions are compared along the axis
+     * where the segments are the longest, so that a line parallel to one of the axes is not degenerate.
+     */
+    private static SegmentSegment collinear(double[] a0, double[] a1, double[] b0, double[] b1, int u, int v) {
+        final int k = (Math.abs(a1[u] - a0[u]) + Math.abs(b1[u] - b0[u]) >= Math.abs(a1[v] - a0[v]) + Math.abs(b1[v] - b0[v])) ? u : v;
+        final double lower = Math.max(Math.min(a0[k], a1[k]), Math.min(b0[k], b1[k]));
+        final double upper = Math.min(Math.max(a0[k], a1[k]), Math.max(b0[k], b1[k]));
+        if (!(lower <= upper)) {
+            return SegmentSegment.NONE;
+        }
+        double startOnFirst = along(a0[k], a1[k], lower), startOnSecond = along(b0[k], b1[k], lower);
+        if (lower == upper) {
+            return SegmentSegment.point(startOnFirst, startOnSecond);
+        }
+        double endOnFirst = along(a0[k], a1[k], upper), endOnSecond = along(b0[k], b1[k], upper);
+        if (startOnFirst > endOnFirst) {
+            //the first segment goes toward decreasing values along the axis.
+            double t = startOnFirst;  startOnFirst  = endOnFirst;  endOnFirst  = t;
+                   t = startOnSecond; startOnSecond = endOnSecond; endOnSecond = t;
+        }
+        return new SegmentSegment(SegmentSegment.Type.OVERLAP, startOnFirst, endOnFirst, startOnSecond, endOnSecond);
+    }
+
+    /**
+     * Returns the position of a value between the values at the start and at the end of a segment along an axis,
+     * exactly 0 or 1 at the ends.
+     */
+    private static double along(final double start, final double end, final double value) {
+        if (value == start) return 0;
+        if (value == end)   return 1;
+        return (value - start) / (end - start);
+    }
+
+    /**
+     * Returns the position of the point where a segment crosses a line or a plane, from the signed distances of
+     * the segment ends to that line or plane, or any values proportional to those distances. The position is
+     * exactly 0 or 1 if an end is on the line or plane.
+     */
+    private static double ratio(final double start, final double end) {
+        if (start == 0) return 0;
+        if (end   == 0) return 1;
+        return clamp(start / (start - end), 0, 1);
+    }
+
+    /**
+     * Returns whether two values are both strictly positive or both strictly negative.
+     */
+    private static boolean sameSide(final double s1, final double s2) {
+        return (s1 > 0 && s2 > 0) || (s1 < 0 && s2 < 0);
+    }
+
+    /**
+     * Returns whether one value is strictly positive and the other one strictly negative.
+     */
+    private static boolean opposite(final double s1, final double s2) {
+        return (s1 > 0 && s2 < 0) || (s1 < 0 && s2 > 0);
+    }
+
+    /**
+     * Returns the robust side of point r relative to the line from p to q, in the plane of the axes u and v.
+     * Positive on the left, negative on the right, zero on the line.
+     */
+    private static double side(final double[] p, final double[] q, final double[] r, final int u, final int v) {
+        return Maths.lineSide(p[u], p[v], q[u], q[v], r[u], r[v]);
+    }
+
+    /**
+     * Returns the normal (b−a)×(c−a) of a triangle, whose length is twice the area of the triangle.
+     */
+    private static double[] normal(final double[] a, final double[] b, final double[] c) {
+        final double ux = b[0] - a[0], uy = b[1] - a[1], uz = b[2] - a[2];
+        final double vx = c[0] - a[0], vy = c[1] - a[1], vz = c[2] - a[2];
+        return new double[] {uy*vz - uz*vy, uz*vx - ux*vz, ux*vy - uy*vx};
+    }
+
+    /**
+     * Computes where a segment touches a triangle, in three dimensions. An end of the segment within the tolerance
+     * of the plane of the triangle is on that plane, as decided by {@link Maths#planeSide Maths.planeSide(…)}.
+     * If both ends are on the plane, the segment is {@linkplain SegmentTriangle.Type#COPLANAR coplanar} and its
+     * intersection with the triangle is given by {@link #segmentInTriangle2D segmentInTriangle2D(…)}.
+     *
+     * <p>When the segment crosses the plane, where it crosses the triangle is decided by the robust sides of
+     * its line relative to the three edges, so that a segment crossing an edge or a corner is found exactly on it.
+     * Only the ratio of a point inside the segment is an approximation. When an end of the segment is on the plane,
+     * that end is located in the triangle with robust side tests in the plane.</p>
+     *
+     * @param  s0  start of the segment.
+     * @param  s1  end of the segment.
+     * @param  a   first corner of the triangle.
+     * @param  b   second corner of the triangle.
+     * @param  c   third corner of the triangle.
+     * @param  tolerance  largest distance to the plane of the triangle for considering an end of the segment on it.
+     * @return where the segment touches the triangle.
+     */
+    public static SegmentTriangle segmentTriangle(double[] s0, double[] s1, double[] a, double[] b, double[] c, double tolerance) {
+        final int side0 = Maths.planeSide(a, b, c, s0, tolerance);
+        final int side1 = Maths.planeSide(a, b, c, s1, tolerance);
+        if (side0 == 0 && side1 == 0) {
+            return SegmentTriangle.COPLANAR;
+        }
+        if (side0 == side1) {
+            return SegmentTriangle.NONE;            // both ends strictly on the same side.
+        }
+        final double[][] corners = {a, b, c};
+        final double[] normal = normal(a, b, c);
+        if (side0 == 0 || side1 == 0) {
+            final int[] axes = Maths.projectionAxes(normal);
+            return (side0 == 0) ? locate2D(s0, corners, axes[0], axes[1], 0)
+                                : locate2D(s1, corners, axes[0], axes[1], 1);
+        }
+        /*
+         * The segment crosses the plane between its ends. The sign of the tetrahedron made by the segment and
+         * an edge tells on which side of that edge the line of the segment passes. The line passes inside the
+         * triangle if the three signs are the same, and on an edge or a corner if one or two of them are zero.
+         */
+        int positive = 0, negative = 0, zeros = 0, zeroEdge = -1, otherEdge = -1;
+        for (int i = 0; i < 3; i++) {
+            final double[] p = corners[i], q = corners[(i + 1) % 3];
+            final double sign = ShewchukPredicates.orient3d(s0[0], s0[1], s0[2], s1[0], s1[1], s1[2],
+                                                            p[0], p[1], p[2], q[0], q[1], q[2]);
+            if      (sign > 0) {positive++; otherEdge = i;}
+            else if (sign < 0) {negative++; otherEdge = i;}
+            else               {zeros++;    zeroEdge  = i;}
+        }
+        if (positive != 0 && negative != 0) {
+            return SegmentTriangle.NONE;
+        }
+        final double d0 = normal[0] * (s0[0] - a[0]) + normal[1] * (s0[1] - a[1]) + normal[2] * (s0[2] - a[2]);
+        final double d1 = normal[0] * (s1[0] - a[0]) + normal[1] * (s1[1] - a[1]) + normal[2] * (s1[2] - a[2]);
+        final SegmentTriangle point = SegmentTriangle.locate(zeros, zeroEdge, otherEdge, ratio(d0, d1));
+        return (point != null) ? point : SegmentTriangle.COPLANAR;
+    }
+
+    /**
+     * Locates a point of the plane of a triangle relative to that triangle, with robust side tests in the plane
+     * of the two given axes.
+     *
+     * @param  p        the point to locate.
+     * @param  corners  the three corners of the triangle.
+     * @param  ratio    position of the point on the segment for which the point is located.
+     * @return where the point is on the triangle, or {@link SegmentTriangle#NONE} if outside or if the triangle is degenerate.
+     */
+    private static SegmentTriangle locate2D(final double[] p, final double[][] corners, final int u, final int v, final double ratio) {
+        final double orientation = Math.signum(side(corners[0], corners[1], corners[2], u, v));
+        if (orientation == 0) {
+            return SegmentTriangle.NONE;
+        }
+        int zeros = 0, zeroEdge = -1, otherEdge = -1;
+        for (int i = 0; i < 3; i++) {
+            final double s = orientation * side(corners[i], corners[(i + 1) % 3], p, u, v);
+            if (s < 0) {
+                return SegmentTriangle.NONE;
+            }
+            if (s == 0) {zeros++; zeroEdge = i;}
+            else        {otherEdge = i;}
+        }
+        final SegmentTriangle point = SegmentTriangle.locate(zeros, zeroEdge, otherEdge, ratio);
+        return (point != null) ? point : SegmentTriangle.NONE;
+    }
+
+    /**
+     * Computes the part of a segment inside a triangle, both in the same plane, with robust side tests in the plane
+     * of the two given axes. The result gives the two ends of that part, each with its position on the segment and
+     * its location on the triangle: an end is an end of the segment inside the triangle, or a point where the
+     * segment crosses an edge or passes through a corner. Whether a point is on an edge or a corner, or is an end
+     * of the segment, is exact. Only the ratios of the points inside the segment are approximations.
+     *
+     * @param  s0    start of the segment.
+     * @param  s1    end of the segment.
+     * @param  a     first corner of the triangle.
+     * @param  b     second corner of the triangle.
+     * @param  c     third corner of the triangle.
+     * @param  axes  indices of the two coordinates of the plane, for example from {@link Maths#projectionAxes(double[])}.
+     * @return the ends of the part of the segment inside the triangle by increasing ratio: none if the segment
+     *         does not touch the triangle, one if it touches it at a single point, two otherwise.
+     *         Their types are {@code INTERIOR}, {@code EDGE} or {@code VERTEX}.
+     */
+    public static List<SegmentTriangle> segmentInTriangle2D(double[] s0, double[] s1, double[] a, double[] b, double[] c, int[] axes) {
+        final int u = axes[0], v = axes[1];
+        final double[][] corners = {a, b, c};
+        if (side(a, b, c, u, v) == 0) {
+            return List.of();                       // a degenerate triangle has no interior.
+        }
+        final List<SegmentTriangle> points = new ArrayList<>(4);
+        final SegmentTriangle start = locate2D(s0, corners, u, v, 0);
+        if (start != SegmentTriangle.NONE) {
+            points.add(start);
+        }
+        final boolean isPoint = (s0[u] == s1[u] && s0[v] == s1[v]);
+        if (!isPoint) {
+            final SegmentTriangle end = locate2D(s1, corners, u, v, 1);
+            if (end != SegmentTriangle.NONE) {
+                points.add(end);
+            }
+            /*
+             * The corners on the line of the segment, between its ends.
+             * The ends of the segment have been located above.
+             */
+            final double dx = s1[u] - s0[u], dy = s1[v] - s0[v];
+            final double[] sides = new double[3];
+            for (int j = 0; j < 3; j++) {
+                final double[] p = corners[j];
+                sides[j] = side(s0, s1, p, u, v);
+                if (sides[j] == 0 && !(p[u] == s0[u] && p[v] == s0[v]) && !(p[u] == s1[u] && p[v] == s1[v])) {
+                    final double t = ((p[u] - s0[u]) * dx + (p[v] - s0[v]) * dy) / (dx*dx + dy*dy);
+                    if (t > 0 && t < 1) {
+                        points.add(new SegmentTriangle(SegmentTriangle.Type.VERTEX, j, t));
+                    }
+                }
+            }
+            /*
+             * The edges crossed between their corners, by the segment between its ends.
+             */
+            for (int i = 0; i < 3; i++) {
+                final int j = (i + 1) % 3;
+                if (opposite(sides[i], sides[j])) {
+                    final double d0 = side(corners[i], corners[j], s0, u, v);
+                    final double d1 = side(corners[i], corners[j], s1, u, v);
+                    if (opposite(d0, d1)) {
+                        points.add(new SegmentTriangle(SegmentTriangle.Type.EDGE, i, ratio(d0, d1)));
+                    }
+                }
+            }
+        }
+        switch (points.size()) {
+            case 0:  return List.of();
+            case 1:  return List.of(points.get(0));
+            default: {
+                //the triangle is convex, so the part inside it goes from the first point to the last one.
+                points.sort(Comparator.comparingDouble(SegmentTriangle::ratio));
+                return List.of(points.get(0), points.get(points.size() - 1));
+            }
+        }
+    }
+
+    /**
+     * Computes the intersection of two triangles in three dimensions. A corner of a triangle within the tolerance
+     * of the plane of the other triangle is on that plane, as decided by {@link Maths#planeSide Maths.planeSide(…)}.
+     * If the three corners of a triangle are on the plane of the other one, the triangles are
+     * {@linkplain TriangleTriangle.Type#COPLANAR coplanar} and shall be intersected in that plane,
+     * for example with {@link #segmentInTriangle2D segmentInTriangle2D(…)}.
+     *
+     * <p>Otherwise the intersection is on the line where the two planes meet, and each of its ends is a point
+     * where an edge of a triangle touches the other triangle, as given by {@link #segmentTriangle segmentTriangle(…)}.
+     * An edge in the plane of the other triangle is intersected with it in that plane.</p>
+     *
+     * @param  a0  first corner of the first triangle.
+     * @param  a1  second corner of the first triangle.
+     * @param  a2  third corner of the first triangle.
+     * @param  b0  first corner of the second triangle.
+     * @param  b1  second corner of the second triangle.
+     * @param  b2  third corner of the second triangle.
+     * @param  tolerance  largest distance to the plane of a triangle for considering a point on it.
+     * @return the intersection of the two triangles.
+     */
+    public static TriangleTriangle triangleTriangle(double[] a0, double[] a1, double[] a2,
+                                                    double[] b0, double[] b1, double[] b2, double tolerance)
+    {
+        final double[][] first = {a0, a1, a2}, second = {b0, b1, b2};
+        final int[] sidesOfSecond = sides(first, second, tolerance);
+        final int[] sidesOfFirst  = sides(second, first, tolerance);
+        if (allOnSameSide(sidesOfSecond) || allOnSameSide(sidesOfFirst)) {
+            return TriangleTriangle.DISJOINT;
+        }
+        if (Arrays.equals(sidesOfSecond, new int[3]) || Arrays.equals(sidesOfFirst, new int[3])) {
+            return TriangleTriangle.COPLANAR;
+        }
+        final List<TriangleEdgeContact> contacts = new ArrayList<>();
+        addEdgeContacts(first, second, true, tolerance, contacts);
+        addEdgeContacts(second, first, false, tolerance, contacts);
+        if (contacts.isEmpty()) {
+            return TriangleTriangle.DISJOINT;
+        }
+        /*
+         * All points are on the line where the two planes meet.
+         * The ends of the intersection are the two extreme points along that line.
+         */
+        final double[] direction = Vectors.cross(normal(a0, a1, a2), normal(b0, b1, b2));
+        TriangleEdgeContact start = null, end = null;
+        double min = Double.POSITIVE_INFINITY, max = Double.NEGATIVE_INFINITY;
+        for (final TriangleEdgeContact contact : contacts) {
+            final double t = Vectors.dot(contact.position(), direction);
+            if (t < min) {min = t; start = contact;}
+            if (t > max) {max = t; end   = contact;}
+        }
+        if (start == end || locations(start).equals(locations(end)) || Arrays.equals(start.position(), end.position())) {
+            return new TriangleTriangle(TriangleTriangle.Type.POINT, start, start);
+        }
+        return new TriangleTriangle(TriangleTriangle.Type.SEGMENT, start, end);
+    }
+
+    /**
+     * Returns the sides of the corners of a triangle relative to the plane of another triangle.
+     */
+    private static int[] sides(final double[][] plane, final double[][] triangle, final double tolerance) {
+        final int[] sides = new int[3];
+        for (int i = 0; i < 3; i++) {
+            sides[i] = Maths.planeSide(plane[0], plane[1], plane[2], triangle[i], tolerance);
+        }
+        return sides;
+    }
+
+    /**
+     * Returns whether the three sides are all strictly positive or all strictly negative.
+     */
+    private static boolean allOnSameSide(final int[] sides) {
+        return sameSide(sides[0], sides[1]) && sameSide(sides[1], sides[2]);
+    }
+
+    /**
+     * Adds the points where the edges of a triangle touch another triangle.
+     *
+     * @param edges        the triangle whose edges are tested.
+     * @param other        the triangle touched by the edges.
+     * @param edgeOfFirst  whether the triangle of the edges is the first one given to {@code triangleTriangle(…)}.
+     * @param tolerance    largest distance to the plane of a triangle for considering a point on it.
+     * @param contacts     where to add the points.
+     */
+    private static void addEdgeContacts(final double[][] edges, final double[][] other, final boolean edgeOfFirst,
+                                        final double tolerance, final List<TriangleEdgeContact> contacts)
+    {
+        for (int i = 0; i < 3; i++) {
+            final double[] p = edges[i], q = edges[(i + 1) % 3];
+            final SegmentTriangle contact = segmentTriangle(p, q, other[0], other[1], other[2], tolerance);
+            switch (contact.type()) {
+                case NONE: break;
+                case COPLANAR: {
+                    final int[] axes = Maths.projectionAxes(normal(other[0], other[1], other[2]));
+                    for (final SegmentTriangle point : segmentInTriangle2D(p, q, other[0], other[1], other[2], axes)) {
+                        contacts.add(new TriangleEdgeContact(edgeOfFirst, i, point, interpolate(p, q, point.ratio())));
+                    }
+                    break;
+                }
+                default: {
+                    contacts.add(new TriangleEdgeContact(edgeOfFirst, i, contact, interpolate(p, q, contact.ratio())));
+                    break;
+                }
+            }
+        }
+    }
+
+    /**
+     * Returns the three first coordinates of the point at the given ratio between two points,
+     * exactly one of them at ratio 0 or 1.
+     */
+    private static double[] interpolate(final double[] p, final double[] q, final double ratio) {
+        if (ratio == 0) return Arrays.copyOf(p, 3);
+        if (ratio == 1) return Arrays.copyOf(q, 3);
+        final double[] point = new double[3];
+        for (int k = 0; k < 3; k++) {
+            point[k] = p[k] + ratio * (q[k] - p[k]);
+        }
+        return point;
+    }
+
+    /**
+     * Where a point is on a triangle: inside, or on the edge or the corner of the given index.
+     */
+    private record Location(SegmentTriangle.Type type, int index) {
+    }
+
+    /**
+     * Returns where the point of the given contact is on the first triangle and on the second triangle.
+     * Two contacts found from different edges are the same point if they are at the same locations.
+     */
+    private static List<Location> locations(final TriangleEdgeContact contact) {
+        final double ratio = contact.contact().ratio();
+        final int edge = contact.edge();
+        final Location onEdge;
+        if      (ratio == 0) onEdge = new Location(SegmentTriangle.Type.VERTEX, edge);
+        else if (ratio == 1) onEdge = new Location(SegmentTriangle.Type.VERTEX, (edge + 1) % 3);
+        else                 onEdge = new Location(SegmentTriangle.Type.EDGE, edge);
+        final Location onOther = new Location(contact.contact().type(), contact.contact().feature());
+        return contact.edgeOfFirst() ? List.of(onEdge, onOther) : List.of(onOther, onEdge);
     }
 
     /**

@@ -30,7 +30,7 @@ import org.apache.sis.geometries.surface.Polygon;
 import org.apache.sis.maths.Array;
 import org.apache.sis.maths.Maths;
 import org.apache.sis.maths.NDArrays;
-import org.apache.sis.maths.Vector;
+import org.apache.sis.maths.ReadOnly;
 import org.apache.sis.util.ArraysExt;
 
 
@@ -82,15 +82,16 @@ public class EarClipping {
     private DataPoints source;
 
     /**
-     * Positions of the polygon, with their coordinates in the order used by the triangulation.
-     * The triangulation works on the two first coordinates, in the plane where the polygon has its largest area.
+     * Positions of the vertices, with their coordinates in the order used by the triangulation.
+     * The triangulation works on the two first coordinates. For a polygon, those positions are
+     * the ones of {@link #source} in the plane where the polygon has its largest area.
      */
-    private Vector<?>[] working;
+    private ReadOnly.Vector<?>[] working;
 
     /**
-     * Indices in {@link #source} of the vertices of the ring joining the holes to the exterior ring, without
-     * repeated consecutive positions and without the closing position. The ring has the orientation of the
-     * exterior ring.
+     * Indices in {@link #working} of the vertices of the ring to triangulate, without repeated consecutive
+     * positions and without the closing position. For a polygon, this is the ring joining the holes to the
+     * exterior ring, which has the orientation of the exterior ring.
      */
     private int[] ring;
 
@@ -112,7 +113,7 @@ public class EarClipping {
     private Angle[] angles;
 
     /**
-     * Indices in {@link #source} of the three vertices of each triangle found so far.
+     * Indices in {@link #working} of the three vertices of each triangle found so far.
      */
     private final List<int[]> triangles = new ArrayList<>();
 
@@ -127,11 +128,37 @@ public class EarClipping {
     public Triangulation triangulateIndexed(Polygon geometry) throws OperationException {
         source = geometry.getDataPoints();
         final int[] axes = workingAxes(geometry.getExteriorRing().getDataPoints().getAttributeArray(DataPointsType.ATT_POSITION));
-        working = new Vector<?>[source.size()];
+        working = new ReadOnly.Vector<?>[source.size()];
         Arrays.setAll(working, (i) -> source.getPosition(i).swizzle(axes));
         triangles.clear();
         run(HoleToExterior.ring(geometry));
         return result();
+    }
+
+    /**
+     * Triangulates a simple ring given by the indices of its vertices in an array of positions.
+     * The triangulation works on the two first coordinates of the positions: a ring in three dimensions
+     * shall be projected first, for example with {@link ReadOnly.Vector#swizzle(int...)} and the axes given by
+     * {@link Maths#projectionAxes(double[])}. Consecutive vertices at the same position are a single vertex.
+     *
+     * @param positions  positions of the vertices, of which the ring may use only some.
+     * @param indices    indices in {@code positions} of the vertices of the ring, in order. The ring can be closed,
+     *                   with its last vertex at the location of the first one, or not.
+     * @return indices in {@code positions} of the three corners of each triangle, one triangle after the other.
+     *         The triangles have the orientation of the ring.
+     * @throws OperationException if the ring cannot be triangulated, for example because it intersects itself.
+     */
+    public int[] triangulate(final ReadOnly.Vector<?>[] positions, int[] indices) throws OperationException {
+        working = positions;
+        triangles.clear();
+        final int n = indices.length;
+        if (n != 0 && !positions[indices[0]].equals(positions[indices[n - 1]])) {
+            //the triangulation expects a closed ring.
+            indices = Arrays.copyOf(indices, n + 1);
+            indices[n] = indices[0];
+        }
+        run(indices);
+        return triangles.stream().flatMapToInt(Arrays::stream).toArray();
     }
 
     /**
@@ -152,7 +179,7 @@ public class EarClipping {
 
     /**
      * Returns the order of the coordinates to use for triangulating a polygon with the given positions,
-     * to be given to {@link Vector#swizzle(int...)}. The triangulation works on the two first coordinates
+     * to be given to {@link ReadOnly.Vector#swizzle(int...)}. The triangulation works on the two first coordinates
      * of that order. With three or more dimensions, the three first axes are in the {@linkplain Maths#projectionAxes
      * projection order} of the {@linkplain Maths#calculatePolygonNormal(Array) normal of the polygon}: the axis along
      * which the normal is the largest goes after the two axes of the projection plane, so that a vertical polygon is
@@ -189,7 +216,7 @@ public class EarClipping {
      * triangle with its two neighbors contains no other vertex. Cutting it removes the vertex from the
      * ring, which stays a valid polygon, until only one triangle is left.
      *
-     * @param joined  indices in {@link #source} of the ring positions, the last one at the location of the first one.
+     * @param joined  indices in {@link #working} of the ring positions, the last one at the location of the first one.
      * @throws OperationException if the vertices left without ear still enclose an area.
      */
     private void run(final int[] joined) throws OperationException {
@@ -239,19 +266,19 @@ public class EarClipping {
      * @param start  a vertex which is not cut yet.
      */
     private boolean isDegenerate(final int start) {
-        final Vector<?> origin = position(start);
+        final ReadOnly.Vector<?> origin = position(start);
         final double ox = origin.get(0), oy = origin.get(1);
         double area = 0;            // twice the signed area.
         int vertex = start;
         do {
-            final Vector<?> a = position(vertex), b = position(next[vertex]);
+            final ReadOnly.Vector<?> a = position(vertex), b = position(next[vertex]);
             area += (a.get(0) - ox) * (b.get(1) - oy) - (b.get(0) - ox) * (a.get(1) - oy);
             vertex = next[vertex];
         } while (vertex != start);
         double xmin = Double.POSITIVE_INFINITY, xmax = Double.NEGATIVE_INFINITY;
         double ymin = Double.POSITIVE_INFINITY, ymax = Double.NEGATIVE_INFINITY;
         for (final int index : ring) {
-            final Vector<?> p = working[index];
+            final ReadOnly.Vector<?> p = working[index];
             xmin = Math.min(xmin, p.get(0)); xmax = Math.max(xmax, p.get(0));
             ymin = Math.min(ymin, p.get(1)); ymax = Math.max(ymax, p.get(1));
         }
@@ -262,7 +289,7 @@ public class EarClipping {
     /**
      * Returns the working position of the given vertex of the ring.
      */
-    private Vector<?> position(final int vertex) {
+    private ReadOnly.Vector<?> position(final int vertex) {
         return working[ring[vertex]];
     }
 
@@ -283,11 +310,11 @@ public class EarClipping {
      * so a copy located on a corner of the triangle does not prevent the ear.
      */
     private boolean isEar(final int vertex) {
-        final Vector<?> t1 = position(previous[vertex]);
-        final Vector<?> t2 = position(vertex);
-        final Vector<?> t3 = position(next[vertex]);
+        final ReadOnly.Vector<?> t1 = position(previous[vertex]);
+        final ReadOnly.Vector<?> t2 = position(vertex);
+        final ReadOnly.Vector<?> t3 = position(next[vertex]);
         for (int i = next[next[vertex]]; i != previous[vertex]; i = next[i]) {
-            final Vector<?> p = position(i);
+            final ReadOnly.Vector<?> p = position(i);
             if (!isConvex(i) && !p.equals(t1) && !p.equals(t2) && !p.equals(t3) && Maths.inTriangle(t1, t2, t3, p)) {
                 return false;
             }

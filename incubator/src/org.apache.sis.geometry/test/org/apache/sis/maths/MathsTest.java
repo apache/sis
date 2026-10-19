@@ -218,6 +218,34 @@ public class MathsTest {
     }
 
     /**
+     * Tests {@link Maths#planeSide(double[], double[], double[], double[], double)} on a horizontal triangle,
+     * with and without tolerance, and on a triangle in an oblique plane with coordinates which are not integers.
+     */
+    @Test
+    public void testPlaneSide() {
+        final double[] a = {0, 0, 0}, b = {1, 0, 0}, c = {0, 1, 0};
+        assertEquals( 1, Maths.planeSide(a, b, c, new double[] {0.3, 0.3,  1}, 0), "Above, toward the normal.");
+        assertEquals(-1, Maths.planeSide(a, b, c, new double[] {0.3, 0.3, -1}, 0), "Below.");
+        assertEquals(-1, Maths.planeSide(a, c, b, new double[] {0.3, 0.3,  1}, 0), "Reversed triangle.");
+        assertEquals( 0, Maths.planeSide(a, b, c, new double[] {5,   5,    0}, 0), "On the plane, outside of the triangle.");
+        assertEquals( 1, Maths.planeSide(a, b, c, new double[] {0.3, 0.3, 1E-12}, 0));
+        assertEquals( 0, Maths.planeSide(a, b, c, new double[] {0.3, 0.3, 1E-12}, 1E-9), "Within the tolerance.");
+        assertEquals( 1, Maths.planeSide(a, b, c, new double[] {0.3, 0.3, 2E-9},  1E-9), "Beyond the tolerance.");
+        assertEquals( 0, Maths.planeSide(a, b, new double[] {2, 0, 0}, new double[] {0, 0, 1}, 0), "Degenerate triangle.");
+        /*
+         * A triangle made of two orthonormal vectors u and v of an oblique plane, whose normal is u × v.
+         */
+        final double[] o = {0.1, 0.2, 0.3}, u = {1/3., 2/3., 2/3.}, v = {2/3., 1/3., -2/3.};
+        final double[] n = Vectors.cross(u, v);
+        final double[] ou = Vectors.add(o, u), ov = Vectors.add(o, v);
+        final double[] inPlane = Vectors.add(o, Vectors.add(Vectors.scale(u, 0.4), Vectors.scale(v, 0.3)));
+        assertEquals( 1, Maths.planeSide(o, ou, ov, Vectors.add(inPlane, Vectors.scale(n,  1E-3)), 0));
+        assertEquals(-1, Maths.planeSide(o, ou, ov, Vectors.add(inPlane, Vectors.scale(n, -1E-3)), 0));
+        assertEquals( 0, Maths.planeSide(o, ou, ov, Vectors.add(inPlane, Vectors.scale(n,  1E-3)), 1E-2));
+        assertEquals( 0, Maths.planeSide(o, ou, ov, inPlane, 1E-12), "Rounding errors within the tolerance.");
+    }
+
+    /**
      * Tests that {@link Maths#projectionAxes(double[])} keeps the orientation: a triangle whose normal has the
      * direction given to the method is counterclockwise once projected, and the reversed triangle clockwise.
      */

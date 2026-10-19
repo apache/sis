@@ -167,6 +167,34 @@ public final class Maths {
         return (normal[drop] < 0) ? new int[] {v, u, drop} : new int[] {u, v, drop};
     }
 
+    /**
+     * Returns the side of a point relative to the plane of a triangle, with a tolerance. The point is on the plane
+     * if its distance to the plane is not greater than the tolerance. Otherwise its side is given by the robust
+     * {@link ShewchukPredicates#orient3d orient3d} predicate, so that the side is right even very close to the plane
+     * when the tolerance is zero. Only the three first coordinates are used.
+     *
+     * @param a first corner of the triangle
+     * @param b second corner of the triangle
+     * @param c third corner of the triangle
+     * @param p point to test
+     * @param tolerance largest distance to the plane for considering the point on it, zero for an exact test
+     * @return +1 if the point is on the side toward which the normal (b−a)×(c−a) points, −1 if it is on the
+     *         other side, 0 if it is on the plane. A degenerate triangle has no plane: every point is on it.
+     */
+    public static int planeSide(double[] a, double[] b, double[] c, double[] p, double tolerance) {
+        final double ux = b[0] - a[0], uy = b[1] - a[1], uz = b[2] - a[2];
+        final double vx = c[0] - a[0], vy = c[1] - a[1], vz = c[2] - a[2];
+        final double nx = uy*vz - uz*vy, ny = uz*vx - ux*vz, nz = ux*vy - uy*vx;
+        //the distance to the plane multiplied by the length of the normal.
+        final double distance = nx * (p[0] - a[0]) + ny * (p[1] - a[1]) + nz * (p[2] - a[2]);
+        if (Math.abs(distance) <= tolerance * Math.sqrt(nx*nx + ny*ny + nz*nz)) {
+            return 0;
+        }
+        //orient3d is positive below the plane, on the side opposite to the normal.
+        return (int) -Math.signum(ShewchukPredicates.orient3d(a[0], a[1], a[2], b[0], b[1], b[2],
+                                                              c[0], c[1], c[2], p[0], p[1], p[2]));
+    }
+
     public static double[] subtract(float[] A, float[] B){
         return new double[] {
             A[0] - (double) B[0],

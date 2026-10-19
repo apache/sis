@@ -28,6 +28,7 @@ import org.apache.sis.geometries.operation.OperationException;
 import org.apache.sis.geometries.surface.Polygon;
 import org.apache.sis.maths.Maths;
 import org.apache.sis.maths.NDArrays;
+import org.apache.sis.maths.ReadOnly;
 import org.apache.sis.maths.Vectors;
 import org.apache.sis.referencing.CommonCRS;
 
@@ -125,6 +126,47 @@ public class EarClippingTest {
     public void testSelfIntersectingRing() {
         final Polygon bowTie = polygon(CRS2D, new double[] {0,0, 2,2, 2,0, 0,2, 0,0});
         assertThrows(OperationException.class, () -> new EarClipping().triangulateIndexed(bowTie));
+    }
+
+    /**
+     * Triangulates a concave ring given by the indices of its vertices in an array of positions, some of them
+     * not in the ring. The ring gives n − 2 triangles covering its area, made of its vertices only and turning
+     * in its direction, whether it is closed or not.
+     */
+    @Test
+    public void testTriangulateRing() {
+        final ReadOnly.Vector<?>[] positions = {
+            vector(9, 9),                   // not in the ring.
+            vector(0, 0), vector(4, 0), vector(4, 4), vector(2, 1), vector(0, 4)
+        };
+        assertRingTriangles(positions, new int[] {1, 2, 3, 4, 5},    true);
+        assertRingTriangles(positions, new int[] {1, 2, 3, 4, 5, 1}, true);
+        assertRingTriangles(positions, new int[] {5, 4, 3, 2, 1},    false);
+
+        final ReadOnly.Vector<?>[] bowTie = {vector(0, 0), vector(2, 2), vector(2, 0), vector(0, 2)};
+        assertThrows(OperationException.class, () -> new EarClipping().triangulate(bowTie, new int[] {0, 1, 2, 3}));
+    }
+
+    /**
+     * Triangulates the given ring of five vertices, of area 10, and verifies the triangles.
+     */
+    private static void assertRingTriangles(final ReadOnly.Vector<?>[] positions, final int[] ring, final boolean counterclockwise) {
+        final int[] triangles = new EarClipping().triangulate(positions, ring);
+        assertEquals((5 - 2) * 3, triangles.length, "Expected n − 2 triangles.");
+        double area = 0;
+        for (int i = 0; i < triangles.length; i += 3) {
+            for (int k = 0; k < 3; k++) {
+                assertNotEquals(0, triangles[i+k], "The position is not a vertex of the ring.");
+            }
+            final double side = Maths.lineSide(positions[triangles[i]], positions[triangles[i+1]], positions[triangles[i+2]]);
+            assertTrue(counterclockwise ? side > 0 : side < 0, "The triangle shall turn in the direction of the ring.");
+            area += Math.abs(side) / 2;
+        }
+        assertEquals(10, area, 1E-12);
+    }
+
+    private static ReadOnly.Vector<?> vector(final double x, final double y) {
+        return Vectors.createDouble(2).set(new double[] {x, y});
     }
 
     /**
