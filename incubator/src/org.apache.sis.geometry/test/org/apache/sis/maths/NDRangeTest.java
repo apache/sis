@@ -184,6 +184,46 @@ public class NDRangeTest {
     }
 
     /**
+     * Ranges intersect if they overlap, touch, or are separated by no more than the tolerance in every dimension.
+     */
+    @Test
+    public void testIntersects() {
+        final NDRange range = range();
+        final NDRange overlapping = new NDRange(vector(3, 5, 3), vector(7, 8, 3));
+        assertTrue(range.intersects(overlapping, 0));
+        assertTrue(overlapping.intersects(range, 0));
+        assertTrue(range.intersects(range(), 0), "A range intersects itself.");
+        assertTrue(range.intersects(new NDRange(vector(2, 3, 3), vector(3, 4, 3)), 0), "A contained range intersects.");
+        assertTrue(range.intersects(new NDRange(vector(4, 6, 3), vector(5, 7, 3)), 0), "Touching ranges intersect.");
+
+        // Separated by 0.5 along the first axis only.
+        final NDRange near = new NDRange(vector(4.5, 2, 3), vector(5, 6, 3));
+        assertFalse(range.intersects(near, 0));
+        assertFalse(range.intersects(near, 0.25));
+        assertTrue (range.intersects(near, 0.5));
+        assertTrue (near.intersects(range, 0.5));
+
+        // Overlapping along two axes is not enough.
+        assertFalse(range.intersects(new NDRange(vector(1, 2, 4), vector(4, 6, 5)), 0));
+
+        // Any envelope implementation is accepted.
+        final GeneralEnvelope envelope = new GeneralEnvelope(CRS);
+        envelope.setEnvelope(0, 0, 0, 1, 2, 3);
+        assertTrue (range.intersects(envelope, 0));
+        envelope.setEnvelope(0, 0, 0, 0.9, 2, 3);
+        assertFalse(range.intersects(envelope, 0));
+
+        // A NaN bound makes the range empty.
+        final NDRange empty = new NDRange(vector(Double.NaN, 2, 3), vector(Double.NaN, 6, 3));
+        assertFalse(range.intersects(empty, 1));
+        assertFalse(empty.intersects(range, 1));
+
+        assertThrows(MismatchedDimensionException.class, () -> range.intersects(new NDRange(2), 0));
+        assertThrows(IllegalArgumentException.class, () -> range.intersects(overlapping, -1));
+        assertThrows(IllegalArgumentException.class, () -> range.intersects(overlapping, Double.NaN));
+    }
+
+    /**
      * The constructors without bounds create a range of the given data type, {@code DOUBLE} by default,
      * with all bounds at zero.
      */

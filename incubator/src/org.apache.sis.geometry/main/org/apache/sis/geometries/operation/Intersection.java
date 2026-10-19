@@ -22,7 +22,6 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Stream;
-import org.opengis.geometry.Envelope;
 import org.opengis.referencing.operation.TransformException;
 import org.apache.sis.geometries.Geometries;
 import org.apache.sis.geometries.GeometryFactory;
@@ -63,22 +62,6 @@ public final class Intersection {
     static Vector<?> scale(final Vector<?> a, final double s) {
         return a.copy().scale(s);
     }
-
-    /**
-     * Tests whether two bounding boxes overlap, within the given tolerance.
-     * Boxes separated by less than the tolerance are still considered as overlapping,
-     * which {@link Envelope#intersects Envelope.intersects(…)} cannot express.
-     */
-    private static boolean boxesOverlap(final Envelope box1, final Envelope box2, final double tol) {
-        for (int i = 0, n = box1.getDimension(); i < n; i++) {
-            if (box1.getMaximum(i) + tol < box2.getMinimum(i)
-             || box2.getMaximum(i) + tol < box1.getMinimum(i)) {
-                return false;
-            }
-        }
-        return true;
-    }
-
 
     /**
      * Inherit attributes from TIN.
@@ -248,7 +231,7 @@ public final class Intersection {
         }
 
         private static void intersectRecursive(final DefaultNurbCurve c1, final DefaultNurbCurve c2, final double tol, final List<CurveIntersectionPoint> results) {
-            if (!boxesOverlap(c1.getEnvelope(), c2.getEnvelope(), tol)) {
+            if (!c1.getEnvelope().intersects(c2.getEnvelope(), tol)) {
                 return;
             }
 
@@ -370,7 +353,7 @@ public final class Intersection {
 
         private static void intersectRecursive(final DefaultNurbSurface s1, final DefaultNurbSurface s2, final double tol,
                 final List<SurfaceIntersectionPoint> results, final int depth) {
-            if (!boxesOverlap(s1.getEnvelope(), s2.getEnvelope(), tol)) {
+            if (!s1.getEnvelope().intersects(s2.getEnvelope(), tol)) {
                 return;
             }
 

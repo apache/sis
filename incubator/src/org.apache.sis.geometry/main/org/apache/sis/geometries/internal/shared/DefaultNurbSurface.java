@@ -21,7 +21,6 @@ import java.util.Arrays;
 import java.util.List;
 import javax.measure.Quantity;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
-import org.opengis.geometry.Envelope;
 import org.apache.sis.geometries.Curve;
 import org.apache.sis.geometries.DataPoints;
 import org.apache.sis.geometries.Geometry;
@@ -316,7 +315,7 @@ public non-sealed class DefaultNurbSurface extends AbstractGeometry implements N
      *
      * @return the bounding box of this surface
      */
-    public Envelope getEnvelope() {
+    public NDRange getEnvelope() {
         final Vector<?> start = Vectors.create(getCoordinateReferenceSystem(), DataType.DOUBLE).set(controlPoints[0][0]);
         final NDRange bbox = new NDRange(start, start);
         for (final Vector<?>[] row : controlPoints) {

@@ -379,11 +379,43 @@ public final class NDRange implements Envelope {
     }
 
     /**
+     * Returns whether the given envelope intersects this range, within the given tolerance.
+     * Envelopes separated by no more than the tolerance in every dimension are considered as intersecting,
+     * so that envelopes touching on their border intersect even with a tolerance of zero.
+     * A NaN bound in this range or in the envelope makes them disjoint, the range being empty in that dimension.
+     * The envelope is assumed in the reference system of this range, without verification.
+     *
+     * @param  envelope   the envelope to test.
+     * @param  tolerance  the largest distance between the envelope and this range for considering them as intersecting.
+     * @return whether the envelope intersects this range or is separated from it by no more than the tolerance.
+     * @throws MismatchedDimensionException if the envelope does not have the dimension of this range.
+     * @throws IllegalArgumentException if the tolerance is negative or NaN.
+     */
+    public boolean intersects(final Envelope envelope, final double tolerance) throws MismatchedDimensionException {
+        ensureDimensionMatches("envelope", envelope.getDimension());
+        ArgumentChecks.ensurePositive("tolerance", tolerance);
+        for (int i = 0; i < lower.getDimension(); i++) {
+            // Written for being false if a bound is NaN.
+            if (!(envelope.getMinimum(i) <= upper.get(i) + tolerance && lower.get(i) <= envelope.getMaximum(i) + tolerance)) {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    /**
      * Verifies that a position has the dimension of this range.
      */
     private void ensureDimensionMatches(final int dimension) {
+        ensureDimensionMatches("position", dimension);
+    }
+
+    /**
+     * Verifies that an object of the given name, for example a position or an envelope, has the dimension of this range.
+     */
+    private void ensureDimensionMatches(final String name, final int dimension) {
         if (dimension != lower.getDimension()) {
-            throw new MismatchedDimensionException("The position has " + dimension
+            throw new MismatchedDimensionException("The " + name + " has " + dimension
                     + " dimensions but the range has " + lower.getDimension() + '.');
         }
     }
