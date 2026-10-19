@@ -34,6 +34,7 @@ import org.apache.sis.geometry.GeneralEnvelope;
 import org.apache.sis.filter.sqlmm.SQLMM;
 import org.apache.sis.referencing.CRS;
 import org.apache.sis.referencing.operation.transform.MathTransforms;
+import org.apache.sis.referencing.operation.transform.TransformFactoryException;
 import org.apache.sis.referencing.internal.shared.ReferencingUtilities;
 import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.Classes;
@@ -565,11 +566,7 @@ public abstract class GeometryWrapper extends AbstractGeometry implements Geomet
         try {
             return transform(CRS.findOperation(crs, targetCRS, null), false);
         } catch (FactoryException e) {
-            /*
-             * We wrap that exception because `Geometry.transform(…)` does not declare `FactoryException`.
-             * We may revisit in a future version if `Geometry.transform(…)` method declaration is updated.
-             */
-            throw new TransformException(e);
+            throw new TransformFactoryException(e);
         }
     }
 

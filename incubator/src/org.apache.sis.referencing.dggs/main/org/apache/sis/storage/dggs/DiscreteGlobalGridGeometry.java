@@ -35,6 +35,7 @@ import org.apache.sis.referencing.dggs.DiscreteGlobalGrid;
 import org.apache.sis.referencing.dggs.DiscreteGlobalGridHierarchy;
 import org.apache.sis.referencing.dggs.DiscreteGlobalGridReferenceSystem;
 import org.apache.sis.referencing.dggs.Zone;
+import org.apache.sis.referencing.operation.transform.TransformFactoryException;
 import org.apache.sis.storage.rs.CodeTransform;
 import org.apache.sis.storage.rs.CodedGeometry;
 import org.apache.sis.storage.rs.internal.shared.CodeTransforms;
@@ -164,7 +165,7 @@ public class DiscreteGlobalGridGeometry extends CodedGeometry {
             try {
                 trs = CRS.findOperation(baseCrs, crs, null).getMathTransform();
             } catch (FactoryException ex) {
-                throw new TransformException(ex);
+                throw new TransformFactoryException(ex);
             }
         } else {
             return getEnvelope();

@@ -137,8 +137,7 @@ public final class DefaultCoordinateOperationFactoryTest extends MathTransformTe
      * Returns {@code true} if {@link #factory} is expected to use the EPSG factory.
      */
     private static boolean isUsingEpsgFactory() throws FactoryException {
-        return DefaultCoordinateOperationFactory.USE_EPSG_FACTORY &&
-               CRS.getAuthorityFactory(Constants.EPSG) instanceof CoordinateOperationAuthorityFactory;
+        return CRS.getAuthorityFactory(Constants.EPSG) instanceof CoordinateOperationAuthorityFactory;
     }
 
     /**

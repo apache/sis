@@ -341,10 +341,10 @@ final class DefaultConcatenatedOperation extends AbstractCoordinateOperation imp
      * Verifies if a step of a concatenated operation can be chained after the previous step.
      *
      * @param  properties  user-specified properties (for the locale of error message), or {@code null} if none.
-     * @param  step        index of the operation step, used only in case an exception it thrown.
-     * @param  previous    Target CRS of the previous step.
-     * @param  source      Source CRS of the current step.
-     * @param  target      Target CRS of the current step, or {@code null} if none.
+     * @param  step        zero-based index of the operation step, used only in case an exception it thrown.
+     * @param  previous    target CRS of the previous step.
+     * @param  source      source CRS of the current step.
+     * @param  target      target CRS of the current step, or {@code null} if none.
      * @return whether the math transform needs to be inverted.
      * @throws FactoryException if the current operation cannot be chained after the previous operation.
      */
@@ -364,7 +364,7 @@ final class DefaultConcatenatedOperation extends AbstractCoordinateOperation imp
         Resources resources = Resources.forProperties(properties);
         Locale locale = resources.getLocale();
         throw new InvalidGeodeticParameterException(resources.getString(
-                Resources.Keys.MismatchedSourceTargetCRS_3, step,
+                Resources.Keys.MismatchedSourceTargetCRS_3, step + 1,
                 IdentifiedObjects.getDisplayName(previous, locale),
                 IdentifiedObjects.getDisplayName(source, locale)));
     }

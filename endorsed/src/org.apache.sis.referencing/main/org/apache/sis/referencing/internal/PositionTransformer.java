@@ -28,6 +28,7 @@ import org.opengis.referencing.operation.TransformException;
 import org.apache.sis.referencing.CRS;
 import org.apache.sis.referencing.MultiRegisterOperations;
 import org.apache.sis.referencing.operation.transform.MathTransforms;
+import org.apache.sis.referencing.operation.transform.TransformFactoryException;
 import org.apache.sis.geometry.GeneralDirectPosition;
 
 // Specific to the geoapi-3.1 and geoapi-4.0 branches:
@@ -162,8 +163,10 @@ public final class PositionTransformer extends GeneralDirectPosition {
         final CoordinateOperation operation;
         try {
             operation = factory.findCoordinateOperations(crs, targetCRS).iterator().next();
-        } catch (FactoryException | NoSuchElementException exception) {
-            throw new TransformException(exception.getLocalizedMessage(), exception);
+        } catch (NoSuchElementException e) {
+            throw new TransformException(Resources.format(Resources.Keys.CanNotCreateTransform), e);
+        } catch (FactoryException e) {
+            throw new TransformFactoryException(e);
         }
         /*
          * Note: `lastCRS` should be set last, when we are sure that all other fields

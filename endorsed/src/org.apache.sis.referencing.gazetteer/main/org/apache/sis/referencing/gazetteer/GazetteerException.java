@@ -54,8 +54,7 @@ public class GazetteerException extends TransformException {
      * @param  cause  the cause, or {@code null} if none.
      */
     public GazetteerException(final Throwable cause) {
-        // Reproduce the behavior of standard Throwable(Throwable) constructor.
-        super((cause != null) ? cause.toString() : null, cause);
+        super(cause);
     }
 
     /**

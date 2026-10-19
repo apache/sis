@@ -61,6 +61,7 @@ import org.apache.sis.measure.Quantities;
 import org.apache.sis.measure.Units;
 import org.apache.sis.referencing.CRS;
 import org.apache.sis.referencing.operation.transform.MathTransforms;
+import org.apache.sis.referencing.operation.transform.TransformFactoryException;
 import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.Debug;
 import org.apache.sis.util.UnconvertibleObjectException;
@@ -676,7 +677,7 @@ add:    for (Geometry next = geometry;;) {
         try {
             return transform(CRS.findOperation(crs, targetCRS, null), false);
         } catch (FactoryException e) {
-            throw new TransformException(e);
+            throw new TransformFactoryException(e);
         }
     }
 
