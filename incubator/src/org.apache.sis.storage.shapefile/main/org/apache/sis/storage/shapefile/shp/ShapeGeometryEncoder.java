@@ -257,7 +257,7 @@ public abstract class ShapeGeometryEncoder<T extends Geometry> {
             if (nbOrdinates == 2) {
                 values = channel.readDoubles(nbValues * 2);
             } else {
-                values = channel.readDoubles(nbValues * nbOrdinates);
+                values = new double[nbValues * nbOrdinates];
                 for (int k = 0; k < nbValues; k++) {
                     values[k * nbOrdinates  ] = channel.readDouble();
                     values[k * nbOrdinates + 1] = channel.readDouble();
