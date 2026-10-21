@@ -24,7 +24,9 @@ import java.util.concurrent.atomic.AtomicInteger;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.opengis.geometry.Envelope;
+import org.apache.sis.geometries.Geometries;
 import org.apache.sis.geometries.index.KdTree;
+import org.apache.sis.geometries.internal.shared.Planar;
 import org.apache.sis.geometries.mesh.MeshPrimitive;
 import org.apache.sis.geometries.mesh.MeshPrimitive.Vertex;
 import org.apache.sis.geometries.operation.OperationException;
@@ -76,16 +78,8 @@ public final class Delaunay {
 
         @Override
         public void addFirst(OrientedEdge e) {
-            //create a key not affected by edge orientation
-            int idx0 = (int)e.getStart().getIndex();
-            int idx1 = (int)e.getEnd().getIndex();
-            if (idx0 > idx1) {
-                int i = idx0;
-                idx0 = idx1;
-                idx1 = i;
-            }
-            final long key = idx0 + ((long) idx1) << 32l;
-            if (unique.add(key)) {
+            //key not affected by edge orientation
+            if (unique.add(Planar.edgeKey((int) e.getStart().getIndex(), (int) e.getEnd().getIndex()))) {
                 super.addFirst(e);
             } else {
                 crossingConstraints.incrementAndGet();
@@ -219,6 +213,42 @@ public final class Delaunay {
         primitive.setPositions(points.getPositions());
         primitive.setIndex(getTrianglesIndex());
         return primitive;
+    }
+
+    /**
+     * Computes a constrained Delaunay triangulation of points in the plane.
+     * The points must be distinct, and the constraint segments must not cross each other.
+     * Flat triangles are removed and the returned triangles are counterclockwise.
+     *
+     * @param xy           (x,y) coordinates of the points, two values per point.
+     * @param constraints  pairs of point indices of the segments which must be edges of the triangulation.
+     * @return indices of the points of the triangles, three values per triangle.
+     * @throws OperationException if an algorithm exception occurs
+     */
+    public static int[] triangulate(final double[] xy, final int[] constraints) throws OperationException {
+        ArgumentChecks.ensureNonNull("xy", xy);
+        ArgumentChecks.ensureNonNull("constraints", constraints);
+        if (xy.length < 6) {
+            return new int[0];
+        }
+        final MeshPrimitive.Points points = new MeshPrimitive.Points();
+        points.setPositions(NDArrays.of(Geometries.getUndefinedCRS(2), xy.clone()));
+        final Delaunay delaunay = new Delaunay();
+        delaunay.build(points);
+        if (constraints.length > 0) {
+            delaunay.pushConstraint(NDArrays.ofUnsigned(1, constraints), true);
+        }
+        //triangles are counterclockwise, only flat ones need to be removed
+        final int[] index = delaunay.getTrianglesIndex().toArrayInt();
+        int n = 0;
+        for (int i = 0; i < index.length; i += 3) {
+            final int a = index[i]*2, b = index[i+1]*2, c = index[i+2]*2;
+            if (Maths.lineSide(xy[a], xy[a+1], xy[b], xy[b+1], xy[c], xy[c+1]) != 0) {
+                System.arraycopy(index, i, index, n, 3);
+                n += 3;
+            }
+        }
+        return Arrays.copyOf(index, n);
     }
 
     /**
