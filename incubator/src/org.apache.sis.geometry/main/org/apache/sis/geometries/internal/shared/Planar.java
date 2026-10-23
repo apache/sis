@@ -16,9 +16,14 @@
  */
 package org.apache.sis.geometries.internal.shared;
 
+import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
+import java.util.Set;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import org.apache.sis.geometries.DataPointsType;
 import org.apache.sis.geometries.Geometries;
@@ -126,24 +131,72 @@ public final class Planar {
     }
 
     /**
-     * Keeps the triangles whose centroid is inside, or outside, the given rings.
+     * Keeps the triangles inside, or outside, a boundary made of edges of the triangulation.
+     * The triangle on the left of a boundary edge is inside and the one on its right is outside,
+     * and the sides are propagated to the neighbors through the other edges. This is exact even for
+     * very thin triangles along a boundary whose points are slightly off the lines of the rings.
+     * The triangles not connected to the boundary are classified by their centroid relative to the rings.
      *
      * @param  xy         the points coordinates.
-     * @param  triangles  three point indices per triangle.
+     * @param  triangles  counterclockwise triangles, three point indices per triangle.
+     * @param  boundary   directed boundary edges, two point indices per edge, with the interior on their left.
      * @param  rings      the rings, see {@link #inside(List, double, double)}.
-     * @param  inside     {@code true} for keeping triangles inside the rings, {@code false} for outside.
+     * @param  inside     {@code true} for keeping triangles inside, {@code false} for outside.
      * @return the kept triangles.
      */
-    public static int[] keep(final double[] xy, final int[] triangles, final List<double[]> rings, final boolean inside) {
+    public static int[] keep(final double[] xy, final int[] triangles, final int[] boundary,
+                             final List<double[]> rings, final boolean inside)
+    {
+        final Map<Long,Integer> byEdge = new HashMap<>();
+        for (int i = 0; i < triangles.length; i++) {
+            byEdge.put(directed(triangles[i], triangles[i - i%3 + (i+1)%3]), i / 3);
+        }
+        final Set<Long> walls = new HashSet<>();
+        final byte[] side = new byte[triangles.length / 3];
+        final ArrayDeque<Integer> queue = new ArrayDeque<>();
+        for (int i = 0; i < boundary.length; i += 2) {
+            final int u = boundary[i], v = boundary[i+1];
+            walls.add(edgeKey(u, v));
+            label(byEdge.get(directed(u, v)), (byte)  1, side, queue);
+            label(byEdge.get(directed(v, u)), (byte) -1, side, queue);
+        }
+        for (Integer t; (t = queue.poll()) != null;) {
+            for (int k = 0; k < 3; k++) {
+                final int a = triangles[t*3+k], b = triangles[t*3+(k+1)%3];
+                if (!walls.contains(edgeKey(a, b))) {
+                    label(byEdge.get(directed(b, a)), side[t], side, queue);
+                }
+            }
+        }
         int n = 0;
-        for (int i = 0; i < triangles.length; i += 3) {
-            final int a = triangles[i]*2, b = triangles[i+1]*2, c = triangles[i+2]*2;
-            if (inside(rings, (xy[a] + xy[b] + xy[c]) / 3, (xy[a+1] + xy[b+1] + xy[c+1]) / 3) == inside) {
-                System.arraycopy(triangles, i, triangles, n, 3);
+        final int[] kept = new int[triangles.length];
+        for (int t = 0; t < side.length; t++) {
+            final int a = triangles[t*3]*2, b = triangles[t*3+1]*2, c = triangles[t*3+2]*2;
+            final boolean in = (side[t] != 0) ? side[t] > 0
+                    : inside(rings, (xy[a] + xy[b] + xy[c]) / 3, (xy[a+1] + xy[b+1] + xy[c+1]) / 3);
+            if (in == inside) {
+                System.arraycopy(triangles, t*3, kept, n, 3);
                 n += 3;
             }
         }
-        return Arrays.copyOf(triangles, n);
+        return Arrays.copyOf(kept, n);
+    }
+
+    /**
+     * Sets the side of a triangle if not already known, and adds it to the triangles to propagate.
+     */
+    private static void label(final Integer triangle, final byte value, final byte[] side, final ArrayDeque<Integer> queue) {
+        if (triangle != null && side[triangle] == 0) {
+            side[triangle] = value;
+            queue.add(triangle);
+        }
+    }
+
+    /**
+     * Returns a key for an edge which depends on its direction.
+     */
+    private static long directed(final int a, final int b) {
+        return (((long) a) << 32) | (b & 0xFFFFFFFFL);
     }
 
     /**
