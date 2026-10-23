@@ -127,11 +127,11 @@ public class MathsTest {
      * Returns a vector of the given values.
      */
     private static Vector<?> vector(final double... values) {
-        return Vectors.createDouble(values.length).set(values);
+        return Vectors.create(values, DataType.DOUBLE);
     }
 
     /**
-     * Tests the robust {@link Maths#inTriangle(ReadOnly.Vector, ReadOnly.Vector, ReadOnly.Vector, ReadOnly.Vector)},
+     * Tests the robust {@link Maths#inTriangle(Vector, Vector, Vector, Vector)},
      * which includes the edges and corners of the triangle, whatever its orientation.
      */
     @Test
@@ -152,7 +152,7 @@ public class MathsTest {
     }
 
     /**
-     * Tests {@link Maths#isConvex(ReadOnly.Vector, ReadOnly.Vector, ReadOnly.Vector, boolean)}.
+     * Tests {@link Maths#isConvex(Vector, Vector, Vector, boolean)}.
      */
     @Test
     public void testIsConvex() {
@@ -166,7 +166,7 @@ public class MathsTest {
     }
 
     /**
-     * Tests {@link Maths#inCone(ReadOnly.Vector, ReadOnly.Vector, ReadOnly.Vector, ReadOnly.Vector, boolean)}
+     * Tests {@link Maths#inCone(Vector, Vector, Vector, Vector, boolean)}
      * at a convex vertex and at a reflex vertex, in counterclockwise and clockwise rings.
      */
     @Test

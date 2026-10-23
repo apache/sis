@@ -440,7 +440,6 @@ public final class DiscreteGlobalGridCoverageProcessor {
                 }
             });
 
-            final Vector1D.Double buffer = new Vector1D.Double();
             try (Stream<Feature> stream = subset.features(false)) {
                 final Iterator<Feature> fite = stream.iterator();
                 zoneLoop:
@@ -462,15 +461,15 @@ public final class DiscreteGlobalGridCoverageProcessor {
                             for (int i = 0; i < propertyNames.length; i++) {
                                 Object value = feature.getPropertyValue(propertyNames[i]);
                                 if (value instanceof Number n) {
-                                    buffer.x = n.doubleValue();
-                                    if (!Double.isNaN(buffer.x)) {
+                                    final double sample = n.doubleValue();
+                                    if (!Double.isNaN(sample)) {
                                         if (stats[i][zoneIndex] == null) {
                                             stats[i][zoneIndex] = new Statistics("");
                                         }
-                                        stats[i][zoneIndex].accept(buffer.x);
+                                        stats[i][zoneIndex].accept(sample);
                                     }
                                     //fast method without stats
-                                    //samples.get(i).set(zoneIndex, buffer);
+                                    //samples.get(i).set(zoneIndex, new Vector1D.Double(sample));
                                 }
                                 if (counters[i][0] != null) {
                                     if (counters[i][zoneIndex] == null) counters[i][zoneIndex] = new HashMap<>();
@@ -497,13 +496,11 @@ public final class DiscreteGlobalGridCoverageProcessor {
         }
 
         //copy stats to buffers
-        final Vector1D.Double buffer = new Vector1D.Double();
         for(int i = 0; i < stats.length; i++) {
             final Array arr = samples.get(i);
             for(int k = 0; k < stats[0].length; k++) {
                 if (stats[i][k] != null) {
-                    buffer.x = stats[i][k].mean();
-                    arr.set(k, buffer);
+                    arr.set(k, new Vector1D.Double(stats[i][k].mean()));
                 }
                 //replace stat value by a counted value if it is one
                 if (counters[i][k] != null) {
@@ -514,8 +511,7 @@ public final class DiscreteGlobalGridCoverageProcessor {
                         }
                     }
                     if (mostNumerous != null && mostNumerous.getKey() instanceof Number n) {
-                        buffer.x = n.doubleValue();
-                        arr.set(k, buffer);
+                        arr.set(k, new Vector1D.Double(n.doubleValue()));
                     }
                 }
             }

@@ -43,7 +43,6 @@ import org.apache.sis.maths.Cursor;
 import org.apache.sis.maths.Maths;
 import org.apache.sis.maths.Matrices;
 import org.apache.sis.maths.NDArrays;
-import org.apache.sis.maths.ReadOnly;
 import org.apache.sis.maths.Vector;
 import org.apache.sis.maths.Vectors;
 import static org.apache.sis.maths.Maths.clamp;
@@ -58,12 +57,12 @@ public final class Intersection {
     private Intersection(){}
 
 
-    static Vector<?> subtract(final ReadOnly.Vector<?> a, final ReadOnly.Vector<?> b) {
-        return a.copy().subtract(b);
+    static Vector<?> subtract(final Vector<?> a, final Vector<?> b) {
+        return a.subtract(b);
     }
 
     static Vector<?> scale(final Vector<?> a, final double s) {
-        return a.copy().scale(s);
+        return a.scale(s);
     }
 
     /**

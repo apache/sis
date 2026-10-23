@@ -375,7 +375,6 @@ public final class KdTree<T> {
             return indice == 0 ? x : y;
         }
 
-        @Override
         public void set(int indice, double value) throws IndexOutOfBoundsException {
             if (indice == 0) x = value;
             else y = value;

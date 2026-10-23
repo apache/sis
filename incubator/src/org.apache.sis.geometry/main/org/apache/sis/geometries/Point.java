@@ -34,7 +34,6 @@ import org.apache.sis.geometries.internal.shared.IndexedPoint;
 import org.apache.sis.geometries.mesh.MeshPrimitive;
 import org.apache.sis.maths.DataType;
 import org.apache.sis.maths.NDRange;
-import org.apache.sis.maths.ReadOnly;
 import org.apache.sis.maths.Vector;
 import org.apache.sis.maths.Vectors;
 import org.apache.sis.referencing.CRS;
@@ -104,7 +103,7 @@ public sealed interface Point extends Primitive
      * @param name  name of the attribute to set.
      * @param tuple new attribute value.
      */
-    void setAttribute(String name, ReadOnly.Vector<?> tuple);
+    void setAttribute(String name, Vector<?> tuple);
 
     /**
      * View this point as a {@code DataPoints} of a single point
@@ -142,9 +141,9 @@ public sealed interface Point extends Primitive
             }
 
             @Override
-            public void setPosition(int index, ReadOnly.Vector<?> value) {
+            public void setPosition(int index, Vector<?> value) {
                 if (index != 0) throw new IndexOutOfBoundsException();
-                Point.this.getPosition().set(value);
+                Point.this.setAttribute(DataPointsType.ATT_POSITION, value);
             }
 
             @Override
@@ -154,7 +153,7 @@ public sealed interface Point extends Primitive
             }
 
             @Override
-            public void setAttribute(int index, String name, ReadOnly.Vector<?> value) {
+            public void setAttribute(int index, String name, Vector<?> value) {
                 if (index != 0) throw new IndexOutOfBoundsException();
                 Point.this.setAttribute(name, value);
             }
@@ -260,7 +259,7 @@ public sealed interface Point extends Primitive
 
     @Override
     default Envelope getEnvelope() {
-        final Vector<?> position = Vectors.create(getDimension(), DataType.DOUBLE).set(getPosition());
+        final Vector<?> position = getPosition().copy(DataType.DOUBLE);
         return new NDRange(getCoordinateReferenceSystem(), position, position);
     }
 
@@ -300,11 +299,11 @@ public sealed interface Point extends Primitive
             throw new MismatchedDimensionException("Expected a position of dimension " + dimension
                     + " but got " + toPoint.getDimension() + '.');
         }
-        final Vector<?> vector = Vectors.createDouble(dimension);
+        final double[] vector = new double[dimension];
         for (int i = 0; i < dimension; i++) {
-            vector.set(i, toPoint.getCoordinate(i) - position.get(i));
+            vector[i] = toPoint.getCoordinate(i) - position.get(i);
         }
-        return vector;
+        return Vectors.create(vector, DataType.DOUBLE);
     }
 
     /**

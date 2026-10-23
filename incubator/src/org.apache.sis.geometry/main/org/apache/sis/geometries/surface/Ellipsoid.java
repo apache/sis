@@ -28,7 +28,7 @@ import org.apache.sis.geometries.GeometryType;
 import org.apache.sis.geometries.SurfaceInterpolation;
 import org.apache.sis.geometries.internal.shared.DefaultEllipsoid;
 import org.apache.sis.maths.NDRange;
-import org.apache.sis.maths.ReadOnly;
+import org.apache.sis.maths.Vector;
 
 
 /**
@@ -130,16 +130,16 @@ public sealed interface Ellipsoid extends ParametricCurveSurface
 
     /**
      * Returns the ellipsoid center. Writing in the returned tuple does not move this
-     * ellipsoid; use {@link #setCenter(ReadOnly.Vector)} for that.
+     * ellipsoid; use {@link #setCenter(Vector)} for that.
      *
      * @return ellipsoid center.
      */
-    ReadOnly.Vector<?> getCenter();
+    Vector<?> getCenter();
 
     /**
      * @param position new center of the ellipsoid
      */
-    void setCenter(ReadOnly.Vector<?> position);
+    void setCenter(Vector<?> position);
 
     /**
      * Returns the empty geometry: an ellipsoid is a closed surface, so it has no edge.
@@ -175,7 +175,7 @@ public sealed interface Ellipsoid extends ParametricCurveSurface
      */
     @Override
     default Envelope getEnvelope() {
-        final ReadOnly.Vector<?> center = getCenter();
+        final Vector<?> center = getCenter();
         final NDRange env = new NDRange(getCoordinateReferenceSystem());
         for (int i = 0, n = getDimension(); i < n; i++) {
             final double c = center.get(i);

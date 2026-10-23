@@ -156,12 +156,7 @@ public final class ArrayFactoryFFM implements ArrayFactory {
         }
 
         @Override
-        public void get(long index, Vector<?> buffer) {
-            throw new UnsupportedOperationException();
-        }
-
-        @Override
-        public void set(long index, ReadOnly.Vector<?> tuple) {
+        public void set(long index, Vector<?> tuple) {
             throw new UnsupportedOperationException();
         }
 
@@ -194,12 +189,7 @@ public final class ArrayFactoryFFM implements ArrayFactory {
         }
 
         @Override
-        public void get(long index, Vector<?> buffer) {
-            throw new UnsupportedOperationException();
-        }
-
-        @Override
-        public void set(long index, ReadOnly.Vector<?> tuple) {
+        public void set(long index, Vector<?> tuple) {
             throw new UnsupportedOperationException();
         }
 
@@ -232,12 +222,7 @@ public final class ArrayFactoryFFM implements ArrayFactory {
         }
 
         @Override
-        public void get(long index, Vector<?> buffer) {
-            throw new UnsupportedOperationException();
-        }
-
-        @Override
-        public void set(long index, ReadOnly.Vector<?> tuple) {
+        public void set(long index, Vector<?> tuple) {
             throw new UnsupportedOperationException();
         }
 
@@ -270,12 +255,7 @@ public final class ArrayFactoryFFM implements ArrayFactory {
         }
 
         @Override
-        public void get(long index, Vector<?> buffer) {
-            throw new UnsupportedOperationException();
-        }
-
-        @Override
-        public void set(long index, ReadOnly.Vector<?> tuple) {
+        public void set(long index, Vector<?> tuple) {
             throw new UnsupportedOperationException();
         }
 
@@ -308,12 +288,7 @@ public final class ArrayFactoryFFM implements ArrayFactory {
         }
 
         @Override
-        public void get(long index, Vector<?> buffer) {
-            throw new UnsupportedOperationException();
-        }
-
-        @Override
-        public void set(long index, ReadOnly.Vector<?> tuple) {
+        public void set(long index, Vector<?> tuple) {
             throw new UnsupportedOperationException();
         }
 
@@ -346,12 +321,7 @@ public final class ArrayFactoryFFM implements ArrayFactory {
         }
 
         @Override
-        public void get(long index, Vector<?> buffer) {
-            throw new UnsupportedOperationException();
-        }
-
-        @Override
-        public void set(long index, ReadOnly.Vector<?> tuple) {
+        public void set(long index, Vector<?> tuple) {
             throw new UnsupportedOperationException();
         }
 
@@ -384,12 +354,7 @@ public final class ArrayFactoryFFM implements ArrayFactory {
         }
 
         @Override
-        public void get(long index, Vector<?> buffer) {
-            throw new UnsupportedOperationException();
-        }
-
-        @Override
-        public void set(long index, ReadOnly.Vector<?> tuple) {
+        public void set(long index, Vector<?> tuple) {
             throw new UnsupportedOperationException();
         }
 
@@ -422,12 +387,7 @@ public final class ArrayFactoryFFM implements ArrayFactory {
         }
 
         @Override
-        public void get(long index, Vector<?> buffer) {
-            throw new UnsupportedOperationException();
-        }
-
-        @Override
-        public void set(long index, ReadOnly.Vector<?> tuple) {
+        public void set(long index, Vector<?> tuple) {
             throw new UnsupportedOperationException();
         }
 
@@ -460,12 +420,7 @@ public final class ArrayFactoryFFM implements ArrayFactory {
         }
 
         @Override
-        public void get(long index, Vector<?> buffer) {
-            throw new UnsupportedOperationException();
-        }
-
-        @Override
-        public void set(long index, ReadOnly.Vector<?> tuple) {
+        public void set(long index, Vector<?> tuple) {
             throw new UnsupportedOperationException();
         }
 

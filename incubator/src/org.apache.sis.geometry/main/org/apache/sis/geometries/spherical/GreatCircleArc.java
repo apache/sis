@@ -18,7 +18,7 @@ package org.apache.sis.geometries.spherical;
 
 import org.apache.sis.geometries.surface.Sphere;
 import org.apache.sis.maths.Maths;
-import org.apache.sis.maths.ReadOnly;
+import org.apache.sis.maths.Vector;
 
 
 /**
@@ -36,13 +36,13 @@ public final class GreatCircleArc {
     /**
      * first arc point, as a unit direction vector from the sphere center
      */
-    private final ReadOnly.Vector<?> vecA;
+    private final Vector<?> vecA;
     /**
      * second arc point, as a unit direction vector from the sphere center
      */
-    private final ReadOnly.Vector<?> vecB;
+    private final Vector<?> vecB;
 
-    public GreatCircleArc(Sphere sphere, ReadOnly.Vector<?> vecA, ReadOnly.Vector<?> vecB) {
+    public GreatCircleArc(Sphere sphere, Vector<?> vecA, Vector<?> vecB) {
         this.sphere = sphere;
         this.vecA = vecA;
         this.vecB = vecB;
@@ -58,14 +58,14 @@ public final class GreatCircleArc {
     /**
      * @return first arc point, as a unit direction vector from the sphere center
      */
-    public ReadOnly.Vector<?> getA() {
+    public Vector<?> getA() {
         return vecA;
     }
 
     /**
      * @return second arc point, as a unit direction vector from the sphere center
      */
-    public ReadOnly.Vector<?> getB() {
+    public Vector<?> getB() {
         return vecB;
     }
 
@@ -89,7 +89,7 @@ public final class GreatCircleArc {
      * @throws IllegalArgumentException if the two arc ends are antipodal, since they do
      *         not define a unique great circle
      */
-    public ReadOnly.Vector<?> pointAt(double fraction) {
+    public Vector<?> pointAt(double fraction) {
         return interpolate(vecA, vecB, fraction);
     }
 
@@ -106,15 +106,15 @@ public final class GreatCircleArc {
      * @param fraction position on the arc, in range [0 .. 1]
      * @return point at given fraction, as a unit direction vector from the sphere center
      * @throws IllegalArgumentException if the two vectors are antipodal
-     * @see org.apache.sis.maths.Vector#slerp(ReadOnly.Tuple, double)
+     * @see Vector#slerp(Vector, double)
      */
-    public static ReadOnly.Vector<?> interpolate(ReadOnly.Vector<?> vecA, ReadOnly.Vector<?> vecB, double fraction) {
+    public static Vector<?> interpolate(Vector<?> vecA, Vector<?> vecB, double fraction) {
         /*
          * Slerp already keeps the length of unit vectors, but normalizing removes the
          * rounding it leaves behind. Worth the cost because subdividing a cell feeds the
          * result back in, so the drift would otherwise pile up over the levels.
          */
-        return vecA.copy().slerp(vecB, fraction).normalize();
+        return vecA.slerp(vecB, fraction).normalize();
     }
 
 }

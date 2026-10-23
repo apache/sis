@@ -24,7 +24,6 @@ import org.apache.sis.geometries.DataPointsType;
 import org.apache.sis.geometries.Geometries;
 import org.apache.sis.geometries.Geometry;
 import org.apache.sis.geometries.Point;
-import org.apache.sis.maths.ReadOnly;
 import org.apache.sis.maths.Vector;
 
 
@@ -155,7 +154,7 @@ public final class ConcatenatedDataPoints implements DataPoints {
     }
 
     @Override
-    public void setPosition(int index, ReadOnly.Vector<?> value) {
+    public void setPosition(int index, Vector<?> value) {
         final int i = sourceOf(index);
         sources[i].setPosition(index - offsets[i], value);
     }
@@ -167,7 +166,7 @@ public final class ConcatenatedDataPoints implements DataPoints {
     }
 
     @Override
-    public void setAttribute(int index, String name, ReadOnly.Vector<?> value) {
+    public void setAttribute(int index, String name, Vector<?> value) {
         final int i = sourceOf(index);
         sources[i].setAttribute(index - offsets[i], name, value);
     }

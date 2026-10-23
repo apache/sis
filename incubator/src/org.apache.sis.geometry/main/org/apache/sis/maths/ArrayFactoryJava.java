@@ -151,15 +151,13 @@ public final class ArrayFactoryJava implements ArrayFactory {
         }
 
         @Override
-        public void get(long index, Vector<?> buffer) {
-            final int offset = Math.toIntExact(index * dimension);
-            for (int i=0;i<dimension;i++) {
-                buffer.set(i, array[offset+i]);
-            }
+        public Vector<?> get(long index) {
+            final int off = Math.toIntExact(index * dimension);
+            return Vectors.create(array, off, dimension, false);
         }
 
         @Override
-        public void set(long index, ReadOnly.Vector<?> tuple) {
+        public void set(long index, Vector<?> tuple) {
             final int offset = Math.toIntExact(index * dimension);
             for (int i=0;i<dimension;i++) {
                 array[offset+i] = (byte) tuple.get(i);
@@ -293,15 +291,13 @@ public final class ArrayFactoryJava implements ArrayFactory {
         }
 
         @Override
-        public void get(long index, Vector<?> buffer) {
-            final int offset = Math.toIntExact(index * dimension);
-            for (int i=0;i<dimension;i++) {
-                buffer.set(i, array[offset+i] & 0xFF);
-            }
+        public Vector<?> get(long index) {
+            final int off = Math.toIntExact(index * dimension);
+            return Vectors.create(array, off, dimension, true);
         }
 
         @Override
-        public void set(long index, ReadOnly.Vector<?> tuple) {
+        public void set(long index, Vector<?> tuple) {
             final int offset = Math.toIntExact(index * dimension);
             for (int i=0;i<dimension;i++) {
                 array[offset+i] = (byte) tuple.get(i);
@@ -436,15 +432,13 @@ public final class ArrayFactoryJava implements ArrayFactory {
         }
 
         @Override
-        public void get(long index, Vector<?> buffer) {
-            final int offset = Math.toIntExact(index * dimension);
-            for (int i=0;i<dimension;i++) {
-                buffer.set(i, array[offset+i]);
-            }
+        public Vector<?> get(long index) {
+            final int off = Math.toIntExact(index * dimension);
+            return Vectors.create(array, off, dimension, false);
         }
 
         @Override
-        public void set(long index, ReadOnly.Vector<?> tuple) {
+        public void set(long index, Vector<?> tuple) {
             final int offset = Math.toIntExact(index * dimension);
             for (int i=0;i<dimension;i++) {
                 array[offset+i] = (short) tuple.get(i);
@@ -588,15 +582,13 @@ public final class ArrayFactoryJava implements ArrayFactory {
         }
 
         @Override
-        public void get(long index, Vector<?> buffer) {
-            final int offset = Math.toIntExact(index * dimension);
-            for (int i=0;i<dimension;i++) {
-                buffer.set(i, java.lang.Short.toUnsignedInt(array[offset+i]));
-            }
+        public Vector<?> get(long index) {
+            final int off = Math.toIntExact(index * dimension);
+            return Vectors.create(array, off, dimension, true);
         }
 
         @Override
-        public void set(long index, ReadOnly.Vector<?> tuple) {
+        public void set(long index, Vector<?> tuple) {
             final int offset = Math.toIntExact(index * dimension);
             for (int i=0;i<dimension;i++) {
                 array[offset+i] = (short) tuple.get(i);
@@ -732,15 +724,13 @@ public final class ArrayFactoryJava implements ArrayFactory {
         }
 
         @Override
-        public void get(long index, Vector<?> buffer) {
-            final int offset = Math.toIntExact(index * dimension);
-            for (int i=0;i<dimension;i++) {
-                buffer.set(i, array[offset+i]);
-            }
+        public Vector<?> get(long index) {
+            final int off = Math.toIntExact(index * dimension);
+            return Vectors.create(array, off, dimension, false);
         }
 
         @Override
-        public void set(long index, ReadOnly.Vector<?> tuple) {
+        public void set(long index, Vector<?> tuple) {
             final int offset = Math.toIntExact(index * dimension);
             for (int i=0;i<dimension;i++) {
                 array[offset+i] = (int) tuple.get(i);
@@ -883,15 +873,13 @@ public final class ArrayFactoryJava implements ArrayFactory {
         }
 
         @Override
-        public void get(long index, Vector<?> buffer) {
-            final int offset = Math.toIntExact(index * dimension);
-            for (int i=0;i<dimension;i++) {
-                buffer.set(i, Integer.toUnsignedLong(array[offset+i]));
-            }
+        public Vector<?> get(long index) {
+            final int off = Math.toIntExact(index * dimension);
+            return Vectors.create(array, off, dimension, true);
         }
 
         @Override
-        public void set(long index, ReadOnly.Vector<?> tuple) {
+        public void set(long index, Vector<?> tuple) {
             final int offset = Math.toIntExact(index * dimension);
             for (int i=0;i<dimension;i++) {
                 array[offset+i] = (int) tuple.get(i);
@@ -1027,15 +1015,13 @@ public final class ArrayFactoryJava implements ArrayFactory {
         }
 
         @Override
-        public void get(long index, Vector<?> buffer) {
-            final int offset = Math.toIntExact(index * dimension);
-            for (int i=0;i<dimension;i++) {
-                buffer.set(i, array[offset+i]);
-            }
+        public Vector<?> get(long index) {
+            final int off = Math.toIntExact(index * dimension);
+            return Vectors.create(array, off, dimension);
         }
 
         @Override
-        public void set(long index, ReadOnly.Vector<?> tuple) {
+        public void set(long index, Vector<?> tuple) {
             final int offset = Math.toIntExact(index * dimension);
             for (int i=0;i<dimension;i++) {
                 array[offset+i] = (int) tuple.get(i);
@@ -1159,21 +1145,13 @@ public final class ArrayFactoryJava implements ArrayFactory {
         }
 
         @Override
-        public Vector get(long index) {
-            final Vector buffer = Vectors.create(type.getSize(), DataType.FLOAT);
-            return buffer.set(array, Math.toIntExact(index * dimension));
+        public Vector<?> get(long index) {
+            final int off = Math.toIntExact(index * dimension);
+            return Vectors.create(array, off, dimension);
         }
 
         @Override
-        public void get(long index, Vector<?> buffer) {
-            if (dimension != buffer.getDimension()) {
-                throw new IllegalArgumentException("Array and Tuple must have the same number of dimensions");
-            }
-            buffer.set(array, Math.toIntExact(index * dimension));
-        }
-
-        @Override
-        public void set(long index, ReadOnly.Vector<?> tuple) {
+        public void set(long index, Vector<?> tuple) {
             if (dimension != tuple.getDimension()) {
                 throw new IllegalArgumentException("Array and Tuple must have the same number of dimensions");
             }
@@ -1308,21 +1286,13 @@ public final class ArrayFactoryJava implements ArrayFactory {
         }
 
         @Override
-        public Vector get(long index) {
-            final Vector buffer = Vectors.create(type.getSize(), DataType.DOUBLE);
-            return buffer.set(array, Math.toIntExact(index * dimension));
+        public Vector<?> get(long index) {
+            final int off = Math.toIntExact(index * dimension);
+            return Vectors.create(array, off, dimension);
         }
 
         @Override
-        public void get(long index, Vector<?> buffer) {
-            if (dimension != buffer.getDimension()) {
-                throw new IllegalArgumentException("Array and Tuple must have the same number of dimensions");
-            }
-            buffer.set(array, Math.toIntExact(index * dimension));
-        }
-
-        @Override
-        public void set(long index, ReadOnly.Vector<?> tuple) {
+        public void set(long index, Vector<?> tuple) {
             if (dimension != tuple.getDimension()) {
                 throw new IllegalArgumentException("Array and Tuple must have the same number of dimensions");
             }

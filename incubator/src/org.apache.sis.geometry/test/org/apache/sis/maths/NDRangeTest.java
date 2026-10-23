@@ -37,7 +37,7 @@ public class NDRangeTest {
     private static final CoordinateReferenceSystem CRS = CommonCRS.WGS84.geographic3D();
 
     private static Vector<?> vector(double... values) {
-        return Vectors.create(values.length, DataType.DOUBLE).set(values);
+        return Vectors.create(values, DataType.DOUBLE);
     }
 
     private static NDRange range() {
@@ -70,15 +70,13 @@ public class NDRangeTest {
     }
 
     /**
-     * The range keeps its own copy of the bounds, and gives copies of them.
+     * The bounds are immutable, the corners can not be modified.
      */
     @Test
     public void testCopies() {
         final Vector<?> lower = vector(1, 2, 3);
         final NDRange range = new NDRange(lower, vector(4, 6, 3));
-        lower.set(0, -100);
-        range.getLower().set(0, -100);
-        range.getLowerCorner().setCoordinate(0, -100);
+        assertThrows(UnsupportedOperationException.class, () -> range.getLowerCorner().setCoordinate(0, -100));
         assertEquals(1, range.getMinimum(0));
     }
 
@@ -87,8 +85,8 @@ public class NDRangeTest {
      */
     @Test
     public void testDataType() {
-        final Vector<?> lower = Vectors.createInt(2).set(new double[] {1, 2});
-        final Vector<?> upper = Vectors.createInt(2).set(new double[] {5, 7});
+        final Vector<?> lower = Vectors.create(new double[] {1, 2}, DataType.INT);
+        final Vector<?> upper = Vectors.create(new double[] {5, 7}, DataType.INT);
         final NDRange range = new NDRange(lower, upper);
         assertEquals(DataType.INT, range.getLower().getDataType());
         assertEquals(5, range.getMaximum(0));
@@ -156,19 +154,19 @@ public class NDRangeTest {
      */
     @Test
     public void testAddRounding() {
-        final NDRange integers = new NDRange(Vectors.createInt(1).set(new double[] {1}), Vectors.createInt(1).set(new double[] {5}));
-        integers.add(Vectors.createDouble(1).set(new double[] {7.5}));
-        integers.add(Vectors.createDouble(1).set(new double[] {0.5}));
+        final NDRange integers = new NDRange(Vectors.create(new double[] {1}, DataType.INT), Vectors.create(new double[] {5}, DataType.INT));
+        integers.add(Vectors.create(new double[] {7.5}, DataType.DOUBLE));
+        integers.add(Vectors.create(new double[] {0.5}, DataType.DOUBLE));
         assertEquals(0, integers.getMinimum(0));
         assertEquals(8, integers.getMaximum(0));
-        assertTrue(integers.contains(Vectors.createDouble(1).set(new double[] {7.5})));
+        assertTrue(integers.contains(Vectors.create(new double[] {7.5}, DataType.DOUBLE)));
 
-        final NDRange floats = new NDRange(Vectors.createFloat(1).set(new double[] {1}), Vectors.createFloat(1).set(new double[] {2}));
-        floats.add(Vectors.createDouble(1).set(new double[] {0.1}));
-        floats.add(Vectors.createDouble(1).set(new double[] {2.3}));
+        final NDRange floats = new NDRange(Vectors.create(new double[] {1}, DataType.FLOAT), Vectors.create(new double[] {2}, DataType.FLOAT));
+        floats.add(Vectors.create(new double[] {0.1}, DataType.DOUBLE));
+        floats.add(Vectors.create(new double[] {2.3}, DataType.DOUBLE));
         assertTrue(floats.getMinimum(0) <= 0.1);
         assertTrue(floats.getMaximum(0) >= 2.3);
-        assertTrue(floats.contains(Vectors.createDouble(1).set(new double[] {0.1})));
+        assertTrue(floats.contains(Vectors.create(new double[] {0.1}, DataType.DOUBLE)));
     }
 
     @Test

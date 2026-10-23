@@ -30,6 +30,7 @@ import org.apache.sis.geometries.operation.Distance;
 import org.apache.sis.geometries.surface.Polygon;
 import org.apache.sis.maths.Maths;
 import org.apache.sis.maths.Vector;
+import org.apache.sis.maths.Vectors;
 
 
 /**
@@ -207,8 +208,9 @@ public final class HoleToExterior {
         }
         final int end = (x(border.get(edge + 1)) > x(border.get(edge))) ? edge + 1 : edge;
         final Vector<?> m = working[hole], p = working[border.get(end)];
-        final Vector<?> reached = m.copy();
-        reached.set(0, ix);
+        final double[] coordinates = m.toArrayDouble();
+        coordinates[0] = ix;
+        final Vector<?> reached = Vectors.create(coordinates, m.getDataType());
         final Comparator<Integer> closestToRay = Comparator.comparingDouble((Integer k) -> angle(hole, border.get(k)))
                 .thenComparingDouble((k) -> Distance.distanceSquare(m, working[border.get(k)]));
         final int visible = IntStream.range(0, border.size() - 1).boxed().filter((k) -> {

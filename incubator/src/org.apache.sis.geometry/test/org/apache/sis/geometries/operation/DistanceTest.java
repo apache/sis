@@ -23,6 +23,7 @@ import org.apache.sis.geometries.GeometryFactory;
 import org.apache.sis.geometries.Point;
 import org.apache.sis.maths.SampleSystem;
 import org.apache.sis.maths.Vector;
+import org.apache.sis.maths.DataType;
 import org.apache.sis.maths.Vectors;
 import org.apache.sis.measure.Quantities;
 import org.apache.sis.measure.Units;
@@ -176,7 +177,7 @@ public class DistanceTest extends AbstractD9IMTest {
      * Returns a vector of the given values.
      */
     private static Vector<?> vector(final double... values) {
-        return Vectors.createDouble(values.length).set(values);
+        return Vectors.create(values, DataType.DOUBLE);
     }
 
     /**

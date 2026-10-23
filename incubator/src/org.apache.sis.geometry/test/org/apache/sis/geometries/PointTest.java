@@ -22,6 +22,7 @@ import org.opengis.geometry.Envelope;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import org.apache.sis.referencing.CommonCRS;
 import org.apache.sis.maths.Vector;
+import org.apache.sis.maths.Vectors;
 
 // Test dependencies
 import static org.junit.jupiter.api.Assertions.*;
@@ -89,8 +90,7 @@ public abstract class PointTest extends GeometryTest {
     @Test
     public void testSetAttribute() {
         final Point point = createPoint2D();
-        final Vector<?> moved = point.getPosition().copy();
-        moved.set(new double[] {20, 15});
+        final Vector<?> moved = Vectors.create(new double[] {20, 15}, point.getPosition().getDataType());
         point.setAttribute(DataPointsType.ATT_POSITION, moved);
         assertArrayEquals(new double[] {20, 15}, point.getPosition().toArrayDouble(),
                           "Setting the positions attribute shall move the point.");

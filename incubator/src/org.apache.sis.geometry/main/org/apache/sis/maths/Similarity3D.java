@@ -26,8 +26,8 @@ import java.util.Objects;
  */
 public final class Similarity3D extends AbstractSimilarity<Similarity3D> {
 
-    private final Vector3D.Double scale = new Vector3D.Double(1, 1, 1);
-    private final Vector3D.Double translation = new Vector3D.Double(0, 0, 0);
+    private Vector3D.Double scale = new Vector3D.Double(1, 1, 1);
+    private Vector3D.Double translation = new Vector3D.Double(0, 0, 0);
     private final Matrix3D rotation = new Matrix3D(1,0,0, 0,1,0, 0,0,1);
 
     public Similarity3D(){
@@ -55,19 +55,25 @@ public final class Similarity3D extends AbstractSimilarity<Similarity3D> {
     }
 
     @Override
-    public ReadOnly.Vector<?> getScale() {
+    public Vector<?> getScale() {
         return scale;
     }
 
     @Override
-    public ReadOnly.Vector<?> getTranslation() {
+    public Vector<?> getTranslation() {
         return translation;
     }
 
     @Override
-    public Similarity3D update(TriFunction<Matrix<?>, Vector<?>, Vector<?>, Integer> updater) {
-        final Integer changed = updater.apply(rotation, scale, translation);
-        if (changed != 0) notifyChanged();
+    public Similarity3D update(TriFunction<Matrix<?>, double[], double[], Integer> updater) {
+        final double[] s = scale.toArrayDouble();
+        final double[] t = translation.toArrayDouble();
+        final Integer changed = updater.apply(rotation, s, t);
+        if (changed != 0) {
+            scale = new Vector3D.Double(s);
+            translation = new Vector3D.Double(t);
+            notifyChanged();
+        }
         return this;
     }
 
@@ -79,29 +85,28 @@ public final class Similarity3D extends AbstractSimilarity<Similarity3D> {
     }
 
     @Override
-    public Similarity3D setScale(ReadOnly.Vector<?> scale) {
-        this.scale.set(scale);
+    public Similarity3D setScale(Vector<?> scale) {
+        this.scale = new Vector3D.Double(scale);
         notifyChanged();
         return this;
     }
 
     @Override
-    public Similarity3D setTranslation(ReadOnly.Vector<?> translation) {
-        this.translation.set(translation);
+    public Similarity3D setTranslation(Vector<?> translation) {
+        this.translation = new Vector3D.Double(translation);
         notifyChanged();
         return this;
     }
 
     @Override
     public Similarity3D multiply(ReadOnly.Similarity<?> other) {
-        final Vector<?> resTrans = other.getTranslation().copy()
-                .transform(rotation)
+        final Vector<?> resTrans = rotation.transform(other.getTranslation())
                 .multiply(scale)
                 .add(translation);
 
         rotation.multiply(other.getRotation());
-        scale.multiply(other.getScale());
-        translation.set(resTrans);
+        scale = scale.multiply(other.getScale());
+        translation = new Vector3D.Double(resTrans);
         notifyChanged();
         return this;
     }
@@ -113,8 +118,8 @@ public final class Similarity3D extends AbstractSimilarity<Similarity3D> {
             return this;
         }
         rotation.set(trs.getRotation());
-        scale.set(trs.getScale());
-        translation.set(trs.getTranslation());
+        scale = new Vector3D.Double(trs.getScale());
+        translation = new Vector3D.Double(trs.getTranslation());
         notifyChanged();
         return this;
     }

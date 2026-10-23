@@ -19,7 +19,6 @@ package org.apache.sis.geometries.operation;
 import java.util.List;
 import org.apache.sis.geometries.Point;
 import org.apache.sis.maths.Maths;
-import org.apache.sis.maths.ReadOnly;
 import org.apache.sis.maths.Vectors;
 import org.apache.sis.maths.Vector;
 
@@ -207,7 +206,7 @@ public final class Distance {
      * @return the nearest point of the polyline, on the first nearest segment if many are at the same distance
      * @throws IllegalArgumentException if the polyline has less than two positions
      */
-    public static SegmentPoint nearestSegment(List<? extends ReadOnly.Vector<?>> polyline, ReadOnly.Vector<?> point) {
+    public static SegmentPoint nearestSegment(List<? extends Vector<?>> polyline, Vector<?> point) {
         if (polyline.size() < 2) {
             throw new IllegalArgumentException("A polyline shall have at least two positions.");
         }
@@ -215,7 +214,7 @@ public final class Distance {
         SegmentPoint nearest = null;
         double nearestDistance = Double.POSITIVE_INFINITY;
         for (int i = 1; i < polyline.size(); i++) {
-            final ReadOnly.Vector<?> a = polyline.get(i-1), b = polyline.get(i);
+            final Vector<?> a = polyline.get(i-1), b = polyline.get(i);
             final double ax = a.get(0), ay = a.get(1), bx = b.get(0), by = b.get(1);
             final double projection = Maths.projectionRatio(ax, ay, bx, by, x, y);
             final double ratio = Double.isNaN(projection) ? 0 : Maths.clamp(projection, 0, 1);  // NaN if the segment has no length.

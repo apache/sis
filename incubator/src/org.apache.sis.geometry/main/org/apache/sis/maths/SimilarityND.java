@@ -40,8 +40,8 @@ public class SimilarityND extends AbstractSimilarity<SimilarityND> {
 
     private final int dimension;
     private final Matrix<?> rotation;
-    private final Vector<?> scale;
-    private final Vector<?> translation;
+    private Vector<?> scale;
+    private Vector<?> translation;
 
     public static Similarity<?> create(int dimension) {
         return new SimilarityND(dimension);
@@ -59,9 +59,10 @@ public class SimilarityND extends AbstractSimilarity<SimilarityND> {
         super(dimension);
         this.dimension = dimension;
         this.rotation = MatrixND.create(dimension, dimension).setToIdentity();
-        this.scale = Vectors.create(dimension, DataType.DOUBLE);
         //set scale to 1 by default
-        this.scale.setAll(1d);
+        final double[] ones = new double[dimension];
+        java.util.Arrays.fill(ones, 1d);
+        this.scale = Vectors.create(ones, DataType.DOUBLE);
         this.translation = Vectors.create(dimension, DataType.DOUBLE);
     }
 
@@ -69,8 +70,8 @@ public class SimilarityND extends AbstractSimilarity<SimilarityND> {
         super(scale.getDimension());
         this.dimension = scale.getDimension();
         this.rotation = rotation;
-        this.scale = scale;
-        this.translation = translation;
+        this.scale = scale.copy(DataType.DOUBLE);
+        this.translation = translation.copy(DataType.DOUBLE);
         dirty = true;
     }
 
@@ -78,8 +79,8 @@ public class SimilarityND extends AbstractSimilarity<SimilarityND> {
         super(scale.getDimension());
         this.dimension = scale.getDimension();
         this.rotation = rotation.toMatrix3();
-        this.scale = scale;
-        this.translation = translation;
+        this.scale = scale.copy(DataType.DOUBLE);
+        this.translation = translation.copy(DataType.DOUBLE);
         dirty = true;
     }
 
@@ -94,8 +95,8 @@ public class SimilarityND extends AbstractSimilarity<SimilarityND> {
             return this;
         }
         rotation.set(trs.getRotation());
-        scale.set(trs.getScale());
-        translation.set(trs.getTranslation());
+        scale = trs.getScale().copy(DataType.DOUBLE);
+        translation = trs.getTranslation().copy(DataType.DOUBLE);
         notifyChanged();
         return this;
     }
@@ -121,19 +122,25 @@ public class SimilarityND extends AbstractSimilarity<SimilarityND> {
     }
 
     @Override
-    public ReadOnly.Vector<?> getScale() {
+    public Vector<?> getScale() {
         return scale;
     }
 
     @Override
-    public ReadOnly.Vector<?> getTranslation() {
+    public Vector<?> getTranslation() {
         return translation;
     }
 
     @Override
-    public SimilarityND update(TriFunction<Matrix<?>, Vector<?>, Vector<?>, Integer> updater) {
-        final Integer changed = updater.apply(rotation, scale, translation);
-        if (changed != 0) notifyChanged();
+    public SimilarityND update(TriFunction<Matrix<?>, double[], double[], Integer> updater) {
+        final double[] s = scale.toArrayDouble();
+        final double[] t = translation.toArrayDouble();
+        final Integer changed = updater.apply(rotation, s, t);
+        if (changed != 0) {
+            scale = Vectors.create(s, DataType.DOUBLE);
+            translation = Vectors.create(t, DataType.DOUBLE);
+            notifyChanged();
+        }
         return this;
     }
 
@@ -145,15 +152,15 @@ public class SimilarityND extends AbstractSimilarity<SimilarityND> {
     }
 
     @Override
-    public SimilarityND setScale(ReadOnly.Vector<?> scale) {
-        this.scale.set(scale);
+    public SimilarityND setScale(Vector<?> scale) {
+        this.scale = scale.copy(DataType.DOUBLE);
         notifyChanged();
         return this;
     }
 
     @Override
-    public SimilarityND setTranslation(ReadOnly.Vector<?> translation) {
-        this.translation.set(translation);
+    public SimilarityND setTranslation(Vector<?> translation) {
+        this.translation = translation.copy(DataType.DOUBLE);
         notifyChanged();
         return this;
     }
@@ -176,14 +183,13 @@ public class SimilarityND extends AbstractSimilarity<SimilarityND> {
         b23 = A.r20*A.s2 * B.t0       + A.r21*A.s2 * B.t1       + A.r22*A.s2 * B.t2         + A.t2;
         */
 
-        final Vector<?> resTrans = other.getTranslation().copy()
-                .transform(rotation)
+        final Vector<?> resTrans = rotation.transform(other.getTranslation())
                 .multiply(scale)
                 .add(translation);
 
         rotation.multiply(other.getRotation());
-        scale.multiply(other.getScale());
-        translation.set(resTrans);
+        scale = scale.multiply(other.getScale());
+        translation = resTrans;
         notifyChanged();
         return this;
     }

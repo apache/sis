@@ -28,7 +28,6 @@ import org.apache.sis.geometries.surface.Polygon;
 import org.apache.sis.geometry.GeneralEnvelope;
 import org.apache.sis.maths.DataType;
 import org.apache.sis.maths.NDArrays;
-import org.apache.sis.maths.ReadOnly;
 import org.apache.sis.maths.SampleSystem;
 import org.apache.sis.maths.Vectors;
 import org.apache.sis.maths.Vector;
@@ -64,7 +63,7 @@ public final class BBox extends GeneralEnvelope implements Geometry {
      * @param lower lower corner
      * @param upper upper corner
      */
-    public BBox(ReadOnly.Vector<?> lower, ReadOnly.Vector<?> upper) {
+    public BBox(Vector<?> lower, Vector<?> upper) {
         super(asPosition(lower), asPosition(upper));
         ensureCRS();
     }
@@ -96,8 +95,8 @@ public final class BBox extends GeneralEnvelope implements Geometry {
     /**
      * Returns a view of the given vector as a direct position.
      */
-    private static DirectPosition asPosition(final ReadOnly.Vector<?> vector) {
-        return Vectors.asDirectPostion((vector instanceof Vector<?> v) ? v : vector.copy());
+    private static DirectPosition asPosition(final Vector<?> vector) {
+        return Vectors.asDirectPostion(vector);
     }
 
     /**
@@ -106,7 +105,7 @@ public final class BBox extends GeneralEnvelope implements Geometry {
      * @param  position  the position to add.
      * @throws MismatchedDimensionException if the vector does not have the dimension of this box.
      */
-    public void add(final ReadOnly.Vector<?> position) throws MismatchedDimensionException {
+    public void add(final Vector<?> position) throws MismatchedDimensionException {
         add(asPosition(position));
     }
 
@@ -117,11 +116,11 @@ public final class BBox extends GeneralEnvelope implements Geometry {
      * @return a copy of the lower corner.
      */
     public Vector<?> getLower() {
-        final Vector<?> corner = Vectors.create(getDimension(), DataType.DOUBLE);
-        for (int i = 0, n = getDimension(); i < n; i++) {
-            corner.set(i, getLower(i));
+        final double[] corner = new double[getDimension()];
+        for (int i = 0; i < corner.length; i++) {
+            corner[i] = getLower(i);
         }
-        return corner;
+        return Vectors.create(corner, DataType.DOUBLE);
     }
 
     /**
@@ -131,11 +130,11 @@ public final class BBox extends GeneralEnvelope implements Geometry {
      * @return a copy of the upper corner.
      */
     public Vector<?> getUpper() {
-        final Vector<?> corner = Vectors.create(getDimension(), DataType.DOUBLE);
-        for (int i = 0, n = getDimension(); i < n; i++) {
-            corner.set(i, getUpper(i));
+        final double[] corner = new double[getDimension()];
+        for (int i = 0; i < corner.length; i++) {
+            corner[i] = getUpper(i);
         }
-        return corner;
+        return Vectors.create(corner, DataType.DOUBLE);
     }
 
     /**
@@ -208,11 +207,11 @@ public final class BBox extends GeneralEnvelope implements Geometry {
             case 3: {
                 final var corners = new Vector<?>[8];
                 for (int i = 0; i < corners.length; i++) {
-                    final Vector<?> corner = Vectors.create(3, DataType.DOUBLE);
+                    final double[] corner = new double[3];
                     for (int k = 0; k < 3; k++) {
-                        corner.set(k, ((i & (1 << k)) != 0) ? getMaximum(k) : getMinimum(k));
+                        corner[k] = ((i & (1 << k)) != 0) ? getMaximum(k) : getMinimum(k);
                     }
-                    corners[i] = corner;
+                    corners[i] = Vectors.create(corner, DataType.DOUBLE);
                 }
                 return boxFaces(crs, corners, false);
             }
@@ -233,7 +232,7 @@ public final class BBox extends GeneralEnvelope implements Geometry {
      * @return the six faces of the box.
      */
     static GeometryCollection<Polygon> boxFaces(final CoordinateReferenceSystem crs,
-            final ReadOnly.Vector<?>[] corners, final boolean reverse)
+            final Vector<?>[] corners, final boolean reverse)
     {
         final int[][] faces = {
             {0, 4, 6, 2},   // Lower side of axis 0.
@@ -246,7 +245,7 @@ public final class BBox extends GeneralEnvelope implements Geometry {
         final GeometryFactory factory = GeometryFactory.DEFAULT;
         final var polygons = new Polygon[faces.length];
         for (int f = 0; f < faces.length; f++) {
-            final var ring = new ArrayList<ReadOnly.Vector<?>>(5);
+            final var ring = new ArrayList<Vector<?>>(5);
             for (int k = 0; k < 4; k++) {
                 ring.add(corners[faces[f][reverse ? 3 - k : k]]);
             }
@@ -322,7 +321,7 @@ public final class BBox extends GeneralEnvelope implements Geometry {
         }
 
         @Override
-        public void setPosition(int index, ReadOnly.Vector<?> value) {
+        public void setPosition(int index, Vector<?> value) {
             ensureValid(index);
             final int dim = getDimension();
             for (int i = 0; i < dim; i++) {
@@ -340,7 +339,7 @@ public final class BBox extends GeneralEnvelope implements Geometry {
         }
 
         @Override
-        public void setAttribute(int index, String name, ReadOnly.Vector<?> value) {
+        public void setAttribute(int index, String name, Vector<?> value) {
             if (!DataPointsType.ATT_POSITION.equals(name)) {
                 throw new IllegalArgumentException("A box holds no \"" + name + "\" attribute.");
             }

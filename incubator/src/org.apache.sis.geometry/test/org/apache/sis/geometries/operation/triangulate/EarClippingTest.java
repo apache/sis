@@ -28,7 +28,8 @@ import org.apache.sis.geometries.operation.OperationException;
 import org.apache.sis.geometries.surface.Polygon;
 import org.apache.sis.maths.Maths;
 import org.apache.sis.maths.NDArrays;
-import org.apache.sis.maths.ReadOnly;
+import org.apache.sis.maths.Vector;
+import org.apache.sis.maths.DataType;
 import org.apache.sis.maths.Vectors;
 import org.apache.sis.referencing.CommonCRS;
 
@@ -135,7 +136,7 @@ public class EarClippingTest {
      */
     @Test
     public void testTriangulateRing() {
-        final ReadOnly.Vector<?>[] positions = {
+        final Vector<?>[] positions = {
             vector(9, 9),                   // not in the ring.
             vector(0, 0), vector(4, 0), vector(4, 4), vector(2, 1), vector(0, 4)
         };
@@ -143,14 +144,14 @@ public class EarClippingTest {
         assertRingTriangles(positions, new int[] {1, 2, 3, 4, 5, 1}, true);
         assertRingTriangles(positions, new int[] {5, 4, 3, 2, 1},    false);
 
-        final ReadOnly.Vector<?>[] bowTie = {vector(0, 0), vector(2, 2), vector(2, 0), vector(0, 2)};
+        final Vector<?>[] bowTie = {vector(0, 0), vector(2, 2), vector(2, 0), vector(0, 2)};
         assertThrows(OperationException.class, () -> new EarClipping().triangulate(bowTie, new int[] {0, 1, 2, 3}));
     }
 
     /**
      * Triangulates the given ring of five vertices, of area 10, and verifies the triangles.
      */
-    private static void assertRingTriangles(final ReadOnly.Vector<?>[] positions, final int[] ring, final boolean counterclockwise) {
+    private static void assertRingTriangles(final Vector<?>[] positions, final int[] ring, final boolean counterclockwise) {
         final int[] triangles = new EarClipping().triangulate(positions, ring);
         assertEquals((5 - 2) * 3, triangles.length, "Expected n − 2 triangles.");
         double area = 0;
@@ -165,8 +166,8 @@ public class EarClippingTest {
         assertEquals(10, area, 1E-12);
     }
 
-    private static ReadOnly.Vector<?> vector(final double x, final double y) {
-        return Vectors.createDouble(2).set(new double[] {x, y});
+    private static Vector<?> vector(final double x, final double y) {
+        return Vectors.create(new double[] {x, y}, DataType.DOUBLE);
     }
 
     /**

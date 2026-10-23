@@ -33,7 +33,6 @@ import org.apache.sis.geometries.internal.shared.IndexedPoint;
 import org.apache.sis.maths.Array;
 import org.apache.sis.maths.DataType;
 import org.apache.sis.maths.NDArrays;
-import org.apache.sis.maths.ReadOnly;
 import org.apache.sis.maths.SampleSystem;
 import org.apache.sis.maths.Vector;
 import org.apache.sis.maths.Vectors;
@@ -277,14 +276,14 @@ public final class NodePoints implements DataPoints, DataPointsType {
     @Override
     public Vector<?> getPosition(final int index) {
         Objects.checkIndex(index, size);
-        return Vectors.createDouble(dimension).set(coordinates, index * dimension);
+        return Vectors.create(Arrays.copyOfRange(coordinates, index * dimension, (index + 1) * dimension), DataType.DOUBLE);
     }
 
     /**
      * Unsupported, since positions define the topology. Use {@link ComplexEditor} instead.
      */
     @Override
-    public void setPosition(final int index, final ReadOnly.Vector<?> value) {
+    public void setPosition(final int index, final Vector<?> value) {
         throw new UnsupportedOperationException("The nodes of a topological complex are moved by ComplexEditor.");
     }
 
@@ -305,7 +304,7 @@ public final class NodePoints implements DataPoints, DataPointsType {
      * @throws IllegalArgumentException if there is no attribute of the given name.
      */
     @Override
-    public void setAttribute(final int index, final String name, final ReadOnly.Vector<?> value) {
+    public void setAttribute(final int index, final String name, final Vector<?> value) {
         if (ATT_POSITION.equals(name)) {
             setPosition(index, value);
         }

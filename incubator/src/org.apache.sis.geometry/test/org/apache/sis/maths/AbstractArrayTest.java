@@ -81,10 +81,11 @@ public abstract class AbstractArrayTest {
         final int dimension = array.getDimension();
         int inc = 0;
         for (long i = 0, n = length; i < n; i++) {
-            Vector tuple = Vectors.createDouble(dimension);
+            final double[] values = new double[dimension];
             for (int d = 0, dn = array.getDimension(); d < dn; d++) {
-                tuple.set(d, inc++);
+                values[d] = inc++;
             }
+            Vector tuple = Vectors.create(values, DataType.DOUBLE);
             array.set(i, tuple);
         }
 
@@ -94,8 +95,7 @@ public abstract class AbstractArrayTest {
         //test values are still here
         inc = 0;
         for (long i = 0, n = length; i < n; i++) {
-            Vector tuple = Vectors.createDouble(dimension);
-            resized.get(i, tuple);
+            Vector tuple = resized.get(i);
             for (int d = 0, dn = array.getDimension(); d < dn; d++) {
                 assertEquals(inc++, tuple.get(d), TOLERANCE);
             }
@@ -110,10 +110,11 @@ public abstract class AbstractArrayTest {
         final int dimension = array.getDimension();
         int inc = 0;
         for (long i = 0, n = length; i < n; i++) {
-            Vector tuple = Vectors.createDouble(dimension);
+            final double[] values = new double[dimension];
             for (int d = 0, dn = array.getDimension(); d < dn; d++) {
-                tuple.set(d, inc++);
+                values[d] = inc++;
             }
+            Vector tuple = Vectors.create(values, DataType.DOUBLE);
             array.set(i, tuple);
         }
 
@@ -122,8 +123,7 @@ public abstract class AbstractArrayTest {
         //test values are still here
         inc = 0;
         for (long i = 0, n = length; i < n; i++) {
-            Vector tuple = Vectors.createDouble(dimension);
-            copy.get(i, tuple);
+            Vector tuple = copy.get(i);
             for (int d = 0, dn = array.getDimension(); d < dn; d++) {
                 assertEquals(inc++, tuple.get(d), TOLERANCE);
             }
@@ -141,10 +141,11 @@ public abstract class AbstractArrayTest {
         final int dimension = array.getDimension();
         int inc = 0;
         for (long i = 0, n = length; i < n; i++) {
-            Vector tuple = Vectors.createDouble(dimension);
+            final double[] values = new double[dimension];
             for (int d = 0; d < dimension; d++) {
-                tuple.set(d, inc++);
+                values[d] = inc++;
             }
+            Vector tuple = Vectors.create(values, DataType.DOUBLE);
             array.set(i, tuple);
         }
 
@@ -199,10 +200,11 @@ public abstract class AbstractArrayTest {
         final int dimension = array.getDimension();
         int inc = 0;
         for (long i = 0, n = length; i < n; i++) {
-            Vector tuple = Vectors.createDouble(dimension);
+            final double[] values = new double[dimension];
             for (int d = 0; d < dimension; d++) {
-                tuple.set(d, inc++);
+                values[d] = inc++;
             }
+            Vector tuple = Vectors.create(values, DataType.DOUBLE);
             array.set(i, tuple);
         }
 
@@ -259,16 +261,15 @@ public abstract class AbstractArrayTest {
         final int dimension = array.getDimension();
         int inc = 0;
         for (long i = 0, n = length; i < n; i++) {
-            final Vector tuple = Vectors.createDouble(dimension);
+            final double[] values = new double[dimension];
             for (int d = 0; d < dimension; d++) {
-                tuple.set(d, inc++);
+                values[d] = inc++;
             }
+            final Vector tuple = Vectors.create(values, DataType.DOUBLE);
             array.set(i, tuple);
 
             assertEquals(tuple, array.get(i));
-            final Vector buffer = Vectors.createDouble(dimension);
-            array.get(i, buffer);
-            assertEquals(tuple, buffer);
+            assertEquals(tuple, array.get(new long[] {i}));
         }
     }
 
@@ -280,10 +281,11 @@ public abstract class AbstractArrayTest {
         final int dimension = array.getDimension();
         int inc = 0;
         for (long i = 0, n = length; i < n; i++) {
-            Vector tuple = Vectors.createDouble(dimension);
+            final double[] values = new double[dimension];
             for (int d = 0; d < dimension; d++) {
-                tuple.set(d, inc++);
+                values[d] = inc++;
             }
+            Vector tuple = Vectors.create(values, DataType.DOUBLE);
             array.set(i, tuple);
         }
 
@@ -292,10 +294,11 @@ public abstract class AbstractArrayTest {
         for (long i = 0, n = length; i < n; i++) {
             assertTrue(cursor.next());
 
-            final Vector tuple = Vectors.createDouble(dimension);
+            final double[] values = new double[dimension];
             for (int d = 0; d < dimension; d++) {
-                tuple.set(d, inc++);
+                values[d] = inc++;
             }
+            final Vector tuple = Vectors.create(values, DataType.DOUBLE);
 
             assertEquals(tuple, cursor.samples());
         }
@@ -324,10 +327,11 @@ public abstract class AbstractArrayTest {
         final int dimension = array.getDimension();
         int inc = 0;
         for (long i = 0, n = length; i < n; i++) {
-            Vector tuple = Vectors.createDouble(dimension);
+            final double[] values = new double[dimension];
             for (int d = 0; d < dimension; d++) {
-                tuple.set(d, inc++);
+                values[d] = inc++;
             }
+            Vector tuple = Vectors.create(values, DataType.DOUBLE);
             array.set(i, tuple);
         }
 
@@ -340,10 +344,11 @@ public abstract class AbstractArrayTest {
 
         inc = 0;
         for (long i = 0, n = length; i < n; i++) {
-            Vector tuple = Vectors.create(dimension, array.getDataType());
+            final double[] values = new double[dimension];
             for (int d = 0; d < dimension; d++) {
-                tuple.set(d, inc++ + 2);
+                values[d] = inc++ + 2;
             }
+            Vector tuple = Vectors.create(values, array.getDataType());
             assertEquals(tuple, array.get(i));
         }
 

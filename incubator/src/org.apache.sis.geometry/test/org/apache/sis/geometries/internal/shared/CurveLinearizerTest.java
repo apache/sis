@@ -22,6 +22,7 @@ import org.apache.sis.geometries.DataPoints;
 import org.apache.sis.geometries.GeometryFactory;
 import org.apache.sis.geometries.curve.Arc;
 import org.apache.sis.geometries.curve.LineString;
+import org.apache.sis.maths.DataType;
 import org.apache.sis.maths.NDArrays;
 import org.apache.sis.maths.Vector;
 import org.apache.sis.maths.Vectors;
@@ -145,7 +146,7 @@ public class CurveLinearizerTest extends GeometryTest {
 
     @Test
     public void testArcByBulge() {
-        final Vector<?> normal = Vectors.createDouble(2).set(new double[] {0, 1});
+        final Vector<?> normal = Vectors.create(new double[] {0, 1}, DataType.DOUBLE);
         final var arc = F.createArcByBulge(F.createDataPoints(CRS_2D, 0,0, 10,0), 2, normal);
         final double[][] points = positions(arc.asLine(degrees(1), null));
         assertOnCircle(points, 5, -5.25, 7.25, 1, 0);
@@ -259,8 +260,8 @@ public class CurveLinearizerTest extends GeometryTest {
     public void testInvalid() {
         final var arc = F.createArcByCenterPoint(F.createPoint(CRS_2D, 10, 20), 5, null, 0, 90);
         assertThrows(IllegalArgumentException.class, () -> arc.asLine(degrees(-1), null));
-        final Vector<?> origin = Vectors.createDouble(2).set(new double[] {0, 0});
-        final Vector<?> direction = Vectors.createDouble(2).set(new double[] {1, 0});
+        final Vector<?> origin = Vectors.create(new double[] {0, 0}, DataType.DOUBLE);
+        final Vector<?> direction = Vectors.create(new double[] {1, 0}, DataType.DOUBLE);
         assertThrows(UnsupportedOperationException.class, () -> F.createRay(CRS_2D, origin, direction).asLine(null, null));
     }
 }

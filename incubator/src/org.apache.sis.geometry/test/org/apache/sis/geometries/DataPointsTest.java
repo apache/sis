@@ -26,6 +26,7 @@ import org.apache.sis.maths.DataType;
 import org.apache.sis.maths.NDArrays;
 import org.apache.sis.maths.NDRange;
 import org.apache.sis.maths.Vector;
+import org.apache.sis.maths.Vectors;
 import org.apache.sis.referencing.CommonCRS;
 
 // Test dependencies
@@ -90,8 +91,7 @@ public class DataPointsTest {
 
         //the copies are independent of the copied points.
         final Vector<?> value = range.getAttribute(0, "temperature");
-        value.set(0, 99);
-        range.setAttribute(0, "temperature", value);
+        range.setAttribute(0, "temperature", Vectors.create(new double[] {99}, value.getDataType()));
         assertEquals(30, points.getAttribute(1, "temperature").get(0));
 
         assertThrows(IndexOutOfBoundsException.class, () -> points.subset(new int[] {3}));
@@ -185,14 +185,13 @@ public class DataPointsTest {
     }
 
     /**
-     * The returned position is a copy: modifying it does not move the point.
+     * The returned position is the position of the point at the given index.
      */
     @Test
     public void testGetPosition() {
         final DataPoints points = createSample();
         final Vector<?> position = points.getPosition(2);
         assertPositionEquals(4, 20, position);
-        position.set(new double[] {-1, -1});
         assertPositionEquals(4, 20, points.getPosition(2));
     }
 
@@ -203,24 +202,20 @@ public class DataPointsTest {
     public void testSetPosition() {
         final DataPoints points = createSample();
         final Vector<?> position = points.getPosition(1);
-        position.set(new double[] {7, 8});
-        points.setPosition(1, position);
+        points.setPosition(1, Vectors.create(new double[] {7, 8}, position.getDataType()));
         assertPositionEquals(0, 0, points.getPosition(0));
         assertPositionEquals(7, 8, points.getPosition(1));
         assertPositionEquals(4, 20, points.getPosition(2));
     }
 
     /**
-     * The position is an attribute like the others, and returned attributes are copies.
+     * The position is an attribute like the others.
      */
     @Test
     public void testGetAttribute() {
         final DataPoints points = createSample();
         assertEquals(20, points.getAttribute(2, "temperature").get(0));
         assertPositionEquals(10, 5, points.getAttribute(1, DataPointsType.ATT_POSITION));
-
-        final Vector<?> value = points.getAttribute(0, "temperature");
-        value.set(new double[] {-1});
         assertEquals(10, points.getAttribute(0, "temperature").get(0));
     }
 
@@ -231,8 +226,7 @@ public class DataPointsTest {
     public void testSetAttribute() {
         final DataPoints points = createSample();
         final Vector<?> value = points.getAttribute(0, "temperature");
-        value.set(new double[] {15});
-        points.setAttribute(0, "temperature", value);
+        points.setAttribute(0, "temperature", Vectors.create(new double[] {15}, value.getDataType()));
         assertEquals(15, points.getAttribute(0, "temperature").get(0));
         assertEquals(30, points.getAttribute(1, "temperature").get(0));
     }
@@ -248,9 +242,7 @@ public class DataPointsTest {
         assertArrayEquals(new double[] {10, 30, 20}, array.toArrayDouble());
         assertArrayEquals(new double[] {0,0, 10,5, 4,20}, points.getAttributeArray(DataPointsType.ATT_POSITION).toArrayDouble());
 
-        final Vector<?> value = array.get(0);
-        value.set(new double[] {-1});
-        array.set(0, value);
+        array.set(0, Vectors.create(new double[] {-1}, array.getDataType()));
         assertEquals(10, points.getAttribute(0, "temperature").get(0), "The array shall be a copy.");
     }
 
@@ -466,8 +458,7 @@ public class DataPointsTest {
         assertPoint(view, 3, 5, 30, 23, 10);
         assertEquals(null, view.getAttribute("unknown"), "An attribute absent from the viewed points has no value.");
 
-        final Vector<?> moved = points.getPosition(2);
-        moved.set(new double[] {0, 20});
+        final Vector<?> moved = Vectors.create(new double[] {0, 20}, points.getPosition(2).getDataType());
         points.setPosition(2, moved);
         weights[0] = 1;                                 // Shall not change the view, which copied the weights.
         GeometryTest.assertPositionEquals(3, 10, view);

@@ -28,7 +28,6 @@ import org.apache.sis.geometries.surface.Ellipsoid;
 import org.apache.sis.maths.Array;
 import org.apache.sis.maths.DataType;
 import org.apache.sis.maths.NDArrays;
-import org.apache.sis.maths.ReadOnly;
 import org.apache.sis.maths.SampleSystem;
 import org.apache.sis.maths.Vector;
 import org.apache.sis.util.ArgumentChecks;
@@ -184,12 +183,12 @@ public non-sealed class DefaultEllipsoid extends AbstractGeometry implements Ell
     }
 
     @Override
-    public ReadOnly.Vector<?> getCenter() {
+    public Vector<?> getCenter() {
         return points.getPosition(0);
     }
 
     @Override
-    public void setCenter(ReadOnly.Vector<?> position) {
+    public void setCenter(Vector<?> position) {
         points.setPosition(0, position);
     }
 

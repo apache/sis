@@ -100,15 +100,9 @@ public final class Maths {
     }
 
     public static Vector<?> calculateNormal(Vector<?> a, Vector<?> b, Vector<?> c){
-        Vector<?> ab = Vectors.createDouble(a.getDimension());
-        ab.add(b);
-        ab.subtract(a);
-        Vector ac = Vectors.createDouble(a.getDimension());
-        ac.add(c);
-        ac.subtract(a);
-        Vector<?> res = ab.cross(ac);
-        res.normalize();
-        return res;
+        final Vector<?> ab = b.subtract(a);
+        final Vector<?> ac = c.subtract(a);
+        return ab.cross(ac).normalize();
     }
 
     /**
@@ -145,7 +139,7 @@ public final class Maths {
      * perpendicular to another coordinate plane is not degenerate. The two first axes are ordered so that a figure
      * seen counterclockwise from the side where the normal points is counterclockwise in the projection plane.
      * For example, a triangle (a,b,c) whose normal (b−a)×(c−a) has the direction of the given normal is on the
-     * left side of {@linkplain #lineSide(ReadOnly.Vector, ReadOnly.Vector, ReadOnly.Vector) line side} once projected,
+     * left side of {@linkplain #lineSide(Vector, Vector, Vector) line side} once projected,
      * and a ring is counterclockwise in the projection plane of its {@linkplain #calculatePolygonNormal(Array) normal}.
      *
      * <p>The orientation is kept because each component of the normal is twice the area of the figure projected
@@ -252,7 +246,7 @@ public final class Maths {
      * @param p Point to test
      * @return true/false
      */
-    public static boolean isOnLine(ReadOnly.Vector<?> a, ReadOnly.Vector<?> b, ReadOnly.Vector<?> p) {
+    public static boolean isOnLine(Vector<?> a, Vector<?> b, Vector<?> p) {
 //        final double d = Math.abs(distanceSquare(a, b, p));
 //        return d < TOLERANCE && d > -TOLERANCE;
 
@@ -293,7 +287,7 @@ public final class Maths {
     /**
      * @see #lineSideFast(double, double, double, double, double, double)
      */
-    public static double lineSideFast(ReadOnly.Vector<?> a, ReadOnly.Vector<?> b, ReadOnly.Vector<?> c) {
+    public static double lineSideFast(Vector<?> a, Vector<?> b, Vector<?> c) {
         return lineSideFast(a.get(0), a.get(1), b.get(0), b.get(1), c.get(0), c.get(1));
     }
 
@@ -327,7 +321,7 @@ public final class Maths {
     /**
      * @see #lineSide(double, double, double, double, double, double)
      */
-    public static double lineSide(ReadOnly.Vector<?> a, ReadOnly.Vector<?> b, ReadOnly.Vector<?> c) {
+    public static double lineSide(Vector<?> a, Vector<?> b, Vector<?> c) {
         return lineSide(a.get(0), a.get(1), b.get(0), b.get(1), c.get(0), c.get(1));
     }
 
@@ -375,9 +369,9 @@ public final class Maths {
      * @param clockwise whether the ring is clockwise
      * @return true if the ring is convex at the vertex
      */
-    public static boolean isConvex(ReadOnly.Vector<?> previous,
-                                   ReadOnly.Vector<?> vertex,
-                                   ReadOnly.Vector<?> next,
+    public static boolean isConvex(Vector<?> previous,
+                                   Vector<?> vertex,
+                                   Vector<?> next,
                                    boolean clockwise) {
         final double side = lineSide(previous, vertex, next);
         return clockwise ? side < 0 : side > 0;
@@ -397,10 +391,10 @@ public final class Maths {
      * @param clockwise whether the ring is clockwise
      * @return true if the segment starts inside the ring
      */
-    public static boolean inCone(ReadOnly.Vector<?> previous,
-                                 ReadOnly.Vector<?> vertex,
-                                 ReadOnly.Vector<?> next,
-                                 ReadOnly.Vector<?> point,
+    public static boolean inCone(Vector<?> previous,
+                                 Vector<?> vertex,
+                                 Vector<?> next,
+                                 Vector<?> point,
                                  boolean clockwise)
     {
         final double sign = clockwise ? -1 : 1;
@@ -424,7 +418,7 @@ public final class Maths {
      * @param p test point
      * @return true if point is inside triangle
      */
-    public static boolean isPointInTriangle_BaryAlgo(ReadOnly.Vector<?> a, ReadOnly.Vector<?> b, ReadOnly.Vector<?> c, ReadOnly.Vector<?> p){
+    public static boolean isPointInTriangle_BaryAlgo(Vector<?> a, Vector<?> b, Vector<?> c, Vector<?> p){
         return isPointInTriangle_BaryAlgo(a.get(0), a.get(1), b.get(0), b.get(1), c.get(0), c.get(1), p.get(0), p.get(1));
     }
 
@@ -467,7 +461,7 @@ public final class Maths {
      * @param p test point
      * @return true if point is inside triangle
      */
-    public static boolean isPointInTriangle_SideAlgo(ReadOnly.Vector<?> a, ReadOnly.Vector<?> b, ReadOnly.Vector<?> c, ReadOnly.Vector<?> p) {
+    public static boolean isPointInTriangle_SideAlgo(Vector<?> a, Vector<?> b, Vector<?> c, Vector<?> p) {
         final double x = p.get(0);
         final double y = p.get(1);
         final double x1 = a.get(0);
@@ -558,7 +552,7 @@ public final class Maths {
      * @param b second triangle point
      * @param c third triangle point
      */
-    public static boolean isCounterClockwise(ReadOnly.Vector<?> a, ReadOnly.Vector<?> b, ReadOnly.Vector<?> c) {
+    public static boolean isCounterClockwise(Vector<?> a, Vector<?> b, Vector<?> c) {
         return lineSide(a, b, c) > 0;
     }
 
@@ -581,7 +575,7 @@ public final class Maths {
      * @param b second triangle point
      * @param c third triangle point
      */
-    public static double[] getBarycentricValue2D(ReadOnly.Vector<?> a, ReadOnly.Vector<?> b, ReadOnly.Vector<?> c, ReadOnly.Vector<?> p){
+    public static double[] getBarycentricValue2D(Vector<?> a, Vector<?> b, Vector<?> c, Vector<?> p){
         return Maths.getBarycentricValue2D(a.get(0), a.get(1), b.get(0), b.get(1), c.get(0), c.get(1), p.get(0), p.get(1));
     }
 
@@ -636,7 +630,7 @@ public final class Maths {
     /**
      * @see #inCircleFast(double, double, double, double, double, double, double, double)
      */
-    public static boolean inCircleFast(ReadOnly.Vector<?> a, ReadOnly.Vector<?> b, ReadOnly.Vector<?> c, ReadOnly.Vector<?> d) {
+    public static boolean inCircleFast(Vector<?> a, Vector<?> b, Vector<?> c, Vector<?> d) {
         return inCircleFast(a.get(0), a.get(1), b.get(0), b.get(1), c.get(0), c.get(1), d.get(0), d.get(1));
     }
 
@@ -674,7 +668,7 @@ public final class Maths {
     /**
      * @see #inCircle(double, double, double, double, double, double, double, double)
      */
-    public static boolean inCircle(ReadOnly.Vector<?> a, ReadOnly.Vector<?> b, ReadOnly.Vector<?> c, ReadOnly.Vector<?> d) {
+    public static boolean inCircle(Vector<?> a, Vector<?> b, Vector<?> c, Vector<?> d) {
         return inCircle(a.get(0), a.get(1), b.get(0), b.get(1), c.get(0), c.get(1), d.get(0), d.get(1));
     }
 
@@ -763,7 +757,7 @@ public final class Maths {
         return x1 * x2 + y1 * y2;
     }
 
-    public static double distance(ReadOnly.Vector<?> a, ReadOnly.Vector<?> planNormal, double planD){
+    public static double distance(Vector<?> a, Vector<?> planNormal, double planD){
         return planNormal.dot(a) - planD;
     }
 
@@ -892,7 +886,7 @@ public final class Maths {
     /**
      * Test if a point is inside given triangle, its edges and corners included. Only X,Y ordinates are used.
      * Robust variant : the side of the point compared to each edge is computed with
-     * {@link #lineSide(ReadOnly.Vector, ReadOnly.Vector, ReadOnly.Vector)}, without division.
+     * {@link #lineSide(Vector, Vector, Vector)}, without division.
      * The triangle can be clockwise or counterclockwise. A degenerate triangle, whose three corners
      * are on a same line, contains the points of that line between its corners.
      *
@@ -902,7 +896,7 @@ public final class Maths {
      * @param p point to test
      * @return true if point is inside triangle
      */
-    public static boolean inTriangle(ReadOnly.Vector<?> a, ReadOnly.Vector<?> b, ReadOnly.Vector<?> c, ReadOnly.Vector<?> p) {
+    public static boolean inTriangle(Vector<?> a, Vector<?> b, Vector<?> c, Vector<?> p) {
         final double d1 = lineSide(a, b, p);
         final double d2 = lineSide(b, c, p);
         final double d3 = lineSide(c, a, p);
@@ -975,7 +969,7 @@ public final class Maths {
      * @param coordinates line coordinates
      * @return true if clockwise
      */
-    public static boolean isClockWise(List<? extends ReadOnly.Vector<?>> coordinates){
+    public static boolean isClockWise(List<? extends Vector<?>> coordinates){
         final double area = calculateArea(coordinates);
         return area > 0;
     }
@@ -987,12 +981,12 @@ public final class Maths {
      * @param coordinates polygon outer line
      * @return area
      */
-    public static double calculateArea(List<? extends ReadOnly.Vector<?>> coordinates){
+    public static double calculateArea(List<? extends Vector<?>> coordinates){
         double area = 0;
         final int numPoints = coordinates.size();
         for(int i=0;i<numPoints-1;i++){
-            final ReadOnly.Vector<?> start = coordinates.get(i);
-            final ReadOnly.Vector<?> end = coordinates.get(i+1);
+            final Vector<?> start = coordinates.get(i);
+            final Vector<?> end = coordinates.get(i+1);
             area += (start.get(0)+end.get(0)) * (start.get(1)-end.get(1));
         }
         return area/2.0;

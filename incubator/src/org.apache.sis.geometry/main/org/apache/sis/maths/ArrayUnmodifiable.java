@@ -88,12 +88,7 @@ final class ArrayUnmodifiable extends AbstractArray {
     }
 
     @Override
-    public void get(long index, Vector<?> buffer) {
-        parent.get(index, buffer);
-    }
-
-    @Override
-    public void set(long index, ReadOnly.Vector<?> buffer) {
+    public void set(long index, Vector<?> buffer) {
         throw new UnsupportedOperationException("This implementation is unmodifiable");
     }
 

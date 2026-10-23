@@ -25,7 +25,6 @@ import org.apache.sis.maths.Array;
 import org.apache.sis.maths.DataType;
 import org.apache.sis.maths.NDArrays;
 import org.apache.sis.maths.NDRange;
-import org.apache.sis.maths.ReadOnly;
 import org.apache.sis.maths.SampleSystem;
 import org.apache.sis.maths.Vector;
 import org.apache.sis.maths.Vectors;
@@ -113,7 +112,7 @@ public interface DataPoints {
      * @param index searched index
      * @param value new attribute value
      */
-    void setPosition(int index, ReadOnly.Vector<?> value);
+    void setPosition(int index, Vector<?> value);
 
     /**
      * Get attribute value.
@@ -131,7 +130,7 @@ public interface DataPoints {
      * @param name attribute name
      * @param value new attribute value
      */
-    void setAttribute(int index, String name, ReadOnly.Vector<?> value);
+    void setAttribute(int index, String name, Vector<?> value);
 
     /**
      * Returns a new point between the two given points of this {@code DataPoints}, for example on a segment.
@@ -237,17 +236,27 @@ public interface DataPoints {
             case LINEAR:
             case LINEAR_NORMALIZED:
             case TRANSLATE: {
-                final Vector<?> value = getAttribute(indices[0], name).scale(weights[0]);
-                for (int i = 1; i < indices.length; i++) {
-                    value.add(getAttribute(indices[i], name).scale(weights[i]));
+                // Accumulate in double precision and cast only once at the end,
+                // otherwise integer attributes would be truncated on each weighted term.
+                final Vector<?> first = getAttribute(indices[0], name);
+                final double[] sum = new double[first.getDimension()];
+                for (int i = 0; i < indices.length; i++) {
+                    final Vector<?> v = (i == 0) ? first : getAttribute(indices[i], name);
+                    final double w = weights[i];
+                    for (int k = 0; k < sum.length; k++) {
+                        sum[k] += v.get(k) * w;
+                    }
                 }
                 if (method == AttributeInterpolation.LINEAR_NORMALIZED) {
                     // TODO: a glTF tangent has 4 components: the direction (x,y,z) and the handedness
                     // (w = ±1) of the bitangent. Only the direction should be normalized, while the
                     // handedness should be kept, for example taken from the nearest point.
-                    value.normalize();
+                    double length = 0;
+                    for (double s : sum) length += s * s;
+                    length = Math.sqrt(length);
+                    for (int k = 0; k < sum.length; k++) sum[k] /= length;
                 }
-                return value;
+                return Vectors.create(sum, first.getDataType());
             }
             case LEADING: {
                 return getAttribute(indices[(indices.length == 2 && weights[1] >= 1) ? 1 : 0], name);
@@ -291,8 +300,7 @@ public interface DataPoints {
             return null;
         }
         final SampleSystem system = getType().getAttributeSystem(name);
-        final Vector<?> start = Vectors.create(system.getSize(), getType().getAttributeType(name))
-                                       .set(getAttribute(0, name));
+        final Vector<?> start = getAttribute(0, name).copy(getType().getAttributeType(name));
         final NDRange env = new NDRange(system, start, start);
         for (int i = 1, n = size(); i < n; i++) {
             env.add(getAttribute(i, name));
@@ -478,7 +486,7 @@ public interface DataPoints {
          * Throws {@link UnsupportedOperationException}: this point is a read-only view.
          */
         @Override
-        public void setAttribute(final String name, final ReadOnly.Vector<?> tuple) {
+        public void setAttribute(final String name, final Vector<?> tuple) {
             throw new UnsupportedOperationException("An interpolated point view is read-only.");
         }
 

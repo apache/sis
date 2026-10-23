@@ -24,6 +24,7 @@ import org.apache.sis.maths.DataType;
 import org.apache.sis.maths.NDRange;
 import org.apache.sis.maths.Vectors;
 import org.apache.sis.maths.Vector;
+import org.apache.sis.maths.Vector3D;
 
 
 /**
@@ -35,10 +36,10 @@ import org.apache.sis.maths.Vector;
 public final class OBBox extends AbstractGeometry {
 
     private CoordinateReferenceSystem crs;
-    private final Vector<?> center;
-    private final Vector<?> xAxis;
-    private final Vector<?> yAxis;
-    private final Vector<?> zAxis;
+    private Vector<?> center;
+    private Vector<?> xAxis;
+    private Vector<?> yAxis;
+    private Vector<?> zAxis;
 
     /**
      * @param dimension number of dimensions of the bbox, must be 3.
@@ -102,10 +103,24 @@ public final class OBBox extends AbstractGeometry {
     }
 
     /**
+     * @param center new center of the bounding box, with three dimensions.
+     */
+    public void setCenter(Vector<?> center) {
+        this.center = ensure3D(center);
+    }
+
+    /**
      * @return half length vector on X axis.
      */
     public Vector getXAxis() {
         return xAxis;
+    }
+
+    /**
+     * @param xAxis new half length vector on X axis, with three dimensions.
+     */
+    public void setXAxis(Vector<?> xAxis) {
+        this.xAxis = ensure3D(xAxis);
     }
 
     /**
@@ -116,6 +131,13 @@ public final class OBBox extends AbstractGeometry {
     }
 
     /**
+     * @param yAxis new half length vector on Y axis, with three dimensions.
+     */
+    public void setYAxis(Vector<?> yAxis) {
+        this.yAxis = ensure3D(yAxis);
+    }
+
+    /**
      * @return half length vector on Z axis.
      */
     public Vector getZAxis() {
@@ -123,24 +145,39 @@ public final class OBBox extends AbstractGeometry {
     }
 
     /**
+     * @param zAxis new half length vector on Z axis, with three dimensions.
+     */
+    public void setZAxis(Vector<?> zAxis) {
+        this.zAxis = ensure3D(zAxis);
+    }
+
+    /**
+     * Verifies that the given vector has three dimensions and returns it as double values.
+     */
+    private static Vector<?> ensure3D(Vector<?> vector) {
+        if (vector.getDimension() != 3) {
+            throw new IllegalArgumentException("Oriented BBox only support 3 dimensions.");
+        }
+        return vector.copy(DataType.DOUBLE);
+    }
+
+    /**
      * {@inheritDoc }
      */
     @Override
     public Envelope getEnvelope() {
-        final Vector<?> nxAxis = xAxis.copy().scale(-1);
-        final Vector<?> nyAxis = yAxis.copy().scale(-1);
-        final Vector<?> nzAxis = zAxis.copy().scale(-1);
-        final Vector<?> start = Vectors.create(getDimension(), DataType.DOUBLE).set(center);
-        final NDRange env = new NDRange(crs, start, start);
-        final Vector<?> corner = center.copy();
-        env.add(corner.set(center).add( xAxis).add( yAxis).add( zAxis));
-        env.add(corner.set(center).add( xAxis).add( yAxis).add(nzAxis));
-        env.add(corner.set(center).add( xAxis).add(nyAxis).add( zAxis));
-        env.add(corner.set(center).add( xAxis).add(nyAxis).add(nzAxis));
-        env.add(corner.set(center).add(nxAxis).add( yAxis).add( zAxis));
-        env.add(corner.set(center).add(nxAxis).add( yAxis).add(nzAxis));
-        env.add(corner.set(center).add(nxAxis).add(nyAxis).add( zAxis));
-        env.add(corner.set(center).add(nxAxis).add(nyAxis).add(nzAxis));
+        final Vector<?> nxAxis = xAxis.scale(-1);
+        final Vector<?> nyAxis = yAxis.scale(-1);
+        final Vector<?> nzAxis = zAxis.scale(-1);
+        final NDRange env = new NDRange(crs, center, center);
+        env.add(center.add( xAxis).add( yAxis).add( zAxis));
+        env.add(center.add( xAxis).add( yAxis).add(nzAxis));
+        env.add(center.add( xAxis).add(nyAxis).add( zAxis));
+        env.add(center.add( xAxis).add(nyAxis).add(nzAxis));
+        env.add(center.add(nxAxis).add( yAxis).add( zAxis));
+        env.add(center.add(nxAxis).add( yAxis).add(nzAxis));
+        env.add(center.add(nxAxis).add(nyAxis).add( zAxis));
+        env.add(center.add(nxAxis).add(nyAxis).add(nzAxis));
         return env;
     }
 
@@ -151,11 +188,9 @@ public final class OBBox extends AbstractGeometry {
     public Geometry getBoundary() {
         final var corners = new Vector<?>[8];
         for (int i = 0; i < corners.length; i++) {
-            final Vector<?> corner = center.copy();
-            corner.add(((i & 1) != 0) ? xAxis : xAxis.copy().scale(-1));
-            corner.add(((i & 2) != 0) ? yAxis : yAxis.copy().scale(-1));
-            corner.add(((i & 4) != 0) ? zAxis : zAxis.copy().scale(-1));
-            corners[i] = corner;
+            corners[i] = center.add(((i & 1) != 0) ? xAxis : xAxis.negate())
+                               .add(((i & 2) != 0) ? yAxis : yAxis.negate())
+                               .add(((i & 4) != 0) ? zAxis : zAxis.negate());
         }
         final boolean leftHanded = xAxis.dot(yAxis.cross(zAxis)) < 0;
         return BBox.boxFaces(getCoordinateReferenceSystem(), corners, leftHanded);
@@ -167,15 +202,10 @@ public final class OBBox extends AbstractGeometry {
      */
     public void fromEnvelope(Envelope env) {
         setCoordinateReferenceSystem(env.getCoordinateReferenceSystem());
-        center.set(0, env.getMedian(0));
-        center.set(1, env.getMedian(1));
-        center.set(2, env.getMedian(2));
-        xAxis.setAll(0.0);
-        yAxis.setAll(0.0);
-        zAxis.setAll(0.0);
-        xAxis.set(0, env.getSpan(0) / 2.0);
-        yAxis.set(1, env.getSpan(1) / 2.0);
-        zAxis.set(2, env.getSpan(2) / 2.0);
+        center = new Vector3D.Double(env.getMedian(0), env.getMedian(1), env.getMedian(2));
+        xAxis = new Vector3D.Double(env.getSpan(0) / 2.0, 0.0, 0.0);
+        yAxis = new Vector3D.Double(0.0, env.getSpan(1) / 2.0, 0.0);
+        zAxis = new Vector3D.Double(0.0, 0.0, env.getSpan(2) / 2.0);
     }
 
     /**
@@ -184,7 +214,7 @@ public final class OBBox extends AbstractGeometry {
      */
     @Override
     public DataPoints getDataPoints() {
-        return new SinglePositionDataPoints(this::getCoordinateReferenceSystem, this::getCenter);
+        return new SinglePositionDataPoints(this::getCoordinateReferenceSystem, this::getCenter, this::setCenter);
     }
 
 }

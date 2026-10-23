@@ -31,7 +31,7 @@ import org.apache.sis.util.ArgumentChecks;
  * <p>Unlike {@link org.apache.sis.geometry.GeneralEnvelope}, this range does not wrap around: in each dimension,
  * the lower bound is less than or equal to the upper bound. A NaN bound makes the range empty in its dimension.</p>
  *
- * <p>The range can be expanded with {@link #add(ReadOnly.Vector)}. Otherwise its bounds are not shared:
+ * <p>The range can be expanded with {@link #add(Vector)}. Otherwise its bounds are not shared:
  * the bounds given to the constructor are copied, and the bounds returned by the methods are copies.</p>
  *
  * @author Johann Sorel (Geomatys)
@@ -45,8 +45,9 @@ public final class NDRange implements Envelope {
 
     /**
      * Lower and upper bounds, of the same dimension.
+     * Vectors are immutable, the bounds are replaced by new vectors when the range changes.
      */
-    private final Vector<?> lower, upper;
+    private Vector<?> lower, upper;
 
     /**
      * Creates a range between the given bounds, in the given reference system.
@@ -57,7 +58,7 @@ public final class NDRange implements Envelope {
      * @throws MismatchedDimensionException if the two bounds do not have the same dimension.
      * @throws IllegalArgumentException if a lower bound is greater than the upper bound.
      */
-    public NDRange(final CoordinateReferenceSystem crs, final ReadOnly.Vector<?> lower, final ReadOnly.Vector<?> upper) {
+    public NDRange(final CoordinateReferenceSystem crs, final Vector<?> lower, final Vector<?> upper) {
         this(system(crs, lower.getDimension()), lower, upper);
     }
 
@@ -69,7 +70,7 @@ public final class NDRange implements Envelope {
      * @throws MismatchedDimensionException if the two bounds do not have the same dimension.
      * @throws IllegalArgumentException if a lower bound is greater than the upper bound.
      */
-    public NDRange(final ReadOnly.Vector<?> lower, final ReadOnly.Vector<?> upper) {
+    public NDRange(final Vector<?> lower, final Vector<?> upper) {
         this(SampleSystem.ofSize(lower.getDimension()), lower, upper);
     }
 
@@ -82,7 +83,7 @@ public final class NDRange implements Envelope {
      * @throws MismatchedDimensionException if the two bounds do not have the same dimension.
      * @throws IllegalArgumentException if a lower bound is greater than the upper bound.
      */
-    public NDRange(SampleSystem system, final ReadOnly.Vector<?> lower, final ReadOnly.Vector<?> upper) {
+    public NDRange(SampleSystem system, final Vector<?> lower, final Vector<?> upper) {
         ArgumentChecks.ensureNonNull("system", system);
         ArgumentChecks.ensureNonNull("lower", lower);
         ArgumentChecks.ensureNonNull("upper", upper);
@@ -184,7 +185,7 @@ public final class NDRange implements Envelope {
     private NDRange(SampleSystem system, final Vector<?> bound) {
         this.system = system;
         lower = bound;
-        upper = bound.copy();
+        upper = bound;
     }
 
     /**
@@ -196,12 +197,14 @@ public final class NDRange implements Envelope {
     public NDRange(final Envelope envelope) {
         final int dimension = envelope.getDimension();
         system = system(envelope.getCoordinateReferenceSystem(), dimension);
-        lower = Vectors.createDouble(dimension);
-        upper = lower.copy();
+        final double[] min = new double[dimension];
+        final double[] max = new double[dimension];
         for (int i = 0; i < dimension; i++) {
-            lower.set(i, envelope.getMinimum(i));
-            upper.set(i, envelope.getMaximum(i));
+            min[i] = envelope.getMinimum(i);
+            max[i] = envelope.getMaximum(i);
         }
+        lower = Vectors.create(min, DataType.DOUBLE);
+        upper = Vectors.create(max, DataType.DOUBLE);
     }
 
     /**
@@ -290,8 +293,12 @@ public final class NDRange implements Envelope {
         if (min > max) {
             throw new IllegalArgumentException("The lower bound " + min + " is greater than the upper bound " + max + '.');
         }
-        widen(lower, dimension, min, false);
-        widen(upper, dimension, max, true);
+        final double[] lowers = lower.toArrayDouble();
+        final double[] uppers = upper.toArrayDouble();
+        lowers[dimension] = widen(lower.getDataType(), min, false);
+        uppers[dimension] = widen(upper.getDataType(), max, true);
+        lower = Vectors.create(lowers, lower.getDataType());
+        upper = Vectors.create(uppers, upper.getDataType());
     }
 
     /**
@@ -300,10 +307,10 @@ public final class NDRange implements Envelope {
      * integer types store 0 instead.
      */
     public void setToNaN() {
-        for (int i = 0; i < lower.getDimension(); i++) {
-            lower.set(i, Double.NaN);
-            upper.set(i, Double.NaN);
-        }
+        final double[] nan = new double[lower.getDimension()];
+        java.util.Arrays.fill(nan, Double.NaN);
+        lower = Vectors.create(nan, lower.getDataType());
+        upper = Vectors.create(nan, upper.getDataType());
     }
 
     /**
@@ -317,11 +324,9 @@ public final class NDRange implements Envelope {
      *
      * @see #add(DirectPosition)
      */
-    public void add(final ReadOnly.Vector<?> position) throws MismatchedDimensionException {
+    public void add(final Vector<?> position) throws MismatchedDimensionException {
         ensureDimensionMatches(position.getDimension());
-        for (int i = 0; i < lower.getDimension(); i++) {
-            add(i, position.get(i));
-        }
+        add(position.toArrayDouble());
     }
 
     /**
@@ -330,49 +335,57 @@ public final class NDRange implements Envelope {
      * @param  position  the position to add.
      * @throws MismatchedDimensionException if the position does not have the dimension of this range.
      *
-     * @see #add(ReadOnly.Vector)
+     * @see #add(Vector)
      */
     public void add(final DirectPosition position) throws MismatchedDimensionException {
         ensureDimensionMatches(position.getDimension());
-        for (int i = 0; i < lower.getDimension(); i++) {
-            add(i, position.getCoordinate(i));
-        }
+        add(position.getCoordinates());
     }
 
     /**
-     * Expands this range in the given dimension for containing the given value.
+     * Expands this range for containing the given position coordinates.
+     * The bounds are replaced only if they change.
      */
-    private void add(final int dimension, final double value) {
-        if (value < lower.get(dimension)) widen(lower, dimension, value, false);
-        if (value > upper.get(dimension)) widen(upper, dimension, value, true);
+    private void add(final double[] position) {
+        double[] lowers = null, uppers = null;
+        for (int i = 0; i < position.length; i++) {
+            final double value = position[i];
+            if (value < lower.get(i)) {
+                if (lowers == null) lowers = lower.toArrayDouble();
+                lowers[i] = widen(lower.getDataType(), value, false);
+            }
+            if (value > upper.get(i)) {
+                if (uppers == null) uppers = upper.toArrayDouble();
+                uppers[i] = widen(upper.getDataType(), value, true);
+            }
+        }
+        if (lowers != null) lower = Vectors.create(lowers, lower.getDataType());
+        if (uppers != null) upper = Vectors.create(uppers, upper.getDataType());
     }
 
     /**
-     * Sets a bound to the given value, rounded away from the inside of the range if the data type of the bound
+     * Rounds a bound value away from the inside of the range if the data type of the bound
      * cannot represent the value exactly.
      *
-     * @param  bound      the lower or the upper bound.
-     * @param  dimension  the dimension of the value.
+     * @param  dataType   data type of the bound.
      * @param  value      the new bound value.
      * @param  up         whether to round toward positive infinity (upper bound) or negative infinity (lower bound).
+     * @return the bound value to store.
      */
-    private static void widen(final Vector<?> bound, final int dimension, final double value, final boolean up) {
-        switch (bound.getDataType()) {
+    private static double widen(final DataType dataType, final double value, final boolean up) {
+        switch (dataType) {
             case DOUBLE: {
-                bound.set(dimension, value);
-                break;
+                return value;
             }
             case FLOAT: {
                 float f = (float) value;
                 if (up ? f < value : f > value) {
                     f = up ? Math.nextUp(f) : Math.nextDown(f);
                 }
-                bound.set(dimension, f);
-                break;
+                return f;
             }
             default: {
-                bound.set(dimension, up ? Math.ceil(value) : Math.floor(value));
-                break;
+                return up ? Math.ceil(value) : Math.floor(value);
             }
         }
     }
@@ -387,7 +400,7 @@ public final class NDRange implements Envelope {
      *
      * @see #contains(DirectPosition)
      */
-    public boolean contains(final ReadOnly.Vector<?> position) throws MismatchedDimensionException {
+    public boolean contains(final Vector<?> position) throws MismatchedDimensionException {
         ensureDimensionMatches(position.getDimension());
         for (int i = 0; i < lower.getDimension(); i++) {
             if (!contains(i, position.get(i))) return false;
@@ -402,7 +415,7 @@ public final class NDRange implements Envelope {
      * @return whether the position is inside this range or on its border.
      * @throws MismatchedDimensionException if the position does not have the dimension of this range.
      *
-     * @see #contains(ReadOnly.Vector)
+     * @see #contains(Vector)
      */
     public boolean contains(final DirectPosition position) throws MismatchedDimensionException {
         ensureDimensionMatches(position.getDimension());

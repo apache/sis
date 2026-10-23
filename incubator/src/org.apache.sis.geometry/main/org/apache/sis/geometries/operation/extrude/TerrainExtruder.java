@@ -884,7 +884,7 @@ public final class TerrainExtruder {
                 coords[i*2]   = xyz[vertices.values[i]*3];
                 coords[i*2+1] = xyz[vertices.values[i]*3+1];
             }
-            final int[] parts = Planar.keep(coords, Delaunay.triangulate(coords, constraints.toArray()),
+            final int[] parts = Planar.keep(coords, Delaunay.triangulate(coords, constraints.toArray(), true),
                                             boundary.toArray(), rings, false);
             removeTriangle(id);
             final boolean roof = roofs.get(id);
@@ -960,7 +960,7 @@ public final class TerrainExtruder {
             for (int l = 0; l < nbLocal; l++) {
                 if (topVertex[l] < 0) topVertex[l] = addVertex(xy[l*2], xy[l*2+1], z[l]);
             }
-            final int[] tops = Planar.keep(xy, Delaunay.triangulate(xy, constraints.toArray()), boundary, rings, true);
+            final int[] tops = Planar.keep(xy, Delaunay.triangulate(xy, constraints.toArray(), true), boundary, rings, true);
             for (int i = 0; i < tops.length; i += 3) {
                 addTriangle(topVertex[tops[i]], topVertex[tops[i+1]], topVertex[tops[i+2]], true);
             }

@@ -205,7 +205,7 @@ public class Matrix4D extends AbstractMatrix<Matrix4D> {
         return new Vector4D.Double(m03, m13, m23, 1);
     }
 
-    public void setTranslation(ReadOnly.Vector<?> translation){
+    public void setTranslation(Vector<?> translation){
         m03 = translation.get(0);
         m13 = translation.get(1);
         m23 = translation.get(2);
@@ -237,7 +237,7 @@ public class Matrix4D extends AbstractMatrix<Matrix4D> {
      * @param euler angles in radians (heading/yaw , elevation/pitch , bank/roll)
      * @return Matrix4
      */
-    public Matrix4D setFromEuler(ReadOnly.Vector<?> euler){
+    public Matrix4D setFromEuler(Vector<?> euler){
         return set(Matrices.fromEuler(euler.toArrayDouble(), null), ROW_ORDER);
     }
 
@@ -350,7 +350,7 @@ public class Matrix4D extends AbstractMatrix<Matrix4D> {
      * @param zAxis values are copied in 3rd row
      * @return this matrix
      */
-    public Matrix4D setFromAxis(final ReadOnly.Vector<?> xAxis, final ReadOnly.Vector<?> yAxis, final ReadOnly.Vector<?> zAxis){
+    public Matrix4D setFromAxis(final Vector<?> xAxis, final Vector<?> yAxis, final Vector<?> zAxis){
         setToIdentity();
         setRow(0, xAxis.toArrayDouble());
         setRow(1, yAxis.toArrayDouble());
@@ -379,16 +379,16 @@ public class Matrix4D extends AbstractMatrix<Matrix4D> {
      * @param v2
      * @return
      */
-    public Matrix4D setFromVectors(ReadOnly.Vector<?> v1, ReadOnly.Vector<?> v2){
-        v1 = v1.copy().normalize();
-        v2 = v2.copy().normalize();
+    public Matrix4D setFromVectors(Vector<?> v1, Vector<?> v2){
+        v1 = v1.normalize();
+        v2 = v2.normalize();
         final double angle = Math.acos(v1.dot(v2));
         if (angle==0){
             //vectors are colinear
             Matrix4D identity = new Matrix4D();
             return identity;
         }
-        final Vector<?> axis = v1.copy().cross(v2).normalize();
+        final Vector<?> axis = v1.cross(v2).normalize();
         double[][] m = Matrices.createRotation4(angle, axis, null);
         return set(m, ROW_ORDER);
     }
@@ -456,23 +456,15 @@ public class Matrix4D extends AbstractMatrix<Matrix4D> {
     }
 
     @Override
-    public Vector<?> transform(ReadOnly.Vector<?> vector, Vector<?> buffer) {
-        if (buffer == null) buffer = new Vector4D.Double();
-
-        if (vector instanceof Vector4D.Double && buffer instanceof Vector4D.Double) {
-            final Vector4D.Double v = (Vector4D.Double) vector;
-            final Vector4D.Double b = (Vector4D.Double) buffer;
-            double d0 = m00*v.x + m01*v.y + m02*v.z + m03*v.w;
-            double d1 = m10*v.x + m11*v.y + m12*v.z + m13*v.w;
-            double d2 = m20*v.x + m21*v.y + m22*v.z + m23*v.w;
-            double d3 = m30*v.x + m31*v.y + m32*v.z + m33*v.w;
-            b.x = d0;
-            b.y = d1;
-            b.z = d2;
-            b.w = d3;
-            return b;
-        }
-
-        return super.transform(vector, buffer);
+    public Vector<?> transform(Vector<?> vector) {
+        final double x = vector.get(0);
+        final double y = vector.get(1);
+        final double z = vector.get(2);
+        final double w = vector.get(3);
+        return new Vector4D.Double(
+                m00*x + m01*y + m02*z + m03*w,
+                m10*x + m11*y + m12*z + m13*w,
+                m20*x + m21*y + m22*z + m23*w,
+                m30*x + m31*y + m32*z + m33*w);
     }
 }

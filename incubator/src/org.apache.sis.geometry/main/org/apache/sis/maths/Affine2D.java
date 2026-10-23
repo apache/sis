@@ -143,11 +143,12 @@ public final class Affine2D extends AbstractAffine<Affine2D> {
     }
 
     @Override
-    public Vector<?> transform(ReadOnly.Vector<?> source, Vector<?> dest) {
-        if (dest == null) dest = new Vector2D.Double();
-        dest.set(0, m00*source.get(0) + m01*source.get(1) + m02);
-        dest.set(1, m10*source.get(0) + m11*source.get(1) + m12);
-        return dest;
+    public Vector<?> transform(Vector<?> source) {
+        final double x = source.get(0);
+        final double y = source.get(1);
+        return new Vector2D.Double(
+                m00*x + m01*y + m02,
+                m10*x + m11*y + m12);
     }
 
     @Override

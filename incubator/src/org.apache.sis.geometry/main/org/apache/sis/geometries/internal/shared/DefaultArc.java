@@ -28,6 +28,7 @@ import org.apache.sis.maths.Array;
 import org.apache.sis.maths.DataType;
 import org.apache.sis.maths.NDRange;
 import org.apache.sis.maths.Vector;
+import org.apache.sis.maths.Vector2D;
 
 
 /**
@@ -135,18 +136,17 @@ public non-sealed class DefaultArc extends DefaultConic implements Arc {
             final Vector<?> centre = controlPoints.get(i).copy(DataType.DOUBLE);
             final Vector<?> middle;
             if (i < radius.size()) {
-                middle = centre.copy(DataType.DOUBLE).add(radius.get(i));
+                middle = centre.add(radius.get(i));
             } else {
-                final double r = start.copy(DataType.DOUBLE).subtract(centre).length();
-                final Vector<?> bisector = start.copy(DataType.DOUBLE).subtract(centre).add(end).subtract(centre);
+                final double r = start.subtract(centre).length();
+                final Vector<?> bisector = start.subtract(centre).add(end).subtract(centre);
                 final double length = bisector.length();
                 if (length > r * 1E-12) {
-                    middle = centre.copy(DataType.DOUBLE).add(bisector.scale(r / length));
+                    middle = centre.add(bisector.scale(r / length));
                 } else if (centre.getDimension() == 2) {
                     // Half turn: counterclockwise by default.
-                    middle = centre.copy(DataType.DOUBLE);
-                    middle.set(0, centre.get(0) - (start.get(1) - centre.get(1)));
-                    middle.set(1, centre.get(1) + (start.get(0) - centre.get(0)));
+                    middle = new Vector2D.Double(centre.get(0) - (start.get(1) - centre.get(1)),
+                                                 centre.get(1) + (start.get(0) - centre.get(0)));
                 } else {
                     throw new IllegalStateException("Arc " + i + " is a half turn, which plane is not determined"
                             + " without a radius vector in " + centre.getDimension() + " dimensions.");

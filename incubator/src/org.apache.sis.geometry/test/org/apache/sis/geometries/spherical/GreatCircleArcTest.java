@@ -17,7 +17,7 @@
 package org.apache.sis.geometries.spherical;
 
 import org.apache.sis.geometries.internal.shared.DefaultSphere;
-import org.apache.sis.maths.ReadOnly;
+import org.apache.sis.maths.Vector;
 import org.apache.sis.maths.Vector3D;
 
 // Test dependencies
@@ -34,8 +34,8 @@ public class GreatCircleArcTest {
 
     private static final double TOLERANCE = 1e-12;
 
-    private final ReadOnly.Vector<?> a = new Vector3D.Double(1, 0, 0);
-    private final ReadOnly.Vector<?> b = new Vector3D.Double(0, 1, 0);
+    private final Vector<?> a = new Vector3D.Double(1, 0, 0);
+    private final Vector<?> b = new Vector3D.Double(0, 1, 0);
 
     /**
      * Length test.
@@ -85,7 +85,7 @@ public class GreatCircleArcTest {
         //every interpolated point must be a unit vector at the expected angle from the start
         for (int i = 0; i <= 10; i++) {
             final double fraction = i / 10.0;
-            final ReadOnly.Vector<?> point = arc.pointAt(fraction);
+            final Vector<?> point = arc.pointAt(fraction);
             assertEquals(1, point.length(), TOLERANCE, "Interpolated points must be unit vectors");
             assertEquals(fraction * Math.PI / 2, Math.acos(point.dot(a)), TOLERANCE,
                          "Points must be evenly spaced in angle");

@@ -119,10 +119,8 @@ public final class Affine1D extends AbstractAffine<Affine1D> implements Transfor
     }
 
     @Override
-    public Vector<?> transform(ReadOnly.Vector<?> source, Vector<?> dest) {
-        if (dest == null) dest = new Vector1D.Double();
-        dest.set(0, m00*source.get(0) + m01);
-        return dest;
+    public Vector<?> transform(Vector<?> source) {
+        return new Vector1D.Double(m00*source.get(0) + m01);
     }
 
     @Override

@@ -20,7 +20,6 @@ import java.util.List;
 import java.util.Map;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import org.apache.sis.maths.DataType;
-import org.apache.sis.maths.ReadOnly;
 import org.apache.sis.maths.SampleSystem;
 import org.apache.sis.maths.Vector;
 import org.apache.sis.referencing.CommonCRS;
@@ -81,9 +80,9 @@ public abstract class GeometryTest {
             @Override public int size() {return points.size();}
             @Override public Point getPoint(int index) {return points.getPoint(index);}
             @Override public Vector<?> getPosition(int index) {return points.getPosition(index);}
-            @Override public void setPosition(int index, ReadOnly.Vector<?> value) {points.setPosition(index, value);}
+            @Override public void setPosition(int index, Vector<?> value) {points.setPosition(index, value);}
             @Override public Vector<?> getAttribute(int index, String name) {return points.getAttribute(index, name);}
-            @Override public void setAttribute(int index, String name, ReadOnly.Vector<?> value) {points.setAttribute(index, name, value);}
+            @Override public void setAttribute(int index, String name, Vector<?> value) {points.setAttribute(index, name, value);}
         };
     }
 

@@ -331,22 +331,16 @@ public final class Affine4D extends AbstractAffine<Affine4D> {
     }
 
     @Override
-    public Vector<?> transform(ReadOnly.Vector<?> source, Vector<?> dest) {
-        if (dest == null) dest = new Vector4D.Double();
-
-        if (source instanceof Vector4D.Double s && dest instanceof Vector4D.Double d) {
-            final double rx = m00*s.x + m01*s.y + m02*s.z + m03*s.w + m04;
-            final double ry = m10*s.x + m11*s.y + m12*s.z + m13*s.w + m14;
-            final double rz = m20*s.x + m21*s.y + m22*s.z + m23*s.w + m24;
-            final double rw = m30*s.x + m31*s.y + m32*s.z + m33*s.w + m34;
-            d.x = rx;
-            d.y = ry;
-            d.z = rz;
-            d.w = rw;
-            return d;
-        }
-
-        return super.transform(source, dest);
+    public Vector<?> transform(Vector<?> source) {
+        final double x = source.get(0);
+        final double y = source.get(1);
+        final double z = source.get(2);
+        final double w = source.get(3);
+        return new Vector4D.Double(
+                m00*x + m01*y + m02*z + m03*w + m04,
+                m10*x + m11*y + m12*z + m13*w + m14,
+                m20*x + m21*y + m22*z + m23*w + m24,
+                m30*x + m31*y + m32*z + m33*w + m34);
     }
 
     @Override

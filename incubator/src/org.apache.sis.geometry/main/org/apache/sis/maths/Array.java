@@ -73,27 +73,19 @@ public interface Array extends NDArray {
      * @return tuple values, tuple is a copy.
      */
     default Vector<?> get(long index) {
-        Vector<?> tuple = Vectors.create(getDimension(), getDataType());
-        get(index, tuple);
-        return tuple;
+        final Cursor cursor = cursor();
+        cursor.moveTo(index);
+        return cursor.samples().copy();
     }
-
-    /**
-     * Get tuple.
-     *
-     * @param index tuple index.
-     * @param buffer tuple to write into.
-     */
-    void get(long index, Vector<?> buffer);
 
     /**
      * {@inheritDoc }
      */
     @Override
-    default void set(ReadOnly.Vector<?> buffer) {
+    default void set(Vector<?> buffer) {
         Cursor cursor = cursor();
         while (cursor.next()) {
-            cursor.samples().set(buffer);
+            cursor.set(buffer);
         }
     }
 
@@ -103,18 +95,19 @@ public interface Array extends NDArray {
      * @param index tuple index
      * @param buffer new tuple values.
      */
-    void set(long index, ReadOnly.Vector<?> buffer);
+    void set(long index, Vector<?> buffer);
 
     /**
      * Get tuple.
+     * Returned tuple is a copy.
      *
      * @param index tuple index.
-     * @param buffer tuple to write into.
+     * @return tuple values, tuple is a copy.
      */
     @Override
-    default void get(long[] index, Vector<?> buffer) {
+    default Vector<?> get(long[] index) {
         if (index.length != 1) throw new IllegalArgumentException("New shape must have a dimension of one");
-        get(index[0], buffer);
+        return get(index[0]);
     }
 
     /**
@@ -124,7 +117,7 @@ public interface Array extends NDArray {
      * @param buffer new tuple values.
      */
     @Override
-    default void set(long[] index, ReadOnly.Vector<?> buffer) {
+    default void set(long[] index, Vector<?> buffer) {
         if (index.length != 1) throw new IllegalArgumentException("New shape must have a dimension of one");
         set(index[0], buffer);
     }
@@ -137,10 +130,10 @@ public interface Array extends NDArray {
      * @param nb number of tuples to copy
      */
     default void set(long index, Array array, long offset, long nb) {
-        final Vector v = Vectors.create(array.getDimension(), array.getDataType());
+        final Cursor cursor = array.cursor();
         for (long i = 0; i < nb; i++) {
-            array.get(offset + i, v);
-            set(index + i, v);
+            cursor.moveTo(offset + i);
+            set(index + i, cursor.samples());
         }
     }
 
@@ -205,11 +198,11 @@ public interface Array extends NDArray {
     default byte[] toArrayByte(long offset, int nbTuple) {
         final int dimension = getDimension();
         final byte[] array = new byte[nbTuple*dimension];
-        final Vector v = Vectors.createByte(dimension);
+        final Cursor cursor = cursor();
         long k = offset;
         for (int i = 0; i < nbTuple; i++, k++) {
-            get(k, v);
-            v.toArrayByte(array, i*dimension);
+            cursor.moveTo(k);
+            cursor.samples().toArrayByte(array, i*dimension);
         }
         return array;
     }
@@ -223,11 +216,11 @@ public interface Array extends NDArray {
     default short[] toArrayShort(long offset, int nbTuple) {
         final int dimension = getDimension();
         final short[] array = new short[nbTuple*dimension];
-        final Vector v = Vectors.createShort(dimension);
+        final Cursor cursor = cursor();
         long k = offset;
         for (int i = 0; i < nbTuple; i++, k++) {
-            get(k, v);
-            v.toArrayShort(array, i*dimension);
+            cursor.moveTo(k);
+            cursor.samples().toArrayShort(array, i*dimension);
         }
         return array;
     }
@@ -241,11 +234,11 @@ public interface Array extends NDArray {
     default int[] toArrayInt(long offset, int nbTuple) {
         final int dimension = getDimension();
         final int[] array = new int[nbTuple*dimension];
-        final Vector v = Vectors.createInt(dimension);
+        final Cursor cursor = cursor();
         long k = offset;
         for (int i = 0; i < nbTuple; i++, k++) {
-            get(k, v);
-            v.toArrayInt(array, i*dimension);
+            cursor.moveTo(k);
+            cursor.samples().toArrayInt(array, i*dimension);
         }
         return array;
     }
@@ -259,11 +252,11 @@ public interface Array extends NDArray {
     default float[] toArrayFloat(long offset, int nbTuple) {
         final int dimension = getDimension();
         final float[] array = new float[nbTuple*dimension];
-        final Vector v = Vectors.createFloat(dimension);
+        final Cursor cursor = cursor();
         long k = offset;
         for (int i = 0; i < nbTuple; i++, k++) {
-            get(k, v);
-            v.toArrayFloat(array, i*dimension);
+            cursor.moveTo(k);
+            cursor.samples().toArrayFloat(array, i*dimension);
         }
         return array;
     }
@@ -298,7 +291,7 @@ public interface Array extends NDArray {
      */
     default Vector<?>[] toArray(long offset, long nbTuple) {
         return stream(false).skip(offset).limit(nbTuple)
-                .map((Vector<?> t) -> Vectors.create(t.getDimension(), t.getDataType()).set(t))
+                .map((Vector<?> t) -> t.copy())
                 .toArray(Vector<?>[]::new);
     }
 
@@ -309,11 +302,14 @@ public interface Array extends NDArray {
      */
     @Override
     default void transform(MathTransform trs) throws TransformException {
-        final Vector v = Vectors.createDouble(getDimension());
-        for (long i=0,n=getLength();i<n;i++) {
-            get(i, v);
-            v.transform(trs);
-            set(i,v);
+        final double[] buffer = new double[getDimension()];
+        final Cursor cursor = cursor();
+        while (cursor.next()) {
+            cursor.samples().toArrayDouble(buffer, 0);
+            trs.transform(buffer, 0, buffer, 0, 1);
+            for (int i = 0; i < buffer.length; i++) {
+                cursor.set(i, buffer[i]);
+            }
         }
     }
 

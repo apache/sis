@@ -45,6 +45,7 @@ import org.apache.sis.maths.Array;
 import org.apache.sis.maths.NDArrays;
 import org.apache.sis.maths.SampleSystem;
 import org.apache.sis.maths.Vector;
+import org.apache.sis.maths.Vectors;
 import org.apache.sis.measure.NumberRange;
 import org.apache.sis.referencing.CRS;
 import org.apache.sis.util.Utilities;
@@ -413,7 +414,9 @@ public non-sealed class DefaultPrism extends AbstractGeometry implements Prism {
             for (int i = 0; i < indices.length; i++) {
                 Vector<?> position = copy.getPosition(i);
                 if (axis < position.getDimension()) {
-                    position.set(axis, values[i]);
+                    final double[] coordinates = position.toArrayDouble();
+                    coordinates[axis] = values[i];
+                    position = Vectors.create(coordinates, position.getDataType());
                 } else {
                     position = position.extend(values[i]);
                 }

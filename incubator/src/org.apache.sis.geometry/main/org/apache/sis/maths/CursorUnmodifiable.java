@@ -27,8 +27,6 @@ import org.apache.sis.util.ArgumentChecks;
 final class CursorUnmodifiable implements Cursor {
 
     private final Cursor parent;
-    private Vector<?> previous;
-    private Vector<?> t;
 
     public CursorUnmodifiable(Cursor parent) {
         ArgumentChecks.ensureNonNull("parent", parent);
@@ -37,12 +35,17 @@ final class CursorUnmodifiable implements Cursor {
 
     @Override
     public Vector<?> samples() {
-        Vector<?> cdt = parent.samples();
-        if (t == null || previous != cdt) {
-            t = new VectorUnmodifiable(cdt);
-            previous = cdt;
-        }
-        return t;
+        return parent.samples();
+    }
+
+    @Override
+    public void set(int sampleIndex, double value) {
+        throw new UnsupportedOperationException("This implementation is unmodifiable");
+    }
+
+    @Override
+    public void set(Vector<?> values) {
+        throw new UnsupportedOperationException("This implementation is unmodifiable");
     }
 
     @Override

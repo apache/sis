@@ -30,8 +30,6 @@ import org.apache.sis.geometries.SurfaceInterpolation;
 import org.apache.sis.geometries.internal.shared.DefaultCapsule;
 import org.apache.sis.maths.DataType;
 import org.apache.sis.maths.NDRange;
-import org.apache.sis.maths.ReadOnly;
-import org.apache.sis.maths.Vectors;
 import org.apache.sis.maths.Vector;
 
 
@@ -106,11 +104,8 @@ public sealed interface Capsule extends Surface
      * @return the capsule height
      */
     default double getHeight() {
-        final ReadOnly.Vector<?> bottom = getDataPoints().getPosition(0);
-        final Vector<?> axis = Vectors.create(bottom.getDimension(), DataType.DOUBLE);
-        axis.set(getDataPoints().getPosition(1));
-        axis.subtract(bottom);
-        return axis.length();
+        final Vector<?> bottom = getDataPoints().getPosition(0);
+        return getDataPoints().getPosition(1).copy(DataType.DOUBLE).subtract(bottom).length();
     }
 
     /**
@@ -123,8 +118,8 @@ public sealed interface Capsule extends Surface
      */
     @Override
     default Envelope getEnvelope() {
-        final ReadOnly.Vector<?> bottom = getDataPoints().getPosition(0);
-        final ReadOnly.Vector<?> top = getDataPoints().getPosition(1);
+        final Vector<?> bottom = getDataPoints().getPosition(0);
+        final Vector<?> top = getDataPoints().getPosition(1);
         final double radiusBottom = getRadiusBottom();
         final double radiusTop = getRadiusTop();
         final int dim = getDataPoints().getDimension();

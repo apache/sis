@@ -16,7 +16,6 @@
  */
 package org.apache.sis.maths;
 
-import org.opengis.geometry.DirectPosition;
 import org.apache.sis.util.ArgumentChecks;
 
 
@@ -47,46 +46,6 @@ final class VectorUnmodifiable extends AbstractVector<VectorUnmodifiable> {
     @Override
     public double get(int indice) throws IndexOutOfBoundsException {
         return parent.get(indice);
-    }
-
-    @Override
-    public void set(int indice, double value) throws IndexOutOfBoundsException {
-        throw new UnsupportedOperationException("This implementation is unmodifiable");
-    }
-
-    @Override
-    public VectorUnmodifiable set(DirectPosition values) throws IndexOutOfBoundsException {
-        throw new UnsupportedOperationException("This implementation is unmodifiable");
-    }
-
-    @Override
-    public VectorUnmodifiable set(double[] values) throws IndexOutOfBoundsException {
-        throw new UnsupportedOperationException("This implementation is unmodifiable");
-    }
-
-    @Override
-    public VectorUnmodifiable set(double[] values, int offset) throws IndexOutOfBoundsException {
-        throw new UnsupportedOperationException("This implementation is unmodifiable");
-    }
-
-    @Override
-    public VectorUnmodifiable set(float[] values) throws IndexOutOfBoundsException {
-        throw new UnsupportedOperationException("This implementation is unmodifiable");
-    }
-
-    @Override
-    public VectorUnmodifiable set(float[] values, int offset) throws IndexOutOfBoundsException {
-        throw new UnsupportedOperationException("This implementation is unmodifiable");
-    }
-
-    @Override
-    public VectorUnmodifiable set(ReadOnly.Vector<?> values) throws IndexOutOfBoundsException {
-        throw new UnsupportedOperationException("This implementation is unmodifiable");
-    }
-
-    @Override
-    public VectorUnmodifiable setAll(double value) {
-        throw new UnsupportedOperationException("This implementation is unmodifiable");
     }
 
     @Override
@@ -141,7 +100,7 @@ final class VectorUnmodifiable extends AbstractVector<VectorUnmodifiable> {
 
     @Override
     public VectorUnmodifiable copy() {
-        return (VectorUnmodifiable) parent.copy();
+        return new VectorUnmodifiable(parent.copy());
     }
 
     @Override
@@ -150,8 +109,38 @@ final class VectorUnmodifiable extends AbstractVector<VectorUnmodifiable> {
     }
 
     @Override
+    public boolean isNaN() {
+        return parent.isNaN();
+    }
+
+    @Override
+    public boolean isInfinite() {
+        return parent.isInfinite();
+    }
+
+    @Override
     public boolean isAll(double value) {
         return parent.isAll(value);
+    }
+
+    @Override
+    public double length() {
+        return parent.length();
+    }
+
+    @Override
+    public double lengthSquare() {
+        return parent.lengthSquare();
+    }
+
+    @Override
+    public double dot(Vector<?> other) {
+        return parent.dot(other);
+    }
+
+    @Override
+    public double dotAccurate(Vector<?> other) {
+        return parent.dotAccurate(other);
     }
 
 }

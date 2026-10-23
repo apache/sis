@@ -58,7 +58,7 @@ public class DelaunayTest {
         points.setPositions(positions);
 
         final Delaunay delaunay = new Delaunay();
-        delaunay.build(points);
+        delaunay.build(points, false);
         final Array triangles = delaunay.getTrianglesIndex();
 
         compare(positions, new int[]{0,1,2}, triangles);
@@ -88,7 +88,7 @@ public class DelaunayTest {
         points.setPositions(positions);
 
         final Delaunay delaunay = new Delaunay();
-        delaunay.build(points);
+        delaunay.build(points, false);
         final Array triangles = delaunay.getTrianglesIndex();
 
         try {
@@ -120,7 +120,7 @@ public class DelaunayTest {
         points.setPositions(positions);
 
         final Delaunay delaunay = new Delaunay();
-        delaunay.build(points);
+        delaunay.build(points, false);
         final Array triangles = delaunay.getTrianglesIndex();
 
         compare(positions, new int[]{2,0,3, 1,2,3}, triangles);
@@ -153,7 +153,7 @@ public class DelaunayTest {
         points.setPositions(positions);
 
         final Delaunay delaunay = new Delaunay();
-        delaunay.build(points);
+        delaunay.build(points, false);
         final Array triangles = delaunay.getTrianglesIndex();
 
         compare(positions, new int[]{0,4,2, 4,1,2, 0,3,4, 4,3,1}, triangles);
@@ -177,7 +177,7 @@ public class DelaunayTest {
         points.setPositions(positions);
 
         final Delaunay delaunay = new Delaunay();
-        delaunay.build(points);
+        delaunay.build(points, false);
         delaunay.pushConstraint(constraints, true);
         final Array triangles = delaunay.getTrianglesIndex();
 
@@ -207,7 +207,7 @@ public class DelaunayTest {
         points.setPositions(positions);
 
         final Delaunay delaunay = new Delaunay();
-        delaunay.build(points);
+        delaunay.build(points, false);
         delaunay.pushConstraint(constraints, true);
         final Array triangles = delaunay.getTrianglesIndex();
 
@@ -242,7 +242,7 @@ public class DelaunayTest {
         points.setPositions(positions);
 
         final Delaunay delaunay = new Delaunay();
-        delaunay.build(points);
+        delaunay.build(points, false);
         //add a soft constraint to match the example
         delaunay.pushConstraint(2,5, false);
         delaunay.pushConstraint(constraints, true);
@@ -282,7 +282,7 @@ public class DelaunayTest {
         points.setPositions(positions);
 
         final Delaunay delaunay = new Delaunay();
-        delaunay.build(points);
+        delaunay.build(points, false);
         //add a soft constraint to match the example
         delaunay.pushConstraint(1,5, false);
         delaunay.pushConstraint(2,5, false);
@@ -324,7 +324,7 @@ public class DelaunayTest {
         points.setPositions(positions);
 
         final Delaunay delaunay = new Delaunay();
-        delaunay.build(points);
+        delaunay.build(points, false);
         delaunay.pushConstraint(constraints, true);
         final Array triangles = delaunay.getTrianglesIndex();
 
@@ -363,7 +363,7 @@ public class DelaunayTest {
             x0 - 1.1e-5, y0 + 2.9e-5                        // 9
         };
         final int[] constraints = {0,1, 1,5, 5,4, 3,0, 7,6, 6,8};
-        final int[] triangles = Delaunay.triangulate(xy, constraints);
+        final int[] triangles = Delaunay.triangulate(xy, constraints, false);
         assertTrue(triangles.length >= 3*8, "Missing triangles.");
         final java.util.Set<Long> edges = new java.util.HashSet<>();
         for (int i = 0; i < triangles.length; i += 3) {

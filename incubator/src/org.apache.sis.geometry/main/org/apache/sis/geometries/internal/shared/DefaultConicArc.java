@@ -92,9 +92,9 @@ public final class DefaultConicArc implements ConicArc {
         final int dimension = p[0].getDimension();
         origin = Vectors.createDouble(dimension);
         for (final Vector<?> q : p) {
-            origin.add(q);
+            origin = origin.add(q);
         }
-        origin.scale(1.0 / p.length);
+        origin = origin.scale(1.0 / p.length);
         double width = 0;
         for (final Vector<?> q : p) {
             final Vector<?> v = q.copy(DataType.DOUBLE).subtract(origin);
@@ -108,7 +108,7 @@ public final class DefaultConicArc implements ConicArc {
             linear = true;                      // All points are identical.
             return;
         }
-        e1.scale(1 / scale);
+        e1 = e1.scale(1 / scale);
         for (final Vector<?> q : p) {
             final Vector<?> v = q.copy(DataType.DOUBLE).subtract(origin).perpendicular(e1);
             final double length = v.length();
@@ -122,7 +122,7 @@ public final class DefaultConicArc implements ConicArc {
             return;
         }
         linear = false;
-        e2.scale(1 / width);
+        e2 = e2.scale(1 / width);
         if (elliptic) {
             /*
              * The axes of the ellipse are along the projection on the plane of the first coordinate system axis
@@ -132,8 +132,8 @@ public final class DefaultConicArc implements ConicArc {
                 final double c1 = e1.get(i), c2 = e2.get(i);
                 final double h = Math.hypot(c1, c2);
                 if (h > 1E-10) {
-                    final Vector<?> u1 = e1.copy(DataType.DOUBLE).scale( c1 / h).add(e2.copy(DataType.DOUBLE).scale(c2 / h));
-                    final Vector<?> u2 = e1.copy(DataType.DOUBLE).scale(-c2 / h).add(e2.copy(DataType.DOUBLE).scale(c1 / h));
+                    final Vector<?> u1 = e1.scale( c1 / h).add(e2.scale(c2 / h));
+                    final Vector<?> u2 = e1.scale(-c2 / h).add(e2.scale(c1 / h));
                     e1 = u1;
                     e2 = u2;
                     break;
@@ -155,7 +155,7 @@ public final class DefaultConicArc implements ConicArc {
          * (a², ab, b², a, b, 1) for each point. The ab term is omitted for an elliptic arc.
          */
         final int m = terms.length;
-        final Vector<?> solution = Vectors.createDouble(m);
+        final double[] cofactors = new double[m];
         for (int j = 0; j < m; j++) {
             final double[][] minor = new double[m - 1][];
             for (int k = 0; k < m - 1; k++) {
@@ -166,13 +166,14 @@ public final class DefaultConicArc implements ConicArc {
                 }
                 minor[k] = values;
             }
-            solution.set(j, ((j & 1) == 0 ? 1 : -1) * determinant(minor));
+            cofactors[j] = ((j & 1) == 0 ? 1 : -1) * determinant(minor);
         }
+        Vector<?> solution = Vectors.create(cofactors, DataType.DOUBLE);
         if (!(solution.length() > 1E-12)) {
             throw new IllegalStateException(what + " do not determine a single conic." + (elliptic
                     ? " Two pairs of points having the same coordinate along an axis of the ellipse may be the cause." : ""));
         }
-        solution.normalize();
+        solution = solution.normalize();
         final double[] coef = new double[6];
         for (int c = 0; c < m; c++) {
             coef[terms[c]] = solution.get(c);
@@ -235,9 +236,9 @@ public final class DefaultConicArc implements ConicArc {
      * Returns the position of the given coordinates in the plane.
      */
     private Vector<?> position(final double xa, final double xb) {
-        return origin.copy(DataType.DOUBLE)
-                .add(e1.copy(DataType.DOUBLE).scale(scale * xa))
-                .add(e2.copy(DataType.DOUBLE).scale(scale * xb));
+        return origin
+                .add(e1.scale(scale * xa))
+                .add(e2.scale(scale * xb));
     }
 
     /**

@@ -106,13 +106,7 @@ final class ArrayConcatenated extends AbstractArray {
     }
 
     @Override
-    public void get(long index, Vector<?> buffer) {
-        final int taidx = arrayIndex(index);
-        arrays[taidx].get(index - offsets[taidx], buffer);
-    }
-
-    @Override
-    public void set(long index, ReadOnly.Vector<?> buffer) {
+    public void set(long index, Vector<?> buffer) {
         final int taidx = arrayIndex(index);
         arrays[taidx].set(index - offsets[taidx], buffer);
     }
@@ -158,12 +152,29 @@ final class ArrayConcatenated extends AbstractArray {
 
         @Override
         public Vector samples() {
+            return current().samples();
+        }
+
+        @Override
+        public void set(int sampleIndex, double value) {
+            current().set(sampleIndex, value);
+        }
+
+        @Override
+        public void set(Vector<?> values) {
+            current().set(values);
+        }
+
+        /**
+         * @return cursor of the concatenated array at current coordinate
+         */
+        private Cursor current() {
             final int taidx = arrayIndex(coordinate);
             if (cursors[taidx] == null) {
                 cursors[taidx] = arrays[taidx].cursor();
             }
             cursors[taidx].moveTo(coordinate - offsets[taidx]);
-            return cursors[taidx].samples();
+            return cursors[taidx];
         }
 
         @Override

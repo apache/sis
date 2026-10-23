@@ -227,20 +227,14 @@ public final class Affine3D extends AbstractAffine<Affine3D> {
     }
 
     @Override
-    public Vector<?> transform(ReadOnly.Vector<?> source, Vector<?> dest) {
-        if (dest==null) dest = new Vector3D.Double();
-
-        if (source instanceof Vector3D.Double s && dest instanceof Vector3D.Double d) {
-            final double rx = m00*s.x + m01*s.y + m02*s.z + m03;
-            final double ry = m10*s.x + m11*s.y + m12*s.z + m13;
-            final double rz = m20*s.x + m21*s.y + m22*s.z + m23;
-            d.x = rx;
-            d.y = ry;
-            d.z = rz;
-            return d;
-        }
-
-        return super.transform(source, dest);
+    public Vector<?> transform(Vector<?> source) {
+        final double x = source.get(0);
+        final double y = source.get(1);
+        final double z = source.get(2);
+        return new Vector3D.Double(
+                m00*x + m01*y + m02*z + m03,
+                m10*x + m11*y + m12*z + m13,
+                m20*x + m21*y + m22*z + m23);
     }
 
     @Override
@@ -340,7 +334,7 @@ public final class Affine3D extends AbstractAffine<Affine3D> {
      * @param rotationAxis Tuple 3
      * @return this affine
      */
-    public Affine3D setToRotation(final double angle, final ReadOnly.Vector<?> rotationAxis) {
+    public Affine3D setToRotation(final double angle, final Vector<?> rotationAxis) {
 
         final double[][] rot = Matrices.createRotation4(angle, rotationAxis, null);
         m00 = rot[0][0];

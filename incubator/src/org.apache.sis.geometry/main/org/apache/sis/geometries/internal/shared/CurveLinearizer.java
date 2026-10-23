@@ -33,9 +33,9 @@ import org.apache.sis.geometries.curve.LineString;
 import org.apache.sis.maths.DataType;
 import org.apache.sis.maths.NDArrays;
 import org.apache.sis.maths.NDRange;
-import org.apache.sis.maths.ReadOnly;
 import org.apache.sis.maths.SampleSystem;
 import org.apache.sis.maths.Vector;
+import org.apache.sis.maths.Vector2D;
 import org.apache.sis.measure.Quantities;
 
 
@@ -85,13 +85,13 @@ public final class CurveLinearizer {
      * @param positions   the exact positions at the given parameters, or {@code null} for computing all of them
      *                    with the function. A {@code null} element is also computed with the function.
      */
-    public record Piece(DoubleFunction<? extends ReadOnly.Vector<?>> function, double[] parameters,
-                        ReadOnly.Vector<?>[] positions)
+    public record Piece(DoubleFunction<? extends Vector<?>> function, double[] parameters,
+                        Vector<?>[] positions)
     {
         /**
          * Returns the position at the parameter of the given index.
          */
-        ReadOnly.Vector<?> position(final int i) {
+        Vector<?> position(final int i) {
             if (positions != null && positions[i] != null) {
                 return positions[i];
             }
@@ -107,7 +107,7 @@ public final class CurveLinearizer {
     /**
      * The points of the polyline, in order.
      */
-    private final List<ReadOnly.Vector<?>> points = new ArrayList<>();
+    private final List<Vector<?>> points = new ArrayList<>();
 
     private CurveLinearizer(final double spacing, final double offset) {
         this.spacing = spacing;
@@ -146,16 +146,16 @@ public final class CurveLinearizer {
     /**
      * Computes the points of the polyline approximating the given pieces.
      */
-    private static List<ReadOnly.Vector<?>> run(final double spacing, final double offset, final List<Piece> pieces) {
+    private static List<Vector<?>> run(final double spacing, final double offset, final List<Piece> pieces) {
         final var linearizer = new CurveLinearizer(spacing, offset);
         for (final Piece piece : pieces) {
             final double[] t = piece.parameters();
-            ReadOnly.Vector<?> previous = piece.position(0);
+            Vector<?> previous = piece.position(0);
             if (linearizer.points.isEmpty()) {
                 linearizer.points.add(previous);
             }
             for (int i = 1; i < t.length; i++) {
-                final ReadOnly.Vector<?> next = piece.position(i);
+                final Vector<?> next = piece.position(i);
                 linearizer.refine(piece.function(), t[i-1], previous, t[i], next, 0);
                 previous = next;
             }
@@ -166,15 +166,15 @@ public final class CurveLinearizer {
     /**
      * Adds the points of the polyline between the given positions, excluding the first one.
      */
-    private void refine(final DoubleFunction<? extends ReadOnly.Vector<?>> function,
-                        final double ta, final ReadOnly.Vector<?> pa,
-                        final double tb, final ReadOnly.Vector<?> pb, final int depth)
+    private void refine(final DoubleFunction<? extends Vector<?>> function,
+                        final double ta, final Vector<?> pa,
+                        final double tb, final Vector<?> pb, final int depth)
     {
         final double tm = (ta + tb) / 2;
         if (depth < MAX_DEPTH && tm != ta && tm != tb) {
-            final ReadOnly.Vector<?> pm = function.apply(tm);
-            final ReadOnly.Vector<?> q1 = function.apply((ta + tm) / 2);
-            final ReadOnly.Vector<?> q3 = function.apply((tm + tb) / 2);
+            final Vector<?> pm = function.apply(tm);
+            final Vector<?> q1 = function.apply((ta + tm) / 2);
+            final Vector<?> q3 = function.apply((tm + tb) / 2);
             boolean split = false;
             if (spacing > 0) {
                 final double half    = distance(pa, pm) + distance(pm, pb);
@@ -208,11 +208,11 @@ public final class CurveLinearizer {
      * @throws IllegalStateException if the arc is a full circle in more than two dimensions,
      *         since its plane is then not determined.
      */
-    public static Piece circularArc(final ReadOnly.Vector<?> start, final ReadOnly.Vector<?> middle,
-                                    final ReadOnly.Vector<?> end, final boolean keep)
+    public static Piece circularArc(final Vector<?> start, final Vector<?> middle,
+                                    final Vector<?> end, final boolean keep)
     {
         final int dimension = start.getDimension();
-        final Vector<?> u = end.copy(DataType.DOUBLE).subtract(start);
+        Vector<?> u = end.copy(DataType.DOUBLE).subtract(start);
         final double chord = u.length();
         final Vector<?> centre, e1, e2;
         final double radius;
@@ -224,32 +224,29 @@ public final class CurveLinearizer {
             centre = start.copy(DataType.DOUBLE).lerp(middle, 0.5);
             radius = distance(start, centre);
             e1 = start.copy(DataType.DOUBLE).subtract(centre).scale(1 / radius);
-            e2 = e1.copy(DataType.DOUBLE);
-            e2.set(0, -e1.get(1));
-            e2.set(1,  e1.get(0));
+            e2 = new Vector2D.Double(-e1.get(1), e1.get(0));
         } else {
-            u.scale(1 / chord);
+            u = u.scale(1 / chord);
             final Vector<?> mid = start.copy(DataType.DOUBLE).lerp(end, 0.5);
-            final Vector<?> n = middle.copy(DataType.DOUBLE).subtract(mid);
+            Vector<?> n = middle.copy(DataType.DOUBLE).subtract(mid);
             final double pu = n.dot(u);
-            n.perpendicular(u);
+            n = n.perpendicular(u);
             final double pn = n.length();
             if (!(pn > chord * 1E-12)) {
                 // Collinear points: a straight segment.
                 final double tm = middle.copy(DataType.DOUBLE).subtract(start).dot(u) / chord;
                 return new Piece((t) -> start.copy(DataType.DOUBLE).lerp(end, t),
                         keep ? new double[] {0, tm, 1} : new double[] {0, 1},
-                        keep ? new ReadOnly.Vector<?>[] {start, middle, end} : new ReadOnly.Vector<?>[] {start, end});
+                        keep ? new Vector<?>[] {start, middle, end} : new Vector<?>[] {start, end});
             }
-            n.scale(1 / pn);
+            n = n.scale(1 / pn);
             // Same circle as in `Curves.addArc(…)`.
             final double c = chord / 2;
             final double t = (pu*pu + pn*pn - c*c) / (2*pn);
             radius = Math.hypot(c, t);
-            centre = mid.add(n.copy(DataType.DOUBLE).scale(t));
+            centre = mid.add(n.scale(t));
             e1 = start.copy(DataType.DOUBLE).subtract(centre).scale(1 / radius);
-            e2 = n.perpendicular(e1);
-            e2.normalize();
+            e2 = n.perpendicular(e1).normalize();
         }
         /*
          * Angles of the middle and end points in the basis (e1, e2), in the [0 … 2π) range. If the middle point
@@ -262,18 +259,18 @@ public final class CurveLinearizer {
             am -= 2*Math.PI;
             ae -= 2*Math.PI;
         }
-        final DoubleFunction<Vector<?>> function = (a) -> centre.copy(DataType.DOUBLE)
-                .add(e1.copy(DataType.DOUBLE).scale(radius * Math.cos(a)))
-                .add(e2.copy(DataType.DOUBLE).scale(radius * Math.sin(a)));
+        final DoubleFunction<Vector<?>> function = (a) -> centre
+                .add(e1.scale(radius * Math.cos(a)))
+                .add(e2.scale(radius * Math.sin(a)));
         return new Piece(function,
                 keep ? new double[] {0, am, ae} : new double[] {0, ae},
-                keep ? new ReadOnly.Vector<?>[] {start, middle, end} : new ReadOnly.Vector<?>[] {start, end});
+                keep ? new Vector<?>[] {start, middle, end} : new Vector<?>[] {start, end});
     }
 
     /**
      * Returns the angle of the given position around the given centre, in the basis (e1, e2), in the [0 … 2π) range.
      */
-    private static double angle(final ReadOnly.Vector<?> p, final Vector<?> centre, final Vector<?> e1, final Vector<?> e2) {
+    private static double angle(final Vector<?> p, final Vector<?> centre, final Vector<?> e1, final Vector<?> e2) {
         final Vector<?> v = p.copy(DataType.DOUBLE).subtract(centre);
         final double a = Math.atan2(v.dot(e2), v.dot(e1));
         return (a < 0) ? a + 2*Math.PI : a;
@@ -282,14 +279,14 @@ public final class CurveLinearizer {
     /**
      * Returns the distance between two positions.
      */
-    private static double distance(final ReadOnly.Vector<?> a, final ReadOnly.Vector<?> b) {
+    private static double distance(final Vector<?> a, final Vector<?> b) {
         return a.copy(DataType.DOUBLE).subtract(b).length();
     }
 
     /**
      * Returns the distance between a position and the segment from {@code a} to {@code b}.
      */
-    private static double distance(final ReadOnly.Vector<?> p, final ReadOnly.Vector<?> a, final ReadOnly.Vector<?> b) {
+    private static double distance(final Vector<?> p, final Vector<?> a, final Vector<?> b) {
         final Vector<?> ab = b.copy(DataType.DOUBLE).subtract(a);
         final Vector<?> ap = p.copy(DataType.DOUBLE).subtract(a);
         final double square = ab.lengthSquare();
@@ -300,7 +297,7 @@ public final class CurveLinearizer {
     /**
      * Returns the length of the given polyline.
      */
-    private static double length(final List<ReadOnly.Vector<?>> points) {
+    private static double length(final List<Vector<?>> points) {
         double length = 0;
         for (int i = 1; i < points.size(); i++) {
             length += distance(points.get(i - 1), points.get(i));
@@ -318,7 +315,7 @@ public final class CurveLinearizer {
             for (int i = 0; i < t.length; i++) {
                 final int samples = (i == 0) ? 1 : 8;
                 for (int k = samples; --k >= 0;) {
-                    final ReadOnly.Vector<?> p = (k == 0) ? piece.position(i)
+                    final Vector<?> p = (k == 0) ? piece.position(i)
                             : piece.function().apply(t[i] + (t[i-1] - t[i]) * k / samples);
                     if (box == null) {
                         box = new NDRange(p, p);
@@ -383,9 +380,9 @@ public final class CurveLinearizer {
             spacing = Quantities.create(distance(spacing, unit, length), unit);
             offset  = Quantities.create(distance(offset,  unit, length), unit);
         }
-        final var points = new ArrayList<ReadOnly.Vector<?>>();
+        final var points = new ArrayList<Vector<?>>();
         for (final Curve part : parts) {
-            final List<ReadOnly.Vector<?>> positions = positions(part.asLine(spacing, offset));
+            final List<Vector<?>> positions = positions(part.asLine(spacing, offset));
             points.addAll(points.isEmpty() ? positions : positions.subList(Math.min(1, positions.size()), positions.size()));
         }
         return lineString(curve.getCoordinateReferenceSystem(), points);
@@ -401,7 +398,7 @@ public final class CurveLinearizer {
      * @return the polyline approximating the reversed curve.
      */
     public static LineString reverse(final Curve curve, final Curve base, final Quantity<?> spacing, final Quantity<?> offset) {
-        final List<ReadOnly.Vector<?>> points = positions(base.asLine(spacing, offset));
+        final List<Vector<?>> points = positions(base.asLine(spacing, offset));
         Collections.reverse(points);
         return lineString(curve.getCoordinateReferenceSystem(), points);
     }
@@ -409,9 +406,9 @@ public final class CurveLinearizer {
     /**
      * Returns the positions of the given line string.
      */
-    private static List<ReadOnly.Vector<?>> positions(final LineString line) {
+    private static List<Vector<?>> positions(final LineString line) {
         final DataPoints points = line.getDataPoints();
-        final var positions = new ArrayList<ReadOnly.Vector<?>>(points.size());
+        final var positions = new ArrayList<Vector<?>>(points.size());
         for (int i = 0; i < points.size(); i++) {
             positions.add(points.getPosition(i).copy(DataType.DOUBLE));
         }
@@ -441,7 +438,7 @@ public final class CurveLinearizer {
      * @param  points  positions of the line string.
      * @return the line string.
      */
-    public static LineString lineString(final CoordinateReferenceSystem crs, final List<? extends ReadOnly.Vector<?>> points) {
+    public static LineString lineString(final CoordinateReferenceSystem crs, final List<? extends Vector<?>> points) {
         final GeometryFactory factory = GeometryFactory.DEFAULT;
         return factory.createLineString(factory.createDataPoints(NDArrays.of(points, SampleSystem.of(crs), DataType.DOUBLE)));
     }

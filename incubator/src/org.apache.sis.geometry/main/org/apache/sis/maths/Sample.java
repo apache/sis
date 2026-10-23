@@ -23,13 +23,13 @@ package org.apache.sis.maths;
 public final class Sample {
 
     public final SampleSystem sampleSystem;
-    public final ReadOnly.Vector values;
+    public final Vector values;
 
     /**
      * @param sampleSystem sample system of the values
      * @param values sample values
      */
-    public Sample(SampleSystem sampleSystem, ReadOnly.Vector values) {
+    public Sample(SampleSystem sampleSystem, Vector values) {
         this.sampleSystem = sampleSystem;
         this.values = values;
     }

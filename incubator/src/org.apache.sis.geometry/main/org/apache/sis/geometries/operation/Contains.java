@@ -26,7 +26,6 @@ import org.apache.sis.geometries.surface.Polygon;
 import org.apache.sis.maths.Array;
 import org.apache.sis.maths.Cursor;
 import org.apache.sis.maths.Maths;
-import org.apache.sis.maths.ReadOnly;
 import org.apache.sis.maths.Vector;
 
 
@@ -56,7 +55,7 @@ public final class Contains {
      * @param axes indices of the two coordinates of the plane in which the test is done
      * @return whether the point is inside the ring
      */
-    public static boolean contains(Array ring, ReadOnly.Vector<?> point, int[] axes) {
+    public static boolean contains(Array ring, Vector<?> point, int[] axes) {
         final long n = ring.getLength();
         if (n == 0) {
             return false;

@@ -182,7 +182,7 @@ public non-sealed class DefaultNurbSurface extends AbstractGeometry implements N
         for (int c = 0; c < spatialDim; c++) {
             result[c] = (deriv.get(c) - wDeriv * surfacePoint[c]) / w;
         }
-        return Vectors.createDouble(result.length).set(result);
+        return Vectors.create(result, DataType.DOUBLE);
     }
 
     /**
@@ -190,9 +190,7 @@ public non-sealed class DefaultNurbSurface extends AbstractGeometry implements N
      */
     public Vector<?> normal(final double u, final double v) {
         final Vector<?>[] d = derivative(u, v);
-        final Vector<?> n = d[0].cross(d[1]);
-        n.normalize();
-        return n;
+        return d[0].cross(d[1]).normalize();
     }
 
     public double domainStartU() {
@@ -321,7 +319,7 @@ public non-sealed class DefaultNurbSurface extends AbstractGeometry implements N
      * @return the bounding box of this surface
      */
     public NDRange getEnvelope() {
-        final Vector<?> start = Vectors.create(controlPoints[0][0].getDimension(), DataType.DOUBLE).set(controlPoints[0][0]);
+        final Vector<?> start = controlPoints[0][0].copy(DataType.DOUBLE);
         final NDRange bbox = new NDRange(getCoordinateReferenceSystem(), start, start);
         for (final Vector<?>[] row : controlPoints) {
             for (final Vector<?> p : row) {

@@ -28,8 +28,8 @@ import org.apache.sis.geometries.curve.ArcByCenterPoint;
 import org.apache.sis.geometries.curve.LineString;
 import org.apache.sis.maths.DataType;
 import org.apache.sis.maths.NDRange;
-import org.apache.sis.maths.ReadOnly;
 import org.apache.sis.maths.Vector;
+import org.apache.sis.maths.Vectors;
 
 
 /**
@@ -113,9 +113,9 @@ public non-sealed class DefaultArcByCenterPoint extends AbstractGeometry impleme
     @Override
     public Envelope getEnvelope() {
         // Axes after the first two keep the coordinates of the centre.
-        final Vector<?> position = center.getPosition().copy(DataType.DOUBLE);
-        final double cx = position.get(0);
-        final double cy = position.get(1);
+        final Vector<?> c = center.getPosition();
+        final double cx = c.get(0);
+        final double cy = c.get(1);
         final double rx = radius(0);
         final double ry = radius(1);
         // The sweep direction does not change the positions covered by the arc.
@@ -123,19 +123,18 @@ public non-sealed class DefaultArcByCenterPoint extends AbstractGeometry impleme
         final double hi = Math.max(startAngle, endAngle);
         // The centre is not on the arc: the envelope starts from an end point, not from the centre.
         double t = Math.toRadians(lo);
-        position.set(0, cx + rx * Math.cos(t));
-        position.set(1, cy + ry * Math.sin(t));
-        final var envelope = new NDRange(getCoordinateReferenceSystem(), position, position);
+        final Vector<?> start = position(c, cx + rx * Math.cos(t), cy + ry * Math.sin(t));
+        final var envelope = new NDRange(getCoordinateReferenceSystem(), start, start);
         t = Math.toRadians(hi);
-        add(envelope, position, cx + rx * Math.cos(t), cy + ry * Math.sin(t));
+        envelope.add(position(c, cx + rx * Math.cos(t), cy + ry * Math.sin(t)));
         // Any sweep of 360° or more contains the four extremes, so the loop stops after one turn.
         final double last = Math.min(hi, lo + 360);
         for (double q = Math.ceil(lo / 90) * 90; q <= last; q += 90) {
             switch (Math.floorMod((long) (q / 90), 4)) {
-                case 0:  add(envelope, position, cx + rx, cy); break;
-                case 1:  add(envelope, position, cx, cy + ry); break;
-                case 2:  add(envelope, position, cx - rx, cy); break;
-                default: add(envelope, position, cx, cy - ry); break;
+                case 0:  envelope.add(position(c, cx + rx, cy)); break;
+                case 1:  envelope.add(position(c, cx, cy + ry)); break;
+                case 2:  envelope.add(position(c, cx - rx, cy)); break;
+                default: envelope.add(position(c, cx, cy - ry)); break;
             }
         }
         return envelope;
@@ -148,32 +147,28 @@ public non-sealed class DefaultArcByCenterPoint extends AbstractGeometry impleme
      */
     @Override
     public LineString asLine(final Quantity<?> spacing, final Quantity<?> offset) {
-        final ReadOnly.Vector<?> c = center.getPosition();
+        final Vector<?> c = center.getPosition();
         final double cx = c.get(0);
         final double cy = c.get(1);
         final double rx = radius(0);
         final double ry = radius(1);
         final DoubleFunction<Vector<?>> function = (angle) -> {
             final double t = Math.toRadians(angle);
-            final Vector<?> position = c.copy(DataType.DOUBLE);
-            position.set(0, cx + rx * Math.cos(t));
-            position.set(1, cy + ry * Math.sin(t));
-            return position;
+            return position(c, cx + rx * Math.cos(t), cy + ry * Math.sin(t));
         };
         return CurveLinearizer.linearize(this, spacing, offset,
                 List.of(new CurveLinearizer.Piece(function, new double[] {startAngle, endAngle}, null)));
     }
 
     /**
-     * Adds to the envelope the given position, with its first two coordinates replaced by the given ones.
+     * Returns a position of type {@code DOUBLE} with its first two coordinates set to the given ones.
      * The other coordinates are those of the centre.
      */
-    private static void add(final NDRange envelope, final Vector<?> position,
-                            final double x, final double y)
-    {
-        position.set(0, x);
-        position.set(1, y);
-        envelope.add(position);
+    private static Vector<?> position(final Vector<?> centre, final double x, final double y) {
+        final double[] coordinates = centre.toArrayDouble();
+        coordinates[0] = x;
+        coordinates[1] = y;
+        return Vectors.create(coordinates, DataType.DOUBLE);
     }
 
     /**

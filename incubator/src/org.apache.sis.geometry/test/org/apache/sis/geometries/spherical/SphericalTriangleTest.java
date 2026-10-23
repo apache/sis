@@ -17,7 +17,7 @@
 package org.apache.sis.geometries.spherical;
 
 import org.apache.sis.geometries.internal.shared.DefaultSphere;
-import org.apache.sis.maths.ReadOnly;
+import org.apache.sis.maths.Vector;
 import org.apache.sis.maths.Vector3D;
 
 // Test dependencies
@@ -38,9 +38,9 @@ public class SphericalTriangleTest {
      * Triangle covering the octant of the sphere where x,y,z are all positive.
      * Corners are given in CCW order viewed from outside the sphere.
      */
-    private final ReadOnly.Vector<?> a = new Vector3D.Double(1, 0, 0);
-    private final ReadOnly.Vector<?> b = new Vector3D.Double(0, 1, 0);
-    private final ReadOnly.Vector<?> c = new Vector3D.Double(0, 0, 1);
+    private final Vector<?> a = new Vector3D.Double(1, 0, 0);
+    private final Vector<?> b = new Vector3D.Double(0, 1, 0);
+    private final Vector<?> c = new Vector3D.Double(0, 0, 1);
 
     /**
      * Constructor and corner accessors test.
@@ -59,7 +59,7 @@ public class SphericalTriangleTest {
     @Test
     public void getCentroidTest() {
         final SphericalTriangle triangle = new SphericalTriangle(new DefaultSphere(3), a, b, c);
-        final ReadOnly.Vector<?> centroid = triangle.getCentroidVector();
+        final Vector<?> centroid = triangle.getCentroidVector();
         final double v = 1.0 / Math.sqrt(3.0);
         assertArrayEquals(new double[]{v, v, v}, centroid.toArrayDouble(), TOLERANCE);
     }
@@ -138,8 +138,8 @@ public class SphericalTriangleTest {
         assertArrayEquals(ca, children[3].getC().toArrayDouble(), TOLERANCE);
     }
 
-    private static double[] middle(ReadOnly.Vector<?> p, ReadOnly.Vector<?> q) {
-        return p.copy().add(q).normalize().toArrayDouble();
+    private static double[] middle(Vector<?> p, Vector<?> q) {
+        return p.add(q).normalize().toArrayDouble();
     }
 
     /**

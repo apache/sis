@@ -40,7 +40,6 @@ import org.apache.sis.maths.NDRange;
 import org.apache.sis.maths.Vector;
 import org.apache.sis.maths.Vector2D;
 import org.apache.sis.maths.Vector3D;
-import org.apache.sis.maths.Vectors;
 import org.apache.sis.measure.Quantities;
 
 
@@ -129,7 +128,7 @@ public sealed interface Triangle extends Polygon
     @Override
     default Envelope getEnvelope() {
         final DataPoints exterior = getExteriorRing().getDataPoints();
-        final Vector<?> first = Vectors.create(getDimension(), DataType.DOUBLE).set(exterior.getPosition(0));
+        final Vector<?> first = exterior.getPosition(0).copy(DataType.DOUBLE);
         final NDRange env = new NDRange(getCoordinateReferenceSystem(), first, first);
         env.add(exterior.getPosition(1));
         env.add(exterior.getPosition(2));

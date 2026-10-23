@@ -24,7 +24,6 @@ import org.opengis.geometry.Envelope;
 import org.apache.sis.geometries.internal.shared.AbstractGeometry;
 import org.apache.sis.maths.NDArrays;
 import org.apache.sis.maths.NDRange;
-import org.apache.sis.maths.ReadOnly;
 import org.apache.sis.maths.SampleSystem;
 import org.apache.sis.maths.Vector;
 
@@ -101,19 +100,19 @@ public final class Plane extends AbstractGeometry{
         return points;
     }
 
-    public ReadOnly.Vector<?> getPosition() {
+    public Vector<?> getPosition() {
         return points.getPosition(0);
     }
 
-    public void setPosition(ReadOnly.Vector<?> position) {
+    public void setPosition(Vector<?> position) {
         points.setPosition(0, position);
     }
 
-    public ReadOnly.Vector<?> getNormal() {
+    public Vector<?> getNormal() {
         return normal;
     }
 
-    public void setNormal(ReadOnly.Vector<?> normal) {
+    public void setNormal(Vector<?> normal) {
         this.normal = normal.copy();
     }
 
@@ -176,7 +175,7 @@ public final class Plane extends AbstractGeometry{
      */
     @Override
     public Envelope getEnvelope() {
-        final ReadOnly.Vector<?> position = getPosition();
+        final Vector<?> position = getPosition();
         final int dim = normal.getDimension();
         final NDRange bbox = new NDRange(getCoordinateReferenceSystem());
         /*

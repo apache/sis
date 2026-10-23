@@ -16,6 +16,7 @@
  */
 package org.apache.sis.maths;
 
+import java.util.Arrays;
 import org.opengis.coordinate.MismatchedDimensionException;
 import org.opengis.geometry.DirectPosition;
 import org.opengis.geometry.Envelope;
@@ -115,6 +116,283 @@ public final class Vectors {
         }
     }
 
+    /**
+     * Create a vector of given data type with the given values.
+     * Values are cast to the data type, the array is not retained.
+     *
+     * @param v vector values, array length is the vector dimension
+     * @param dataType vector data type
+     * @return new vector
+     */
+    public static Vector<?> create(double[] v, DataType dataType) {
+        switch (dataType) {
+            case BYTE :
+                switch (v.length) {
+                    case 1 : return new Vector1D.Byte((byte) v[0]);
+                    case 2 : return new Vector2D.Byte((byte) v[0], (byte) v[1]);
+                    case 3 : return new Vector3D.Byte((byte) v[0], (byte) v[1], (byte) v[2]);
+                    case 4 : return new Vector4D.Byte((byte) v[0], (byte) v[1], (byte) v[2], (byte) v[3]);
+                    default : {
+                        final byte[] r = new byte[v.length];
+                        for (int i = 0; i < v.length; i++) r[i] = (byte) v[i];
+                        return VectorND.Byte.wrap(r);
+                    }
+                }
+            case UBYTE :
+                switch (v.length) {
+                    case 1 : return new Vector1D.UByte((byte) v[0]);
+                    case 2 : return new Vector2D.UByte((byte) v[0], (byte) v[1]);
+                    case 3 : return new Vector3D.UByte((byte) v[0], (byte) v[1], (byte) v[2]);
+                    case 4 : return new Vector4D.UByte((byte) v[0], (byte) v[1], (byte) v[2], (byte) v[3]);
+                    default : {
+                        final byte[] r = new byte[v.length];
+                        for (int i = 0; i < v.length; i++) r[i] = (byte) v[i];
+                        return VectorND.UByte.wrap(r);
+                    }
+                }
+            case SHORT :
+                switch (v.length) {
+                    case 1 : return new Vector1D.Short((short) v[0]);
+                    case 2 : return new Vector2D.Short((short) v[0], (short) v[1]);
+                    case 3 : return new Vector3D.Short((short) v[0], (short) v[1], (short) v[2]);
+                    case 4 : return new Vector4D.Short((short) v[0], (short) v[1], (short) v[2], (short) v[3]);
+                    default : {
+                        final short[] r = new short[v.length];
+                        for (int i = 0; i < v.length; i++) r[i] = (short) v[i];
+                        return VectorND.Short.wrap(r);
+                    }
+                }
+            case USHORT :
+                switch (v.length) {
+                    case 1 : return new Vector1D.UShort((short) v[0]);
+                    case 2 : return new Vector2D.UShort((short) v[0], (short) v[1]);
+                    case 3 : return new Vector3D.UShort((short) v[0], (short) v[1], (short) v[2]);
+                    case 4 : return new Vector4D.UShort((short) v[0], (short) v[1], (short) v[2], (short) v[3]);
+                    default : {
+                        final short[] r = new short[v.length];
+                        for (int i = 0; i < v.length; i++) r[i] = (short) v[i];
+                        return VectorND.UShort.wrap(r);
+                    }
+                }
+            case INT :
+                switch (v.length) {
+                    case 1 : return new Vector1D.Int((int) v[0]);
+                    case 2 : return new Vector2D.Int((int) v[0], (int) v[1]);
+                    case 3 : return new Vector3D.Int((int) v[0], (int) v[1], (int) v[2]);
+                    case 4 : return new Vector4D.Int((int) v[0], (int) v[1], (int) v[2], (int) v[3]);
+                    default : {
+                        final int[] r = new int[v.length];
+                        for (int i = 0; i < v.length; i++) r[i] = (int) v[i];
+                        return VectorND.Int.wrap(r);
+                    }
+                }
+            case UINT :
+                switch (v.length) {
+                    case 1 : return new Vector1D.UInt((int) (long) v[0]);
+                    case 2 : return new Vector2D.UInt((int) (long) v[0], (int) (long) v[1]);
+                    case 3 : return new Vector3D.UInt((int) (long) v[0], (int) (long) v[1], (int) (long) v[2]);
+                    case 4 : return new Vector4D.UInt((int) (long) v[0], (int) (long) v[1], (int) (long) v[2], (int) (long) v[3]);
+                    default : {
+                        final int[] r = new int[v.length];
+                        for (int i = 0; i < v.length; i++) r[i] = (int) (long) v[i];
+                        return VectorND.UInt.wrap(r);
+                    }
+                }
+            case LONG :
+                switch (v.length) {
+                    case 1 : return new Vector1D.Long((long) v[0]);
+                    case 2 : return new Vector2D.Long((long) v[0], (long) v[1]);
+                    case 3 : return new Vector3D.Long((long) v[0], (long) v[1], (long) v[2]);
+                    case 4 : return new Vector4D.Long((long) v[0], (long) v[1], (long) v[2], (long) v[3]);
+                    default : {
+                        final long[] r = new long[v.length];
+                        for (int i = 0; i < v.length; i++) r[i] = (long) v[i];
+                        return VectorND.Long.wrap(r);
+                    }
+                }
+            case FLOAT :
+                switch (v.length) {
+                    case 1 : return new Vector1D.Float((float) v[0]);
+                    case 2 : return new Vector2D.Float((float) v[0], (float) v[1]);
+                    case 3 : return new Vector3D.Float((float) v[0], (float) v[1], (float) v[2]);
+                    case 4 : return new Vector4D.Float((float) v[0], (float) v[1], (float) v[2], (float) v[3]);
+                    default : {
+                        final float[] r = new float[v.length];
+                        for (int i = 0; i < v.length; i++) r[i] = (float) v[i];
+                        return VectorND.Float.wrap(r);
+                    }
+                }
+            case DOUBLE :
+                switch (v.length) {
+                    case 1 : return new Vector1D.Double(v[0]);
+                    case 2 : return new Vector2D.Double(v[0], v[1]);
+                    case 3 : return new Vector3D.Double(v[0], v[1], v[2]);
+                    case 4 : return new Vector4D.Double(v[0], v[1], v[2], v[3]);
+                    default : {
+                        return VectorND.Double.wrap(v.clone());
+                    }
+                }
+            default :
+                throw new UnsupportedOperationException("Unexpected data type");
+        }
+    }
+
+    /**
+     * Create a vector with the values of an array range, without conversion.
+     *
+     * @param a array to read values from
+     * @param off index of the first value
+     * @param dim vector dimension
+     * @param unsigned true to create a vector of unsigned values
+     * @return new vector
+     */
+    static Vector<?> create(byte[] a, int off, int dim, boolean unsigned) {
+        if (unsigned) {
+            switch (dim) {
+                case 1 : return new Vector1D.UByte(a[off]);
+                case 2 : return new Vector2D.UByte(a[off], a[off+1]);
+                case 3 : return new Vector3D.UByte(a[off], a[off+1], a[off+2]);
+                case 4 : return new Vector4D.UByte(a[off], a[off+1], a[off+2], a[off+3]);
+                default : {
+                    return VectorND.UByte.wrap(Arrays.copyOfRange(a, off, off + dim));
+                }
+            }
+        }
+        switch (dim) {
+            case 1 : return new Vector1D.Byte(a[off]);
+            case 2 : return new Vector2D.Byte(a[off], a[off+1]);
+            case 3 : return new Vector3D.Byte(a[off], a[off+1], a[off+2]);
+            case 4 : return new Vector4D.Byte(a[off], a[off+1], a[off+2], a[off+3]);
+            default : {
+                return VectorND.Byte.wrap(Arrays.copyOfRange(a, off, off + dim));
+            }
+        }
+    }
+
+    /**
+     * Create a vector with the values of an array range, without conversion.
+     *
+     * @param a array to read values from
+     * @param off index of the first value
+     * @param dim vector dimension
+     * @param unsigned true to create a vector of unsigned values
+     * @return new vector
+     */
+    static Vector<?> create(short[] a, int off, int dim, boolean unsigned) {
+        if (unsigned) {
+            switch (dim) {
+                case 1 : return new Vector1D.UShort(a[off]);
+                case 2 : return new Vector2D.UShort(a[off], a[off+1]);
+                case 3 : return new Vector3D.UShort(a[off], a[off+1], a[off+2]);
+                case 4 : return new Vector4D.UShort(a[off], a[off+1], a[off+2], a[off+3]);
+                default : {
+                    return VectorND.UShort.wrap(Arrays.copyOfRange(a, off, off + dim));
+                }
+            }
+        }
+        switch (dim) {
+            case 1 : return new Vector1D.Short(a[off]);
+            case 2 : return new Vector2D.Short(a[off], a[off+1]);
+            case 3 : return new Vector3D.Short(a[off], a[off+1], a[off+2]);
+            case 4 : return new Vector4D.Short(a[off], a[off+1], a[off+2], a[off+3]);
+            default : {
+                return VectorND.Short.wrap(Arrays.copyOfRange(a, off, off + dim));
+            }
+        }
+    }
+
+    /**
+     * Create a vector with the values of an array range, without conversion.
+     *
+     * @param a array to read values from
+     * @param off index of the first value
+     * @param dim vector dimension
+     * @param unsigned true to create a vector of unsigned values
+     * @return new vector
+     */
+    static Vector<?> create(int[] a, int off, int dim, boolean unsigned) {
+        if (unsigned) {
+            switch (dim) {
+                case 1 : return new Vector1D.UInt(a[off]);
+                case 2 : return new Vector2D.UInt(a[off], a[off+1]);
+                case 3 : return new Vector3D.UInt(a[off], a[off+1], a[off+2]);
+                case 4 : return new Vector4D.UInt(a[off], a[off+1], a[off+2], a[off+3]);
+                default : {
+                    return VectorND.UInt.wrap(Arrays.copyOfRange(a, off, off + dim));
+                }
+            }
+        }
+        switch (dim) {
+            case 1 : return new Vector1D.Int(a[off]);
+            case 2 : return new Vector2D.Int(a[off], a[off+1]);
+            case 3 : return new Vector3D.Int(a[off], a[off+1], a[off+2]);
+            case 4 : return new Vector4D.Int(a[off], a[off+1], a[off+2], a[off+3]);
+            default : {
+                return VectorND.Int.wrap(Arrays.copyOfRange(a, off, off + dim));
+            }
+        }
+    }
+
+    /**
+     * Create a vector with the values of an array range, without conversion.
+     *
+     * @param a array to read values from
+     * @param off index of the first value
+     * @param dim vector dimension
+     * @return new vector
+     */
+    static Vector<?> create(long[] a, int off, int dim) {
+        switch (dim) {
+            case 1 : return new Vector1D.Long(a[off]);
+            case 2 : return new Vector2D.Long(a[off], a[off+1]);
+            case 3 : return new Vector3D.Long(a[off], a[off+1], a[off+2]);
+            case 4 : return new Vector4D.Long(a[off], a[off+1], a[off+2], a[off+3]);
+            default : {
+                return VectorND.Long.wrap(Arrays.copyOfRange(a, off, off + dim));
+            }
+        }
+    }
+
+    /**
+     * Create a vector with the values of an array range, without conversion.
+     *
+     * @param a array to read values from
+     * @param off index of the first value
+     * @param dim vector dimension
+     * @return new vector
+     */
+    static Vector<?> create(float[] a, int off, int dim) {
+        switch (dim) {
+            case 1 : return new Vector1D.Float(a[off]);
+            case 2 : return new Vector2D.Float(a[off], a[off+1]);
+            case 3 : return new Vector3D.Float(a[off], a[off+1], a[off+2]);
+            case 4 : return new Vector4D.Float(a[off], a[off+1], a[off+2], a[off+3]);
+            default : {
+                return VectorND.Float.wrap(Arrays.copyOfRange(a, off, off + dim));
+            }
+        }
+    }
+
+    /**
+     * Create a vector with the values of an array range, without conversion.
+     *
+     * @param a array to read values from
+     * @param off index of the first value
+     * @param dim vector dimension
+     * @return new vector
+     */
+    static Vector<?> create(double[] a, int off, int dim) {
+        switch (dim) {
+            case 1 : return new Vector1D.Double(a[off]);
+            case 2 : return new Vector2D.Double(a[off], a[off+1]);
+            case 3 : return new Vector3D.Double(a[off], a[off+1], a[off+2]);
+            case 4 : return new Vector4D.Double(a[off], a[off+1], a[off+2], a[off+3]);
+            default : {
+                return VectorND.Double.wrap(Arrays.copyOfRange(a, off, off + dim));
+            }
+        }
+    }
+
     public static Vector<?> createByte(int dimension) {
         return create(dimension, DataType.BYTE);
     }
@@ -155,9 +433,7 @@ public final class Vectors {
         if (pos instanceof Vector) {
             return (Vector) pos;
         } else {
-            final Vector v = create(pos.getDimension(), DataType.DOUBLE);
-            v.set(pos);
-            return v;
+            return create(pos.getCoordinates(), DataType.DOUBLE);
         }
     }
 
@@ -212,27 +488,17 @@ public final class Vectors {
         }
 
         @Override
-        public void set(int indice, double value) {
-            pos.setCoordinate(indice, value);
-        }
-
-        @Override
         public int getDimension() {
             return pos.getDimension();
-        }
-
-        @Override
-        public WrapDirectPostion copy() {
-            return super.copy();
         }
     }
 
     private static class AsDirectPosition implements DirectPosition {
 
-        private final Vector tuple;
+        private final Vector<?> tuple;
         private final CoordinateReferenceSystem crs;
 
-        public AsDirectPosition(Vector tuple, CoordinateReferenceSystem crs) {
+        public AsDirectPosition(Vector<?> tuple, CoordinateReferenceSystem crs) {
             this.tuple = tuple;
             this.crs = crs;
         }
@@ -259,7 +525,7 @@ public final class Vectors {
 
         @Override
         public void setCoordinate(int i, double d) {
-            tuple.set(i,d);
+            throw new UnsupportedOperationException("Vectors are immutable");
         }
 
     }
@@ -1712,7 +1978,7 @@ public final class Vectors {
      * @param unitVector unencoded unit vector value of size 3
      * @return encoded value
      */
-    public static Vector2D.Float toOctEncoding(ReadOnly.Vector<?> unitVector){
+    public static Vector2D.Float toOctEncoding(Vector<?> unitVector){
         ArgumentChecks.ensureCountBetween("dimension", true, 3, 3, unitVector.getDimension());
         final double x = unitVector.get(0);
         final double y = unitVector.get(1);
@@ -1735,7 +2001,7 @@ public final class Vectors {
      * @param unitVector unencoded unit vector value of size 3
      * @return encoded value
      */
-    public static Vector2D.UShort toOctUShort(ReadOnly.Vector<?> unitVector){
+    public static Vector2D.UShort toOctUShort(Vector<?> unitVector){
         final Vector2D.Float oct = toOctEncoding(unitVector);
         return new Vector2D.UShort(
             (short) toSNorm(oct.x, 65535),
@@ -1757,7 +2023,7 @@ public final class Vectors {
      * @param unitVector unencoded unit vector value of size 3
      * @return encoded value
      */
-    public static byte[] toOctByte(ReadOnly.Vector<?> unitVector){
+    public static byte[] toOctByte(Vector<?> unitVector){
         final Vector2D.Float oct = toOctEncoding(unitVector);
         final byte[] b = new byte[2];
         b[0] = (byte) toSNorm(oct.x, 255);
@@ -1797,19 +2063,17 @@ public final class Vectors {
      * @return unit vector
      */
     public static Vector3D.Float octToNormal(byte x, byte y){
-        Vector3D.Float normal = new Vector3D.Float();
-        normal.x = fromSNorm(x);
-        normal.y = fromSNorm(y);
-        normal.z = 1f - (Math.abs(normal.x) + Math.abs(normal.y));
+        float nx = fromSNorm(x);
+        float ny = fromSNorm(y);
+        final float nz = 1f - (Math.abs(nx) + Math.abs(ny));
 
-        if (normal.z < 0.0){
-            float oldVX = normal.x;
-            normal.x = (1f - Math.abs(normal.y)) * signNotZero(oldVX);
-            normal.y = (1f - Math.abs(oldVX)) * signNotZero(normal.y);
+        if (nz < 0.0){
+            final float oldVX = nx;
+            nx = (1f - Math.abs(ny)) * signNotZero(oldVX);
+            ny = (1f - Math.abs(oldVX)) * signNotZero(ny);
         }
 
-        normal.normalize();
-        return normal;
+        return new Vector3D.Float(nx, ny, nz).normalize();
     }
 
     /**
@@ -1820,19 +2084,17 @@ public final class Vectors {
      * @return unit vector
      */
     public static Vector3D.Float octToNormal(short x, short y){
-        Vector3D.Float normal = new Vector3D.Float();
-        normal.x = fromSNorm(x);
-        normal.y = fromSNorm(y);
-        normal.z = 1f - (Math.abs(normal.x) + Math.abs(normal.y));
+        float nx = fromSNorm(x);
+        float ny = fromSNorm(y);
+        final float nz = 1f - (Math.abs(nx) + Math.abs(ny));
 
-        if (normal.z < 0.0){
-            float oldVX = normal.x;
-            normal.x = (1f - Math.abs(normal.y)) * signNotZero(oldVX);
-            normal.y = (1f - Math.abs(oldVX)) * signNotZero(normal.y);
+        if (nz < 0.0){
+            final float oldVX = nx;
+            nx = (1f - Math.abs(ny)) * signNotZero(oldVX);
+            ny = (1f - Math.abs(oldVX)) * signNotZero(ny);
         }
 
-        normal.normalize();
-        return normal;
+        return new Vector3D.Float(nx, ny, nz).normalize();
     }
 
     /**
@@ -1841,18 +2103,14 @@ public final class Vectors {
      * @param tuple to quantize
      * @param quantizeBox expected bounding range of input tuple
      * @param quantizeRange resulting quantized values will range between 0 and this value inclusive.
-     * @param buffer where quantized value is stored
+     * @return new quantized vector
      */
-    public static <R extends Vector<?>> R toQuantizedEncoding(ReadOnly.Vector<?> tuple, Envelope quantizeBox, int quantizeRange, R buffer) throws MismatchedDimensionException, TransformException {
+    public static Vector<?> toQuantizedEncoding(Vector<?> tuple, Envelope quantizeBox, int quantizeRange) throws MismatchedDimensionException, TransformException {
         final MathTransform trs = quantizedTransform(quantizeBox, quantizeRange);
-        if (buffer == null) {
-            final DataType dt = DataType.forRange(NumberRange.create(0, true, quantizeRange, true), true);
-            buffer = (R) Vectors.create(tuple.getDimension(), dt);
-        }
-        double[] array = buffer.toArrayDouble();
+        final DataType dt = DataType.forRange(NumberRange.create(0, true, quantizeRange, true), true);
+        final double[] array = new double[tuple.getDimension()];
         trs.transform(tuple.toArrayDouble(), 0, array, 0, 1);
-        buffer.set(array);
-        return buffer;
+        return Vectors.create(array, dt);
     }
 
     /**

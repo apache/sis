@@ -27,7 +27,6 @@ import org.apache.sis.geometries.internal.shared.AbstractGeometry;
 import org.apache.sis.geometries.mesh.MeshPrimitive;
 import org.apache.sis.geometries.mesh.MeshPrimitive.Vertex;
 import org.apache.sis.maths.Maths;
-import org.apache.sis.maths.ReadOnly;
 import org.apache.sis.maths.Vector;
 
 
@@ -256,7 +255,7 @@ public final class OrientedEdge extends AbstractGeometry implements LineString, 
     }
 
     @Override
-    public void setPosition(int index, ReadOnly.Vector value) {
+    public void setPosition(int index, Vector value) {
         throw new UnsupportedOperationException("Not supported.");
     }
 
@@ -269,7 +268,7 @@ public final class OrientedEdge extends AbstractGeometry implements LineString, 
     }
 
     @Override
-    public void setAttribute(int index, String name, ReadOnly.Vector value) {
+    public void setAttribute(int index, String name, Vector value) {
         if (DataPointsType.ATT_POSITION.equals(name)) {
             setPosition(index, value);
             return;

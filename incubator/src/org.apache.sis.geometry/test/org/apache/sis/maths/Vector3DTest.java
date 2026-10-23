@@ -22,7 +22,7 @@ import org.junit.jupiter.api.Test;
 
 
 /**
- * Tests for {@link Vector3D#setFromLatLon(double, double) } and
+ * Tests for {@link Vector3D#fromLatLon(double, double) } and
  * {@link Vector3D#toLatLon() }.
  *
  * @author Johann Sorel (Geomatys)
@@ -33,29 +33,29 @@ public class Vector3DTest {
     private static final double HALF_SQRT2 = Math.sqrt(2) / 2;
 
     /**
-     * setFromLatLon test on remarkable points : equator/meridian origin,
+     * fromLatLon test on remarkable points : equator/meridian origin,
      * poles, and a quadrant point.
      */
     @Test
-    public void setFromLatLonTest() {
-        Vector3D.Double v = new Vector3D.Double();
+    public void fromLatLonTest() {
+        Vector3D.Double v;
 
-        v.setFromLatLon(0, 0);
+        v = Vector3D.fromLatLon(0, 0);
         assertArrayEquals(new double[]{1, 0, 0}, v.toArrayDouble(), TOLERANCE);
 
-        v.setFromLatLon(0, Math.PI / 2);
+        v = Vector3D.fromLatLon(0, Math.PI / 2);
         assertArrayEquals(new double[]{0, 1, 0}, v.toArrayDouble(), TOLERANCE);
 
-        v.setFromLatLon(0, Math.PI);
+        v = Vector3D.fromLatLon(0, Math.PI);
         assertArrayEquals(new double[]{-1, 0, 0}, v.toArrayDouble(), TOLERANCE);
 
-        v.setFromLatLon(Math.PI / 2, 0);
+        v = Vector3D.fromLatLon(Math.PI / 2, 0);
         assertArrayEquals(new double[]{0, 0, 1}, v.toArrayDouble(), TOLERANCE);
 
-        v.setFromLatLon(-Math.PI / 2, 0);
+        v = Vector3D.fromLatLon(-Math.PI / 2, 0);
         assertArrayEquals(new double[]{0, 0, -1}, v.toArrayDouble(), TOLERANCE);
 
-        v.setFromLatLon(Math.PI / 4, Math.PI / 4);
+        v = Vector3D.fromLatLon(Math.PI / 4, Math.PI / 4);
         assertArrayEquals(new double[]{0.5, 0.5, HALF_SQRT2}, v.toArrayDouble(), TOLERANCE);
     }
 
@@ -94,10 +94,10 @@ public class Vector3DTest {
         final double[] latitudes = {-Math.PI / 3, -Math.PI / 6, 0, Math.PI / 6, Math.PI / 3};
         final double[] longitudes = {-3 * Math.PI / 4, -Math.PI / 3, 0, Math.PI / 3, 3 * Math.PI / 4};
 
-        final Vector3D.Double v = new Vector3D.Double();
+        Vector3D.Double v = new Vector3D.Double();
         for (double lat : latitudes) {
             for (double lon : longitudes) {
-                v.setFromLatLon(lat, lon);
+                v = Vector3D.fromLatLon(lat, lon);
                 final double[] latLon = v.toLatLon();
                 assertEquals(lat, latLon[0], TOLERANCE);
                 assertEquals(lon, latLon[1], TOLERANCE);

@@ -50,12 +50,10 @@ import org.apache.sis.maths.DataType;
 import org.apache.sis.maths.Maths;
 import org.apache.sis.maths.NDArrays;
 import org.apache.sis.maths.NDRange;
-import org.apache.sis.maths.ReadOnly;
 import org.apache.sis.maths.SampleSystem;
 import org.apache.sis.maths.Vector;
 import org.apache.sis.maths.Vector1D;
 import org.apache.sis.maths.Vector3D;
-import org.apache.sis.maths.Vectors;
 import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.collection.Containers;
 
@@ -694,10 +692,11 @@ public sealed interface MeshPrimitive extends Geometry
 
             final int dimension = ta.getDimension();
             final long length = ta.getLength();
-            final Vector tuple = Vectors.createDouble(dimension);
+            final Cursor cursor = ta.cursor();
+            final Vector tuple = cursor.samples();
 
             for (int i = 0; i <length; i++) {
-                ta.get(i, tuple);
+                cursor.moveTo(i);
                 if (!tuple.isFinite()) {
                     throw new IllegalArgumentException("Found a NaN on attribute " + name +" at index "+ i);
                 }
@@ -804,12 +803,7 @@ public sealed interface MeshPrimitive extends Geometry
             final Array normals = NDArrays.of(positions.getSampleSystem(), DataType.FLOAT, positions.getLength());
 
             //compute smooth normals
-            final Vector pos0 = Vectors.createDouble(3);
-            final Vector pos1 = Vectors.createDouble(3);
-            final Vector pos2 = Vectors.createDouble(3);
-            final Vector nor0 = Vectors.createDouble(3);
-            final Vector nor1 = Vectors.createDouble(3);
-            final Vector nor2 = Vectors.createDouble(3);
+            final Cursor posCursor = positions.cursor();
 
             new MeshPrimitiveVisitor(this) {
                 @Override
@@ -826,9 +820,12 @@ public sealed interface MeshPrimitive extends Geometry
                         //flat triangle ignore it
                         return;
                     }
-                    positions.get(idx0, pos0);
-                    positions.get(idx1, pos1);
-                    positions.get(idx2, pos2);
+                    posCursor.moveTo(idx0);
+                    final Vector pos0 = new Vector3D.Double(posCursor.samples());
+                    posCursor.moveTo(idx1);
+                    final Vector pos1 = new Vector3D.Double(posCursor.samples());
+                    posCursor.moveTo(idx2);
+                    final Vector pos2 = new Vector3D.Double(posCursor.samples());
 
                     if (fastEquals(pos0, pos1) || fastEquals(pos0, pos2) || fastEquals(pos1, pos2)) {
                         //flat triangle ignore it
@@ -838,15 +835,9 @@ public sealed interface MeshPrimitive extends Geometry
                     final Vector normal = Maths.calculateNormal(pos0, pos1, pos2);
                     if (normal.isFinite()) {
                         //we do this check to ignore bad or degenerated triangles
-                        normals.get(idx0, nor0);
-                        normals.get(idx1, nor1);
-                        normals.get(idx2, nor2);
-                        nor0.add(normal);
-                        nor1.add(normal);
-                        nor2.add(normal);
-                        normals.set(idx0, nor0);
-                        normals.set(idx1, nor1);
-                        normals.set(idx2, nor2);
+                        normals.set(idx0, normals.get(idx0).add(normal));
+                        normals.set(idx1, normals.get(idx1).add(normal));
+                        normals.set(idx2, normals.get(idx2).add(normal));
                     }
                 }
 
@@ -855,16 +846,10 @@ public sealed interface MeshPrimitive extends Geometry
                     final DataPoints points = candidate.getDataPoints();
                     long idx0 = ((MeshPrimitive.Vertex)points.getPoint(0)).getIndex();
                     long idx1 = ((MeshPrimitive.Vertex)points.getPoint(1)).getIndex();
-                    positions.get(idx0, pos0);
-                    positions.get(idx1, pos1);
                     final Vector normal = new Vector3D.Float(0,0,1);
 
-                    normals.get(idx0, nor0);
-                    normals.get(idx1, nor1);
-                    nor0.add(normal);
-                    nor1.add(normal);
-                    normals.set(idx0, nor0);
-                    normals.set(idx1, nor1);
+                    normals.set(idx0, normals.get(idx0).add(normal));
+                    normals.set(idx1, normals.get(idx1).add(normal));
                 }
 
                 @Override
@@ -878,8 +863,7 @@ public sealed interface MeshPrimitive extends Geometry
 
             //normalize
             for (long i = 0, n = normals.getLength(); i < n; i++) {
-                normals.get(i, nor0);
-                nor0.normalize();
+                final Vector nor0 = normals.get(i).normalize();
                 if (nor0.isFinite()) {
                     //we do this check to ignore bad or degenerated triangles
                     normals.set(i, nor0);
@@ -1037,12 +1021,12 @@ public sealed interface MeshPrimitive extends Geometry
         }
 
         @Override
-        public void setAttribute(String name, ReadOnly.Vector tuple) {
+        public void setAttribute(String name, Vector tuple) {
             final Array tupleGrid = parent.attributes.get(name);
             if (tupleGrid == null) throw new IllegalArgumentException("Attribute " + name + " do not exist");
             final Cursor cursor = tupleGrid.cursor();
             cursor.moveTo(index);
-            cursor.samples().set(tuple);
+            cursor.set(tuple);
         }
 
         @Override
@@ -1121,12 +1105,12 @@ public sealed interface MeshPrimitive extends Geometry
         }
 
         @Override
-        public void setPosition(int index, ReadOnly.Vector value) {
+        public void setPosition(int index, Vector value) {
             primitive.getPositions().set(this.index[index], value);
         }
 
         @Override
-        public void setAttribute(int index, String name, ReadOnly.Vector value) {
+        public void setAttribute(int index, String name, Vector value) {
             primitive.getAttribute(name).set(this.index[index], value);
         }
 

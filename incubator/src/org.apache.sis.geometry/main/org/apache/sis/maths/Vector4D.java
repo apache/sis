@@ -31,14 +31,127 @@ public abstract class Vector4D<T extends Vector4D<T>> extends AbstractVector<T> 
         return 4;
     }
 
+    @Override
+    public abstract T with(int indice, double value) throws IndexOutOfBoundsException;
+
+    @Override
+    public abstract T add(Vector<?> other);
+
+    @Override
+    public abstract T subtract(Vector<?> other);
+
+    @Override
+    public abstract T multiply(Vector<?> other);
+
+    @Override
+    public abstract T divide(Vector<?> other);
+
+    @Override
+    public abstract T scale(double scale);
+
+    /**
+     * Create a new vector, linear combination of this vector and the other vector : a*this + b*other.
+     * The other vector is expected to have the same dimension as this vector.
+     *
+     * @param a coefficient of this vector
+     * @param other second vector
+     * @param b coefficient of the other vector
+     * @return new vector
+     */
+    protected abstract T combine(double a, Vector<?> other, double b);
+
+    /**
+     * Same as {@link #combine(double, Vector, double)} but computed with compensated arithmetic.
+     *
+     * @param a coefficient of this vector
+     * @param other second vector
+     * @param b coefficient of the other vector
+     * @return new vector
+     */
+    protected abstract T combineAccurate(double a, Vector<?> other, double b);
+
+    @Override
+    public T normalize() {
+        return scale(1.0 / length());
+    }
+
+    @Override
+    public T negate() {
+        return scale(-1);
+    }
+
+    @Override
+    public T perpendicular(Vector<?> unit) {
+        ensureDimension(unit, 4);
+        return combine(1, unit, -dot(unit));
+    }
+
+    @Override
+    public abstract T lerp(Vector<?> other, double ratio);
+
+    @Override
+    public T lerpAccurate(Vector<?> other, double ratio) {
+        ensureDimension(other, 4);
+        return combineAccurate(1 - ratio, other, ratio);
+    }
+
+    @Override
+    public T slerp(Vector<?> other, double ratio) {
+        return AbstractVector.slerp(this, other, ratio, (a, b) -> combine(a, other, b));
+    }
+
+    @Override
+    public T vectorTo(Vector<?> other) {
+        ensureDimension(other, 4);
+        return combine(-1, other, 1);
+    }
+
+    @Override
+    public double lengthSquare() {
+        final double v0 = get(0);
+        final double v1 = get(1);
+        final double v2 = get(2);
+        final double v3 = get(3);
+        return v0*v0 + v1*v1 + v2*v2 + v3*v3;
+    }
+
+    @Override
+    public double dot(Vector<?> other) {
+        ensureDimension(other, 4);
+        return get(0) * other.get(0)
+             + get(1) * other.get(1)
+             + get(2) * other.get(2)
+             + get(3) * other.get(3);
+    }
+
+    @Override
+    public double dotAccurate(Vector<?> other) {
+        ensureDimension(other, 4);
+        return LinearCombination.of(get(0), other.get(0), get(1), other.get(1), get(2), other.get(2), get(3), other.get(3));
+    }
+
+    @Override
+    public double distanceSquare(Vector<?> other) {
+        ensureDimension(other, 4);
+        final double d0 = get(0) - other.get(0);
+        final double d1 = get(1) - other.get(1);
+        final double d2 = get(2) - other.get(2);
+        final double d3 = get(3) - other.get(3);
+        return d0*d0 + d1*d1 + d2*d2 + d3*d3;
+    }
+
     public static class Byte extends Vector4D<Byte> {
 
-        public byte x;
-        public byte y;
-        public byte z;
-        public byte w;
+        public final byte x;
+        public final byte y;
+        public final byte z;
+        public final byte w;
 
         public Byte() {
+            this.x = 0;
+            this.y = 0;
+            this.z = 0;
+            this.w = 0;
         }
 
         public Byte(byte x, byte y, byte z, byte w) {
@@ -49,15 +162,19 @@ public abstract class Vector4D<T extends Vector4D<T>> extends AbstractVector<T> 
         }
 
         public Byte(byte[] array) {
+            ensureLength(array.length, 4);
             this.x = array[0];
             this.y = array[1];
             this.z = array[2];
             this.w = array[3];
         }
 
-        public Byte(ReadOnly.Vector<?> tuple) {
+        public Byte(Vector<?> tuple) {
             ensureDimension(tuple, 4);
-            set(tuple);
+            this.x = (byte) tuple.get(0);
+            this.y = (byte) tuple.get(1);
+            this.z = (byte) tuple.get(2);
+            this.w = (byte) tuple.get(3);
         }
 
         @Override
@@ -74,102 +191,6 @@ public abstract class Vector4D<T extends Vector4D<T>> extends AbstractVector<T> 
                 case 3 : return w;
                 default : throw new IndexOutOfBoundsException("Invalid index " + indice);
             }
-        }
-
-        @Override
-        public void set(int indice, double value) {
-            switch (indice) {
-                case 0 : x = (byte) value; break;
-                case 1 : y = (byte) value; break;
-                case 2 : z = (byte) value; break;
-                case 3 : w = (byte) value; break;
-                default : throw new IndexOutOfBoundsException("Invalid index " + indice);
-            }
-        }
-
-        @Override
-        public Byte set(double[] values) {
-            if (getDimension() != values.length) {
-                throw new IllegalArgumentException("Vectors size are different : "+getDimension()+" and "+values.length);
-            }
-            x = (byte) values[0];
-            y = (byte) values[1];
-            z = (byte) values[2];
-            w = (byte) values[3];
-            return this;
-        }
-
-        @Override
-        public Byte set(double[] values, int offset) {
-            x = (byte) values[ offset];
-            y = (byte) values[1 + offset];
-            z = (byte) values[2 + offset];
-            w = (byte) values[3 + offset];
-            return this;
-        }
-
-        @Override
-        public Byte set(float[] values) {
-            if (getDimension() != values.length) {
-                throw new IllegalArgumentException("Vectors size are different : "+getDimension()+" and "+values.length);
-            }
-            x = (byte) values[0];
-            y = (byte) values[1];
-            z = (byte) values[2];
-            w = (byte) values[3];
-            return this;
-        }
-
-        @Override
-        public Byte set(float[] values, int offset) {
-            x = (byte) values[ offset];
-            y = (byte) values[1 + offset];
-            z = (byte) values[2 + offset];
-            w = (byte) values[3 + offset];
-            return this;
-        }
-
-        @Override
-        public Byte normalize() {
-            final double s = 1.0 / length();
-            x *= s;
-            y *= s;
-            z *= s;
-            w *= s;
-            return this;
-        }
-
-        @Override
-        public Byte add(ReadOnly.Vector<?> other) {
-            if (getDimension() != other.getDimension()) {
-                throw new IllegalArgumentException("Vectors size are different : "+getDimension()+" and "+other.getDimension());
-            }
-            x += other.get(0);
-            y += other.get(1);
-            z += other.get(2);
-            w += other.get(3);
-            return this;
-        }
-
-        @Override
-        public Byte subtract(ReadOnly.Vector<?> other) {
-            if (getDimension() != other.getDimension()) {
-                throw new IllegalArgumentException("Vectors size are different : "+getDimension()+" and "+other.getDimension());
-            }
-            x -= other.get(0);
-            y -= other.get(1);
-            z -= other.get(2);
-            w -= other.get(3);
-            return this;
-        }
-
-        @Override
-        public Byte scale(double scale) {
-            x *= scale;
-            y *= scale;
-            z *= scale;
-            w *= scale;
-            return this;
         }
 
         @Override
@@ -220,8 +241,99 @@ public abstract class Vector4D<T extends Vector4D<T>> extends AbstractVector<T> 
         }
 
         @Override
+        public Byte add(Vector<?> other) {
+            ensureDimension(other, 4);
+            return new Byte(
+                    (byte) (x + other.get(0)),
+                    (byte) (y + other.get(1)),
+                    (byte) (z + other.get(2)),
+                    (byte) (w + other.get(3)));
+        }
+
+        @Override
+        public Byte subtract(Vector<?> other) {
+            ensureDimension(other, 4);
+            return new Byte(
+                    (byte) (x - other.get(0)),
+                    (byte) (y - other.get(1)),
+                    (byte) (z - other.get(2)),
+                    (byte) (w - other.get(3)));
+        }
+
+        @Override
+        public Byte multiply(Vector<?> other) {
+            ensureDimension(other, 4);
+            return new Byte(
+                    (byte) (x * other.get(0)),
+                    (byte) (y * other.get(1)),
+                    (byte) (z * other.get(2)),
+                    (byte) (w * other.get(3)));
+        }
+
+        @Override
+        public Byte divide(Vector<?> other) {
+            ensureDimension(other, 4);
+            return new Byte(
+                    (byte) (x / other.get(0)),
+                    (byte) (y / other.get(1)),
+                    (byte) (z / other.get(2)),
+                    (byte) (w / other.get(3)));
+        }
+
+        @Override
+        public Byte scale(double scale) {
+            return new Byte(
+                    (byte) (x * scale),
+                    (byte) (y * scale),
+                    (byte) (z * scale),
+                    (byte) (w * scale));
+        }
+
+        @Override
+        protected Byte combine(double a, Vector<?> other, double b) {
+            return new Byte(
+                    (byte) (a * x + b * other.get(0)),
+                    (byte) (a * y + b * other.get(1)),
+                    (byte) (a * z + b * other.get(2)),
+                    (byte) (a * w + b * other.get(3)));
+        }
+
+        @Override
+        protected Byte combineAccurate(double a, Vector<?> other, double b) {
+            return new Byte(
+                    (byte) (LinearCombination.of(a, x, b, other.get(0))),
+                    (byte) (LinearCombination.of(a, y, b, other.get(1))),
+                    (byte) (LinearCombination.of(a, z, b, other.get(2))),
+                    (byte) (LinearCombination.of(a, w, b, other.get(3))));
+        }
+
+        @Override
+        public Byte with(int indice, double value) throws IndexOutOfBoundsException {
+            switch (indice) {
+                case 0 : return new Byte((byte) value, y, z, w);
+                case 1 : return new Byte(x, (byte) value, z, w);
+                case 2 : return new Byte(x, y, (byte) value, w);
+                case 3 : return new Byte(x, y, z, (byte) value);
+                default : throw new IndexOutOfBoundsException("Invalid index " + indice);
+            }
+        }
+
+        @Override
+        public Byte lerp(Vector<?> other, double ratio) {
+            ensureDimension(other, 4);
+            if (ratio == 1) {
+                return new Byte((byte) (other.get(0)), (byte) (other.get(1)), (byte) (other.get(2)), (byte) (other.get(3)));
+            }
+            return new Byte(
+                    (byte) (x + ratio * (other.get(0) - x)),
+                    (byte) (y + ratio * (other.get(1) - y)),
+                    (byte) (z + ratio * (other.get(2) - z)),
+                    (byte) (w + ratio * (other.get(3) - w)));
+        }
+
+        @Override
         public Byte copy() {
-            return new Byte(x, y, z, w);
+            return this;
         }
 
         @Override
@@ -229,16 +341,30 @@ public abstract class Vector4D<T extends Vector4D<T>> extends AbstractVector<T> 
             return true;
         }
 
+        @Override
+        public boolean isNaN() {
+            return false;
+        }
+
+        @Override
+        public boolean isInfinite() {
+            return false;
+        }
+
     }
 
     public static class UByte extends Vector4D<UByte> {
 
-        public byte x;
-        public byte y;
-        public byte z;
-        public byte w;
+        public final byte x;
+        public final byte y;
+        public final byte z;
+        public final byte w;
 
         public UByte() {
+            this.x = 0;
+            this.y = 0;
+            this.z = 0;
+            this.w = 0;
         }
 
         public UByte(byte x, byte y, byte z, byte w) {
@@ -249,15 +375,19 @@ public abstract class Vector4D<T extends Vector4D<T>> extends AbstractVector<T> 
         }
 
         public UByte(byte[] array) {
+            ensureLength(array.length, 4);
             this.x = array[0];
             this.y = array[1];
             this.z = array[2];
             this.w = array[3];
         }
 
-        public UByte(ReadOnly.Vector<?> tuple) {
+        public UByte(Vector<?> tuple) {
             ensureDimension(tuple, 4);
-            set(tuple);
+            this.x = (byte) tuple.get(0);
+            this.y = (byte) tuple.get(1);
+            this.z = (byte) tuple.get(2);
+            this.w = (byte) tuple.get(3);
         }
 
         @Override
@@ -274,59 +404,6 @@ public abstract class Vector4D<T extends Vector4D<T>> extends AbstractVector<T> 
                 case 3 : return w & 0xFF;
                 default : throw new IndexOutOfBoundsException("Invalid index " + indice);
             }
-        }
-
-        @Override
-        public void set(int indice, double value) {
-            switch (indice) {
-                case 0 : x = (byte) value; break;
-                case 1 : y = (byte) value; break;
-                case 2 : z = (byte) value; break;
-                case 3 : w = (byte) value; break;
-                default : throw new IndexOutOfBoundsException("Invalid index " + indice);
-            }
-        }
-
-        @Override
-        public UByte set(double[] values) {
-            if (getDimension() != values.length) {
-                throw new IllegalArgumentException("Vectors size are different : "+getDimension()+" and "+values.length);
-            }
-            x = (byte) values[0];
-            y = (byte) values[1];
-            z = (byte) values[2];
-            w = (byte) values[3];
-            return this;
-        }
-
-        @Override
-        public UByte set(double[] values, int offset) {
-            x = (byte) values[ offset];
-            y = (byte) values[1 + offset];
-            z = (byte) values[2 + offset];
-            w = (byte) values[3 + offset];
-            return this;
-        }
-
-        @Override
-        public UByte set(float[] values) {
-            if (getDimension() != values.length) {
-                throw new IllegalArgumentException("Vectors size are different : "+getDimension()+" and "+values.length);
-            }
-            x = (byte) values[0];
-            y = (byte) values[1];
-            z = (byte) values[2];
-            w = (byte) values[3];
-            return this;
-        }
-
-        @Override
-        public UByte set(float[] values, int offset) {
-            x = (byte) values[ offset];
-            y = (byte) values[1 + offset];
-            z = (byte) values[2 + offset];
-            w = (byte) values[3 + offset];
-            return this;
         }
 
         @Override
@@ -377,8 +454,99 @@ public abstract class Vector4D<T extends Vector4D<T>> extends AbstractVector<T> 
         }
 
         @Override
+        public UByte add(Vector<?> other) {
+            ensureDimension(other, 4);
+            return new UByte(
+                    (byte) ((x & 0xFF) + other.get(0)),
+                    (byte) ((y & 0xFF) + other.get(1)),
+                    (byte) ((z & 0xFF) + other.get(2)),
+                    (byte) ((w & 0xFF) + other.get(3)));
+        }
+
+        @Override
+        public UByte subtract(Vector<?> other) {
+            ensureDimension(other, 4);
+            return new UByte(
+                    (byte) ((x & 0xFF) - other.get(0)),
+                    (byte) ((y & 0xFF) - other.get(1)),
+                    (byte) ((z & 0xFF) - other.get(2)),
+                    (byte) ((w & 0xFF) - other.get(3)));
+        }
+
+        @Override
+        public UByte multiply(Vector<?> other) {
+            ensureDimension(other, 4);
+            return new UByte(
+                    (byte) ((x & 0xFF) * other.get(0)),
+                    (byte) ((y & 0xFF) * other.get(1)),
+                    (byte) ((z & 0xFF) * other.get(2)),
+                    (byte) ((w & 0xFF) * other.get(3)));
+        }
+
+        @Override
+        public UByte divide(Vector<?> other) {
+            ensureDimension(other, 4);
+            return new UByte(
+                    (byte) ((x & 0xFF) / other.get(0)),
+                    (byte) ((y & 0xFF) / other.get(1)),
+                    (byte) ((z & 0xFF) / other.get(2)),
+                    (byte) ((w & 0xFF) / other.get(3)));
+        }
+
+        @Override
+        public UByte scale(double scale) {
+            return new UByte(
+                    (byte) ((x & 0xFF) * scale),
+                    (byte) ((y & 0xFF) * scale),
+                    (byte) ((z & 0xFF) * scale),
+                    (byte) ((w & 0xFF) * scale));
+        }
+
+        @Override
+        protected UByte combine(double a, Vector<?> other, double b) {
+            return new UByte(
+                    (byte) (a * (x & 0xFF) + b * other.get(0)),
+                    (byte) (a * (y & 0xFF) + b * other.get(1)),
+                    (byte) (a * (z & 0xFF) + b * other.get(2)),
+                    (byte) (a * (w & 0xFF) + b * other.get(3)));
+        }
+
+        @Override
+        protected UByte combineAccurate(double a, Vector<?> other, double b) {
+            return new UByte(
+                    (byte) (LinearCombination.of(a, (x & 0xFF), b, other.get(0))),
+                    (byte) (LinearCombination.of(a, (y & 0xFF), b, other.get(1))),
+                    (byte) (LinearCombination.of(a, (z & 0xFF), b, other.get(2))),
+                    (byte) (LinearCombination.of(a, (w & 0xFF), b, other.get(3))));
+        }
+
+        @Override
+        public UByte with(int indice, double value) throws IndexOutOfBoundsException {
+            switch (indice) {
+                case 0 : return new UByte((byte) value, y, z, w);
+                case 1 : return new UByte(x, (byte) value, z, w);
+                case 2 : return new UByte(x, y, (byte) value, w);
+                case 3 : return new UByte(x, y, z, (byte) value);
+                default : throw new IndexOutOfBoundsException("Invalid index " + indice);
+            }
+        }
+
+        @Override
+        public UByte lerp(Vector<?> other, double ratio) {
+            ensureDimension(other, 4);
+            if (ratio == 1) {
+                return new UByte((byte) (other.get(0)), (byte) (other.get(1)), (byte) (other.get(2)), (byte) (other.get(3)));
+            }
+            return new UByte(
+                    (byte) ((x & 0xFF) + ratio * (other.get(0) - (x & 0xFF))),
+                    (byte) ((y & 0xFF) + ratio * (other.get(1) - (y & 0xFF))),
+                    (byte) ((z & 0xFF) + ratio * (other.get(2) - (z & 0xFF))),
+                    (byte) ((w & 0xFF) + ratio * (other.get(3) - (w & 0xFF))));
+        }
+
+        @Override
         public UByte copy() {
-            return new UByte(x, y, z, w);
+            return this;
         }
 
         @Override
@@ -386,16 +554,30 @@ public abstract class Vector4D<T extends Vector4D<T>> extends AbstractVector<T> 
             return true;
         }
 
+        @Override
+        public boolean isNaN() {
+            return false;
+        }
+
+        @Override
+        public boolean isInfinite() {
+            return false;
+        }
+
     }
 
     public static class Short extends Vector4D<Short> {
 
-        public short x;
-        public short y;
-        public short z;
-        public short w;
+        public final short x;
+        public final short y;
+        public final short z;
+        public final short w;
 
         public Short() {
+            this.x = 0;
+            this.y = 0;
+            this.z = 0;
+            this.w = 0;
         }
 
         public Short(short x, short y, short z, short w) {
@@ -406,15 +588,19 @@ public abstract class Vector4D<T extends Vector4D<T>> extends AbstractVector<T> 
         }
 
         public Short(short[] array) {
+            ensureLength(array.length, 4);
             this.x = array[0];
             this.y = array[1];
             this.z = array[2];
             this.w = array[3];
         }
 
-        public Short(ReadOnly.Vector<?> tuple) {
+        public Short(Vector<?> tuple) {
             ensureDimension(tuple, 4);
-            set(tuple);
+            this.x = (short) tuple.get(0);
+            this.y = (short) tuple.get(1);
+            this.z = (short) tuple.get(2);
+            this.w = (short) tuple.get(3);
         }
 
         @Override
@@ -431,102 +617,6 @@ public abstract class Vector4D<T extends Vector4D<T>> extends AbstractVector<T> 
                 case 3 : return w;
                 default : throw new IndexOutOfBoundsException("Invalid index " + indice);
             }
-        }
-
-        @Override
-        public void set(int indice, double value) {
-            switch (indice) {
-                case 0 : x = (short) value; break;
-                case 1 : y = (short) value; break;
-                case 2 : z = (short) value; break;
-                case 3 : w = (short) value; break;
-                default : throw new IndexOutOfBoundsException("Invalid index " + indice);
-            }
-        }
-
-        @Override
-        public Short set(double[] values) {
-            if (getDimension() != values.length) {
-                throw new IllegalArgumentException("Vectors size are different : "+getDimension()+" and "+values.length);
-            }
-            x = (short) values[0];
-            y = (short) values[1];
-            z = (short) values[2];
-            w = (short) values[3];
-            return this;
-        }
-
-        @Override
-        public Short set(double[] values, int offset) {
-            x = (short) values[ offset];
-            y = (short) values[1 + offset];
-            z = (short) values[2 + offset];
-            w = (short) values[3 + offset];
-            return this;
-        }
-
-        @Override
-        public Short set(float[] values) {
-            if (getDimension() != values.length) {
-                throw new IllegalArgumentException("Vectors size are different : "+getDimension()+" and "+values.length);
-            }
-            x = (short) values[0];
-            y = (short) values[1];
-            z = (short) values[2];
-            w = (short) values[3];
-            return this;
-        }
-
-        @Override
-        public Short set(float[] values, int offset) {
-            x = (short) values[ offset];
-            y = (short) values[1 + offset];
-            z = (short) values[2 + offset];
-            w = (short) values[3 + offset];
-            return this;
-        }
-
-        @Override
-        public Short normalize() {
-            final double s = 1.0 / length();
-            x *= s;
-            y *= s;
-            z *= s;
-            w *= s;
-            return this;
-        }
-
-        @Override
-        public Short add(ReadOnly.Vector<?> other) {
-            if (getDimension() != other.getDimension()) {
-                throw new IllegalArgumentException("Vectors size are different : "+getDimension()+" and "+other.getDimension());
-            }
-            x += other.get(0);
-            y += other.get(1);
-            z += other.get(2);
-            w += other.get(3);
-            return this;
-        }
-
-        @Override
-        public Short subtract(ReadOnly.Vector<?> other) {
-            if (getDimension() != other.getDimension()) {
-                throw new IllegalArgumentException("Vectors size are different : "+getDimension()+" and "+other.getDimension());
-            }
-            x -= other.get(0);
-            y -= other.get(1);
-            z -= other.get(2);
-            w -= other.get(3);
-            return this;
-        }
-
-        @Override
-        public Short scale(double scale) {
-            x *= scale;
-            y *= scale;
-            z *= scale;
-            w *= scale;
-            return this;
         }
 
         @Override
@@ -577,8 +667,99 @@ public abstract class Vector4D<T extends Vector4D<T>> extends AbstractVector<T> 
         }
 
         @Override
+        public Short add(Vector<?> other) {
+            ensureDimension(other, 4);
+            return new Short(
+                    (short) (x + other.get(0)),
+                    (short) (y + other.get(1)),
+                    (short) (z + other.get(2)),
+                    (short) (w + other.get(3)));
+        }
+
+        @Override
+        public Short subtract(Vector<?> other) {
+            ensureDimension(other, 4);
+            return new Short(
+                    (short) (x - other.get(0)),
+                    (short) (y - other.get(1)),
+                    (short) (z - other.get(2)),
+                    (short) (w - other.get(3)));
+        }
+
+        @Override
+        public Short multiply(Vector<?> other) {
+            ensureDimension(other, 4);
+            return new Short(
+                    (short) (x * other.get(0)),
+                    (short) (y * other.get(1)),
+                    (short) (z * other.get(2)),
+                    (short) (w * other.get(3)));
+        }
+
+        @Override
+        public Short divide(Vector<?> other) {
+            ensureDimension(other, 4);
+            return new Short(
+                    (short) (x / other.get(0)),
+                    (short) (y / other.get(1)),
+                    (short) (z / other.get(2)),
+                    (short) (w / other.get(3)));
+        }
+
+        @Override
+        public Short scale(double scale) {
+            return new Short(
+                    (short) (x * scale),
+                    (short) (y * scale),
+                    (short) (z * scale),
+                    (short) (w * scale));
+        }
+
+        @Override
+        protected Short combine(double a, Vector<?> other, double b) {
+            return new Short(
+                    (short) (a * x + b * other.get(0)),
+                    (short) (a * y + b * other.get(1)),
+                    (short) (a * z + b * other.get(2)),
+                    (short) (a * w + b * other.get(3)));
+        }
+
+        @Override
+        protected Short combineAccurate(double a, Vector<?> other, double b) {
+            return new Short(
+                    (short) (LinearCombination.of(a, x, b, other.get(0))),
+                    (short) (LinearCombination.of(a, y, b, other.get(1))),
+                    (short) (LinearCombination.of(a, z, b, other.get(2))),
+                    (short) (LinearCombination.of(a, w, b, other.get(3))));
+        }
+
+        @Override
+        public Short with(int indice, double value) throws IndexOutOfBoundsException {
+            switch (indice) {
+                case 0 : return new Short((short) value, y, z, w);
+                case 1 : return new Short(x, (short) value, z, w);
+                case 2 : return new Short(x, y, (short) value, w);
+                case 3 : return new Short(x, y, z, (short) value);
+                default : throw new IndexOutOfBoundsException("Invalid index " + indice);
+            }
+        }
+
+        @Override
+        public Short lerp(Vector<?> other, double ratio) {
+            ensureDimension(other, 4);
+            if (ratio == 1) {
+                return new Short((short) (other.get(0)), (short) (other.get(1)), (short) (other.get(2)), (short) (other.get(3)));
+            }
+            return new Short(
+                    (short) (x + ratio * (other.get(0) - x)),
+                    (short) (y + ratio * (other.get(1) - y)),
+                    (short) (z + ratio * (other.get(2) - z)),
+                    (short) (w + ratio * (other.get(3) - w)));
+        }
+
+        @Override
         public Short copy() {
-            return new Short(x, y, z, w);
+            return this;
         }
 
         @Override
@@ -586,16 +767,30 @@ public abstract class Vector4D<T extends Vector4D<T>> extends AbstractVector<T> 
             return true;
         }
 
+        @Override
+        public boolean isNaN() {
+            return false;
+        }
+
+        @Override
+        public boolean isInfinite() {
+            return false;
+        }
+
     }
 
     public static class UShort extends Vector4D<UShort> {
 
-        public short x;
-        public short y;
-        public short z;
-        public short w;
+        public final short x;
+        public final short y;
+        public final short z;
+        public final short w;
 
         public UShort() {
+            this.x = 0;
+            this.y = 0;
+            this.z = 0;
+            this.w = 0;
         }
 
         public UShort(short x, short y, short z, short w) {
@@ -606,15 +801,19 @@ public abstract class Vector4D<T extends Vector4D<T>> extends AbstractVector<T> 
         }
 
         public UShort(short[] array) {
+            ensureLength(array.length, 4);
             this.x = array[0];
             this.y = array[1];
             this.z = array[2];
             this.w = array[3];
         }
 
-        public UShort(ReadOnly.Vector<?> tuple) {
+        public UShort(Vector<?> tuple) {
             ensureDimension(tuple, 4);
-            set(tuple);
+            this.x = (short) tuple.get(0);
+            this.y = (short) tuple.get(1);
+            this.z = (short) tuple.get(2);
+            this.w = (short) tuple.get(3);
         }
 
         @Override
@@ -631,102 +830,6 @@ public abstract class Vector4D<T extends Vector4D<T>> extends AbstractVector<T> 
                 case 3 : return java.lang.Short.toUnsignedInt(w);
                 default : throw new IndexOutOfBoundsException("Invalid index " + indice);
             }
-        }
-
-        @Override
-        public void set(int indice, double value) {
-            switch (indice) {
-                case 0 : x = (short) value; break;
-                case 1 : y = (short) value; break;
-                case 2 : z = (short) value; break;
-                case 3 : w = (short) value; break;
-                default : throw new IndexOutOfBoundsException("Invalid index " + indice);
-            }
-        }
-
-        @Override
-        public UShort set(double[] values) {
-            if (getDimension() != values.length) {
-                throw new IllegalArgumentException("Vectors size are different : "+getDimension()+" and "+values.length);
-            }
-            x = (short) values[0];
-            y = (short) values[1];
-            z = (short) values[2];
-            w = (short) values[3];
-            return this;
-        }
-
-        @Override
-        public UShort set(double[] values, int offset) {
-            x = (short) values[ offset];
-            y = (short) values[1 + offset];
-            z = (short) values[2 + offset];
-            w = (short) values[3 + offset];
-            return this;
-        }
-
-        @Override
-        public UShort set(float[] values) {
-            if (getDimension() != values.length) {
-                throw new IllegalArgumentException("Vectors size are different : "+getDimension()+" and "+values.length);
-            }
-            x = (short) values[0];
-            y = (short) values[1];
-            z = (short) values[2];
-            w = (short) values[3];
-            return this;
-        }
-
-        @Override
-        public UShort set(float[] values, int offset) {
-            x = (short) values[ offset];
-            y = (short) values[1 + offset];
-            z = (short) values[2 + offset];
-            w = (short) values[3 + offset];
-            return this;
-        }
-
-        @Override
-        public UShort normalize() {
-            final double s = 1.0 / length();
-            x *= s;
-            y *= s;
-            z *= s;
-            w *= s;
-            return this;
-        }
-
-        @Override
-        public UShort add(ReadOnly.Vector<?> other) {
-            if (getDimension() != other.getDimension()) {
-                throw new IllegalArgumentException("Vectors size are different : "+getDimension()+" and "+other.getDimension());
-            }
-            x += other.get(0);
-            y += other.get(1);
-            z += other.get(2);
-            w += other.get(3);
-            return this;
-        }
-
-        @Override
-        public UShort subtract(ReadOnly.Vector<?> other) {
-            if (getDimension() != other.getDimension()) {
-                throw new IllegalArgumentException("Vectors size are different : "+getDimension()+" and "+other.getDimension());
-            }
-            x -= other.get(0);
-            y -= other.get(1);
-            z -= other.get(2);
-            w -= other.get(3);
-            return this;
-        }
-
-        @Override
-        public UShort scale(double scale) {
-            x *= scale;
-            y *= scale;
-            z *= scale;
-            w *= scale;
-            return this;
         }
 
         @Override
@@ -792,8 +895,99 @@ public abstract class Vector4D<T extends Vector4D<T>> extends AbstractVector<T> 
         }
 
         @Override
+        public UShort add(Vector<?> other) {
+            ensureDimension(other, 4);
+            return new UShort(
+                    (short) ((x & 0xFFFF) + other.get(0)),
+                    (short) ((y & 0xFFFF) + other.get(1)),
+                    (short) ((z & 0xFFFF) + other.get(2)),
+                    (short) ((w & 0xFFFF) + other.get(3)));
+        }
+
+        @Override
+        public UShort subtract(Vector<?> other) {
+            ensureDimension(other, 4);
+            return new UShort(
+                    (short) ((x & 0xFFFF) - other.get(0)),
+                    (short) ((y & 0xFFFF) - other.get(1)),
+                    (short) ((z & 0xFFFF) - other.get(2)),
+                    (short) ((w & 0xFFFF) - other.get(3)));
+        }
+
+        @Override
+        public UShort multiply(Vector<?> other) {
+            ensureDimension(other, 4);
+            return new UShort(
+                    (short) ((x & 0xFFFF) * other.get(0)),
+                    (short) ((y & 0xFFFF) * other.get(1)),
+                    (short) ((z & 0xFFFF) * other.get(2)),
+                    (short) ((w & 0xFFFF) * other.get(3)));
+        }
+
+        @Override
+        public UShort divide(Vector<?> other) {
+            ensureDimension(other, 4);
+            return new UShort(
+                    (short) ((x & 0xFFFF) / other.get(0)),
+                    (short) ((y & 0xFFFF) / other.get(1)),
+                    (short) ((z & 0xFFFF) / other.get(2)),
+                    (short) ((w & 0xFFFF) / other.get(3)));
+        }
+
+        @Override
+        public UShort scale(double scale) {
+            return new UShort(
+                    (short) ((x & 0xFFFF) * scale),
+                    (short) ((y & 0xFFFF) * scale),
+                    (short) ((z & 0xFFFF) * scale),
+                    (short) ((w & 0xFFFF) * scale));
+        }
+
+        @Override
+        protected UShort combine(double a, Vector<?> other, double b) {
+            return new UShort(
+                    (short) (a * (x & 0xFFFF) + b * other.get(0)),
+                    (short) (a * (y & 0xFFFF) + b * other.get(1)),
+                    (short) (a * (z & 0xFFFF) + b * other.get(2)),
+                    (short) (a * (w & 0xFFFF) + b * other.get(3)));
+        }
+
+        @Override
+        protected UShort combineAccurate(double a, Vector<?> other, double b) {
+            return new UShort(
+                    (short) (LinearCombination.of(a, (x & 0xFFFF), b, other.get(0))),
+                    (short) (LinearCombination.of(a, (y & 0xFFFF), b, other.get(1))),
+                    (short) (LinearCombination.of(a, (z & 0xFFFF), b, other.get(2))),
+                    (short) (LinearCombination.of(a, (w & 0xFFFF), b, other.get(3))));
+        }
+
+        @Override
+        public UShort with(int indice, double value) throws IndexOutOfBoundsException {
+            switch (indice) {
+                case 0 : return new UShort((short) value, y, z, w);
+                case 1 : return new UShort(x, (short) value, z, w);
+                case 2 : return new UShort(x, y, (short) value, w);
+                case 3 : return new UShort(x, y, z, (short) value);
+                default : throw new IndexOutOfBoundsException("Invalid index " + indice);
+            }
+        }
+
+        @Override
+        public UShort lerp(Vector<?> other, double ratio) {
+            ensureDimension(other, 4);
+            if (ratio == 1) {
+                return new UShort((short) (other.get(0)), (short) (other.get(1)), (short) (other.get(2)), (short) (other.get(3)));
+            }
+            return new UShort(
+                    (short) ((x & 0xFFFF) + ratio * (other.get(0) - (x & 0xFFFF))),
+                    (short) ((y & 0xFFFF) + ratio * (other.get(1) - (y & 0xFFFF))),
+                    (short) ((z & 0xFFFF) + ratio * (other.get(2) - (z & 0xFFFF))),
+                    (short) ((w & 0xFFFF) + ratio * (other.get(3) - (w & 0xFFFF))));
+        }
+
+        @Override
         public UShort copy() {
-            return new UShort(x, y, z, w);
+            return this;
         }
 
         @Override
@@ -801,16 +995,30 @@ public abstract class Vector4D<T extends Vector4D<T>> extends AbstractVector<T> 
             return true;
         }
 
+        @Override
+        public boolean isNaN() {
+            return false;
+        }
+
+        @Override
+        public boolean isInfinite() {
+            return false;
+        }
+
     }
 
     public static class Int extends Vector4D<Int> {
 
-        public int x;
-        public int y;
-        public int z;
-        public int w;
+        public final int x;
+        public final int y;
+        public final int z;
+        public final int w;
 
         public Int() {
+            this.x = 0;
+            this.y = 0;
+            this.z = 0;
+            this.w = 0;
         }
 
         public Int(int x, int y, int z, int w) {
@@ -821,15 +1029,19 @@ public abstract class Vector4D<T extends Vector4D<T>> extends AbstractVector<T> 
         }
 
         public Int(int[] array) {
+            ensureLength(array.length, 4);
             this.x = array[0];
             this.y = array[1];
             this.z = array[2];
             this.w = array[3];
         }
 
-        public Int(ReadOnly.Vector<?> tuple) {
+        public Int(Vector<?> tuple) {
             ensureDimension(tuple, 4);
-            set(tuple);
+            this.x = (int) tuple.get(0);
+            this.y = (int) tuple.get(1);
+            this.z = (int) tuple.get(2);
+            this.w = (int) tuple.get(3);
         }
 
         @Override
@@ -846,102 +1058,6 @@ public abstract class Vector4D<T extends Vector4D<T>> extends AbstractVector<T> 
                 case 3 : return w;
                 default : throw new IndexOutOfBoundsException("Invalid index " + indice);
             }
-        }
-
-        @Override
-        public void set(int indice, double value) {
-            switch (indice) {
-                case 0 : x = (int) value; break;
-                case 1 : y = (int) value; break;
-                case 2 : z = (int) value; break;
-                case 3 : w = (int) value; break;
-                default : throw new IndexOutOfBoundsException("Invalid index " + indice);
-            }
-        }
-
-        @Override
-        public Int set(double[] values) {
-            if (getDimension() != values.length) {
-                throw new IllegalArgumentException("Vectors size are different : "+getDimension()+" and "+values.length);
-            }
-            x = (int) values[0];
-            y = (int) values[1];
-            z = (int) values[2];
-            w = (int) values[3];
-            return this;
-        }
-
-        @Override
-        public Int set(double[] values, int offset) {
-            x = (int) values[ offset];
-            y = (int) values[1 + offset];
-            z = (int) values[2 + offset];
-            w = (int) values[3 + offset];
-            return this;
-        }
-
-        @Override
-        public Int set(float[] values) {
-            if (getDimension() != values.length) {
-                throw new IllegalArgumentException("Vectors size are different : "+getDimension()+" and "+values.length);
-            }
-            x = (int) values[0];
-            y = (int) values[1];
-            z = (int) values[2];
-            w = (int) values[3];
-            return this;
-        }
-
-        @Override
-        public Int set(float[] values, int offset) {
-            x = (int) values[ offset];
-            y = (int) values[1 + offset];
-            z = (int) values[2 + offset];
-            w = (int) values[3 + offset];
-            return this;
-        }
-
-        @Override
-        public Int normalize() {
-            final double s = 1.0 / length();
-            x *= s;
-            y *= s;
-            z *= s;
-            w *= s;
-            return this;
-        }
-
-        @Override
-        public Int add(ReadOnly.Vector<?> other) {
-            if (getDimension() != other.getDimension()) {
-                throw new IllegalArgumentException("Vectors size are different : "+getDimension()+" and "+other.getDimension());
-            }
-            x += other.get(0);
-            y += other.get(1);
-            z += other.get(2);
-            w += other.get(3);
-            return this;
-        }
-
-        @Override
-        public Int subtract(ReadOnly.Vector<?> other) {
-            if (getDimension() != other.getDimension()) {
-                throw new IllegalArgumentException("Vectors size are different : "+getDimension()+" and "+other.getDimension());
-            }
-            x -= other.get(0);
-            y -= other.get(1);
-            z -= other.get(2);
-            w -= other.get(3);
-            return this;
-        }
-
-        @Override
-        public Int scale(double scale) {
-            x *= scale;
-            y *= scale;
-            z *= scale;
-            w *= scale;
-            return this;
         }
 
         @Override
@@ -992,8 +1108,99 @@ public abstract class Vector4D<T extends Vector4D<T>> extends AbstractVector<T> 
         }
 
         @Override
+        public Int add(Vector<?> other) {
+            ensureDimension(other, 4);
+            return new Int(
+                    (int) (x + other.get(0)),
+                    (int) (y + other.get(1)),
+                    (int) (z + other.get(2)),
+                    (int) (w + other.get(3)));
+        }
+
+        @Override
+        public Int subtract(Vector<?> other) {
+            ensureDimension(other, 4);
+            return new Int(
+                    (int) (x - other.get(0)),
+                    (int) (y - other.get(1)),
+                    (int) (z - other.get(2)),
+                    (int) (w - other.get(3)));
+        }
+
+        @Override
+        public Int multiply(Vector<?> other) {
+            ensureDimension(other, 4);
+            return new Int(
+                    (int) (x * other.get(0)),
+                    (int) (y * other.get(1)),
+                    (int) (z * other.get(2)),
+                    (int) (w * other.get(3)));
+        }
+
+        @Override
+        public Int divide(Vector<?> other) {
+            ensureDimension(other, 4);
+            return new Int(
+                    (int) (x / other.get(0)),
+                    (int) (y / other.get(1)),
+                    (int) (z / other.get(2)),
+                    (int) (w / other.get(3)));
+        }
+
+        @Override
+        public Int scale(double scale) {
+            return new Int(
+                    (int) (x * scale),
+                    (int) (y * scale),
+                    (int) (z * scale),
+                    (int) (w * scale));
+        }
+
+        @Override
+        protected Int combine(double a, Vector<?> other, double b) {
+            return new Int(
+                    (int) (a * x + b * other.get(0)),
+                    (int) (a * y + b * other.get(1)),
+                    (int) (a * z + b * other.get(2)),
+                    (int) (a * w + b * other.get(3)));
+        }
+
+        @Override
+        protected Int combineAccurate(double a, Vector<?> other, double b) {
+            return new Int(
+                    (int) (LinearCombination.of(a, x, b, other.get(0))),
+                    (int) (LinearCombination.of(a, y, b, other.get(1))),
+                    (int) (LinearCombination.of(a, z, b, other.get(2))),
+                    (int) (LinearCombination.of(a, w, b, other.get(3))));
+        }
+
+        @Override
+        public Int with(int indice, double value) throws IndexOutOfBoundsException {
+            switch (indice) {
+                case 0 : return new Int((int) value, y, z, w);
+                case 1 : return new Int(x, (int) value, z, w);
+                case 2 : return new Int(x, y, (int) value, w);
+                case 3 : return new Int(x, y, z, (int) value);
+                default : throw new IndexOutOfBoundsException("Invalid index " + indice);
+            }
+        }
+
+        @Override
+        public Int lerp(Vector<?> other, double ratio) {
+            ensureDimension(other, 4);
+            if (ratio == 1) {
+                return new Int((int) (other.get(0)), (int) (other.get(1)), (int) (other.get(2)), (int) (other.get(3)));
+            }
+            return new Int(
+                    (int) (x + ratio * (other.get(0) - x)),
+                    (int) (y + ratio * (other.get(1) - y)),
+                    (int) (z + ratio * (other.get(2) - z)),
+                    (int) (w + ratio * (other.get(3) - w)));
+        }
+
+        @Override
         public Int copy() {
-            return new Int(x, y, z, w);
+            return this;
         }
 
         @Override
@@ -1001,16 +1208,30 @@ public abstract class Vector4D<T extends Vector4D<T>> extends AbstractVector<T> 
             return true;
         }
 
+        @Override
+        public boolean isNaN() {
+            return false;
+        }
+
+        @Override
+        public boolean isInfinite() {
+            return false;
+        }
+
     }
 
     public static class UInt extends Vector4D<UInt> {
 
-        public int x;
-        public int y;
-        public int z;
-        public int w;
+        public final int x;
+        public final int y;
+        public final int z;
+        public final int w;
 
         public UInt() {
+            this.x = 0;
+            this.y = 0;
+            this.z = 0;
+            this.w = 0;
         }
 
         public UInt(int x, int y, int z, int w) {
@@ -1021,15 +1242,19 @@ public abstract class Vector4D<T extends Vector4D<T>> extends AbstractVector<T> 
         }
 
         public UInt(int[] array) {
+            ensureLength(array.length, 4);
             this.x = array[0];
             this.y = array[1];
             this.z = array[2];
             this.w = array[3];
         }
 
-        public UInt(ReadOnly.Vector<?> tuple) {
+        public UInt(Vector<?> tuple) {
             ensureDimension(tuple, 4);
-            set(tuple);
+            this.x = (int) (long) tuple.get(0);
+            this.y = (int) (long) tuple.get(1);
+            this.z = (int) (long) tuple.get(2);
+            this.w = (int) (long) tuple.get(3);
         }
 
         @Override
@@ -1046,69 +1271,6 @@ public abstract class Vector4D<T extends Vector4D<T>> extends AbstractVector<T> 
                 case 3 : return Integer.toUnsignedLong(w);
                 default : throw new IndexOutOfBoundsException("Invalid index " + indice);
             }
-        }
-
-        @Override
-        public void set(int indice, double value) {
-            switch (indice) {
-                case 0 : x = (int) value; break;
-                case 1 : y = (int) value; break;
-                case 2 : z = (int) value; break;
-                case 3 : w = (int) value; break;
-                default : throw new IndexOutOfBoundsException("Invalid index " + indice);
-            }
-        }
-
-        @Override
-        public UInt set(double[] values) {
-            if (getDimension() != values.length) {
-                throw new IllegalArgumentException("Vectors size are different : "+getDimension()+" and "+values.length);
-            }
-            x = (int) values[0];
-            y = (int) values[1];
-            z = (int) values[2];
-            w = (int) values[3];
-            return this;
-        }
-
-        @Override
-        public UInt set(double[] values, int offset) {
-            x = (int) values[ offset];
-            y = (int) values[1 + offset];
-            z = (int) values[2 + offset];
-            w = (int) values[3 + offset];
-            return this;
-        }
-
-        @Override
-        public UInt set(float[] values) {
-            if (getDimension() != values.length) {
-                throw new IllegalArgumentException("Vectors size are different : "+getDimension()+" and "+values.length);
-            }
-            x = (int) values[0];
-            y = (int) values[1];
-            z = (int) values[2];
-            w = (int) values[3];
-            return this;
-        }
-
-        @Override
-        public UInt set(float[] values, int offset) {
-            x = (int) values[ offset];
-            y = (int) values[1 + offset];
-            z = (int) values[2 + offset];
-            w = (int) values[3 + offset];
-            return this;
-        }
-
-        @Override
-        public UInt normalize() {
-            final double s = 1.0 / length();
-            x *= s;
-            y *= s;
-            z *= s;
-            w *= s;
-            return this;
         }
 
         @Override
@@ -1169,8 +1331,99 @@ public abstract class Vector4D<T extends Vector4D<T>> extends AbstractVector<T> 
         }
 
         @Override
+        public UInt add(Vector<?> other) {
+            ensureDimension(other, 4);
+            return new UInt(
+                    (int) (long) (Integer.toUnsignedLong(x) + other.get(0)),
+                    (int) (long) (Integer.toUnsignedLong(y) + other.get(1)),
+                    (int) (long) (Integer.toUnsignedLong(z) + other.get(2)),
+                    (int) (long) (Integer.toUnsignedLong(w) + other.get(3)));
+        }
+
+        @Override
+        public UInt subtract(Vector<?> other) {
+            ensureDimension(other, 4);
+            return new UInt(
+                    (int) (long) (Integer.toUnsignedLong(x) - other.get(0)),
+                    (int) (long) (Integer.toUnsignedLong(y) - other.get(1)),
+                    (int) (long) (Integer.toUnsignedLong(z) - other.get(2)),
+                    (int) (long) (Integer.toUnsignedLong(w) - other.get(3)));
+        }
+
+        @Override
+        public UInt multiply(Vector<?> other) {
+            ensureDimension(other, 4);
+            return new UInt(
+                    (int) (long) (Integer.toUnsignedLong(x) * other.get(0)),
+                    (int) (long) (Integer.toUnsignedLong(y) * other.get(1)),
+                    (int) (long) (Integer.toUnsignedLong(z) * other.get(2)),
+                    (int) (long) (Integer.toUnsignedLong(w) * other.get(3)));
+        }
+
+        @Override
+        public UInt divide(Vector<?> other) {
+            ensureDimension(other, 4);
+            return new UInt(
+                    (int) (long) (Integer.toUnsignedLong(x) / other.get(0)),
+                    (int) (long) (Integer.toUnsignedLong(y) / other.get(1)),
+                    (int) (long) (Integer.toUnsignedLong(z) / other.get(2)),
+                    (int) (long) (Integer.toUnsignedLong(w) / other.get(3)));
+        }
+
+        @Override
+        public UInt scale(double scale) {
+            return new UInt(
+                    (int) (long) (Integer.toUnsignedLong(x) * scale),
+                    (int) (long) (Integer.toUnsignedLong(y) * scale),
+                    (int) (long) (Integer.toUnsignedLong(z) * scale),
+                    (int) (long) (Integer.toUnsignedLong(w) * scale));
+        }
+
+        @Override
+        protected UInt combine(double a, Vector<?> other, double b) {
+            return new UInt(
+                    (int) (long) (a * Integer.toUnsignedLong(x) + b * other.get(0)),
+                    (int) (long) (a * Integer.toUnsignedLong(y) + b * other.get(1)),
+                    (int) (long) (a * Integer.toUnsignedLong(z) + b * other.get(2)),
+                    (int) (long) (a * Integer.toUnsignedLong(w) + b * other.get(3)));
+        }
+
+        @Override
+        protected UInt combineAccurate(double a, Vector<?> other, double b) {
+            return new UInt(
+                    (int) (long) (LinearCombination.of(a, Integer.toUnsignedLong(x), b, other.get(0))),
+                    (int) (long) (LinearCombination.of(a, Integer.toUnsignedLong(y), b, other.get(1))),
+                    (int) (long) (LinearCombination.of(a, Integer.toUnsignedLong(z), b, other.get(2))),
+                    (int) (long) (LinearCombination.of(a, Integer.toUnsignedLong(w), b, other.get(3))));
+        }
+
+        @Override
+        public UInt with(int indice, double value) throws IndexOutOfBoundsException {
+            switch (indice) {
+                case 0 : return new UInt((int) (long) value, y, z, w);
+                case 1 : return new UInt(x, (int) (long) value, z, w);
+                case 2 : return new UInt(x, y, (int) (long) value, w);
+                case 3 : return new UInt(x, y, z, (int) (long) value);
+                default : throw new IndexOutOfBoundsException("Invalid index " + indice);
+            }
+        }
+
+        @Override
+        public UInt lerp(Vector<?> other, double ratio) {
+            ensureDimension(other, 4);
+            if (ratio == 1) {
+                return new UInt((int) (long) (other.get(0)), (int) (long) (other.get(1)), (int) (long) (other.get(2)), (int) (long) (other.get(3)));
+            }
+            return new UInt(
+                    (int) (long) (Integer.toUnsignedLong(x) + ratio * (other.get(0) - Integer.toUnsignedLong(x))),
+                    (int) (long) (Integer.toUnsignedLong(y) + ratio * (other.get(1) - Integer.toUnsignedLong(y))),
+                    (int) (long) (Integer.toUnsignedLong(z) + ratio * (other.get(2) - Integer.toUnsignedLong(z))),
+                    (int) (long) (Integer.toUnsignedLong(w) + ratio * (other.get(3) - Integer.toUnsignedLong(w))));
+        }
+
+        @Override
         public UInt copy() {
-            return new UInt(x, y, z, w);
+            return this;
         }
 
         @Override
@@ -1178,16 +1431,30 @@ public abstract class Vector4D<T extends Vector4D<T>> extends AbstractVector<T> 
             return true;
         }
 
+        @Override
+        public boolean isNaN() {
+            return false;
+        }
+
+        @Override
+        public boolean isInfinite() {
+            return false;
+        }
+
     }
 
     public static class Long extends Vector4D<Long> {
 
-        public long x;
-        public long y;
-        public long z;
-        public long w;
+        public final long x;
+        public final long y;
+        public final long z;
+        public final long w;
 
         public Long() {
+            this.x = 0;
+            this.y = 0;
+            this.z = 0;
+            this.w = 0;
         }
 
         public Long(long x, long y, long z, long w) {
@@ -1198,15 +1465,19 @@ public abstract class Vector4D<T extends Vector4D<T>> extends AbstractVector<T> 
         }
 
         public Long(long[] array) {
+            ensureLength(array.length, 4);
             this.x = array[0];
             this.y = array[1];
             this.z = array[2];
             this.w = array[3];
         }
 
-        public Long(ReadOnly.Vector<?> tuple) {
+        public Long(Vector<?> tuple) {
             ensureDimension(tuple, 4);
-            set(tuple);
+            this.x = (long) tuple.get(0);
+            this.y = (long) tuple.get(1);
+            this.z = (long) tuple.get(2);
+            this.w = (long) tuple.get(3);
         }
 
         @Override
@@ -1223,59 +1494,6 @@ public abstract class Vector4D<T extends Vector4D<T>> extends AbstractVector<T> 
                 case 3 : return w;
                 default : throw new IndexOutOfBoundsException("Invalid index " + indice);
             }
-        }
-
-        @Override
-        public void set(int indice, double value) {
-            switch (indice) {
-                case 0 : x = (long) value; break;
-                case 1 : y = (long) value; break;
-                case 2 : z = (long) value; break;
-                case 3 : w = (long) value; break;
-                default : throw new IndexOutOfBoundsException("Invalid index " + indice);
-            }
-        }
-
-        @Override
-        public Long set(double[] values) {
-            if (getDimension() != values.length) {
-                throw new IllegalArgumentException("Vectors size are different : "+getDimension()+" and "+values.length);
-            }
-            x = (long) values[0];
-            y = (long) values[1];
-            z = (long) values[2];
-            w = (long) values[3];
-            return this;
-        }
-
-        @Override
-        public Long set(double[] values, int offset) {
-            x = (long) values[ offset];
-            y = (long) values[1 + offset];
-            z = (long) values[2 + offset];
-            w = (long) values[3 + offset];
-            return this;
-        }
-
-        @Override
-        public Long set(float[] values) {
-            if (getDimension() != values.length) {
-                throw new IllegalArgumentException("Vectors size are different : "+getDimension()+" and "+values.length);
-            }
-            x = (long) values[0];
-            y = (long) values[1];
-            z = (long) values[2];
-            w = (long) values[3];
-            return this;
-        }
-
-        @Override
-        public Long set(float[] values, int offset) {
-            x = (long) values[ offset];
-            y = (long) values[1 + offset];
-            z = (long) values[2 + offset];
-            w = (long) values[3 + offset];
-            return this;
         }
 
         @Override
@@ -1326,8 +1544,99 @@ public abstract class Vector4D<T extends Vector4D<T>> extends AbstractVector<T> 
         }
 
         @Override
+        public Long add(Vector<?> other) {
+            ensureDimension(other, 4);
+            return new Long(
+                    (long) (x + other.get(0)),
+                    (long) (y + other.get(1)),
+                    (long) (z + other.get(2)),
+                    (long) (w + other.get(3)));
+        }
+
+        @Override
+        public Long subtract(Vector<?> other) {
+            ensureDimension(other, 4);
+            return new Long(
+                    (long) (x - other.get(0)),
+                    (long) (y - other.get(1)),
+                    (long) (z - other.get(2)),
+                    (long) (w - other.get(3)));
+        }
+
+        @Override
+        public Long multiply(Vector<?> other) {
+            ensureDimension(other, 4);
+            return new Long(
+                    (long) (x * other.get(0)),
+                    (long) (y * other.get(1)),
+                    (long) (z * other.get(2)),
+                    (long) (w * other.get(3)));
+        }
+
+        @Override
+        public Long divide(Vector<?> other) {
+            ensureDimension(other, 4);
+            return new Long(
+                    (long) (x / other.get(0)),
+                    (long) (y / other.get(1)),
+                    (long) (z / other.get(2)),
+                    (long) (w / other.get(3)));
+        }
+
+        @Override
+        public Long scale(double scale) {
+            return new Long(
+                    (long) (x * scale),
+                    (long) (y * scale),
+                    (long) (z * scale),
+                    (long) (w * scale));
+        }
+
+        @Override
+        protected Long combine(double a, Vector<?> other, double b) {
+            return new Long(
+                    (long) (a * x + b * other.get(0)),
+                    (long) (a * y + b * other.get(1)),
+                    (long) (a * z + b * other.get(2)),
+                    (long) (a * w + b * other.get(3)));
+        }
+
+        @Override
+        protected Long combineAccurate(double a, Vector<?> other, double b) {
+            return new Long(
+                    (long) (LinearCombination.of(a, x, b, other.get(0))),
+                    (long) (LinearCombination.of(a, y, b, other.get(1))),
+                    (long) (LinearCombination.of(a, z, b, other.get(2))),
+                    (long) (LinearCombination.of(a, w, b, other.get(3))));
+        }
+
+        @Override
+        public Long with(int indice, double value) throws IndexOutOfBoundsException {
+            switch (indice) {
+                case 0 : return new Long((long) value, y, z, w);
+                case 1 : return new Long(x, (long) value, z, w);
+                case 2 : return new Long(x, y, (long) value, w);
+                case 3 : return new Long(x, y, z, (long) value);
+                default : throw new IndexOutOfBoundsException("Invalid index " + indice);
+            }
+        }
+
+        @Override
+        public Long lerp(Vector<?> other, double ratio) {
+            ensureDimension(other, 4);
+            if (ratio == 1) {
+                return new Long((long) (other.get(0)), (long) (other.get(1)), (long) (other.get(2)), (long) (other.get(3)));
+            }
+            return new Long(
+                    (long) (x + ratio * (other.get(0) - x)),
+                    (long) (y + ratio * (other.get(1) - y)),
+                    (long) (z + ratio * (other.get(2) - z)),
+                    (long) (w + ratio * (other.get(3) - w)));
+        }
+
+        @Override
         public Long copy() {
-            return new Long(x, y, z, w);
+            return this;
         }
 
         @Override
@@ -1335,16 +1644,30 @@ public abstract class Vector4D<T extends Vector4D<T>> extends AbstractVector<T> 
             return true;
         }
 
+        @Override
+        public boolean isNaN() {
+            return false;
+        }
+
+        @Override
+        public boolean isInfinite() {
+            return false;
+        }
+
     }
 
     public static class Float extends Vector4D<Float> {
 
-        public float x;
-        public float y;
-        public float z;
-        public float w;
+        public final float x;
+        public final float y;
+        public final float z;
+        public final float w;
 
         public Float() {
+            this.x = 0;
+            this.y = 0;
+            this.z = 0;
+            this.w = 0;
         }
 
         public Float(float x, float y, float z, float w) {
@@ -1355,15 +1678,19 @@ public abstract class Vector4D<T extends Vector4D<T>> extends AbstractVector<T> 
         }
 
         public Float(float[] array) {
+            ensureLength(array.length, 4);
             this.x = array[0];
             this.y = array[1];
             this.z = array[2];
             this.w = array[3];
         }
 
-        public Float(ReadOnly.Vector<?> tuple) {
+        public Float(Vector<?> tuple) {
             ensureDimension(tuple, 4);
-            set(tuple);
+            this.x = (float) tuple.get(0);
+            this.y = (float) tuple.get(1);
+            this.z = (float) tuple.get(2);
+            this.w = (float) tuple.get(3);
         }
 
         @Override
@@ -1383,59 +1710,6 @@ public abstract class Vector4D<T extends Vector4D<T>> extends AbstractVector<T> 
         }
 
         @Override
-        public void set(int indice, double value) {
-            switch (indice) {
-                case 0 : x = (float) value; break;
-                case 1 : y = (float) value; break;
-                case 2 : z = (float) value; break;
-                case 3 : w = (float) value; break;
-                default : throw new IndexOutOfBoundsException("Invalid index " + indice);
-            }
-        }
-
-        @Override
-        public Float set(double[] values) {
-            if (getDimension() != values.length) {
-                throw new IllegalArgumentException("Vectors size are different : "+getDimension()+" and "+values.length);
-            }
-            x = (float) values[0];
-            y = (float) values[1];
-            z = (float) values[2];
-            w = (float) values[3];
-            return this;
-        }
-
-        @Override
-        public Float set(double[] values, int offset) {
-            x = (float) values[ offset];
-            y = (float) values[1 + offset];
-            z = (float) values[2 + offset];
-            w = (float) values[3 + offset];
-            return this;
-        }
-
-        @Override
-        public Float set(float[] values) {
-            if (getDimension() != values.length) {
-                throw new IllegalArgumentException("Vectors size are different : "+getDimension()+" and "+values.length);
-            }
-            x = values[0];
-            y = values[1];
-            z = values[2];
-            w = values[3];
-            return this;
-        }
-
-        @Override
-        public Float set(float[] values, int offset) {
-            x = values[ offset];
-            y = values[1 + offset];
-            z = values[2 + offset];
-            w = values[3 + offset];
-            return this;
-        }
-
-        @Override
         public double length() {
             return Math.sqrt(x*x + y*y + z*z + w*w);
         }
@@ -1446,46 +1720,22 @@ public abstract class Vector4D<T extends Vector4D<T>> extends AbstractVector<T> 
         }
 
         @Override
-        public Float normalize() {
-            final double s = 1.0 / length();
-            x *= s;
-            y *= s;
-            z *= s;
-            w *= s;
-            return this;
-        }
-
-        @Override
-        public Float add(ReadOnly.Vector<?> other) {
+        public double dot(Vector<?> other) {
             if (getDimension() != other.getDimension()) {
                 throw new IllegalArgumentException("Vectors size are different : "+getDimension()+" and "+other.getDimension());
             }
-            x += other.get(0);
-            y += other.get(1);
-            z += other.get(2);
-            w += other.get(3);
-            return this;
+            return x * other.get(0)
+                 + y * other.get(1)
+                 + z * other.get(2)
+                 + w * other.get(3);
         }
 
         @Override
-        public Float subtract(ReadOnly.Vector<?> other) {
+        public double dotAccurate(Vector<?> other) {
             if (getDimension() != other.getDimension()) {
                 throw new IllegalArgumentException("Vectors size are different : "+getDimension()+" and "+other.getDimension());
             }
-            x -= other.get(0);
-            y -= other.get(1);
-            z -= other.get(2);
-            w -= other.get(3);
-            return this;
-        }
-
-        @Override
-        public Float scale(double scale) {
-            x *= scale;
-            y *= scale;
-            z *= scale;
-            w *= scale;
-            return this;
+            return LinearCombination.of(x, other.get(0), y, other.get(1), z, other.get(2), w, other.get(3));
         }
 
         @Override
@@ -1536,8 +1786,99 @@ public abstract class Vector4D<T extends Vector4D<T>> extends AbstractVector<T> 
         }
 
         @Override
+        public Float add(Vector<?> other) {
+            ensureDimension(other, 4);
+            return new Float(
+                    (float) (x + other.get(0)),
+                    (float) (y + other.get(1)),
+                    (float) (z + other.get(2)),
+                    (float) (w + other.get(3)));
+        }
+
+        @Override
+        public Float subtract(Vector<?> other) {
+            ensureDimension(other, 4);
+            return new Float(
+                    (float) (x - other.get(0)),
+                    (float) (y - other.get(1)),
+                    (float) (z - other.get(2)),
+                    (float) (w - other.get(3)));
+        }
+
+        @Override
+        public Float multiply(Vector<?> other) {
+            ensureDimension(other, 4);
+            return new Float(
+                    (float) (x * other.get(0)),
+                    (float) (y * other.get(1)),
+                    (float) (z * other.get(2)),
+                    (float) (w * other.get(3)));
+        }
+
+        @Override
+        public Float divide(Vector<?> other) {
+            ensureDimension(other, 4);
+            return new Float(
+                    (float) (x / other.get(0)),
+                    (float) (y / other.get(1)),
+                    (float) (z / other.get(2)),
+                    (float) (w / other.get(3)));
+        }
+
+        @Override
+        public Float scale(double scale) {
+            return new Float(
+                    (float) (x * scale),
+                    (float) (y * scale),
+                    (float) (z * scale),
+                    (float) (w * scale));
+        }
+
+        @Override
+        protected Float combine(double a, Vector<?> other, double b) {
+            return new Float(
+                    (float) (a * x + b * other.get(0)),
+                    (float) (a * y + b * other.get(1)),
+                    (float) (a * z + b * other.get(2)),
+                    (float) (a * w + b * other.get(3)));
+        }
+
+        @Override
+        protected Float combineAccurate(double a, Vector<?> other, double b) {
+            return new Float(
+                    (float) (LinearCombination.of(a, x, b, other.get(0))),
+                    (float) (LinearCombination.of(a, y, b, other.get(1))),
+                    (float) (LinearCombination.of(a, z, b, other.get(2))),
+                    (float) (LinearCombination.of(a, w, b, other.get(3))));
+        }
+
+        @Override
+        public Float with(int indice, double value) throws IndexOutOfBoundsException {
+            switch (indice) {
+                case 0 : return new Float((float) value, y, z, w);
+                case 1 : return new Float(x, (float) value, z, w);
+                case 2 : return new Float(x, y, (float) value, w);
+                case 3 : return new Float(x, y, z, (float) value);
+                default : throw new IndexOutOfBoundsException("Invalid index " + indice);
+            }
+        }
+
+        @Override
+        public Float lerp(Vector<?> other, double ratio) {
+            ensureDimension(other, 4);
+            if (ratio == 1) {
+                return new Float((float) (other.get(0)), (float) (other.get(1)), (float) (other.get(2)), (float) (other.get(3)));
+            }
+            return new Float(
+                    (float) (x + ratio * (other.get(0) - x)),
+                    (float) (y + ratio * (other.get(1) - y)),
+                    (float) (z + ratio * (other.get(2) - z)),
+                    (float) (w + ratio * (other.get(3) - w)));
+        }
+
+        @Override
         public Float copy() {
-            return new Float(x, y, z, w);
+            return this;
         }
 
         @Override
@@ -1545,16 +1886,42 @@ public abstract class Vector4D<T extends Vector4D<T>> extends AbstractVector<T> 
             return java.lang.Float.isFinite(x) && java.lang.Float.isFinite(y) && java.lang.Float.isFinite(z) && java.lang.Float.isFinite(w);
         }
 
+        @Override
+        public boolean isNaN() {
+            return java.lang.Float.isNaN(x) || java.lang.Float.isNaN(y) || java.lang.Float.isNaN(z) || java.lang.Float.isNaN(w);
+        }
+
+        @Override
+        public boolean isInfinite() {
+            return !isNaN() && (java.lang.Float.isInfinite(x) || java.lang.Float.isInfinite(y) || java.lang.Float.isInfinite(z) || java.lang.Float.isInfinite(w));
+        }
+
+        @Override
+        public double distanceSquare(Vector<?> other) {
+            if (getDimension() != other.getDimension()) {
+                throw new IllegalArgumentException("Vectors size are different : "+getDimension()+" and "+other.getDimension());
+            }
+            final double dx = x - other.get(0);
+            final double dy = y - other.get(1);
+            final double dz = z - other.get(2);
+            final double dw = w - other.get(3);
+            return dx*dx + dy*dy + dz*dz + dw*dw;
+        }
+
     }
 
     public static class Double extends Vector4D<Double> {
 
-        public double x;
-        public double y;
-        public double z;
-        public double w;
+        public final double x;
+        public final double y;
+        public final double z;
+        public final double w;
 
         public Double() {
+            this.x = 0;
+            this.y = 0;
+            this.z = 0;
+            this.w = 0;
         }
 
         public Double(double x, double y, double z, double w) {
@@ -1565,6 +1932,7 @@ public abstract class Vector4D<T extends Vector4D<T>> extends AbstractVector<T> 
         }
 
         public Double(double[] array) {
+            ensureLength(array.length, 4);
             this.x = array[0];
             this.y = array[1];
             this.z = array[2];
@@ -1572,15 +1940,19 @@ public abstract class Vector4D<T extends Vector4D<T>> extends AbstractVector<T> 
         }
 
         public Double(float[] array) {
+            ensureLength(array.length, 4);
             this.x = array[0];
             this.y = array[1];
             this.z = array[2];
             this.w = array[3];
         }
 
-        public Double(ReadOnly.Vector<?> tuple) {
+        public Double(Vector<?> tuple) {
             ensureDimension(tuple, 4);
-            set(tuple);
+            this.x = tuple.get(0);
+            this.y = tuple.get(1);
+            this.z = tuple.get(2);
+            this.w = tuple.get(3);
         }
 
         @Override
@@ -1600,59 +1972,6 @@ public abstract class Vector4D<T extends Vector4D<T>> extends AbstractVector<T> 
         }
 
         @Override
-        public void set(int indice, double value) {
-            switch (indice) {
-                case 0 : x = value; break;
-                case 1 : y = value; break;
-                case 2 : z = value; break;
-                case 3 : w = value; break;
-                default : throw new IndexOutOfBoundsException("Invalid index " + indice);
-            }
-        }
-
-        @Override
-        public Double set(double[] values) {
-            if (getDimension() != values.length) {
-                throw new IllegalArgumentException("Vectors size are different : "+getDimension()+" and "+values.length);
-            }
-            x = values[0];
-            y = values[1];
-            z = values[2];
-            w = values[3];
-            return this;
-        }
-
-        @Override
-        public Double set(double[] values, int offset) {
-            x = values[ offset];
-            y = values[1 + offset];
-            z = values[2 + offset];
-            w = values[3 + offset];
-            return this;
-        }
-
-        @Override
-        public Double set(float[] values) {
-            if (getDimension() != values.length) {
-                throw new IllegalArgumentException("Vectors size are different : "+getDimension()+" and "+values.length);
-            }
-            x = values[0];
-            y = values[1];
-            z = values[2];
-            w = values[3];
-            return this;
-        }
-
-        @Override
-        public Double set(float[] values, int offset) {
-            x = values[ offset];
-            y = values[1 + offset];
-            z = values[2 + offset];
-            w = values[3 + offset];
-            return this;
-        }
-
-        @Override
         public double length() {
             return Math.sqrt(x*x + y*y + z*z + w*w);
         }
@@ -1663,46 +1982,22 @@ public abstract class Vector4D<T extends Vector4D<T>> extends AbstractVector<T> 
         }
 
         @Override
-        public Double normalize() {
-            final double s = 1.0 / length();
-            x *= s;
-            y *= s;
-            z *= s;
-            w *= s;
-            return this;
-        }
-
-        @Override
-        public Double add(ReadOnly.Vector<?> other) {
+        public double dot(Vector<?> other) {
             if (getDimension() != other.getDimension()) {
                 throw new IllegalArgumentException("Vectors size are different : "+getDimension()+" and "+other.getDimension());
             }
-            x += other.get(0);
-            y += other.get(1);
-            z += other.get(2);
-            w += other.get(3);
-            return this;
+            return x * other.get(0)
+                 + y * other.get(1)
+                 + z * other.get(2)
+                 + w * other.get(3);
         }
 
         @Override
-        public Double subtract(ReadOnly.Vector<?> other) {
+        public double dotAccurate(Vector<?> other) {
             if (getDimension() != other.getDimension()) {
                 throw new IllegalArgumentException("Vectors size are different : "+getDimension()+" and "+other.getDimension());
             }
-            x -= other.get(0);
-            y -= other.get(1);
-            z -= other.get(2);
-            w -= other.get(3);
-            return this;
-        }
-
-        @Override
-        public Double scale(double scale) {
-            x *= scale;
-            y *= scale;
-            z *= scale;
-            w *= scale;
-            return this;
+            return LinearCombination.of(x, other.get(0), y, other.get(1), z, other.get(2), w, other.get(3));
         }
 
         @Override
@@ -1753,13 +2048,126 @@ public abstract class Vector4D<T extends Vector4D<T>> extends AbstractVector<T> 
         }
 
         @Override
+        public Double add(Vector<?> other) {
+            ensureDimension(other, 4);
+            return new Double(
+                    x + other.get(0),
+                    y + other.get(1),
+                    z + other.get(2),
+                    w + other.get(3));
+        }
+
+        @Override
+        public Double subtract(Vector<?> other) {
+            ensureDimension(other, 4);
+            return new Double(
+                    x - other.get(0),
+                    y - other.get(1),
+                    z - other.get(2),
+                    w - other.get(3));
+        }
+
+        @Override
+        public Double multiply(Vector<?> other) {
+            ensureDimension(other, 4);
+            return new Double(
+                    x * other.get(0),
+                    y * other.get(1),
+                    z * other.get(2),
+                    w * other.get(3));
+        }
+
+        @Override
+        public Double divide(Vector<?> other) {
+            ensureDimension(other, 4);
+            return new Double(
+                    x / other.get(0),
+                    y / other.get(1),
+                    z / other.get(2),
+                    w / other.get(3));
+        }
+
+        @Override
+        public Double scale(double scale) {
+            return new Double(
+                    x * scale,
+                    y * scale,
+                    z * scale,
+                    w * scale);
+        }
+
+        @Override
+        protected Double combine(double a, Vector<?> other, double b) {
+            return new Double(
+                    a * x + b * other.get(0),
+                    a * y + b * other.get(1),
+                    a * z + b * other.get(2),
+                    a * w + b * other.get(3));
+        }
+
+        @Override
+        protected Double combineAccurate(double a, Vector<?> other, double b) {
+            return new Double(
+                    LinearCombination.of(a, x, b, other.get(0)),
+                    LinearCombination.of(a, y, b, other.get(1)),
+                    LinearCombination.of(a, z, b, other.get(2)),
+                    LinearCombination.of(a, w, b, other.get(3)));
+        }
+
+        @Override
+        public Double with(int indice, double value) throws IndexOutOfBoundsException {
+            switch (indice) {
+                case 0 : return new Double(value, y, z, w);
+                case 1 : return new Double(x, value, z, w);
+                case 2 : return new Double(x, y, value, w);
+                case 3 : return new Double(x, y, z, value);
+                default : throw new IndexOutOfBoundsException("Invalid index " + indice);
+            }
+        }
+
+        @Override
+        public Double lerp(Vector<?> other, double ratio) {
+            ensureDimension(other, 4);
+            if (ratio == 1) {
+                return new Double(other.get(0), other.get(1), other.get(2), other.get(3));
+            }
+            return new Double(
+                    x + ratio * (other.get(0) - x),
+                    y + ratio * (other.get(1) - y),
+                    z + ratio * (other.get(2) - z),
+                    w + ratio * (other.get(3) - w));
+        }
+
+        @Override
         public Double copy() {
-            return new Double(x, y, z, w);
+            return this;
         }
 
         @Override
         public boolean isFinite() {
             return java.lang.Double.isFinite(x) && java.lang.Double.isFinite(y) && java.lang.Double.isFinite(z) && java.lang.Double.isFinite(w);
+        }
+
+        @Override
+        public boolean isNaN() {
+            return java.lang.Double.isNaN(x) || java.lang.Double.isNaN(y) || java.lang.Double.isNaN(z) || java.lang.Double.isNaN(w);
+        }
+
+        @Override
+        public boolean isInfinite() {
+            return !isNaN() && (java.lang.Double.isInfinite(x) || java.lang.Double.isInfinite(y) || java.lang.Double.isInfinite(z) || java.lang.Double.isInfinite(w));
+        }
+
+        @Override
+        public double distanceSquare(Vector<?> other) {
+            if (getDimension() != other.getDimension()) {
+                throw new IllegalArgumentException("Vectors size are different : "+getDimension()+" and "+other.getDimension());
+            }
+            final double dx = x - other.get(0);
+            final double dy = y - other.get(1);
+            final double dz = z - other.get(2);
+            final double dw = w - other.get(3);
+            return dx*dx + dy*dy + dz*dz + dw*dw;
         }
 
     }

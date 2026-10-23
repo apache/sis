@@ -30,6 +30,7 @@ import org.apache.sis.geometries.Point;
 import org.apache.sis.geometries.DataPoints;
 import org.apache.sis.geometries.curve.LinearRing;
 import org.apache.sis.geometries.curve.ArcByCenterPoint;
+import org.apache.sis.maths.DataType;
 import org.apache.sis.maths.NDArrays;
 import org.apache.sis.maths.SampleSystem;
 import org.apache.sis.maths.Vector;
@@ -300,8 +301,7 @@ public final class GML3WriterTest extends TestCase {
      */
     @Test
     public void testArcByBulge() throws Exception {
-        final Vector<?> normal = Vectors.createDouble(2);
-        normal.set(new double[] {0, 1});
+        final Vector<?> normal = Vectors.create(new double[] {0, 1}, DataType.DOUBLE);
         final Geometry g = GeometryFactory.DEFAULT.createArcByBulge(sequence(0.0, 0.0, 10.0, 0.0), 2.0, normal);
         final String xml = write(g);
         assertTrue(xml.contains("ArcByBulge"), () -> "Expected a gml:ArcByBulge in: " + xml);

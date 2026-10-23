@@ -370,17 +370,10 @@ public final class DefaultBearing implements Bearing {
 
     /**
      * {@inheritDoc}
-     *
-     * <p>This method returns a new vector on each call, because vectors are mutable.
-     * Modifying the returned vector has no effect on this bearing.</p>
      */
     @Override
     public Vector<?> getDirection() {
-        final Vector<?> v = Vectors.create(coordinates.length, DataType.DOUBLE);
-        for (int i=0; i<coordinates.length; i++) {
-            v.set(i, coordinates[i]);
-        }
-        return v;
+        return Vectors.create(coordinates, DataType.DOUBLE);
     }
 
     /**

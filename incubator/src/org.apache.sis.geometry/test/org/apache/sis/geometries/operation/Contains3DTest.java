@@ -29,6 +29,7 @@ import org.apache.sis.geometries.surface.Polygon;
 import org.apache.sis.maths.Array;
 import org.apache.sis.maths.Maths;
 import org.apache.sis.maths.NDArrays;
+import org.apache.sis.maths.DataType;
 import org.apache.sis.maths.Vectors;
 import org.apache.sis.referencing.CommonCRS;
 
@@ -150,9 +151,9 @@ public class Contains3DTest {
     public void testRingInPlane() {
         final Array ring = NDArrays.of(3, new double[] {0,2,0, 4,2,0, 4,2,4, 0,2,4, 0,2,0});
         final int[] axes = Maths.projectionAxes(Maths.calculatePolygonNormal(ring));
-        assertTrue (Contains.contains(ring, Vectors.createDouble(3).set(new double[] {1, 2, 3}), axes));
-        assertFalse(Contains.contains(ring, Vectors.createDouble(3).set(new double[] {5, 2, 3}), axes));
-        assertFalse(Contains.contains(ring, Vectors.createDouble(3).set(new double[] {1, 2, 5}), axes));
+        assertTrue (Contains.contains(ring, Vectors.create(new double[] {1, 2, 3}, DataType.DOUBLE), axes));
+        assertFalse(Contains.contains(ring, Vectors.create(new double[] {5, 2, 3}, DataType.DOUBLE), axes));
+        assertFalse(Contains.contains(ring, Vectors.create(new double[] {1, 2, 5}, DataType.DOUBLE), axes));
     }
 
     /**

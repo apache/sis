@@ -18,6 +18,7 @@ package org.apache.sis.geometries.operation;
 
 import java.util.ArrayList;
 import java.util.List;
+import org.apache.sis.maths.DataType;
 import org.apache.sis.maths.Maths;
 import org.apache.sis.maths.Vector;
 import org.apache.sis.maths.Vectors;
@@ -88,8 +89,6 @@ public final class SutherlandHodgman {
                 buffer2,
                 ratio,
                 0.000000000000001);
-        final Vector v = Vectors.createDouble(start1.getDimension());
-        v.set(buffer1);
-        return v;
+        return Vectors.create(buffer1, DataType.DOUBLE);
     }
 }

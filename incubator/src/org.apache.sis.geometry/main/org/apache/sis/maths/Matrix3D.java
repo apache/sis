@@ -267,20 +267,14 @@ public class Matrix3D extends AbstractMatrix<Matrix3D> {
     }
 
     @Override
-    public Vector<?> transform(ReadOnly.Vector<?> vector, Vector<?> buffer) {
-        if (buffer == null) buffer = new Vector3D.Double();
-
-        if (vector instanceof Vector3D.Double v && buffer instanceof Vector3D.Double b) {
-            double rx = m00*v.x + m01*v.y + m02*v.z;
-            double ry = m10*v.x + m11*v.y + m12*v.z;
-            double rz = m20*v.x + m21*v.y + m22*v.z;
-            b.x = rx;
-            b.y = ry;
-            b.z = rz;
-            return b;
-        }
-
-        return super.transform(vector, buffer);
+    public Vector<?> transform(Vector<?> vector) {
+        final double x = vector.get(0);
+        final double y = vector.get(1);
+        final double z = vector.get(2);
+        return new Vector3D.Double(
+                m00*x + m01*y + m02*z,
+                m10*x + m11*y + m12*z,
+                m20*x + m21*y + m22*z);
     }
 
     /**
@@ -341,7 +335,7 @@ public class Matrix3D extends AbstractMatrix<Matrix3D> {
      * @param euler in radians (heading/yaw , elevation/pitch , bank/roll)
      * @return this matrix
      */
-    public Matrix3D setFromEuler(ReadOnly.Vector<?> euler){
+    public Matrix3D setFromEuler(Vector<?> euler){
         set(Matrices.fromEuler(euler.toArrayDouble(), new double[3][3]), ROW_ORDER);
         return this;
     }
@@ -351,7 +345,7 @@ public class Matrix3D extends AbstractMatrix<Matrix3D> {
      * @param rotationAxis rotation axis
      * @return this matrix
      */
-    public Matrix3D setFromAngle(final double angle, final ReadOnly.Vector<?> rotationAxis){
+    public Matrix3D setFromAngle(final double angle, final Vector<?> rotationAxis){
         final double fCos = Math.cos(angle);
         final double fSin = Math.sin(angle);
         final double fOneMinusCos = (1.0) - fCos;
@@ -403,7 +397,7 @@ public class Matrix3D extends AbstractMatrix<Matrix3D> {
      * @param zAxis values are copied in 3rd row
      * @return rotation matrix
      */
-    public Matrix3D setFromAxis(final ReadOnly.Vector<?> xAxis, final ReadOnly.Vector<?> yAxis, final ReadOnly.Vector<?> zAxis){
+    public Matrix3D setFromAxis(final Vector<?> xAxis, final Vector<?> yAxis, final Vector<?> zAxis){
         setToIdentity();
         this.setRow(0, xAxis.toArrayDouble());
         this.setRow(1, yAxis.toArrayDouble());
@@ -418,9 +412,9 @@ public class Matrix3D extends AbstractMatrix<Matrix3D> {
      * @param v2 target vector
      * @return this matrix
      */
-    public Matrix3D setFromVectors(ReadOnly.Vector<?> v1, ReadOnly.Vector<?> v2) {
-        v1 = v1.copy().normalize();
-        v2 = v2.copy().normalize();
+    public Matrix3D setFromVectors(Vector<?> v1, Vector<?> v2) {
+        v1 = v1.normalize();
+        v2 = v2.normalize();
         final double angle = Math.acos(v1.dot(v2));
         if (angle == 0){
             //vectors are colinear
@@ -430,9 +424,9 @@ public class Matrix3D extends AbstractMatrix<Matrix3D> {
         return setFromAngle(angle, axis);
     }
 
-    public Matrix3D setFromUpAndRight(ReadOnly.Vector<?> v, ReadOnly.Vector<?> u) {
-        v = v.copy().normalize();
-        u = u.copy().normalize();
+    public Matrix3D setFromUpAndRight(Vector<?> v, Vector<?> u) {
+        v = v.normalize();
+        u = u.normalize();
 
         //W = Normalized(Cross(V,U))
         Vector<?> w = v.cross(u).normalize();

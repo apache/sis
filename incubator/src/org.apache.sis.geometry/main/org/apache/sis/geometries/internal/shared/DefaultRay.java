@@ -23,7 +23,6 @@ import org.apache.sis.geometries.Geometries;
 import org.apache.sis.geometries.GeometryFactory;
 import org.apache.sis.geometries.curve.Ray;
 import org.apache.sis.maths.NDArrays;
-import org.apache.sis.maths.ReadOnly;
 import org.apache.sis.maths.SampleSystem;
 import org.apache.sis.maths.Vector;
 
@@ -78,22 +77,22 @@ public non-sealed class DefaultRay extends AbstractGeometry implements Ray {
     }
 
     @Override
-    public ReadOnly.Vector<?> getPosition() {
+    public Vector<?> getPosition() {
         return points.getPosition(0);
     }
 
     @Override
-    public void setPosition(ReadOnly.Vector<?> position) {
+    public void setPosition(Vector<?> position) {
         points.setPosition(0, position);
     }
 
     @Override
-    public ReadOnly.Vector<?> getDirection() {
+    public Vector<?> getDirection() {
         return direction;
     }
 
     @Override
-    public void setDirection(ReadOnly.Vector<?> direction) {
+    public void setDirection(Vector<?> direction) {
         this.direction = direction.copy();
     }
 

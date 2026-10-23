@@ -132,7 +132,7 @@ public final class Delaunay {
      * @throws IllegalArgumentException if an index is incorrect or a position is not finite
      * @throws OperationException if an algorithm exception occurs
      */
-    public void build(MeshPrimitive.Points points) throws IllegalArgumentException, OperationException {
+    public void build(MeshPrimitive.Points points, boolean shuffleOnInsert) throws IllegalArgumentException, OperationException {
         ArgumentChecks.ensureNonNull("points", points);
         //NaN or infinite values would make the geometric tests fail deep in the algorithm
         final Cursor cursor = points.getPositions().cursor();
@@ -143,7 +143,7 @@ public final class Delaunay {
             }
         }
         this.points = points;
-        delaunayTriangulation();
+        delaunayTriangulation(shuffleOnInsert);
     }
 
     /**
@@ -236,7 +236,7 @@ public final class Delaunay {
      * @return indices of the points of the triangles, three values per triangle.
      * @throws OperationException if an algorithm exception occurs
      */
-    public static int[] triangulate(final double[] xy, final int[] constraints) throws OperationException {
+    public static int[] triangulate(final double[] xy, final int[] constraints, boolean shuffleOnInsert) throws OperationException {
         ArgumentChecks.ensureNonNull("xy", xy);
         ArgumentChecks.ensureNonNull("constraints", constraints);
         if (xy.length < 6) {
@@ -245,7 +245,7 @@ public final class Delaunay {
         final MeshPrimitive.Points points = new MeshPrimitive.Points();
         points.setPositions(NDArrays.of(Geometries.getUndefinedCRS(2), xy.clone()));
         final Delaunay delaunay = new Delaunay();
-        delaunay.build(points);
+        delaunay.build(points, shuffleOnInsert);
         if (constraints.length > 0) {
             delaunay.pushConstraint(NDArrays.ofUnsigned(1, constraints), true);
         }
@@ -267,7 +267,7 @@ public final class Delaunay {
      * @throws IllegalArgumentException if an index is incorrect
      * @throws OperationException if an algorithm exception occurs
      */
-    private void delaunayTriangulation() throws OperationException, IllegalArgumentException {
+    private void delaunayTriangulation(boolean shufflePoints) throws OperationException, IllegalArgumentException {
         triangles.clear();
 
         // INITIALIZE //////////////////////////////////////////////////////////
@@ -291,15 +291,18 @@ public final class Delaunay {
         final Envelope envelope = buffer(points.getEnvelope(), 10.0);
         final double envelopeMinX = envelope.getMinimum(0);
         final double envelopeMinY = envelope.getMinimum(1);
-        final Vector<?> A = Vectors.create(positions.getDimension(), positions.getDataType());
-        A.set(0, envelopeMinX);
-        A.set(1, envelopeMinY);
-        final Vector<?> B = A.copy();
-        B.set(0, envelopeMinX + envelope.getSpan(0) * 2);
-        B.set(1, envelopeMinY);
-        final Vector<?> C = A.copy();
-        C.set(0, envelopeMinX);
-        C.set(1, envelopeMinY + envelope.getSpan(1) * 2);
+        final double[] coordsA = new double[positions.getDimension()];
+        coordsA[0] = envelopeMinX;
+        coordsA[1] = envelopeMinY;
+        final double[] coordsB = coordsA.clone();
+        coordsB[0] = envelopeMinX + envelope.getSpan(0) * 2;
+        coordsB[1] = envelopeMinY;
+        final double[] coordsC = coordsA.clone();
+        coordsC[0] = envelopeMinX;
+        coordsC[1] = envelopeMinY + envelope.getSpan(1) * 2;
+        final Vector<?> A = Vectors.create(coordsA, positions.getDataType());
+        final Vector<?> B = Vectors.create(coordsB, positions.getDataType());
+        final Vector<?> C = Vectors.create(coordsC, positions.getDataType());
         rootOffset = Math.toIntExact(positions.getLength());
         final Array extraPositions = positions.resize(3);
         extraPositions.set(0, A);
@@ -326,21 +329,34 @@ public final class Delaunay {
 
 
         // TRIANGULATE /////////////////////////////////////////////////////////
-        /*
-        Insert the points in a random order, with a fixed seed for reproducible results.
-        Points in a spatially sorted order, for example along a ring or a grid row, would make
-        the k-d tree degenerate into a chain as deep as the number of points.
-        */
-        final Array index = points.getIndex();
-        final int[] order = (index != null) ? index.toArrayInt()     // user defined points
-                : IntStream.range(0, Math.toIntExact(positions.getLength())).toArray();
-        final Random random = new Random(order.length);
-        for (int i = order.length; --i > 0;) {
-            final int j = random.nextInt(i + 1);
-            final int t = order[i]; order[i] = order[j]; order[j] = t;
-        }
-        for (int idx : order) {
-            insertPoint(idx);
+        if (shufflePoints) {
+            /*
+            Insert the points in a random order, with a fixed seed for reproducible results.
+            Points in a spatially sorted order, for example along a ring or a grid row, would make
+            the k-d tree degenerate into a chain as deep as the number of points.
+            */
+            final Array index = points.getIndex();
+            final int[] order = (index != null) ? index.toArrayInt()     // user defined points
+                    : IntStream.range(0, Math.toIntExact(positions.getLength())).toArray();
+            final Random random = new Random(order.length);
+            for (int i = order.length; --i > 0;) {
+                final int j = random.nextInt(i + 1);
+                final int t = order[i]; order[i] = order[j]; order[j] = t;
+            }
+            for (int idx : order) {
+                insertPoint(idx);
+            }
+        } else {
+            final Array index = points.getIndex();
+            if (index == null) {
+                for (long l = 0; l < index.getLength(); l++) {
+                    insertPoint(l);
+                }
+            } else {
+                for (int idx : index.toArrayInt()) {
+                    insertPoint(idx);
+                }
+            }
         }
     }
 
