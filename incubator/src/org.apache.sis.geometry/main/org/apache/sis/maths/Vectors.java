@@ -1738,9 +1738,17 @@ public final class Vectors {
     public static Vector2D.UShort toOctUShort(ReadOnly.Vector<?> unitVector){
         final Vector2D.Float oct = toOctEncoding(unitVector);
         return new Vector2D.UShort(
-            (short) ( (oct.x + 1f) / 2f * 65535f),
-            (short) ( (oct.y + 1f) / 2f * 65535f)
+            (short) toSNorm(oct.x, 65535),
+            (short) toSNorm(oct.y, 65535)
         );
+    }
+
+    /**
+     * Converts a value in range [-1,+1] to [0,rangeMax], rounded to the nearest integer.
+     * Truncation would bias all values toward -1.
+     */
+    private static int toSNorm(final float value, final int rangeMax) {
+        return Math.round((Math.max(-1f, Math.min(1f, value)) * 0.5f + 0.5f) * rangeMax);
     }
 
     /**
@@ -1752,8 +1760,8 @@ public final class Vectors {
     public static byte[] toOctByte(ReadOnly.Vector<?> unitVector){
         final Vector2D.Float oct = toOctEncoding(unitVector);
         final byte[] b = new byte[2];
-        b[0] = (byte) ( (oct.x + 1f) / 2f * 255f);
-        b[1] = (byte) ( (oct.y + 1f) / 2f * 255f);
+        b[0] = (byte) toSNorm(oct.x, 255);
+        b[1] = (byte) toSNorm(oct.y, 255);
         return b;
     }
 

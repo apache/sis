@@ -747,57 +747,49 @@ public sealed interface MeshPrimitive extends Geometry
         @Override
         public void computeFaceNormals() {
             if (Type.TRIANGLES.equals(type)) {
-                final Cursor icursor = getIndex().cursor();
-                final Array vertices = getPositions();
-                final Cursor vcursor = vertices.cursor();
-
-                final long size = vertices.getLength();
-                final Array normals = NDArrays.of(positions.getSampleSystem(), new float[(int)size * 3]);
-                final Cursor ncursor = normals.cursor();
-                final Vector nv = ncursor.samples();
-                final Vector v0 = Vectors.createFloat(3);
-                final Vector v1 = Vectors.createFloat(3);
-                final Vector v2 = Vectors.createFloat(3);
-                Vector normal = null;
-
-                // accumulate normal vectors
-                final int offset = 0;
-                for (long i=0,n=index.getLength();i<n;i+=3) {
-                    icursor.moveTo(i+offset);
-                    final int idx0 = (int) icursor.samples().get(0);
-                    icursor.next();
-                    final int idx1 = (int) icursor.samples().get(0);
-                    icursor.next();
-                    final int idx2 = (int) icursor.samples().get(0);
-                    vcursor.moveTo(idx0); v0.set(vcursor.samples());
-                    vcursor.moveTo(idx1); v1.set(vcursor.samples());
-                    vcursor.moveTo(idx2); v2.set(vcursor.samples());
-                    normal = Maths.calculateNormal(v0, v1, v2);
-
-                    //a normal may already be set at given index, we accumulate
-                    //values and we will normalize them in a second loop
-                    ncursor.moveTo(idx0); nv.add(normal);
-                    ncursor.moveTo(idx1); nv.add(normal);
-                    ncursor.moveTo(idx2); nv.add(normal);
+                /*
+                 * Positions are read in double precision: geocentric coordinates are millions of meters,
+                 * in float precision the edges of small triangles would be mostly rounding noise.
+                 * The not normalized cross products are accumulated, so each triangle contributes
+                 * in proportion of its area, and degenerated triangles contribute nothing.
+                 */
+                final int[] idx = MeshPrimitiveIndexes.toTriangles(getIndex(), type).toArrayInt();
+                final double[] xyz = getPositions().toArrayDouble();
+                final int dim = getPositions().getDimension();
+                final int size = xyz.length / dim;
+                final double[] sum = new double[size * 3];
+                final boolean[] used = new boolean[size];
+                for (int i = 0; i + 2 < idx.length; i += 3) {
+                    final int a = idx[i] * dim, b = idx[i+1] * dim, c = idx[i+2] * dim;
+                    final double ux = xyz[b] - xyz[a], uy = xyz[b+1] - xyz[a+1], uz = xyz[b+2] - xyz[a+2];
+                    final double vx = xyz[c] - xyz[a], vy = xyz[c+1] - xyz[a+1], vz = xyz[c+2] - xyz[a+2];
+                    final double nx = uy*vz - uz*vy, ny = uz*vx - ux*vz, nz = ux*vy - uy*vx;
+                    for (int k = 0; k < 3; k++) used[idx[i+k]] = true;
+                    if (!Double.isFinite(nx + ny + nz) || (nx == 0 && ny == 0 && nz == 0)) {
+                        //degenerated triangle, it has no normal
+                        continue;
+                    }
+                    for (int k = 0; k < 3; k++) {
+                        final int v = idx[i+k] * 3;
+                        sum[v] += nx; sum[v+1] += ny; sum[v+2] += nz;
+                    }
                 }
 
                 //normalize normals
-                for (long i=0,n=index.getLength();i<n;i+=3) {
-                    icursor.moveTo(i+offset);
-                    final int idx0 = (int) icursor.samples().get(0);
-                    icursor.next();
-                    final int idx1 = (int) icursor.samples().get(0);
-                    icursor.next();
-                    final int idx2 = (int) icursor.samples().get(0);
-                    ncursor.moveTo(idx0); nv.normalize();
-                    if (!nv.isFinite()) nv.set(new double[]{1,0,0});
-                    ncursor.moveTo(idx1); nv.normalize();
-                    if (!nv.isFinite()) nv.set(new double[]{1,0,0});
-                    ncursor.moveTo(idx2); nv.normalize();
-                    if (!nv.isFinite()) nv.set(new double[]{1,0,0});
+                final float[] normals = new float[size * 3];
+                for (int v = 0; v < size; v++) {
+                    final double x = sum[v*3], y = sum[v*3+1], z = sum[v*3+2];
+                    final double length = Math.sqrt(x*x + y*y + z*z);
+                    if (length > 0 && Double.isFinite(length)) {
+                        normals[v*3]   = (float) (x / length);
+                        normals[v*3+1] = (float) (y / length);
+                        normals[v*3+2] = (float) (z / length);
+                    } else if (used[v]) {
+                        //only used by degenerated triangles, any direction is as good
+                        normals[v*3] = 1;
+                    }
                 }
-
-                setNormals(normals);
+                setNormals(NDArrays.of(getPositions().getSampleSystem(), normals));
             }
         }
 
