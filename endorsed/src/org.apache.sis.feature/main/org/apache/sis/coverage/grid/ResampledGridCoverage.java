@@ -157,7 +157,7 @@ final class ResampledGridCoverage extends DerivedGridCoverage {
      */
     private static long[] getIntegerTranslation(final MathTransform toSource) {
         final Matrix m = MathTransforms.getMatrix(toSource);
-        if (m == null || !Matrices.isTranslation(m)) {
+        if (!Matrices.isTranslation(m)) {
             return null;
         }
         final int tc = m.getNumCol() - 1;

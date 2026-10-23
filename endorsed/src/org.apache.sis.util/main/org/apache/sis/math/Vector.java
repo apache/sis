@@ -1528,6 +1528,8 @@ search:     for (;;) {
      * to {@link #size()} exclusive. Subclasses may override with more efficient implementation.</p>
      *
      * @return a copy of all floating point values in this vector.
+     * @throws NullPointerException if the values are stored as {@code Object}s and one value is {@code null}.
+     * @throws NumberFormatException if the values are stored as {@code String}s and one value cannot be parsed.
      *
      * @see #doubleValue(int)
      */
@@ -1547,6 +1549,8 @@ search:     for (;;) {
      * to {@link #size()} exclusive. Subclasses may override with more efficient implementation.</p>
      *
      * @return a copy of all floating point values in this vector.
+     * @throws NullPointerException if the values are stored as {@code Object}s and one value is {@code null}.
+     * @throws NumberFormatException if the values are stored as {@code String}s and one value cannot be parsed.
      *
      * @see #floatValue(int)
      * @see #isSinglePrecision()

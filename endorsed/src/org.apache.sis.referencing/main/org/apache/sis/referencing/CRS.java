@@ -92,6 +92,7 @@ import org.apache.sis.metadata.iso.extent.DefaultGeographicBoundingBox;
 import org.apache.sis.metadata.iso.extent.Extents;
 import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.ComparisonMode;
+import org.apache.sis.util.LenientComparable;
 import org.apache.sis.util.OptionalCandidate;
 import org.apache.sis.util.Utilities;
 import org.apache.sis.util.internal.shared.Constants;
@@ -151,7 +152,7 @@ import org.opengis.coordinate.CoordinateMetadata;
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @author  Alexis Manin (Geomatys)
- * @version 1.7
+ * @version 1.8
  * @since   0.3
  */
 public final class CRS {
@@ -515,7 +516,19 @@ public final class CRS {
      * @since 1.5
      */
     public static boolean equivalent(final CoordinateReferenceSystem object1, final CoordinateReferenceSystem object2) {
-        return Utilities.deepEquals(object1, object2, ComparisonMode.COMPATIBILITY);
+        if (object1 == object2) {
+            return true;
+        }
+        if (object1 == null || object2 == null) {
+            return false;
+        }
+        if (object1 instanceof LenientComparable) {
+            return ((LenientComparable) object1).equals(object2, ComparisonMode.COMPATIBILITY);
+        }
+        if (object2 instanceof LenientComparable) {
+            return ((LenientComparable) object2).equals(object1, ComparisonMode.COMPATIBILITY);
+        }
+        return object1.equals(object2);
     }
 
     /**
@@ -1220,9 +1233,8 @@ public final class CRS {
      * then this method returns a {@link BitSet} in which all bits are set to {@code true} in the range from 0 to
      * <var>n</var>−1, where <var>n</var> is the number of dimensions of {@code crs}.
      * Otherwise, if {@code crs} is an instance of {@link CompoundCRS}, then the {@code crs} components are traversed
-     * recursively and compared in the same way as described above, except that the range of bits set to {@code true}
-     * does not start at index 0. Instead, the range starts at the index of the first dimension of the matched
-     * {@code crs} component. If no match is found, then the returned {@link BitSet} is empty.
+     * recursively and compared in the same way as described above, with bit shifted at the position corresponding to
+     * each {@code crs} component. If no match is found, then the returned {@link BitSet} is empty.
      *
      * <h4>Example</h4>
      * The following snippet gets the dimensions of the temporal and vertical components of a <abbr>CRS</abbr>:

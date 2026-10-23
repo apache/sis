@@ -185,6 +185,7 @@ public class Mercator extends ConformalProjection {
     /**
      * Workaround while waiting for JEP 513: Flexible Constructor Bodies.
      */
+    @SuppressWarnings("fallthrough")
     @Workaround(library="JDK", version="11", fixed="25")
     private static Initializer initializer(final OperationMethod method, final Parameters parameters) {
         final Variant variant = variant(method, Variant.values(), Variant.TWO_PARALLELS);
@@ -622,8 +623,7 @@ subst:  if (variant.spherical || eccentricity == 0) {
                  * (but no scale and no translation are allowed). Ignore the longitude row because it just passes through
                  * this Mercator projection with no impact on any calculation.
                  */
-                return (m != null
-                        && Matrices.isAffine(m)
+                return (Matrices.isAffine(m)
                         && m.getNumRow() == DIMENSION+1
                         && m.getNumCol() == DIMENSION+1
                         && m.getElement(1, DIMENSION) == 0
