@@ -28,6 +28,8 @@ import org.apache.sis.geometries.Geometries;
 import org.apache.sis.geometries.GeometryFactory;
 import org.apache.sis.geometries.curve.LinearRing;
 import org.apache.sis.geometries.mesh.MeshPrimitive;
+import org.apache.sis.geometries.mesh.MultiMeshPrimitive;
+import org.apache.sis.geometries.operation.extrude.TerrainExtruder.HeightReference;
 import org.apache.sis.geometries.surface.Polygon;
 import org.apache.sis.maths.Maths;
 import org.apache.sis.maths.NDArrays;
@@ -79,12 +81,64 @@ public class TerrainExtruderTest {
     }
 
     /**
+     * Rotated footprints on a grid terrain, whose edges cross many terrain edges at interpolated points
+     * slightly off the footprint lines. The walls shall have no hole.
+     */
+    @Test
+    public void testWallsOnGrid() {
+        final int n = 10;
+        final double[] xyz = new double[(n + 1) * (n + 1) * 3];
+        for (int i = 0, k = 0; i <= n; i++) {
+            for (int j = 0; j <= n; j++) {
+                xyz[k++] = i; xyz[k++] = j; xyz[k++] = i;
+            }
+        }
+        final int[] index = new int[n * n * 6];
+        for (int i = 0, k = 0; i < n; i++) {
+            for (int j = 0; j < n; j++) {
+                final int a = i * (n + 1) + j, b = a + 1, d = a + n + 1, e = d + 1;
+                index[k++] = a; index[k++] = d; index[k++] = e;
+                index[k++] = a; index[k++] = e; index[k++] = b;
+            }
+        }
+        final MeshPrimitive.Triangles grid = new MeshPrimitive.Triangles();
+        grid.setPositions(NDArrays.of(CRS3D, xyz));
+        grid.setIndex(NDArrays.ofUnsigned(1, index));
+        final TerrainExtruder extruder = new TerrainExtruder(grid);
+        extruder.appendFlatConstraint(polygon(new double[] {1.3,2.1, 6.7,1.2, 7.9,5.3, 2.4,6.6}), 15, 15, HeightReference.ABSOLUTE, true);
+        extruder.appendFlatConstraint(polygon(new double[] {6.1,6.2, 8.8,7.1, 8.1,9.3, 5.7,8.4}), 15, 18, HeightReference.ABSOLUTE, true);
+        new Mesh(extruder.getResult()).assertWatertight();
+    }
+
+    /**
+     * Terrain, roof and walls in separated primitives, without shared vertices.
+     */
+    @Test
+    public void testSeparateParts() {
+        final TerrainExtruder extruder = new TerrainExtruder(terrain());
+        extruder.setSeparateParts(true);
+        extruder.appendFlatConstraint(polygon(FOOTPRINT), 20, 23, HeightReference.ABSOLUTE, true);
+        final MultiMeshPrimitive<MeshPrimitive.Triangles> result = extruder.getResult();
+        assertEquals(3, result.getNumGeometries());
+        final Mesh ground = new Mesh(result.getGeometryN(0));
+        final Mesh roof   = new Mesh(result.getGeometryN(1));
+        final Mesh walls  = new Mesh(result.getGeometryN(2));
+        assertEquals(0, ground.countVertical(), "No wall expected in the terrain.");
+        assertEquals(0, roof.countVertical(), "No wall expected in the roof.");
+        assertEquals(walls.index.length / 3, walls.countVertical(), "Only walls expected.");
+        ground.assertElevations((x, y) -> x);
+        for (int i = 2; i < roof.positions.length; i += 3) {
+            assertTrue(roof.positions[i] >= 20, "Roof vertex below the eaves.");
+        }
+    }
+
+    /**
      * Absolute top joined to the terrain by moving the terrain vertices on the rings.
      */
     @Test
     public void testAbsoluteFlattened() {
         final TerrainExtruder extruder = new TerrainExtruder(terrain());
-        extruder.appendFlatConstraint(polygon(FOOTPRINT), 20, 20, false, false);
+        extruder.appendFlatConstraint(polygon(FOOTPRINT), 20, 20, HeightReference.ABSOLUTE, false);
         final Mesh mesh = new Mesh(extruder.getResult());
         assertEquals(0, mesh.countVertical(), "No wall expected.");
         final Set<List<Double>> xy = new HashSet<>();
@@ -104,7 +158,7 @@ public class TerrainExtruderTest {
     public void testRelative() {
         final TerrainExtruder extruder = new TerrainExtruder(terrain());
         extruder.setDensification(0.5);
-        extruder.appendFlatConstraint(polygon(new double[] {1,4, 9,4, 9,6, 1,6}), 2, 2, true, true);
+        extruder.appendFlatConstraint(polygon(new double[] {1,4, 9,4, 9,6, 1,6}), 2, 2, HeightReference.RELATIVE_TO_GROUND, true);
         final Mesh mesh = new Mesh(extruder.getResult());
         //top vertices on the long sides, by x
         final Map<Double,Double> south = new HashMap<>(), north = new HashMap<>();
@@ -123,6 +177,23 @@ public class TerrainExtruderTest {
     }
 
     /**
+     * Top relative to the ground at the centroid (3.5,4.5) where the ground is at 3.5:
+     * horizontal at 5.5, with walls down to the ground on all sides.
+     */
+    @Test
+    public void testPointAtCentroid() {
+        final TerrainExtruder extruder = new TerrainExtruder(terrain());
+        extruder.appendFlatConstraint(polygon(FOOTPRINT), 2, 2, HeightReference.POINT_AT_CENTROID, true);
+        final Mesh mesh = new Mesh(extruder.getResult());
+        for (double[] p : new double[][] {{2,3},{5,3},{5,6},{2,6},{3,3},{5,5}}) {
+            assertTrue(mesh.hasVertex(p[0], p[1], 5.5), "Missing top vertex at " + p[0] + " " + p[1]);
+            assertTrue(mesh.hasVertex(p[0], p[1], p[0]), "Missing ground vertex at " + p[0] + " " + p[1]);
+        }
+        mesh.assertElevations((x, y) -> inside(FOOTPRINT, x, y) ? 5.5 : x);
+        mesh.assertWatertight();
+    }
+
+    /**
      * Two overlapping footprints, the last appended one wins.
      * Not watertight: where the second rings cross a wall of the first footprint, the new walls on each
      * side have different bottoms (top of the first footprint or ground), leaving a vertical T-junction.
@@ -132,8 +203,8 @@ public class TerrainExtruderTest {
         final double[] first  = {2,2, 6,2, 6,6, 2,6};
         final double[] second = {4,4, 8,4, 8,8, 4,8};
         final TerrainExtruder extruder = new TerrainExtruder(terrain());
-        extruder.appendFlatConstraint(polygon(first), 15, 15, false, true);
-        extruder.appendFlatConstraint(polygon(second), 25, 25, false, true);
+        extruder.appendFlatConstraint(polygon(first), 15, 15, HeightReference.ABSOLUTE, true);
+        extruder.appendFlatConstraint(polygon(second), 25, 25, HeightReference.ABSOLUTE, true);
         final Mesh mesh = new Mesh(extruder.getResult());
         mesh.assertElevations((x, y) -> inside(second, x, y) ? 25 : inside(first, x, y) ? 15 : x);
         for (int t = 0; t < mesh.index.length / 3; t++) {
@@ -185,7 +256,7 @@ public class TerrainExtruderTest {
      */
     private static Mesh extrude(final double height, final double roofHeight, final Polygon polygon) {
         final TerrainExtruder extruder = new TerrainExtruder(terrain());
-        extruder.appendFlatConstraint(polygon, height, roofHeight, false, true);
+        extruder.appendFlatConstraint(polygon, height, roofHeight, HeightReference.ABSOLUTE, true);
         return new Mesh(extruder.getResult());
     }
 
@@ -251,9 +322,18 @@ public class TerrainExtruderTest {
         final double[] positions;
         final int[] index;
 
+        Mesh(final MultiMeshPrimitive<MeshPrimitive.Triangles> result) {
+            this(single(result));
+        }
+
         Mesh(final MeshPrimitive.Triangles mesh) {
             positions = mesh.getPositions().toArrayDouble();
             index = mesh.getIndex().toArrayInt();
+        }
+
+        private static MeshPrimitive.Triangles single(final MultiMeshPrimitive<MeshPrimitive.Triangles> result) {
+            assertEquals(1, result.getNumGeometries(), "Parts are not separated by default.");
+            return result.getGeometryN(0);
         }
 
         double[] vertex(final int triangle, final int k) {

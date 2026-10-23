@@ -18,6 +18,7 @@ package org.apache.sis.geometries.operation.extrude;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.BitSet;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -36,6 +37,7 @@ import org.apache.sis.geometries.internal.shared.Planar.IntList;
 import org.apache.sis.geometries.internal.shared.Planar.XY;
 import org.apache.sis.geometries.mesh.MeshPrimitive;
 import org.apache.sis.geometries.mesh.MeshPrimitiveIndexes;
+import org.apache.sis.geometries.mesh.MultiMeshPrimitive;
 import org.apache.sis.geometries.operation.Intersection;
 import org.apache.sis.geometries.operation.OperationException;
 import org.apache.sis.geometries.operation.ProcessorUtils;
@@ -53,14 +55,17 @@ import org.apache.sis.util.ArgumentChecks;
  * Embeds flat areas, such as building footprints or roads, in a terrain mesh.
  *
  * <p>The terrain is a height field: a triangle mesh in which each (x,y) location has a single elevation.
- * Each {@linkplain #appendFlatConstraint(Polygon, double, double, boolean, boolean) appended polygon} cuts
- * the terrain along its rings and replaces the part inside by a flat top:</p>
+ * Each {@linkplain #appendFlatConstraint(Polygon, double, double, HeightReference, boolean) appended polygon}
+ * cuts the terrain along its rings and replaces the part inside by a flat top, depending on the
+ * {@linkplain HeightReference height reference}:</p>
  * <ul>
  *   <li>with an absolute height, the top is horizontal at the given elevation;</li>
  *   <li>relative to the ground, the top has no sideways tilt but follows the terrain along the
  *       {@linkplain Centerline centerline} of the polygon, like a road climbing a mountain.
  *       Each point of the top is at the elevation of the ground at its nearest point on the centerline,
- *       plus the given height.</li>
+ *       plus the given height;</li>
+ *   <li>at the centroid, the top is horizontal at the elevation of the ground at the polygon centroid,
+ *       plus the given height, like a building on a slope.</li>
  * </ul>
  * <p>The top is joined to the terrain either by vertical walls, or by moving the terrain vertices
  * on the polygon rings to the elevation of the top, in which case the neighboring terrain triangles slope
@@ -81,6 +86,28 @@ import org.apache.sis.util.ArgumentChecks;
  * @author Johann Sorel (Geomatys)
  */
 public final class TerrainExtruder {
+
+    /**
+     * How the height of an appended polygon is measured.
+     */
+    public enum HeightReference {
+        /**
+         * The height is an elevation, the top is horizontal.
+         */
+        ABSOLUTE,
+
+        /**
+         * The height is above the ground along the polygon centerline. The top has no sideways tilt
+         * but follows the terrain, like a road climbing a mountain.
+         */
+        RELATIVE_TO_GROUND,
+
+        /**
+         * The height is above the ground at the polygon centroid, the top is horizontal.
+         * If the centroid is outside the terrain, the mean ground elevation on the polygon vertices is used.
+         */
+        POINT_AT_CENTROID
+    }
 
     /**
      * The axes of the (x,y) plane.
@@ -111,6 +138,17 @@ public final class TerrainExtruder {
      */
     private int[] triangles;
     private int nbTriangle;
+
+    /**
+     * Identifiers of the surface triangles which are tops or roofs of the appended areas.
+     * Pieces of a cut triangle keep its kind.
+     */
+    private final BitSet roofs = new BitSet();
+
+    /**
+     * Whether the terrain, the roofs and the walls are returned in separated mesh primitives.
+     */
+    private boolean separateParts;
 
     /**
      * Index of the surface triangles by their (x,y) envelope.
@@ -146,7 +184,7 @@ public final class TerrainExtruder {
         double length = 0;
         for (int i = 0; i + 2 < indices.length; i += 3) {
             final int a = indices[i], b = indices[i+1], c = indices[i+2];
-            addTriangle(a, b, c);
+            addTriangle(a, b, c, false);
             length += distance2D(a, b) + distance2D(b, c) + distance2D(c, a);
         }
         densification = (length > 0) ? length / (indices.length / 3 * 3) : 1;
@@ -175,6 +213,26 @@ public final class TerrainExtruder {
     }
 
     /**
+     * Returns whether the terrain, the roofs and the walls are returned in separated mesh primitives.
+     *
+     * @return whether the result parts are separated, {@code false} by default
+     */
+    public boolean getSeparateParts() {
+        return separateParts;
+    }
+
+    /**
+     * Sets whether the terrain, the roofs and the walls are returned in separated mesh primitives.
+     * Separated primitives do not share vertices, so normals computed on each primitive are not averaged
+     * across the sharp edges between the terrain, the walls and the roofs.
+     *
+     * @param separateParts whether the result parts are separated
+     */
+    public void setSeparateParts(final boolean separateParts) {
+        this.separateParts = separateParts;
+    }
+
+    /**
      * Appends a flat area, possibly covered by a hipped roof. The terrain is cut along the polygon rings
      * and the part inside the polygon is replaced by the top. Tops of previously appended polygons
      * are cut the same way.
@@ -184,42 +242,51 @@ public final class TerrainExtruder {
      *        with a roof, this is the elevation of the eaves
      * @param roofHeight elevation of the highest roof ridge, in the same way than {@code height}.
      *        If equal to {@code height} the top is flat, otherwise it is a hipped roof
-     * @param relativeToGround whether the top follows the ground along the polygon centerline
+     * @param reference how the heights are measured
      * @param walls {@code true} to join the top to the terrain with vertical walls,
      *        {@code false} to move the terrain vertices on the rings to the top elevation
      * @throws OperationException if the polygon CRS differs from the terrain one, or a triangulation
      *         or the straight skeleton computation failed
      */
     public void appendFlatConstraint(final Polygon polygon, final double height, final double roofHeight,
-            final boolean relativeToGround, final boolean walls) throws OperationException
+            final HeightReference reference, final boolean walls) throws OperationException
     {
         ArgumentChecks.ensureNonNull("polygon", polygon);
+        ArgumentChecks.ensureNonNull("reference", reference);
         ProcessorUtils.ensureSameCRS2D(terrain, polygon);
         final List<double[]> rings = Planar.rings(polygon);
         if (!rings.isEmpty()) {
-            new Append(polygon, rings, height, roofHeight, relativeToGround, walls).run();
+            new Append(polygon, rings, height, roofHeight, reference, walls).run();
         }
     }
 
     /**
      * Returns the terrain with the appended flat areas.
+     * By default the result contains a single mesh primitive. If {@linkplain #setSeparateParts(boolean)
+     * parts are separated}, the result contains the terrain, the roofs and the walls in that order,
+     * without the empty ones, each with its own vertices.
      *
-     * @return a new mesh, with positions only
+     * @return new meshes, with positions only
      */
-    public MeshPrimitive.Triangles getResult() {
-        final IntList faces = new IntList();
-        for (int i = 0; i < nbTriangle * 3; i += 3) {
-            if (triangles[i] >= 0) faces.add(triangles[i], triangles[i+1], triangles[i+2]);
+    public MultiMeshPrimitive<MeshPrimitive.Triangles> getResult() {
+        final IntList terrainFaces = new IntList(), roofFaces = new IntList(), wallFaces = new IntList();
+        for (int i = 0; i < nbTriangle; i++) {
+            if (triangles[i*3] >= 0) {
+                (roofs.get(i) ? roofFaces : terrainFaces).add(triangles[i*3], triangles[i*3+1], triangles[i*3+2]);
+            }
         }
         /*
          * A surface edge without neighbor is on the terrain border or on a cut made by a flat area.
          * On a cut, another edge without neighbor goes in the reverse direction at the same location
          * on the other side. Those two edges are joined by a vertical wall, with the same orientation.
          */
-        final long[] edges = new long[faces.size];
-        for (int i = 0; i < faces.size; i += 3) {
-            for (int k = 0; k < 3; k++) {
-                edges[i+k] = ((long) faces.values[i+k] << 32) | faces.values[i + (k+1) % 3];
+        final long[] edges = new long[terrainFaces.size + roofFaces.size];
+        int n = 0;
+        for (IntList faces : List.of(terrainFaces, roofFaces)) {
+            for (int i = 0; i < faces.size; i += 3) {
+                for (int k = 0; k < 3; k++) {
+                    edges[n++] = ((long) faces.values[i+k] << 32) | faces.values[i + (k+1) % 3];
+                }
             }
         }
         Arrays.sort(edges);
@@ -229,13 +296,33 @@ public final class TerrainExtruder {
             if (Arrays.binarySearch(edges, ((long) b << 32) | a) < 0) {
                 final int[] other = open.remove(List.of(key(b), key(a)));
                 if (other != null) {
-                    faces.add(b, a, other[1], b, other[1], other[0]);
+                    wallFaces.add(b, a, other[1], b, other[1], other[0]);
                 } else {
                     open.put(List.of(key(a), key(b)), new int[] {a, b});
                 }
             }
         }
-        //keep the triangles not degenerated in 3D, and only their vertices
+        final MultiMeshPrimitive<MeshPrimitive.Triangles> result = new MultiMeshPrimitive<>(terrain.getCoordinateReferenceSystem());
+        if (separateParts) {
+            for (IntList faces : List.of(terrainFaces, roofFaces, wallFaces)) {
+                final MeshPrimitive.Triangles part = toPrimitive(faces);
+                if (part != null) result.append(List.of(part));
+            }
+        } else {
+            terrainFaces.add(roofFaces.toArray());
+            terrainFaces.add(wallFaces.toArray());
+            final MeshPrimitive.Triangles part = toPrimitive(terrainFaces);
+            if (part != null) result.append(List.of(part));
+        }
+        return result;
+    }
+
+    /**
+     * Creates a mesh primitive with the given triangles not degenerated in 3D, and only their vertices.
+     *
+     * @return the primitive, or null if there is no triangle
+     */
+    private MeshPrimitive.Triangles toPrimitive(final IntList faces) {
         final int[] remap = new int[nbVertex];
         Arrays.fill(remap, -1);
         final DoubleList positions = new DoubleList();
@@ -254,10 +341,13 @@ public final class TerrainExtruder {
                 indices.add(remap[v]);
             }
         }
-        final MeshPrimitive.Triangles result = new MeshPrimitive.Triangles();
-        result.setPositions(NDArrays.of(terrain.getCoordinateReferenceSystem(), positions.toArray()));
-        result.setIndex(NDArrays.ofUnsigned(1, indices.toArray()));
-        return result;
+        if (indices.size == 0) {
+            return null;
+        }
+        final MeshPrimitive.Triangles primitive = new MeshPrimitive.Triangles();
+        primitive.setPositions(NDArrays.of(terrain.getCoordinateReferenceSystem(), positions.toArray()));
+        primitive.setIndex(NDArrays.ofUnsigned(1, indices.toArray()));
+        return primitive;
     }
 
     // ---------------------------------------------------------------------------------------------
@@ -276,8 +366,10 @@ public final class TerrainExtruder {
 
     /**
      * Adds a surface triangle, made counterclockwise. Flat triangles are ignored.
+     *
+     * @param roof whether the triangle is part of a top or a roof
      */
-    private void addTriangle(final int a, int b, int c) {
+    private void addTriangle(final int a, int b, int c, final boolean roof) {
         final double side = side(a, b, xyz[c*3], xyz[c*3+1]);
         if (side == 0) {
             return;
@@ -292,6 +384,7 @@ public final class TerrainExtruder {
         triangles[id*3]   = a;
         triangles[id*3+1] = b;
         triangles[id*3+2] = c;
+        roofs.set(id, roof);
         index.insert(envelope(id), id);
     }
 
@@ -424,6 +517,7 @@ public final class TerrainExtruder {
         private final Polygon polygon;
         private final List<double[]> rings;
         private final double height, roofHeight;
+        private final HeightReference reference;
         private final boolean relative, withWalls;
         private final Envelope extent = new Envelope();
 
@@ -444,17 +538,18 @@ public final class TerrainExtruder {
 
         /** Centerline sampled on the ground, (x,y,z) for each polyline, for relative tops. */
         private final List<double[]> profiles = new ArrayList<>();
-        /** Elevation of the ground used when there is no centerline. */
-        private double fallbackGround;
+        /** Elevation of the ground below a top at the centroid, or used for relative tops without centerline. */
+        private double ground;
 
         Append(final Polygon polygon, final List<double[]> rings, final double height, final double roofHeight,
-               final boolean relative, final boolean withWalls)
+               final HeightReference reference, final boolean withWalls)
         {
             this.polygon = polygon;
             this.rings = rings;
             this.height = height;
             this.roofHeight = roofHeight;
-            this.relative = relative;
+            this.reference = reference;
+            this.relative = (reference == HeightReference.RELATIVE_TO_GROUND);
             this.withWalls = withWalls;
             final double[] exterior = rings.get(0);
             for (int i = 0; i < exterior.length; i += 2) {
@@ -463,9 +558,16 @@ public final class TerrainExtruder {
         }
 
         void run() throws OperationException {
-            if (relative) {
-                //sampled before the surface is modified
-                buildProfiles();
+            //ground sampled before the surface is modified
+            switch (reference) {
+                case RELATIVE_TO_GROUND: buildProfiles(); break;
+                case POINT_AT_CENTROID: {
+                    final double[] c = centroid();
+                    ground = groundZ(c[0], c[1]);
+                    if (Double.isNaN(ground)) ground = ringGround();
+                    break;
+                }
+                default: break;
             }
             buildChain();
             cutSurface();
@@ -509,6 +611,13 @@ public final class TerrainExtruder {
                 }
             }
             //used if there is no centerline or the centerline is outside the terrain
+            ground = ringGround();
+        }
+
+        /**
+         * Returns the mean elevation of the ground on the ring vertices inside the terrain, or 0 if none.
+         */
+        private double ringGround() {
             double sum = 0;
             int count = 0;
             for (double[] ring : rings) {
@@ -520,7 +629,30 @@ public final class TerrainExtruder {
                     }
                 }
             }
-            fallbackGround = (count > 0) ? sum / count : 0;
+            return (count > 0) ? sum / count : 0;
+        }
+
+        /**
+         * Returns the area centroid of the polygon, holes excluded, or the center of its extent if the area is zero.
+         * Coordinates are relative to the first vertex for accuracy.
+         */
+        private double[] centroid() {
+            final double x0 = rings.get(0)[0], y0 = rings.get(0)[1];
+            double area = 0, cx = 0, cy = 0;
+            for (double[] ring : rings) {
+                for (int i = 0; i < ring.length; i += 2) {
+                    final double xa = ring[i] - x0, ya = ring[i+1] - y0;
+                    final double xb = ring[(i+2) % ring.length] - x0, yb = ring[(i+3) % ring.length] - y0;
+                    final double cross = xa*yb - xb*ya;
+                    area += cross;
+                    cx += (xa + xb) * cross;
+                    cy += (ya + yb) * cross;
+                }
+            }
+            if (area == 0) {
+                return new double[] {extent.centre().x, extent.centre().y};
+            }
+            return new double[] {x0 + cx / (3 * area), y0 + cy / (3 * area)};
         }
 
         /**
@@ -545,10 +677,10 @@ public final class TerrainExtruder {
          */
         private double topZ(final double x, final double y) {
             if (!relative) {
-                return height;
+                return ground + height;
             }
             double best = Double.POSITIVE_INFINITY;
-            double z = fallbackGround;
+            double z = ground;
             for (double[] p : profiles) {
                 final int n = p.length / 3;
                 for (int i = 0; i < Math.max(1, n - 1); i++) {
@@ -730,15 +862,18 @@ public final class TerrainExtruder {
                 addLocal(inside.values[i], vertices, local);
             }
 
-            //ring segments inside the triangle
+            //ring segments in the triangle, as constraints if inside it, all of them as boundary
+            final IntList boundary = new IntList();
             for (int i = 0, n = vertices.size; i < n; i++) {
                 final IntList points = chainAt.get(key(vertices.values[i]));
                 for (int j = 0; points != null && j < points.size; j++) {
                     final int k = points.values[j];
                     final Integer other = local.get(location(next[k]));
+                    if (other == null) continue;
+                    boundary.add(i, other);
                     final double mx = (chain[k*2]   + chain[next[k]*2])   / 2;
                     final double my = (chain[k*2+1] + chain[next[k]*2+1]) / 2;
-                    if (other != null && side(a, b, mx, my) > 0 && side(b, c, mx, my) > 0 && side(c, a, mx, my) > 0) {
+                    if (side(a, b, mx, my) > 0 && side(b, c, mx, my) > 0 && side(c, a, mx, my) > 0) {
                         constraints.add(i, other);
                     }
                 }
@@ -749,10 +884,12 @@ public final class TerrainExtruder {
                 coords[i*2]   = xyz[vertices.values[i]*3];
                 coords[i*2+1] = xyz[vertices.values[i]*3+1];
             }
-            final int[] parts = Planar.keep(coords, Delaunay.triangulate(coords, constraints.toArray()), rings, false);
+            final int[] parts = Planar.keep(coords, Delaunay.triangulate(coords, constraints.toArray()),
+                                            boundary.toArray(), rings, false);
             removeTriangle(id);
+            final boolean roof = roofs.get(id);
             for (int i = 0; i < parts.length; i += 3) {
-                addTriangle(vertices.values[parts[i]], vertices.values[parts[i+1]], vertices.values[parts[i+2]]);
+                addTriangle(vertices.values[parts[i]], vertices.values[parts[i+1]], vertices.values[parts[i+2]], roof);
             }
         }
 
@@ -779,6 +916,7 @@ public final class TerrainExtruder {
             for (int k = 0; k < next.length; k++) {
                 constraints.add(addTop(location(k), 0, local, points), addTop(location(next[k]), 0, local, points));
             }
+            final int[] boundary = constraints.toArray();
             double roofScale = 0;
             if (roofHeight != height) {
                 final StraightSkeleton skeleton = new StraightSkeleton(polygon);
@@ -822,9 +960,9 @@ public final class TerrainExtruder {
             for (int l = 0; l < nbLocal; l++) {
                 if (topVertex[l] < 0) topVertex[l] = addVertex(xy[l*2], xy[l*2+1], z[l]);
             }
-            final int[] tops = Planar.keep(xy, Delaunay.triangulate(xy, constraints.toArray()), rings, true);
+            final int[] tops = Planar.keep(xy, Delaunay.triangulate(xy, constraints.toArray()), boundary, rings, true);
             for (int i = 0; i < tops.length; i += 3) {
-                addTriangle(topVertex[tops[i]], topVertex[tops[i+1]], topVertex[tops[i+2]]);
+                addTriangle(topVertex[tops[i]], topVertex[tops[i+1]], topVertex[tops[i+2]], true);
             }
         }
 

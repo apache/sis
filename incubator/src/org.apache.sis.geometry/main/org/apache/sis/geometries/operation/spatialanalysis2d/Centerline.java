@@ -145,7 +145,9 @@ public final class Centerline {
             }
         }
         final double[] xy = points.toArray();
-        final int[] triangles = Planar.keep(xy, Delaunay.triangulate(xy, segments.toArray()), rings, true);
+        //segments follow the rings, which have the polygon interior on their left
+        final int[] boundary = segments.toArray();
+        final int[] triangles = Planar.keep(xy, Delaunay.triangulate(xy, boundary), boundary, rings, true);
 
         //chords are the edges shared by two triangles, edges on the rings have a single triangle inside
         final Map<Long,Integer> edgeCount = new HashMap<>();
