@@ -16,6 +16,7 @@
  */
 package org.apache.sis.storage.netcdf.base;
 
+import java.util.BitSet;
 import java.util.Map;
 import java.util.List;
 import java.util.ArrayList;
@@ -40,7 +41,6 @@ import org.opengis.parameter.ParameterValue;
 import org.opengis.parameter.ParameterValueGroup;
 import org.opengis.parameter.ParameterNotFoundException;
 import org.opengis.referencing.IdentifiedObject;
-import org.opengis.referencing.cs.CoordinateSystem;
 import org.opengis.referencing.crs.CRSFactory;
 import org.opengis.referencing.crs.ProjectedCRS;
 import org.opengis.referencing.crs.GeographicCRS;
@@ -57,8 +57,6 @@ import org.opengis.referencing.datum.Ellipsoid;
 import org.apache.sis.referencing.CRS;
 import org.apache.sis.referencing.CommonCRS;
 import org.apache.sis.referencing.IdentifiedObjects;
-import org.apache.sis.referencing.crs.AbstractCRS;
-import org.apache.sis.referencing.cs.AxesConvention;
 import org.apache.sis.referencing.cs.CoordinateSystems;
 import org.apache.sis.referencing.datum.DatumOrEnsemble;
 import org.apache.sis.referencing.datum.DefaultGeodeticDatum;
@@ -67,7 +65,6 @@ import org.apache.sis.referencing.operation.matrix.MatrixSIS;
 import org.apache.sis.referencing.operation.transform.MathTransforms;
 import org.apache.sis.referencing.operation.transform.TransformSeparator;
 import org.apache.sis.referencing.operation.provider.PseudoPlateCarree;
-import org.apache.sis.referencing.internal.shared.AxisDirections;
 import org.apache.sis.referencing.internal.shared.AffineTransform2D;
 import org.apache.sis.storage.DataStoreContentException;
 import org.apache.sis.storage.netcdf.internal.Resources;
@@ -1011,33 +1008,27 @@ final class GridMapping {
                 /*
                  * The CRS built by the `Grid` class (based on an inspection of coordinate variables)
                  * may have a different axis order than the CRS specified by grid mapping attributes
-                 * (the CRS built by this class). This block checks which axis order seems to fit,
-                 * then potentially replaces `Grid` implicit CRS by `GridMapping` explicit CRS.
-                 *
-                 * This is where the potential difference between EPSG axis order and grid axis order is handled.
-                 * If we cannot find which component to replace, assume that grid mapping describes the first dimensions.
-                 * We have no guarantees that this latter assumption is correct, but it seems to match common practice.
+                 * (the CRS built by this class). This block locates the dimensions of the horizontal
+                 * CRS and replaces `Grid` implicit CRS by `GridMapping` explicit CRS.
                  */
-                CoordinateReferenceSystem match = explicitCRS;
-                final CoordinateSystem cs = implicitCRS.getCoordinateSystem();
-                firstAffectedCoordinate = AxisDirections.indexOfColinear(cs, explicitCRS.getCoordinateSystem());
-                if (firstAffectedCoordinate < 0) {
-                    match = AbstractCRS.castOrCopy(explicitCRS).forConvention(AxesConvention.RIGHT_HANDED);
-                    firstAffectedCoordinate = AxisDirections.indexOfColinear(cs, match.getCoordinateSystem());
-                    if (firstAffectedCoordinate < 0) {
-                        firstAffectedCoordinate = 0;
-                    }
+                MathTransform swapAxisOrder = null;
+                final BitSet dimensions = CRS.locateDimensions(implicitCRS, explicitCRS, CRS.EquivalenceProperty.DATUM_TYPE);
+                firstAffectedCoordinate = Math.max(dimensions.nextSetBit(0), 0);
+                if (dimensions.nextSetBit(firstAffectedCoordinate + CRS.getDimensionOrZero(explicitCRS)) >= 0) {
+                    // Did not found the expected number of dimensions, or dimension indexes are not consecutive.
+                    return null;
                 }
-                /*
-                 * Replace the implicit CRS (derived from the netCDF dimensions of the variable) by the explicit CRS
-                 * specified by the grid mapping attributes (analyzed by this class). The axis order and units may be
-                 * changed from `implicitCRS` order to `explicitCRS` order.
-                 */
-                MathTransform swap = null;
                 try {
+                    /*
+                     * Replace the implicit CRS (derived from the netCDF dimensions of the variable) by the explicit CRS
+                     * specified by the grid mapping attributes (analyzed by this class). The axis order and units may be
+                     * changed from `implicitCRS` order to `explicitCRS` order.
+                     */
+                    final CoordinateReferenceSystem match = CRS.selectDimensions(
+                            implicitCRS, dimensions, CRS.SeparationMode.EXACT);
                     // Following is useful only if a "grid to CRS" exists.
                     if (explicitG2C != null && match != explicitCRS) {
-                        swap = MathTransforms.linear(
+                        swapAxisOrder = MathTransforms.linear(
                                 CoordinateSystems.swapAndScaleAxes(
                                         match.getCoordinateSystem(),
                                         explicitCRS.getCoordinateSystem()));
@@ -1048,10 +1039,10 @@ final class GridMapping {
                     cannotCreateGridOrCRS(variable, e, false);
                     return null;
                 }
-                if (swap != null) {  // Implies `explicitG2C != null`
-                    swap = MathTransforms.passThrough(firstAffectedCoordinate, swap,
-                            explicitG2C.getTargetDimensions() - (firstAffectedCoordinate + swap.getSourceDimensions()));
-                    explicitG2C = MathTransforms.concatenate(explicitG2C, swap);
+                if (swapAxisOrder != null) {  // Implies `explicitG2C != null`
+                    swapAxisOrder = MathTransforms.passThrough(firstAffectedCoordinate, swapAxisOrder,
+                            explicitG2C.getTargetDimensions() - (firstAffectedCoordinate + swapAxisOrder.getSourceDimensions()));
+                    explicitG2C = MathTransforms.concatenate(explicitG2C, swapAxisOrder);
                 }
                 if (implicitCRS.equals(explicitCRS)) {
                     explicitCRS = implicitCRS;          // Keep existing instance.

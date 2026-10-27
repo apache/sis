@@ -133,7 +133,7 @@ public enum ComparisonMode {
      * However, the changes should not have a practical impact on the numerical results of coordinate operations.
      * For example, changes of input or output axis order is not accepted by this comparison mode.
      *
-     * <h4>Application to datum ensembles</h4>
+     * <h4>Compatible comparison between datum and datum ensemble</h4>
      * Two Coordinate Reference Systems (<abbr>CRS</abbr>) may be considered compatible when
      * one <abbr>CRS</abbr> is associated with a datum and the other <abbr>CRS</abbr> is associated with a datum ensemble,
      * but the former can be considered as the {@linkplain org.apache.sis.referencing.datum.DatumOrEnsemble#isLegacyDatum
@@ -145,7 +145,7 @@ public enum ComparisonMode {
      * but as defined in version 9 and 10 respectively of the <abbr>EPSG</abbr> database.
      * They are the <abbr>CRS</abbr> definitions before and after the introduction of datum ensemble in the schema.</p>
      *
-     * <h4>Application to dynamic reference frames</h4>
+     * <h4>Compatible comparison between static and dynamic reference frames</h4>
      * Two Reference Frames may be considered compatible despite one frame being static and the other frame being dynamic.
      * This comparison mode can check, among other criteria, whether the two reference frames share a common authority code
      * or have an {@linkplain org.apache.sis.referencing.IdentifiedObjects#isHeuristicMatchForName equivalent name}.
@@ -153,6 +153,7 @@ public enum ComparisonMode {
      * <p><b>Example:</b> the "WGS 1972" reference frame as defined in versions 9 and 10 of <abbr>EPSG</abbr> database.</p>
      *
      * @see #isCompatibility()
+     * @see org.apache.sis.referencing.CRS#equivalent(CoordinateReferenceSystem, CoordinateReferenceSystem)
      *
      * @since 1.5
      */
@@ -185,7 +186,8 @@ public enum ComparisonMode {
      * but are considered equivalent according this {@code ALLOW_VARIANT} mode.
      *
      * <ul class="verbose">
-     *   <li>Two Coordinate Reference Systems (<abbr>CRS</abbr>) with the same axes but in different order.
+     *   <li>Two Coordinate Reference Systems (<abbr>CRS</abbr>) with the same axes but in different order,
+     *       or using different units of measurement, or orientated in different directions.
      *       <b>Example:</b> two geographic <abbr>CRS</abbr>s with the same attributes but with
      *       (<var>latitude</var>, <var>longitude</var>) axes in one case and
      *       (<var>longitude</var>, <var>latitude</var>) axes in the other case.</li>
