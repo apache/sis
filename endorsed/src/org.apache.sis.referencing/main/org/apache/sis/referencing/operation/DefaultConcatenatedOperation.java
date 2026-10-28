@@ -217,14 +217,14 @@ final class DefaultConcatenatedOperation extends AbstractCoordinateOperation imp
      * <h4>How coordinate operation accuracy is determined</h4>
      * If {@code setAccuracy} is {@code true}, then this method copies accuracy information found in the single
      * {@link Transformation} instance. This method ignores instances of other kinds for the following reason:
-     * some {@link Conversion} instances declare an accuracy, which is typically close to zero. If a concatenated
-     * operation contains such conversion together with a transformation with unknown accuracy, then we do not want
-     * to declare "0 meter" as the concatenated operation accuracy; it would be a false information.
+     * some {@link Conversion} instances declare an accuracy, which is typically close to zero.
+     * If a concatenated operation contains such conversion together with a transformation with unknown accuracy,
+     * we do not want to declare "0 meter" as the concatenated operation accuracy; it would be a false information.
      * Another reason is that a concatenated operation typically contains an arbitrary number of conversions,
      * but only one transformation. So considering only transformations usually means to pickup only one operation
      * in the given {@code operations} list, which make things clearer.
      *
-     * <h5>Note</h5>
+     * <h5>Compliance with <abbr>ISO</abbr> standard</h5>
      * According ISO 19111, the accuracy attribute is allowed only for transformations. However, this restriction
      * is not enforced everywhere. For example, the EPSG database declares an accuracy of 0 meter for conversions,
      * which is conceptually exact. In this class we are departing from strict interpretation of the specification
@@ -304,12 +304,14 @@ final class DefaultConcatenatedOperation extends AbstractCoordinateOperation imp
             } else {
                 /*
                  * We can skip identity transforms only if the operation is a conversion.
-                 * We do not want to skip the tests for transformations, because there is
-                 * may a change of datum and we want to keep the positional accuracy metadata.
-                 *
-                 * Note: operation (source, target) may be in reverse order, but it should be taken as metadata.
+                 * We do not want to skip the step for transformations, because it may be
+                 * a change of datum and we want to keep the positional accuracy metadata.
+                 * We also need to ensure compatible source and target CRSs, otherwise the
+                 * `verifyStepChaining(…)` method may declare the operation chain invalid.
                  */
-                if (!(step.isIdentity() && step instanceof Conversion)) {
+                if (!(step.isIdentity() && op instanceof Conversion
+                        && Utilities.deepEquals(source, target, ComparisonMode.APPROXIMATE)))
+                {
                     flattened.add(op);
                 }
                 previous = target;          // For next iteration cycle.
@@ -345,6 +347,9 @@ final class DefaultConcatenatedOperation extends AbstractCoordinateOperation imp
 
     /**
      * Verifies if a step of a concatenated operation can be chained after the previous step.
+     * The source <abbr>CRS</abbr> should be equivalent to the target <abbr>CRS</abbr> of the
+     * previous step, but this method accepts also swapped (<var>target</var>, <var>source</var>)
+     * <abbr>CRS</abbr> pair.
      *
      * @param  properties  user-specified properties (for the locale of error message), or {@code null} if none.
      * @param  step        zero-based index of the operation step, used only in case an exception it thrown.

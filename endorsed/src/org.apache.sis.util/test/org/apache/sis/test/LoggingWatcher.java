@@ -23,6 +23,7 @@ import java.util.LinkedList;
 import java.util.ConcurrentModificationException;
 import java.util.Objects;
 import java.util.function.Consumer;
+import java.util.function.Predicate;
 import java.util.logging.Filter;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -296,6 +297,22 @@ public final class LoggingWatcher implements BeforeEachCallback, AfterEachCallba
     @Override
     public synchronized void accept(final LogRecord record) {
         messages.add(new Message(formatter.formatMessage(record), record.getThrown()));
+    }
+
+    /**
+     * Skips the next logs until the given condition become false.
+     * The filter receive a lot message in argument and returns whether that log should be skipped.
+     *
+     * @param  filter  a predicate which, given a log message, returns whether to skip that log.
+     */
+    public synchronized void skipLogsWhile(final Predicate<String> filter) {
+        Message message;
+        while ((message = messages.peek()) != null) {
+            if (!filter.test(message.text)) break;
+            if (messages.remove() != message) {
+                throw new ConcurrentModificationException();
+            }
+        }
     }
 
     /**
