@@ -41,6 +41,7 @@ CREATE INDEX ix_parameter_values                 ON "Coordinate_Operation Parame
 CREATE INDEX ix_parameter_value_code             ON "Coordinate_Operation Parameter Value" (parameter_code);
 CREATE INDEX ix_path_concat_operation_code       ON "Coordinate_Operation Path"            (concat_operation_code);
 CREATE INDEX ix_supersession_object_code         ON "Supersession"                         (object_code);
+CREATE INDEX ix_usage_object                     ON "Usage"                                (object_table_name, object_code);
 
 
 -----------------------------------------------------------------------------
