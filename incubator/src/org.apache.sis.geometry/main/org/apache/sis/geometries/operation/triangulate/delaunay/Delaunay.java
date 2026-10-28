@@ -349,7 +349,7 @@ public final class Delaunay {
         } else {
             final Array index = points.getIndex();
             if (index == null) {
-                for (long l = 0; l < index.getLength(); l++) {
+                for (long l = 0; l < positions.getLength(); l++) {
                     insertPoint(l);
                 }
             } else {
