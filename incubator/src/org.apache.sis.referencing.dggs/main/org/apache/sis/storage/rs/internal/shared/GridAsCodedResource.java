@@ -124,6 +124,7 @@ public final class GridAsCodedResource extends AbstractResource implements Coded
 
     @Override
     public CodedCoverage read(CodedGeometry userQuery, int... range) throws DataStoreException {
+        userQuery = CodedResources.align(this, userQuery);
 
         List<SampleDimension> sampleDimensions = source.getSampleDimensions();
         if (range != null && range.length != 0) {

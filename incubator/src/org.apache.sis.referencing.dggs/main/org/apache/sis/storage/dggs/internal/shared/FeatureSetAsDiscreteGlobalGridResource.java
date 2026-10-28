@@ -45,6 +45,7 @@ import org.apache.sis.storage.dggs.DiscreteGlobalGridGeometry;
 import org.apache.sis.storage.dggs.DiscreteGlobalGridResource;
 import org.apache.sis.storage.rs.CodedCoverage;
 import org.apache.sis.storage.rs.CodedGeometry;
+import org.apache.sis.storage.rs.internal.shared.CodedResources;
 
 
 /**
@@ -153,7 +154,7 @@ public final class FeatureSetAsDiscreteGlobalGridResource extends AbstractResour
     @Override
     public CodedCoverage read(CodedGeometry grid, int... range) throws DataStoreException {
         init();
-        final DiscreteGlobalGridGeometry geometry = DiscreteGlobalGridResource.toDiscreteGlobalGridGeometry(grid);
+        final DiscreteGlobalGridGeometry geometry = DiscreteGlobalGridResource.toDiscreteGlobalGridGeometry(CodedResources.align(this, grid));
 
         final Optional<Envelope> envelope = featureSet.getEnvelope();
         if (!envelope.isEmpty()) {

@@ -108,6 +108,7 @@ public final class CompoundCodedResource extends AbstractResource implements Cod
 
     @Override
     public CodedCoverage read(CodedGeometry geometry, int... range) throws DataStoreException {
+        geometry = CodedResources.align(this, geometry);
         try {
             final CodedCoverage[] resampled = new CodedCoverage[resources.size()];
             for (int i = 0; i < resampled.length; i++) {

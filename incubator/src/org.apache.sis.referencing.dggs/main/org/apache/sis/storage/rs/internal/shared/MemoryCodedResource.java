@@ -18,6 +18,7 @@ package org.apache.sis.storage.rs.internal.shared;
 
 import java.util.List;
 import java.util.Optional;
+import org.opengis.util.FactoryException;
 import org.opengis.util.GenericName;
 import org.apache.sis.coverage.SampleDimension;
 import org.apache.sis.storage.AbstractResource;
@@ -60,7 +61,16 @@ public final class MemoryCodedResource extends AbstractResource implements Coded
 
     @Override
     public CodedCoverage read(CodedGeometry geometry, int... range) throws DataStoreException {
-        return coverage;
+        geometry = CodedResources.align(this, geometry);
+        if (geometry.equals(coverage.getGeometry())) {
+            return coverage;
+        }
+        //view restricted to the requested cells
+        try {
+            return new ResampledCodedCoverage(name, coverage, geometry);
+        } catch (FactoryException ex) {
+            throw new DataStoreException(ex.getMessage(), ex);
+        }
     }
 
 }

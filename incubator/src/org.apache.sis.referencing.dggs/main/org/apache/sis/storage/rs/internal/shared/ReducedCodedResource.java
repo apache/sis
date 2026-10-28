@@ -155,6 +155,8 @@ public final class ReducedCodedResource extends AbstractResource implements Code
 
     @Override
     public CodedCoverage read(CodedGeometry query, int... range) throws DataStoreException {
+        query = CodedResources.align(this, query);
+
         //rebuild a query on all source components, inserting the fixed slices
         final CodedGeometry[] parts = new CodedGeometry[components.size()];
         for (int i = 0; i < parts.length; i++) {

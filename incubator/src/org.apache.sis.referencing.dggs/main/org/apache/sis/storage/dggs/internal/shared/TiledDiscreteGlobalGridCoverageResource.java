@@ -30,6 +30,7 @@ import org.apache.sis.storage.dggs.DiscreteGlobalGridGeometry;
 import org.apache.sis.storage.dggs.DiscreteGlobalGridResource;
 import org.apache.sis.storage.rs.CodedCoverage;
 import org.apache.sis.storage.rs.CodedGeometry;
+import org.apache.sis.storage.rs.internal.shared.CodedResources;
 
 
 /**
@@ -71,7 +72,7 @@ public abstract class TiledDiscreteGlobalGridCoverageResource extends AbstractRe
         final NumberRange<Integer> availableDepths = getAvailableDepths();
 
         //convert the query to this DGGRS and depth
-        DiscreteGlobalGridGeometry dggrsQuery = DiscreteGlobalGridResource.toDiscreteGlobalGridGeometry(query);
+        DiscreteGlobalGridGeometry dggrsQuery = DiscreteGlobalGridResource.toDiscreteGlobalGridGeometry(CodedResources.align(this, query));
         try {
             dggrsQuery = dggrsQuery.transformTo(localDggrs, availableDepths, getTileRelativeDepth());
         } catch (TransformException | IncommensurableException ex) {

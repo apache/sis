@@ -17,6 +17,7 @@
 package org.apache.sis.storage.dggs.internal.shared;
 
 import java.util.List;
+import org.opengis.util.FactoryException;
 import org.apache.sis.coverage.SampleDimension;
 import org.apache.sis.measure.NumberRange;
 import org.apache.sis.storage.AbstractResource;
@@ -25,6 +26,8 @@ import org.apache.sis.storage.dggs.DiscreteGlobalGridGeometry;
 import org.apache.sis.storage.dggs.DiscreteGlobalGridResource;
 import org.apache.sis.storage.rs.CodedCoverage;
 import org.apache.sis.storage.rs.CodedGeometry;
+import org.apache.sis.storage.rs.internal.shared.CodedResources;
+import org.apache.sis.storage.rs.internal.shared.ResampledCodedCoverage;
 
 
 /**
@@ -68,7 +71,16 @@ public final class MemoryDiscreteGlobalGridResource extends AbstractResource imp
 
     @Override
     public CodedCoverage read(CodedGeometry geometry, int... range) throws DataStoreException {
-        return coverage;
+        geometry = CodedResources.align(this, geometry);
+        if (geometry.equals(coverage.getGeometry())) {
+            return coverage;
+        }
+        //view restricted to the requested zones
+        try {
+            return new ResampledCodedCoverage(null, coverage, geometry);
+        } catch (FactoryException ex) {
+            throw new DataStoreException(ex.getMessage(), ex);
+        }
     }
 
 }

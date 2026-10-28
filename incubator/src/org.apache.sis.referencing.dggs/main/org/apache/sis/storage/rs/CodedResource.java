@@ -169,6 +169,12 @@ public interface CodedResource extends BandedCoverageResource {
     /**
      * Retrieve a set of DGGRS zone data.
      *
+     * <p>The given geometry does not need to match the resource geometry exactly.
+     * Implementations shall align it on the resource geometry, using
+     * {@code getGridGeometry().derive().subgrid(geometry).build()}.
+     * Components of the geometry which are not in the resource are ignored,
+     * components of the resource which are not in the geometry are read entirely.</p>
+     *
      * @param geometry to read
      * @param range bands to select
      * @return DiscreteGlobalGridCoverage, never null
