@@ -116,6 +116,11 @@ public class Resources extends IndexedResourceBundle {
         public static final short CanNotCreateObjectAsInstanceOf_2 = 4;
 
         /**
+         * Cannot prepare a plan for performing the coordinate operation.
+         */
+        public static final short CanNotCreateTransform = 110;
+
+        /**
          * Cannot find a coordinate reference system common to all given envelopes.
          */
         public static final short CanNotFindCommonCRS = 82;

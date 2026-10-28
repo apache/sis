@@ -157,10 +157,10 @@ public class Resources extends IndexedResourceBundle {
         public static final short IllegalValueRange_4 = 16;
 
         /**
-         * The CRS declared by WKT is inconsistent with the attributes of “{1}” in the “{0}” netCDF
-         * file.
+         * The CRS declared by {2,choice,0#WKT|1#EPSG code} is inconsistent with the attributes of
+         * “{1}” in the “{0}” netCDF file.
          */
-        public static final short InconsistentCRS_2 = 29;
+        public static final short InconsistentCRS_3 = 29;
 
         /**
          * The “{2}” attribute does not match the transform inferred from the axes of “{1}” in the

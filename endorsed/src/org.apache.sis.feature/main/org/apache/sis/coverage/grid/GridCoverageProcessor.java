@@ -51,6 +51,7 @@ import org.apache.sis.coverage.internal.shared.BandAggregateArgument;
 import org.apache.sis.referencing.CommonCRS;
 import org.apache.sis.referencing.crs.DefaultTemporalCRS;
 import org.apache.sis.referencing.operation.transform.MathTransforms;
+import org.apache.sis.referencing.operation.transform.TransformFactoryException;
 import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.logging.Logging;
 import org.apache.sis.util.collection.WeakHashSet;
@@ -624,7 +625,7 @@ public class GridCoverageProcessor implements Cloneable {
                 throw e;
             }
         } catch (FactoryException e) {
-            throw new TransformException(e.getMessage(), e);
+            throw new TransformFactoryException(e);
         }
         return resampled.forConvertedValues(isConverted);
     }

@@ -255,10 +255,15 @@ public final class DBFField {
 
     private Object readDate(ChannelDataInput channel) throws IOException {
         final String str = new String(channel.readBytes(fieldLength)).trim();
-        final int year = Integer.parseUnsignedInt(str,0,4,10);
-        final int month = Integer.parseUnsignedInt(str,4,6,10);
-        final int day = Integer.parseUnsignedInt(str,6,8,10);
-        final var date = LocalDate.of(year, month, day);
+        final LocalDate date;
+        if (!str.equals("00000000")) {
+            final int year = Integer.parseUnsignedInt(str,0,4,10);
+            final int month = Integer.parseUnsignedInt(str,4,6,10);
+            final int day = Integer.parseUnsignedInt(str,6,8,10);
+            date = LocalDate.of(year, month, day);
+        } else {
+            date = LocalDate.of(0, 1, 1);
+        }
         if (timezone != null) {
             // Arbitrarily set the hours to the middle of the day.
             return ZonedDateTime.of(date, LocalTime.NOON, timezone);

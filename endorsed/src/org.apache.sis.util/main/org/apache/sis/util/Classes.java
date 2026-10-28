@@ -140,8 +140,8 @@ public final class Classes {
      * This information cannot be obtained from a {@link Class} instance
      * because of the way parameterized types are implemented in Java (by erasure).
      *
-     * <h4>Examples</h4>
-     * When invoking this method for a field of the following types:
+     * <p><b>Example:</b>
+     * when invoking this method for a field of the following types:</p>
      * <ul>
      *   <li>{@code Map<String,Number>}: returns {@code String.class}, the type of keys.</li>
      *   <li>{@code Set<Number>}: returns {@code Number.class}.</li>
@@ -203,8 +203,8 @@ public final class Classes {
      * the same heuristic rule as {@link #boundOfParameterizedProperty(Field)}
      * (see the javadoc of that method for details).
      *
-     * <h4>Examples</h4>
-     * When invoking this method with the following {@link Class} argument values:
+     * <p><b>Example:</b>
+     * when invoking this method with the following {@link Class} argument values:</p>
      * <ul>
      *   <li>{@code List.class}: returns {@code Object.class} because {@link java.util.List} is declared as
      *       {@code List<E>} (implicitly {@code <E extends Object>}).</li>
@@ -444,9 +444,9 @@ public final class Classes {
      * then the returned set will contain {@link java.util.List} (which is implemented directly)
      * together with its parent interfaces {@link Collection} and {@link Iterable}.
      *
-     * <h4>Elements ordering</h4>
-     * All interfaces implemented directly by the given type are first and in the order they are declared
-     * in the {@code implements} or {@code extends} clause. Interfaces implemented by parent interfaces are next.
+     * <p><b>Elements ordering:</b>
+     * All interfaces implemented directly by the given type are first and in the order they are declared in the
+     * {@code implements} or {@code extends} clause. Interfaces implemented by parent interfaces are next.</p>
      *
      * @param  <T>   the compile-time type of the {@code Class} argument.
      * @param  type  the class or interface for which to get all implemented interfaces, or {@code null}.
@@ -494,13 +494,13 @@ public final class Classes {
      * This method invokes itself recursively for adding parent interfaces.
      * The given type is <em>not</em> added to the set.
      *
-     * <h4>Elements ordering</h4>
+     * <p><b>Elements ordering:</b>
      * All interfaces directly implemented by the given type are added first. Then parent interfaces
      * are added recursively. The goal is to increase the chances to have the most specific types first.
      * Example: suppose a class implementing two interfaces: {@code A extends C} and {@code B extends C}.
      * If the parents of A were added immediately after A, we would get {A, C, B} order.
      * But if instead we add all directly implemented interfaces before to add parents,
-     * then we get {A, B, C} order, which is better.
+     * then we get {A, B, C} order, which is better.</p>
      *
      * @param  type      the type for which to add the interfaces in the given set.
      * @param  baseType  the base type of the interfaces to examine.
@@ -638,10 +638,10 @@ next:       for (final Class<?> candidate : candidates) {
      * Only interfaces assignable to {@code baseInterface} are compared.
      * Declaration order does not matter.
      *
-     * <h4>Example</h4>
+     * <p><b>Example:</b>
      * in ISO 19111, different interfaces exist for different coordinate system (CS) geometries
      * ({@code CartesianCS}, {@code PolarCS}, etc.). One can check if two implementations have
-     * the same geometry with the following code:
+     * the same geometry with the following code:</p>
      *
      * {@snippet lang="java" :
      *     if (implementSameInterfaces(cs1, cs2, CoordinateSystem.class)) {

@@ -96,13 +96,13 @@ public final class MathTransforms {
      * The most typical use case is for switching between (<var>latitude</var>, <var>longitude</var>)
      * and (<var>longitude</var>, <var>latitude</var>) axis order of geographic <abbr>CRS</abbr>.
      *
-     * <h4>Warning: use in last resort only</h4>
+     * <p><strong>Warning: use in last resort only.</strong>
      * While switching the axis order of geographic <abbr>CRS</abbr> seems a very frequent problem,
      * the need to invoke this method should be very rare. Apache <abbr>SIS</abbr> already handles
      * axis order changes when deriving Coordinate Operations between Coordinate Reference Systems (<abbr>CRS</abbr>).
      * If a user's code needs to change axis order manually, this is often the symptom of a design problem such as
      * data without {@link org.opengis.referencing.crs.CoordinateReferenceSystem} or with an incorrect <abbr>CRS</abbr>,
-     * or computation that does not use another <abbr>CRS</abbr> for describing their desired coordinate system.
+     * or computation that does not use another <abbr>CRS</abbr> for describing their desired coordinate system.</p>
      *
      * @param  dimension  number of dimensions of the transform to be returned.
      * @return a transform of the specified dimension which swaps the two first axes.

@@ -246,6 +246,8 @@ public abstract class Decoder extends ReferencingFactoryContainer {
      *   <li>{@link MetadataBuilder#setPredefinedFormat(String, StoreListeners, boolean)}</li>
      *   <li>{@link MetadataBuilder#addFormatReaderSIS(String)} (if applicable)</li>
      * </ul>
+     *
+     * @param  builder  the builder where to add metadata.
      */
     public abstract void addFormatDescription(MetadataBuilder builder);
 

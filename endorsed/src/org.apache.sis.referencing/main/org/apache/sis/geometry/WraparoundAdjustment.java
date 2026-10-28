@@ -27,9 +27,10 @@ import org.opengis.referencing.operation.CoordinateOperation;
 import org.opengis.metadata.extent.GeographicBoundingBox;
 import org.apache.sis.referencing.CRS;
 import org.apache.sis.referencing.operation.transform.MathTransforms;
+import org.apache.sis.referencing.operation.transform.TransformFactoryException;
+import org.apache.sis.referencing.internal.shared.WraparoundAxesFinder;
 import org.apache.sis.math.MathFunctions;
 import org.apache.sis.metadata.internal.shared.ReferencingServices;
-import org.apache.sis.referencing.internal.shared.WraparoundAxesFinder;
 import org.apache.sis.util.logging.Logging;
 
 
@@ -191,7 +192,7 @@ public class WraparoundAdjustment {
         try {
             return CRS.findOperation(source, target, geographicDomain);
         } catch (FactoryException e) {
-            throw new TransformException(e.getMessage(), e);
+            throw new TransformFactoryException(e);
         }
     }
 

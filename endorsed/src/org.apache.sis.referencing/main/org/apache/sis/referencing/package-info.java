@@ -42,7 +42,7 @@
  * {@link org.apache.sis.referencing.CRS#fromWKT(String)} and
  * {@link org.apache.sis.referencing.CRS#fromXML(String)}
  *
- * <h2>Usage example</h2>
+ * <h3>Usage example</h3>
  * The following example projects a (<var>latitude</var>, <var>longitude</var>) coordinate to
  * a <cite>Universal Transverse Mercator</cite> projection in the zone of the coordinate:
  *

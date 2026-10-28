@@ -27,7 +27,9 @@ import org.opengis.referencing.operation.SingleOperation;
 import org.opengis.referencing.operation.ConcatenatedOperation;
 import org.opengis.referencing.operation.CoordinateOperation;
 import org.opengis.referencing.operation.CoordinateOperationAuthorityFactory;
+import org.opengis.referencing.operation.NoninvertibleTransformException;
 import org.opengis.referencing.operation.TransformException;
+import org.opengis.referencing.operation.MathTransform;
 import org.apache.sis.referencing.CommonCRS;
 import org.apache.sis.referencing.CRS;
 import org.apache.sis.referencing.internal.shared.Formulas;
@@ -42,6 +44,8 @@ import org.junit.jupiter.api.TestInstance;
 import static org.junit.jupiter.api.Assertions.*;
 import org.junit.jupiter.api.parallel.Execution;
 import org.junit.jupiter.api.parallel.ExecutionMode;
+import org.junit.jupiter.api.extension.RegisterExtension;
+import org.apache.sis.test.LoggingWatcher;
 import org.apache.sis.referencing.operation.transform.MathTransformTestCase;
 import static org.apache.sis.referencing.Assertions.assertEpsgNameAndIdentifierEqual;
 import static org.apache.sis.test.TestCase.assumeConnectionToEPSG;
@@ -51,7 +55,7 @@ import org.opengis.referencing.ReferenceIdentifier;
 
 
 /**
- * Tests {@link CoordinateOperationRegistry} using the EPSG geodetic dataset.
+ * Tests {@link CoordinateOperationRegistry} using the <abbr>EPSG</abbr> geodetic dataset.
  * If no EPSG geodetic dataset is available in the running environment, then tests are skipped.
  * For tests without the need of an EPSG database, see {@link CoordinateOperationFinderTest}.
  *
@@ -63,9 +67,13 @@ import org.opengis.referencing.ReferenceIdentifier;
  *       that does not go through WGS84. Furthermore, since the EPSG database defines (λ,φ) axis order in
  *       addition to the usual (φ,λ) order for the target CRS, this tests allows us to verify we can find
  *       this operation despite different axis order.</li>
+ *   <li>All operations between <q>WGS 84</q> (EPSG:4326) and <q>NAD27</q> (EPSG:4267).
+ *       This is the opposite direction of the operations defined in the <abbr>EPSG</abbr> database.
+ *       <abbr>SIS</abbr> should nevertheless be able to create them by creating the inverses of the
+ *       operations from EPSG:4267 to EPSG:4326. We merely verifies that no exception is thrown.</li>
  * </ul>
  *
- * The operations are tested with various axis order and dimension in source and target CRS.
+ * The operations are tested with various axis order and dimension in source and target <abbr>CRS</abbr>s.
  *
  * @author  Martin Desruisseaux (Geomatys)
  */
@@ -73,6 +81,12 @@ import org.opengis.referencing.ReferenceIdentifier;
 @Execution(ExecutionMode.SAME_THREAD)
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 public final class CoordinateOperationRegistryTest extends MathTransformTestCase {
+    /**
+     * A JUnit extension for listening to log events.
+     */
+    @RegisterExtension
+    public final LoggingWatcher loggings;
+
     /**
      * The transformation factory to use for testing.
      */
@@ -101,6 +115,7 @@ public final class CoordinateOperationRegistryTest extends MathTransformTestCase
      * @throws FactoryException if an error occurred while creating the factory to be tested.
      */
     public CoordinateOperationRegistryTest() throws ParseException, FactoryException {
+        loggings = new LoggingWatcher(AbstractCoordinateOperation.LOGGER);
         crsFactory = CRS.getAuthorityFactory("EPSG");
         assumeConnectionToEPSG(crsFactory instanceof CoordinateOperationAuthorityFactory);
         factory = new DefaultCoordinateOperationFactory();
@@ -120,6 +135,7 @@ public final class CoordinateOperationRegistryTest extends MathTransformTestCase
     @BeforeEach
     public void reset() {
         super.reset();
+        loggings.clear();
     }
 
     /**
@@ -143,6 +159,7 @@ public final class CoordinateOperationRegistryTest extends MathTransformTestCase
 
     /**
      * Tests <q>NTF (Paris) to WGS 84 (1)</q> operation with source and target CRS conform to EPSG definitions.
+     * This operation implies a longitude rotation followed by a geocentric translation in the geographic domain.
      *
      * @throws ParseException if a CRS used in this test cannot be parsed.
      * @throws FactoryException if the operation cannot be created.
@@ -175,12 +192,13 @@ public final class CoordinateOperationRegistryTest extends MathTransformTestCase
         verifyTransform(new double[] {54.271680278,  0.098269657},      // in grads east of Paris
                         new double[] {48.844443528,  2.424952028});     // in degrees east of Greenwich
         validate();
+        loggings.assertNoUnexpectedLog();
     }
 
     /**
-     * Tests <q>NTF (Paris) to WGS 84 (1)</q> operation with normalized source and target CRS.
-     * {@link CoordinateOperationRegistry} should be able to find the operation despite the difference
-     * in axis order an units.
+     * Tests <q>NTF (Paris) to WGS 84 (1)</q> operation with normalized source and target <abbr>CRS</abbr>s.
+     * {@link CoordinateOperationRegistry} should be able to find the operation despite the difference in axis
+     * order an units.
      *
      * @throws ParseException if a CRS used in this test cannot be parsed.
      * @throws FactoryException if the operation cannot be created.
@@ -207,6 +225,7 @@ public final class CoordinateOperationRegistryTest extends MathTransformTestCase
         verifyTransform(new double[] {0.088442691, 48.844512250},      // in degrees east of Paris
                         new double[] {2.424952028, 48.844443528});     // in degrees east of Greenwich
         validate();
+        loggings.assertNoUnexpectedLog();
     }
 
     /**
@@ -236,6 +255,7 @@ public final class CoordinateOperationRegistryTest extends MathTransformTestCase
         verifyTransform(new double[] {2.424952028, 48.844443528},      // in degrees east of Greenwich
                         new double[] {0.098269657, 54.271680278});     // in grads east of Paris
         validate();
+        loggings.assertNoUnexpectedLog();
     }
 
     /**
@@ -271,11 +291,12 @@ public final class CoordinateOperationRegistryTest extends MathTransformTestCase
         verifyTransform(new double[] {54.271680278,  0.098269657, 20.00},      // in grads east of Paris
                         new double[] {48.844443528,  2.424952028, 63.15});     // in degrees east of Greenwich
         validate();
+        loggings.assertNoUnexpectedLog();
     }
 
     /**
-     * Tests <q>NTF (Paris) to WGS 84 (1)</q> operation with three-dimensional source and target CRS
-     * having different axis order and units than the ones declared in the EPSG dataset.
+     * Tests <q>NTF (Paris) to WGS 84 (1)</q> operation with three-dimensional source and target <abbr>CRS</abbr>s
+     * having different axis order and units than the ones declared in the <abbr>EPSG</abbr> geodetic dataset.
      *
      * @throws ParseException if a CRS used in this test cannot be parsed.
      * @throws FactoryException if the operation cannot be created.
@@ -306,6 +327,7 @@ public final class CoordinateOperationRegistryTest extends MathTransformTestCase
         verifyTransform(new double[] {0.088442691, 48.844512250, 20.00},      // in degrees east of Paris
                         new double[] {2.424952028, 48.844443528, 63.15});     // in degrees east of Greenwich
         validate();
+        loggings.assertNoUnexpectedLog();
     }
 
     /**
@@ -315,11 +337,11 @@ public final class CoordinateOperationRegistryTest extends MathTransformTestCase
      * @param  isEPSG  {@code true} if the coordinate operation is expected to contain EPSG identifiers.
      */
     private static void verifyNTF(final CoordinateOperation operation, final String domain, final boolean isEPSG) {
-        assertInstanceOf(ConcatenatedOperation.class, operation, "Operation should have two steps.");
-        final List<? extends CoordinateOperation> steps = ((ConcatenatedOperation) operation).getOperations();
+        final List<? extends CoordinateOperation> steps =
+                assertInstanceOf(ConcatenatedOperation.class, operation, "Operation should have two steps.").getOperations();
         assertEquals(2, steps.size(), "Operation should have two steps.");
-        final SingleOperation step1 = (SingleOperation) steps.get(0);
-        final SingleOperation step2 = (SingleOperation) steps.get(1);
+        final SingleOperation step1 = assertInstanceOf(SingleOperation.class, steps.get(0));
+        final SingleOperation step2 = assertInstanceOf(SingleOperation.class, steps.get(1));
         if (isEPSG) {
             assertEpsgNameAndIdentifierEqual("NTF (Paris) to WGS 84 (1)", 8094, operation);
             assertEpsgNameAndIdentifierEqual("NTF (Paris)",               4807, operation.getSourceCRS());
@@ -368,7 +390,7 @@ public final class CoordinateOperationRegistryTest extends MathTransformTestCase
      * instead of EPSG:5489. Both are <q>RGAF09</q>, but the former use (longitude, latitude) axis
      * order instead of the usual (latitude, longitude) order. The source CRS stay fixed to EPSG:4625.
      *
-     * @throws FactoryException if an error occurred while creating a CRS or operation.
+     * @throws FactoryException if an error occurred while creating a <abbr>CRS</abbr> or an operation.
      */
     @Test
     public void testFindDespiteDifferentAxisOrder() throws FactoryException {
@@ -383,7 +405,7 @@ public final class CoordinateOperationRegistryTest extends MathTransformTestCase
         targetCRS = crsFactory.createGeographicCRS("EPSG:7086");
         operation = createOperation(sourceCRS, targetCRS);
         assertEpsgNameWithoutIdentifierEqual("Martinique 1938 to RGAF09 (1)", operation);
-        final ParameterValueGroup p = ((SingleOperation) operation).getParameterValues();
+        final ParameterValueGroup p = assertInstanceOf(SingleOperation.class, operation).getParameterValues();
         /*
          * Values below are copied from EPSG geodetic dataset 9.1. They may need
          * to be adjusted if a future version of EPSG dataset modify those values.
@@ -396,5 +418,42 @@ public final class CoordinateOperationRegistryTest extends MathTransformTestCase
         assertEquals( -0.8837, p.parameter("Z-axis rotation")   .doubleValue());
         assertEquals( 14.1012, p.parameter("Scale difference")  .doubleValue());
         assertEquals(  0.1,    CRS.getLinearAccuracy(operation));
+        loggings.assertNoUnexpectedLog();
+    }
+
+    /**
+     * Tests operations from <q>WGS 84</q> (EPSG:4326) to <q>NAD27</q> (EPSG:4267).
+     * This is the opposite direction of the operations defined in the <abbr>EPSG</abbr> database.
+     * <abbr>SIS</abbr> should nevertheless be able to create them by creating the inverses of the
+     * operations from EPSG:4267 to EPSG:4326.
+     *
+     * @throws FactoryException if an error occurred while creating a <abbr>CRS</abbr> or an operation.
+     * @throws NoninvertibleTransformException if a transform cannot be inverted.
+     *
+     * @see <a href="https://issues.apache.org/jira/browse/SIS-638">SIS-638</a>
+     */
+    @Test
+    public void testInverseOperations() throws FactoryException, NoninvertibleTransformException {
+        registry.stopAtFirst = false;
+        CoordinateReferenceSystem source = crsFactory.createGeographicCRS("EPSG:4326");
+        CoordinateReferenceSystem target = crsFactory.createGeographicCRS("EPSG:4267");
+        List<CoordinateOperation> operations = registry.createOperations(source, target);
+        /*
+         * The EPSG database version 13.101 contains 78 operations from EPSG:4267 to EPSG:4326,
+         * but many of them require some NADCON or NTv2 files which may not be available on the
+         * machine running this test. However, 30 operations do not require any file and should
+         * be created in all cases.
+         */
+        final int count = operations.size();
+        assertTrue(count >= 30, () -> "Found " + count + " operations, expected more than that.");
+        for (CoordinateOperation operation : operations) {
+            final String name = operation.getName().getCode();
+            transform = operation.getMathTransform();
+            MathTransform inverse = transform.inverse();
+            assertNotEquals(transform, inverse, name);
+            assertSame(transform, inverse.inverse(), name);
+        }
+        loggings.skipLogsWhile((message) -> message.contains("NADCON") || message.contains("NTv2"));
+        loggings.assertNoUnexpectedLog();
     }
 }

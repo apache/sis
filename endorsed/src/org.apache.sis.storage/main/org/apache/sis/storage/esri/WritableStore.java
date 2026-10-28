@@ -91,7 +91,7 @@ final class WritableStore extends AsciiGridStore implements WritableGridCoverage
      */
     private static double distanceFromIntegers(final MathTransform gridToCRS) throws TransformException {
         final Matrix m = MathTransforms.getMatrix(gridToCRS.inverse());
-        if (m != null && Matrices.isAffine(m)) {
+        if (Matrices.isAffine(m)) {
             final int last = m.getNumCol() - 1;
             double sum = 0;
             for (int j=0; j<last; j++) {

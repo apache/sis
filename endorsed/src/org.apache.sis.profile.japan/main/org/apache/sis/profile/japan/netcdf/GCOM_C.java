@@ -373,7 +373,7 @@ public final class GCOM_C extends Convention {
      * @return the map projection definition as a modifiable map, or {@code null} if none.
      */
     @Override
-    public Map<String,Object> projection(final Node node) {
+    public Map<String, Object> projection(final Node node) {
         final String name = node.getAttributeAsString("Image_projection");
         if (name == null) {
             return super.projection(node);
@@ -390,14 +390,14 @@ public final class GCOM_C extends Convention {
         } else {
             return super.projection(node);
         }
-        final var definition = new HashMap<String,Object>(4);
+        final var definition = new HashMap<String, Object>(4);
         definition.put(CF.GRID_MAPPING_NAME, method);
         definition.put(CONVERSION_NAME, name);
         return definition;
     }
 
     /**
-     * The attributes storing values of the 4 corners in degrees with (latitude, longitude) axis order.
+     * The attributes storing values of the 4 corners in degrees with (latitude,longitude) axis order.
      * This is used by {@link #projection(Node)} for inferring a "grid to CRS" transform.
      */
     private static final String[] CORNERS = {
@@ -412,22 +412,22 @@ public final class GCOM_C extends Convention {
     };
 
     /**
-     * Returns the <i>grid corners to CRS</i> transform for the given node.
+     * Returns the <i>grid corners to <abbr>CRS</abbr></i> transform for the given node.
      * This method is invoked after call to {@link #projection(Node)} resulted in creation of a projected CRS.
-     * The {@linkplain ProjectedCRS#getBaseCRS() base CRS} shall have (latitude, longitude) axes in degrees.
+     * The {@linkplain ProjectedCRS#getBaseCRS() base CRS} shall have (latitude,longitude) axes in degrees.
      *
-     * @param  node       the same node as the one given to {@link #projection(Node)}.
-     * @param  baseToCRS  conversion from (latitude, longitude) in degrees to the projected CRS.
+     * @param  node             the same node as the one given to {@link #projection(Node)}.
+     * @param  geographicToCRS  conversion from (latitude,longitude) in degrees to the projected CRS.
      * @return the "grid corner to CRS" transform, or {@code null} if none or unknown.
      * @throws TransformException if a coordinate operation was required but failed.
      */
     @Override
-    public MathTransform gridToCRS(final Node node, final MathTransform baseToCRS) throws TransformException {
+    public MathTransform gridToCRS(final Node node, final MathTransform geographicToCRS) throws TransformException {
         final double[] corners = new double[CORNERS.length];
         for (int i=0; i<corners.length; i++) {
             corners[i] = node.getAttributeAsDouble(CORNERS[i]);
         }
-        baseToCRS.transform(corners, 0, corners, 0, corners.length / 2);
+        geographicToCRS.transform(corners, 0, corners, 0, corners.length / 2);
         /*
          * Compute spans of data (typically in metres) as the average of the spans on both sides
          * (width as length of top and bottom edges, height as length of left and right edges).
@@ -448,7 +448,7 @@ public final class GCOM_C extends Convention {
             m.m12 = corners[1];
             return MathTransforms.linear(m);
         }
-        return super.gridToCRS(node, baseToCRS);
+        return super.gridToCRS(node, geographicToCRS);
     }
 
     /**

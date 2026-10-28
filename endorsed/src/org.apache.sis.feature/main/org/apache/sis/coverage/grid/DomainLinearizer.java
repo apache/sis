@@ -23,6 +23,7 @@ import org.opengis.referencing.operation.TransformException;
 import org.apache.sis.referencing.operation.builder.LinearTransformBuilder;
 import org.apache.sis.referencing.operation.transform.LinearTransform;
 import org.apache.sis.referencing.operation.transform.MathTransforms;
+import org.apache.sis.referencing.operation.transform.TransformFactoryException;
 import org.apache.sis.geometry.GeneralEnvelope;
 import org.apache.sis.geometry.Envelopes;
 import org.apache.sis.util.ArgumentChecks;
@@ -193,7 +194,7 @@ public class DomainLinearizer {
             if (cause instanceof TransformException) {
                 throw (TransformException) cause;
             }
-            throw new TransformException(e.getMessage(), e);
+            throw new TransformFactoryException(e);
         }
         return gg;
     }

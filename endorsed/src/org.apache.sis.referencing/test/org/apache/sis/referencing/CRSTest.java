@@ -413,13 +413,77 @@ public final class CRSTest extends TestCaseWithLogs {
     }
 
     /**
-     * Tests getting a mask of some CRS components.
+     * Tests getting a mask of some <abbr>CRS</abbr> components.
      */
     @Test
     public void testLocateDimensions() {
-        // Following currently locate only the temporal CRS because geographic CRS is not separated in 2D+1D parts.
-        BitSet mask = CRS.locateDimensions(HardCodedCRS.WGS84_4D, HardCodedCRS.TIME, HardCodedCRS.ELLIPSOIDAL_HEIGHT);
+        // Following currently locates only the temporal CRS because geographic CRS is not separated in 2D+1D parts.
+        SingleCRS[] args = {HardCodedCRS.TIME, HardCodedCRS.ELLIPSOIDAL_HEIGHT};
+        SingleCRS[] save = args.clone();
+        BitSet mask = CRS.locateDimensions(HardCodedCRS.WGS84_4D, args);
         assertEquals(BitSet.valueOf(new long[] {0b1000}), mask);
+        assertArrayEquals(save, args);     // Verify that the arguments were not overwritten.
+
+        args = new SingleCRS[] {HardCodedCRS.TIME, HardCodedCRS.GRAVITY_RELATED_HEIGHT};
+        save = args.clone();
+        mask = CRS.locateDimensions(HardCodedCRS.GEOID_4D, args);
+        assertEquals(BitSet.valueOf(new long[] {0b1100}), mask);
+        assertArrayEquals(save, args);
+
+        // Should not take the vertical dimension because CRSs are not equivalent.
+        args = new SingleCRS[] {HardCodedCRS.TIME, HardCodedCRS.DEPTH};
+        save = args.clone();
+        mask = CRS.locateDimensions(HardCodedCRS.GEOID_4D, args);
+        assertEquals(BitSet.valueOf(new long[] {0b1000}), mask);
+        assertArrayEquals(save, args);
+    }
+
+    /**
+     * Tests getting a mask of some <abbr>CRS</abbr> components by datum comparisons.
+     *
+     * @throws FactoryException if an error occurred while creating a test compound <abbr>CRS</abbr>.
+     */
+    @Test
+    public void testEquivalenceProperty() throws FactoryException {
+        for (final CRS.EquivalenceProperty criterion : CRS.EquivalenceProperty.values()) {
+            final String name = criterion.name();
+            BitSet mask;
+
+            mask = CRS.locateDimensions(
+                    HardCodedCRS.GEOID_4D,
+                    HardCodedCRS.GEOID_3D,
+                    criterion);
+            assertEquals(BitSet.valueOf(new long[] {0b0111}), mask, name);
+
+            mask = CRS.locateDimensions(
+                    HardCodedCRS.GEOID_4D,
+                    CRS.compound(HardCodedCRS.TIME, HardCodedCRS.GRAVITY_RELATED_HEIGHT),
+                    criterion);
+            assertEquals(BitSet.valueOf(new long[] {0b1100}), mask, name);
+
+            mask = CRS.locateDimensions(
+                    HardCodedCRS.GEOID_4D,
+                    CRS.compound(HardCodedCRS.TIME, HardCodedCRS.DEPTH),
+                    criterion);
+            assertEquals(BitSet.valueOf(new long[] {
+                switch(criterion) {
+                    case COMPONENT         -> 0b1000;   // No vertical dimension because CRS is not equivalent.
+                    case DATUM, DATUM_TYPE -> 0b1100;   // Accept vertical dimension because datum is the same.
+                }
+            }), mask, name);
+
+            mask = CRS.locateDimensions(
+                    HardCodedCRS.GEOID_4D,
+                    CRS.compound(HardCodedCRS.NTF, HardCodedCRS.DEPTH),
+                    criterion);
+            assertEquals(BitSet.valueOf(new long[] {
+                switch(criterion) {
+                    case COMPONENT  -> 0b0000;   // No equivalent CRS.
+                    case DATUM      -> 0b0100;   // No horizontal dimension because datum is not the same.
+                    case DATUM_TYPE -> 0b0111;   // Accept horizontal dimensions because datum type is the same.
+                }
+            }), mask, name);
+        }
     }
 
     /**

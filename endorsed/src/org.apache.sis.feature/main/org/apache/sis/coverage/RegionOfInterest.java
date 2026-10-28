@@ -27,8 +27,10 @@ import org.opengis.referencing.operation.MathTransform2D;
 import org.opengis.referencing.operation.TransformException;
 import org.apache.sis.referencing.CRS;
 import org.apache.sis.referencing.operation.transform.MathTransforms;
+import org.apache.sis.referencing.operation.transform.TransformFactoryException;
 import org.apache.sis.coverage.grid.GridGeometry;
 import org.apache.sis.coverage.grid.PixelInCell;
+import org.apache.sis.feature.internal.Resources;
 import org.apache.sis.util.LenientComparable;
 import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.ComparisonMode;
@@ -110,8 +112,10 @@ public class RegionOfInterest implements LenientComparable, Serializable {
                 tr = MathTransforms.concatenate(op.getMathTransform(), tr);
             }
             crsToGrid = MathTransforms.bidimensional(tr);
-        } catch (IllegalArgumentException | FactoryException e) {
-            throw new TransformException(null, e);
+        } catch (FactoryException e) {
+            throw new TransformFactoryException(e);
+        } catch (IllegalArgumentException e) {  // Generalization of MismatchedDimensionException.
+            throw new TransformException(Resources.format(Resources.Keys.IllegalGridGeometryComponent_1, "gridToCRS"), e);
         }
         return crsToGrid.createTransformedShape(geometry);
     }

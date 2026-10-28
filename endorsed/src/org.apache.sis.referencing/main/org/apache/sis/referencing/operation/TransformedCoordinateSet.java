@@ -28,6 +28,7 @@ import org.opengis.referencing.operation.TransformException;
 import org.apache.sis.referencing.CRS;
 import org.apache.sis.referencing.internal.Resources;
 import org.apache.sis.referencing.operation.transform.MathTransforms;
+import org.apache.sis.referencing.operation.transform.TransformFactoryException;
 import org.apache.sis.util.collection.BackingStoreException;
 import org.apache.sis.coordinate.DefaultCoordinateMetadata;
 import org.apache.sis.coordinate.AbstractCoordinateSet;
@@ -84,8 +85,10 @@ final class TransformedCoordinateSet extends AbstractCoordinateSet implements Un
             final var context = CoordinateOperationContext.fromBoundingBox(CRS.getGeographicBoundingBox(op));
             final var step = new DefaultCoordinateMetadata(op.getSourceCRS(), op.getSourceEpoch().orElse(null));
             transform = MathTransforms.concatenate(CRS.findOperation(metadata, step, context).getMathTransform(), transform);
-        } catch (FactoryException | MismatchedDimensionException e) {
-            throw new TransformException(e.getMessage(), e);
+        } catch (MismatchedDimensionException e) {
+            throw new TransformException(Resources.format(Resources.Keys.CanNotCreateTransform), e);
+        } catch (FactoryException e) {
+            throw new TransformFactoryException(e);
         }
         this.transform = transform;
         this.data = data;

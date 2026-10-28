@@ -125,7 +125,9 @@ public final class NetcdfStoreTest extends DataStoreTestCase {
     }
 
     /**
-     * Tests the reading of a file a <abbr>CRS</abbr> declared using <abbr>GDAL</abbr>-specific properties.
+     * Tests the reading of a file a <abbr>CRS</abbr> declared using <abbr>GDAL</abbr>-specific attributes.
+     * In this test, the "GeoTransform" attribute is inconsistent with the transform implied by netCDF dimensions
+     * (the coordinate values do not match). Therefore, a warning is expected.
      *
      * @throws DataStoreException if an error occurred while reading the netCDF file.
      */

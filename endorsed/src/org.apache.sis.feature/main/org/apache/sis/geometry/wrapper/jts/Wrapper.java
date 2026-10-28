@@ -47,6 +47,7 @@ import org.opengis.referencing.operation.CoordinateOperation;
 import org.opengis.referencing.operation.MathTransform;
 import org.opengis.referencing.operation.TransformException;
 import org.apache.sis.referencing.CRS;
+import org.apache.sis.referencing.operation.transform.TransformFactoryException;
 import org.apache.sis.geometry.DirectPosition2D;
 import org.apache.sis.geometry.GeneralDirectPosition;
 import org.apache.sis.geometry.GeneralEnvelope;
@@ -733,11 +734,7 @@ add:    for (Geometry next = geometry;;) {
         try {
             return rewrap(JTS.transform(geometry, targetCRS));
         } catch (FactoryException e) {
-            /*
-             * We wrap that exception because `Geometry.transform(…)` does not declare `FactoryException`.
-             * We may revisit in a future version if `Geometry.transform(…)` method declaration is updated.
-             */
-            throw new TransformException(e.getMessage(), e);
+            throw new TransformFactoryException(e);
         }
     }
 

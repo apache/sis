@@ -74,7 +74,7 @@ import org.opengis.geometry.MismatchedDimensionException;
  * </ul>
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
- * @version 1.6
+ * @version 1.8
  *
  * @see org.apache.sis.parameter.MatrixParameters
  *
@@ -1059,13 +1059,15 @@ search:     while (freeColumn < numCol) {
      * A transform is affine if the matrix is square and its last row contains
      * only zeros, except in the last column which contains 1.
      *
-     * @param  matrix  the matrix to test.
-     * @return {@code true} if the matrix represents an affine transform.
+     * @param  matrix  the matrix to test, or {@code null}.
+     * @return {@code true} if the given matrix is non-null and represents an affine transform.
      *
      * @see MatrixSIS#isAffine()
      */
     public static boolean isAffine(final Matrix matrix) {
-        if (matrix instanceof MatrixSIS) {
+        if (matrix == null) {
+            return false;
+        } else if (matrix instanceof MatrixSIS) {
             return ((MatrixSIS) matrix).isAffine();
         } else {
             return MatrixSIS.isAffine(matrix);
@@ -1077,8 +1079,8 @@ search:     while (freeColumn < numCol) {
      * This method returns {@code true} if the given matrix {@linkplain #isAffine(Matrix) is affine}
      * and differs from the identity matrix only in the last column.
      *
-     * @param  matrix  the matrix to test.
-     * @return {@code true} if the matrix represents a translation.
+     * @param  matrix  the matrix to test, or {@code null}.
+     * @return {@code true} if the given matrix is non-null and represents a translation.
      *
      * @since 0.7
      */
@@ -1109,13 +1111,16 @@ search:     while (freeColumn < numCol) {
      * errors. In case of doubt, it is often safer to use the strict {@link MatrixSIS#isIdentity()} method instead
      * than this one.</p>
      *
-     * @param  matrix     the matrix to test for identity.
+     * @param  matrix     the matrix to test for identity, or {@code null}.
      * @param  tolerance  the tolerance value, or 0 for a strict comparison.
-     * @return {@code true} if this matrix is close to the identity matrix given the tolerance threshold.
+     * @return {@code true} if this matrix is non-null and close to the identity matrix given the tolerance threshold.
      *
      * @see MatrixSIS#isIdentity()
      */
     public static boolean isIdentity(final Matrix matrix, final double tolerance) {
+        if (matrix == null) {
+            return false;
+        }
         final int numRow = matrix.getNumRow();
         final int numCol = matrix.getNumCol();
         if (numRow != numCol) {
@@ -1138,18 +1143,20 @@ search:     while (freeColumn < numCol) {
     /**
      * Returns whether the given matrix has any NaN value.
      *
-     * @param  matrix  the matrix to test.
+     * @param  matrix  the matrix to test, or {@code null}.
      * @return {@code true} if at least one matrix element is NaN.
      *
      * @since 1.6
      */
     public static boolean hasNaN(final Matrix matrix) {
-        final int numCol = matrix.getNumCol();
-        final int numRow = matrix.getNumRow();
-        for (int j=0; j<numRow; j++) {
-            for (int i=0; i<numCol; i++) {
-                if (Double.isNaN(matrix.getElement(j, i))) {
-                    return true;
+        if (matrix != null) {
+            final int numCol = matrix.getNumCol();
+            final int numRow = matrix.getNumRow();
+            for (int j=0; j<numRow; j++) {
+                for (int i=0; i<numCol; i++) {
+                    if (Double.isNaN(matrix.getElement(j, i))) {
+                        return true;
+                    }
                 }
             }
         }

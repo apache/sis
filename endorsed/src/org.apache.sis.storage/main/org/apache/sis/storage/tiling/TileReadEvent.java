@@ -29,6 +29,7 @@ import org.opengis.referencing.operation.CoordinateOperation;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import org.apache.sis.referencing.CRS;
 import org.apache.sis.referencing.operation.transform.MathTransforms;
+import org.apache.sis.referencing.operation.transform.TransformFactoryException;
 import org.apache.sis.storage.Resource;
 import org.apache.sis.storage.event.StoreEvent;
 import org.apache.sis.coverage.grid.GridExtent;
@@ -156,7 +157,7 @@ public final class TileReadEvent extends StoreEvent {
                 imageToObjective = MathTransforms.bidimensional(tr);
                 this.crsToObjective = crsToObjective;   // Store only after the rest was successful.
             } catch (FactoryException e) {
-                throw new TransformException(e.toString(), e);
+                throw new TransformFactoryException(e);
             }
             return imageToObjective;
         }
