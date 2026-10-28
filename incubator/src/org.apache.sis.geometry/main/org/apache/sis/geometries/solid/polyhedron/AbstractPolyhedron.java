@@ -33,7 +33,7 @@ import org.apache.sis.geometries.surface.Polygon;
 import org.apache.sis.geometries.surface.Sphere;
 import org.apache.sis.maths.Array;
 import org.apache.sis.maths.NDArrays;
-import org.apache.sis.maths.ReadOnly;
+import org.apache.sis.maths.Vector;
 import org.apache.sis.maths.SampleSystem;
 import org.apache.sis.maths.Vector3D;
 import org.apache.sis.util.ArgumentChecks;
@@ -174,7 +174,7 @@ public abstract sealed class AbstractPolyhedron extends AbstractGeometry impleme
      * @param unitVector a unit vector from the center of the polyhedron
      * @return the face index intersecting the vector
      */
-    public abstract int getFace(ReadOnly.Vector<?> unitVector);
+    public abstract int getFace(Vector<?> unitVector);
 
 
     /**
@@ -184,8 +184,8 @@ public abstract sealed class AbstractPolyhedron extends AbstractGeometry impleme
      * @param lonRad longitude in radians, in range [-PI .. PI]
      * @return unit direction vector
      */
-    protected static ReadOnly.Vector<?> fromLatLon(double latRad, double lonRad) {
-        return new Vector3D.Double(SampleSystem.cartesian(3)).setFromLatLon(latRad, lonRad);
+    protected static Vector<?> fromLatLon(double latRad, double lonRad) {
+        return Vector3D.fromLatLon(latRad, lonRad);
     }
 
     /**
@@ -197,8 +197,8 @@ public abstract sealed class AbstractPolyhedron extends AbstractGeometry impleme
      * @param radius scale applied to the unit direction vector
      * @return direction vector
      */
-    protected static ReadOnly.Vector<?> fromLatLon(double latRad, double lonRad, double radius) {
-        return new Vector3D.Double(SampleSystem.cartesian(3)).setFromLatLon(latRad, lonRad).scale(radius);
+    protected static Vector<?> fromLatLon(double latRad, double lonRad, double radius) {
+        return Vector3D.fromLatLon(latRad, lonRad).scale(radius);
     }
 
     /**
@@ -218,7 +218,7 @@ public abstract sealed class AbstractPolyhedron extends AbstractGeometry impleme
      * @param unitVector vector to test
      * @return matching face index, or -1 if none matched
      */
-    protected static int nearestFace(Array vertices, int[][] faces, ReadOnly.Vector<?> unitVector) {
+    protected static int nearestFace(Array vertices, int[][] faces, Vector<?> unitVector) {
         final Sphere sphere = new DefaultSphere(3);
         for (int f = 0; f < faces.length; f++) {
             final Array polyArray = NDArrays.subset(vertices, faces[f]);

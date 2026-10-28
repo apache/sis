@@ -141,24 +141,16 @@ public final class Transform {
 
                 //transform normal and tangent with local matrix at each point
                 if (normals != null || tangents != null) {
-                    final Vector<?> pos = Vectors.create(positions.getSampleSystem(), positions.getDataType());
-
-                    final Vector<?> nor = (normals == null) ? null : Vectors.create(normals.getSampleSystem(), normals.getDataType());
-                    final Vector<?> tag = (tangents == null) ? null : Vectors.create(tangents.getSampleSystem(), tangents.getDataType());
                     for (long i = 0, n = positions.getLength(); i < n; i++) {
-                        positions.get(i, pos);
+                        final Vector<?> pos = positions.get(i);
                         final MatrixSIS matrix = MatrixSIS.castOrCopy(transform.derivative(Vectors.asDirectPostion(pos)));
-                        if (nor != null) {
-                            cpn.get(i, nor);
-                            nor.set(matrix.multiply(nor.toArrayDouble()));
-                            nor.normalize();
-                            cpn.set(i, nor);
+                        if (cpn != null) {
+                            final Vector<?> nor = Vectors.create(matrix.multiply(cpn.get(i).toArrayDouble()), cpn.getDataType());
+                            cpn.set(i, nor.normalize());
                         }
-                        if (tag != null) {
-                            cpt.get(i, tag);
-                            tag.set(matrix.multiply(tag.toArrayDouble()));
-                            tag.normalize();
-                            cpt.set(i, tag);
+                        if (cpt != null) {
+                            final Vector<?> tag = Vectors.create(matrix.multiply(cpt.get(i).toArrayDouble()), cpt.getDataType());
+                            cpt.set(i, tag.normalize());
                         }
                     }
                     if (cpn != null) copy.setAttribute(DataPointsType.ATT_NORMAL, cpn);

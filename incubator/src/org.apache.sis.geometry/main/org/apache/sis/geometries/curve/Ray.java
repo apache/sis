@@ -28,7 +28,7 @@ import org.apache.sis.geometries.Point;
 import org.apache.sis.geometries.internal.shared.DefaultRay;
 import org.apache.sis.maths.Array;
 import org.apache.sis.maths.NDRange;
-import org.apache.sis.maths.ReadOnly;
+import org.apache.sis.maths.Vector;
 import org.apache.sis.measure.Quantities;
 
 
@@ -62,28 +62,28 @@ public sealed interface Ray extends Curve
      *
      * @return the start position of this ray.
      */
-    ReadOnly.Vector<?> getPosition();
+    Vector<?> getPosition();
 
     /**
      * Sets the position the ray starts from.
      *
      * @param  position  the new start position, not null.
      */
-    void setPosition(ReadOnly.Vector<?> position);
+    void setPosition(Vector<?> position);
 
     /**
      * Returns the direction the ray extends toward.
      *
      * @return the direction of this ray.
      */
-    ReadOnly.Vector<?> getDirection();
+    Vector<?> getDirection();
 
     /**
      * Sets the direction the ray extends toward.
      *
      * @param  direction  the new direction, not null.
      */
-    void setDirection(ReadOnly.Vector<?> direction);
+    void setDirection(Vector<?> direction);
 
     /**
      * Returns {@code false}: a ray always has a start position.
@@ -163,8 +163,8 @@ public sealed interface Ray extends Curve
      */
     @Override
     default Envelope getEnvelope() {
-        final ReadOnly.Vector<?> position = getPosition();
-        final ReadOnly.Vector<?> direction = getDirection();
+        final Vector<?> position = getPosition();
+        final Vector<?> direction = getDirection();
         final int dim = direction.getDimension();
         final NDRange bbox = new NDRange(getCoordinateReferenceSystem());
         for (int i=0;i<dim;i++){

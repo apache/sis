@@ -16,6 +16,7 @@
  */
 package org.apache.sis.geometries.operation;
 
+import java.util.List;
 import org.apache.sis.geometries.Point;
 import org.apache.sis.maths.Maths;
 import org.apache.sis.maths.Vectors;
@@ -134,6 +135,98 @@ public final class Distance {
         Vectors.add(line2Start, Vectors.scale(d2, ratio[1]), buffer2);
         final double[] t = Vectors.subtract(buffer1,buffer2);
         return Vectors.dot(t,t);
+    }
+
+    /**
+     * Find nearest points between two lines.
+     * Only the two first coordinates of the positions are used.
+     *
+     * @param line1Coords line 1 coordinates
+     * @param buffer1 buffer to store nearest point on line 1, of length 2
+     * @param line2Coords line 2 coordinates
+     * @param buffer2 buffer to store nearest point on line 2, of length 2
+     * @param ratio size 2, will store for each line the ratio [0..1] of the nearest point
+     *        between the start and end points of the segment where it is
+     * @param offset size 2, will store for each line the index of the segment where the nearest point is
+     * @param epsilon tolerance factor
+     */
+    public static void nearest(List<? extends Vector<?>> line1Coords, double[] buffer1,
+                               List<? extends Vector<?>> line2Coords, double[] buffer2,
+                               double[] ratio, int[] offset, double epsilon){
+
+        double distance = Double.MAX_VALUE;
+
+        final double[] tempRatio = new double[2];
+        final double[] tempC1 = new double[buffer1.length];
+        final double[] tempC2 = new double[buffer1.length];
+
+        final int nb1 = line1Coords.size()-1;
+        final int nb2 = line2Coords.size()-1;
+
+        for(int i=0;i<nb1;i++){
+            final Vector<?> s1 = line1Coords.get(i);
+            final Vector<?> e1 = line1Coords.get(i+1);
+            for(int k=0;k<nb2;k++){
+                final Vector<?> s2 = line2Coords.get(k);
+                final Vector<?> e2 = line2Coords.get(k+1);
+
+                final double dist = Math.sqrt(distanceSquare(
+                                new double[]{s1.get(0),s1.get(1)}, new double[]{e1.get(0),e1.get(1)}, tempC1,
+                                new double[]{s2.get(0),s2.get(1)}, new double[]{e2.get(0),e2.get(1)}, tempC2,
+                                tempRatio,epsilon));
+                if(dist<distance){
+                    //keep informations
+                    distance = dist;
+                    offset[0] = i;
+                    offset[1] = k;
+                    ratio[0] = tempRatio[0];
+                    ratio[1] = tempRatio[1];
+                    System.arraycopy(tempC1, 0, buffer1, 0, tempC1.length);
+                    System.arraycopy(tempC2, 0, buffer2, 0, tempC2.length);
+                }
+            }
+        }
+    }
+
+    /**
+     * A point on a polyline, given by the segment where it is and its position along that segment.
+     *
+     * @param segment  index of the segment, which goes from the point at that index to the next one.
+     * @param ratio    position along the segment, from 0 at its start to 1 at its end.
+     */
+    public record SegmentPoint(int segment, double ratio) {
+    }
+
+    /**
+     * Finds the point of a polyline nearest to the given point.
+     * Only the two first coordinates of the positions are used.
+     *
+     * @param polyline positions of the polyline, at least two
+     * @param point the point to search the nearest point of the polyline for
+     * @return the nearest point of the polyline, on the first nearest segment if many are at the same distance
+     * @throws IllegalArgumentException if the polyline has less than two positions
+     */
+    public static SegmentPoint nearestSegment(List<? extends Vector<?>> polyline, Vector<?> point) {
+        if (polyline.size() < 2) {
+            throw new IllegalArgumentException("A polyline shall have at least two positions.");
+        }
+        final double x = point.get(0), y = point.get(1);
+        SegmentPoint nearest = null;
+        double nearestDistance = Double.POSITIVE_INFINITY;
+        for (int i = 1; i < polyline.size(); i++) {
+            final Vector<?> a = polyline.get(i-1), b = polyline.get(i);
+            final double ax = a.get(0), ay = a.get(1), bx = b.get(0), by = b.get(1);
+            final double projection = Maths.projectionRatio(ax, ay, bx, by, x, y);
+            final double ratio = Double.isNaN(projection) ? 0 : Maths.clamp(projection, 0, 1);  // NaN if the segment has no length.
+            final double dx = ax + ratio * (bx - ax) - x;
+            final double dy = ay + ratio * (by - ay) - y;
+            final double distance = dx*dx + dy*dy;
+            if (distance < nearestDistance) {
+                nearestDistance = distance;
+                nearest = new SegmentPoint(i - 1, ratio);
+            }
+        }
+        return nearest;
     }
 
     /**

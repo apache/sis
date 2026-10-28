@@ -121,7 +121,7 @@ abstract class AbstractMatrix<T extends AbstractMatrix<T>> extends SimplifiedTra
     @Override
     public Vector<?> getColumnTuple(int col){
         final double[] c = getColumn(col);
-        return Vectors.create(c.length, DataType.DOUBLE).set(c);
+        return Vectors.create(c, DataType.DOUBLE);
     }
 
     @Override
@@ -528,15 +528,10 @@ abstract class AbstractMatrix<T extends AbstractMatrix<T>> extends SimplifiedTra
     }
 
     @Override
-    public Vector<?> transform(final ReadOnly.Vector<?> vector, Vector<?> dest) {
+    public Vector<?> transform(final Vector<?> vector) {
         final double[] array = new double[nbRow];
         transform(vector.toArrayDouble(), 0, array, 0, 1);
-        if (dest == null) {
-            return new VectorND.Double(array);
-        } else {
-            dest.set(array);
-            return dest;
-        }
+        return Vectors.create(array, DataType.DOUBLE);
     }
 
     @Override

@@ -24,7 +24,7 @@ import org.opengis.geometry.Envelope;
 import org.apache.sis.geometries.internal.shared.AbstractGeometry;
 import org.apache.sis.maths.NDArrays;
 import org.apache.sis.maths.NDRange;
-import org.apache.sis.maths.ReadOnly;
+import org.apache.sis.maths.SampleSystem;
 import org.apache.sis.maths.Vector;
 
 
@@ -46,13 +46,13 @@ public final class HyperPlane extends AbstractGeometry{
 
     /**
      * Creates a hyperplane passing by the given position.
-     * The reference system of the hyperplane is the one of that position.
      *
+     * @param  crs       reference system of the hyperplane, or {@code null} for an undefined one.
      * @param  position  a position the hyperplane passes by, not null.
      * @param  normal    the direction the hyperplane is perpendicular to, not null.
      */
-    public HyperPlane(Vector<?> position, Vector<?> normal) {
-        points = GeometryFactory.DEFAULT.createDataPoints(NDArrays.of(position.getSampleSystem(), position.getDataType(), 1));
+    public HyperPlane(CoordinateReferenceSystem crs, Vector<?> position, Vector<?> normal) {
+        points = GeometryFactory.DEFAULT.createDataPoints(NDArrays.of(SampleSystem.of(Geometries.orUndefinedCRS(crs, position.getDimension())), position.getDataType(), 1));
         points.setPosition(0, position);
         this.normal = normal;
     }
@@ -88,19 +88,19 @@ public final class HyperPlane extends AbstractGeometry{
         return points;
     }
 
-    public ReadOnly.Vector<?> getPosition() {
+    public Vector<?> getPosition() {
         return points.getPosition(0);
     }
 
-    public void setPosition(ReadOnly.Vector<?> position) {
+    public void setPosition(Vector<?> position) {
         points.setPosition(0, position);
     }
 
-    public ReadOnly.Vector<?> getNormal() {
+    public Vector<?> getNormal() {
         return normal;
     }
 
-    public void setNormal(ReadOnly.Vector<?> normal) {
+    public void setNormal(Vector<?> normal) {
         this.normal = normal.copy();
     }
 
@@ -114,7 +114,7 @@ public final class HyperPlane extends AbstractGeometry{
      */
     @Override
     public Envelope getEnvelope() {
-        final ReadOnly.Vector<?> position = getPosition();
+        final Vector<?> position = getPosition();
         final int dim = normal.getDimension();
         final NDRange bbox = new NDRange(getCoordinateReferenceSystem());
         /*

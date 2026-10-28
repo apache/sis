@@ -50,6 +50,7 @@ import org.apache.sis.referencing.operation.AbstractCoordinateOperation;
 import org.apache.sis.referencing.operation.transform.AbstractMathTransform;
 import org.apache.sis.referencing.operation.transform.WraparoundTransform;
 import org.apache.sis.referencing.operation.transform.MathTransforms;
+import org.apache.sis.referencing.operation.transform.TransformFactoryException;
 import org.apache.sis.referencing.internal.shared.CoordinateOperations;
 import org.apache.sis.referencing.internal.shared.DirectPositionView;
 import org.apache.sis.referencing.internal.shared.TemporalAccessor;
@@ -337,8 +338,8 @@ public final class Envelopes {
                     final CoordinateOperation operation;
                     try {
                         operation = CRS.findOperation(sourceCRS, targetCRS, null);
-                    } catch (FactoryException exception) {
-                        throw new TransformException(Errors.format(Errors.Keys.CanNotTransformEnvelope), exception);
+                    } catch (FactoryException e) {
+                        throw new TransformFactoryException(Errors.format(Errors.Keys.CanNotTransformEnvelope), e);
                     }
                     envelope = transform(operation, envelope);
                 }
@@ -625,7 +626,7 @@ nextPoint:  for (int pointIndex = 0;;) {                // Break condition at th
                                                new DefaultCoordinateMetadata(sourceCRS, null),
                                                context).getMathTransform();
                 } catch (FactoryException e) {
-                    throw new TransformException(Errors.format(Errors.Keys.CanNotTransformEnvelope), e);
+                    throw new TransformFactoryException(Errors.format(Errors.Keys.CanNotTransformEnvelope), e);
                 }
                 if (!prefix.isIdentity()) {
                     mt = MathTransforms.concatenate(prefix, mt);

@@ -205,20 +205,12 @@ public class Matrix2D extends AbstractMatrix<Matrix2D> {
     }
 
     @Override
-    public Vector<?> transform(ReadOnly.Vector<?> vector, Vector<?> buffer) {
-        if (buffer == null) buffer = new Vector2D.Double();
-
-        if (vector instanceof Vector2D.Double && buffer instanceof Vector2D.Double) {
-            final Vector2D.Double v = (Vector2D.Double) vector;
-            final Vector2D.Double b = (Vector2D.Double) buffer;
-            double rx = m00*v.x + m01*v.y ;
-            double ry = m10*v.x + m11*v.y;
-            b.x = rx;
-            b.y = ry;
-            return b;
-        }
-
-        return super.transform(vector, buffer);
+    public Vector<?> transform(Vector<?> vector) {
+        final double x = vector.get(0);
+        final double y = vector.get(1);
+        return new Vector2D.Double(
+                m00*x + m01*y,
+                m10*x + m11*y);
     }
 
     @Override

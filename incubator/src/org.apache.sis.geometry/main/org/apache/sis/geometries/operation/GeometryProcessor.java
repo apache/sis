@@ -37,6 +37,7 @@ import org.apache.sis.geometries.Geometry;
 import org.apache.sis.geometries.GeometryCollection;
 import org.apache.sis.geometries.GeometryType;
 import org.apache.sis.geometries.Point;
+import org.apache.sis.geometries.Prism;
 import org.apache.sis.geometries.curve.LineString;
 import org.apache.sis.geometries.curve.LinearRing;
 import org.apache.sis.geometries.mesh.MeshPrimitive;
@@ -47,6 +48,7 @@ import org.apache.sis.geometries.surface.Polygon;
 import org.apache.sis.geometries.surface.PolyhedralSurface;
 import org.apache.sis.geometries.surface.Triangle;
 import org.apache.sis.maths.Array;
+import org.apache.sis.maths.Cursor;
 import org.apache.sis.maths.DataType;
 import org.apache.sis.maths.NDArrays;
 import org.apache.sis.maths.SampleSystem;
@@ -436,9 +438,10 @@ public final class GeometryProcessor {
      *
      * @param geom geometry to transform, if it already has a 3D crs and given crs is null, geometry crs will be preserved.
      * @param crs3d the result crs in 3d, if null an ellipsoid height is assumed
-     * @param zeditor called to configure the Z value on each position, if null, value 0.0 will be used
+     * @param zeditor called with a cursor on each position to configure its Z value with {@code cursor.set(2, z)},
+     *        if null, value 0.0 will be used
      */
-    public Geometry to3D(Geometry geom, CoordinateReferenceSystem crs3d, Consumer<Vector> zeditor) {
+    public Geometry to3D(Geometry geom, CoordinateReferenceSystem crs3d, Consumer<Cursor> zeditor) {
         if (geom instanceof Point base) {
             return To3D.to3D(base, crs3d, zeditor);
         } else if (geom instanceof LineString base) {
@@ -499,6 +502,9 @@ public final class GeometryProcessor {
             return ToPrimitive.toPrimitive(cdt);
         } else if (geom instanceof Polyhedron cdt) {
             return ToPrimitive.toPrimitive(cdt);
+        } else if (geom instanceof Prism cdt) {
+            //a prism is converted to the line string, surface or solid covered by its extrusion.
+            return toPrimitive(cdt.toExtrusion(), spacing, offset);
         } else if (geom instanceof GeometryCollection<?> cdt) {
             final GeometryType elementType = cdt.getElementType();
             switch (elementType) {

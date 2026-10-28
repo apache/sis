@@ -511,10 +511,6 @@ public class CoordinateOperationFinder extends CoordinateOperationRegistry {
          * coordinate system type (Ellipsoidal ↔ Cartesian ↔ Spherical), axis swapping and unit conversions.
          */
         Identifier typeOfChange;
-        final Matrix datumShift;
-        final MathTransform transform;
-        ParameterValueGroup parameters;
-        final Optional<OperationMethod> method;
         final Optional<GeodeticDatum> finalDatum;
         final boolean sameDatumOrEnsemble;
         if (Utilities.equalsIgnoreMetadata(sourceDatum, targetDatum)) {
@@ -527,6 +523,10 @@ public class CoordinateOperationFinder extends CoordinateOperationRegistry {
             sameDatumOrEnsemble = finalDatum.isPresent();
             typeOfChange = sameDatumOrEnsemble ? SAME_DATUM_ENSEMBLE : UNSPECIFIED_DATUM_CHANGE;
         }
+        final Matrix datumShift;
+        final MathTransform transform;
+        ParameterValueGroup parameters;
+        final Optional<OperationMethod> method;
         if (sameDatumOrEnsemble) {
             /*
              * Coordinate system change (including change in the number of dimensions) without datum shift.

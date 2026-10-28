@@ -550,7 +550,7 @@ class CoordinateOperationRegistry {
                      * If at least one operation remains, we are done.
                      */
                     if (decompose.source | decompose.target) {
-                        for (int i=operations.size(); --i >= 0;) {
+                        for (int i = operations.size(); --i >= 0;) {
                             CoordinateOperation operation = operations.get(i);
                             operation = propagateVertical(sourceCRS, targetCRS, operation, decompose);
                             if (operation != null) {
@@ -859,7 +859,7 @@ class CoordinateOperationRegistry {
     private CoordinateOperation[] getSteps(final ConcatenatedOperation operation, final boolean inverse)
             throws NoninvertibleTransformException, FactoryException
     {
-        final var steps = operation.getOperations().toArray(CoordinateOperation[]::new);
+        final CoordinateOperation[] steps = operation.getOperations().toArray(CoordinateOperation[]::new);
         CoordinateReferenceSystem previous = operation.getSourceCRS();
         for (int i=0; i<steps.length; i++) {
             final CoordinateOperation step = steps[i];

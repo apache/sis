@@ -607,10 +607,18 @@ public final class SIS extends org.apache.sis.geometry.wrapper.Geometries<Geomet
         // The ClassCastException that may happen here is part of method contract.
         final Collection<?> source = (components instanceof Collection<?> c) ? c : Arrays.asList((Object[]) components);
         final var tuples = new ArrayList<Vector<?>>(source.size());
+        CoordinateReferenceSystem crs = null;
         for (final Object element : source) {
             final Object component = implementation(element);
-            // The ClassCastException that may happen here is part of method contract.
-            tuples.add((component instanceof Point point) ? point.getPosition() : (Vector<?>) component);
+            if (component instanceof Point point) {
+                if (crs == null) {
+                    crs = point.getCoordinateReferenceSystem();
+                }
+                tuples.add(point.getPosition());
+            } else {
+                // The ClassCastException that may happen here is part of method contract.
+                tuples.add((Vector<?>) component);
+            }
         }
         if (tuples.isEmpty()) {
             /*
@@ -620,8 +628,13 @@ public final class SIS extends org.apache.sis.geometry.wrapper.Geometries<Geomet
              */
             return GeometryFactory.DEFAULT.createDataPoints(NDArrays.of(undefinedSystem(BIDIMENSIONAL), DataType.DOUBLE, 0));
         }
+        /*
+         * Vectors do not carry a reference system. It is taken from the first point if any,
+         * otherwise the positions are assigned an undefined system of their dimension.
+         */
         final Vector<?> first = tuples.get(0);
-        return GeometryFactory.DEFAULT.createDataPoints(NDArrays.of(tuples, first.getSampleSystem(), first.getDataType()));
+        final SampleSystem system = (crs != null) ? SampleSystem.of(crs) : undefinedSystem(first.getDimension());
+        return GeometryFactory.DEFAULT.createDataPoints(NDArrays.of(tuples, system, first.getDataType()));
     }
 
     /**

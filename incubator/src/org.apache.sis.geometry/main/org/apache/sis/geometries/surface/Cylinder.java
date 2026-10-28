@@ -35,7 +35,7 @@ import org.apache.sis.geometries.internal.shared.DefaultCylinder;
 import org.apache.sis.maths.DataType;
 import org.apache.sis.maths.NDArrays;
 import org.apache.sis.maths.NDRange;
-import org.apache.sis.maths.ReadOnly;
+import org.apache.sis.maths.SampleSystem;
 import org.apache.sis.maths.Vectors;
 import org.apache.sis.maths.Vector;
 import org.apache.sis.measure.Quantities;
@@ -115,26 +115,6 @@ public sealed interface Cylinder extends Surface
     }
 
     /**
-     * @return the center of the bottom circle
-     */
-    ReadOnly.Vector<?> getBottom();
-
-    /**
-     * @param position new center of the bottom circle
-     */
-    void setBottom(ReadOnly.Vector<?> position);
-
-    /**
-     * @return the center of the top circle
-     */
-    ReadOnly.Vector<?> getTop();
-
-    /**
-     * @param position new center of the top circle
-     */
-    void setTop(ReadOnly.Vector<?> position);
-
-    /**
      * @return cylinder top circle radius
      */
     double getRadiusTop();
@@ -160,11 +140,8 @@ public sealed interface Cylinder extends Surface
      * an axis being real values even when the positions they are derived from are integers.
      */
     private Vector<?> getAxis() {
-        final ReadOnly.Vector<?> bottom = getBottom();
-        final Vector<?> axis = Vectors.create(bottom.getSampleSystem(), DataType.DOUBLE);
-        axis.set(getTop());
-        axis.subtract(bottom);
-        return axis;
+        final Vector<?> bottom = getDataPoints().getPosition(0);
+        return getDataPoints().getPosition(1).copy(DataType.DOUBLE).subtract(bottom);
     }
 
     /**
@@ -198,8 +175,8 @@ public sealed interface Cylinder extends Surface
      */
     @Override
     default Envelope getEnvelope() {
-        final ReadOnly.Vector<?> bottom = getBottom();
-        final ReadOnly.Vector<?> top = getTop();
+        final Vector<?> bottom = getDataPoints().getPosition(0);
+        final Vector<?> top = getDataPoints().getPosition(1);
         final double radiusBottom = getRadiusBottom();
         final double radiusTop = getRadiusTop();
         final Vector<?> axis = getAxis();
@@ -266,12 +243,12 @@ public sealed interface Cylinder extends Surface
         if (getDataPoints().getDimension() != 3) {
             throw new UnsupportedOperationException("The boundary of an open cylinder is computed in 3 dimensions only.");
         }
-        final Vector<?> axis = getAxis();
-        final double height = axis.length();
+        final Vector<?> axisVector = getAxis();
+        final double height = axisVector.length();
         if (!(height > 0)) {
             throw new IllegalStateException("The cylinder has no axis, its two positions are the same.");
         }
-        axis.scale(1 / height);
+        final Vector<?> axis = axisVector.scale(1 / height);
         /*
          * Builds (u, w, axis) as a right-handed orthonormal basis. The vector `u` is derived from the
          * coordinate axis which is the most perpendicular to the cylinder axis, for numerical stability.
@@ -280,19 +257,19 @@ public sealed interface Cylinder extends Surface
         for (int i = 1; i < 3; i++) {
             if (Math.abs(axis.get(i)) < Math.abs(axis.get(k))) k = i;
         }
-        final Vector<?> u = Vectors.create(axis.getSampleSystem(), DataType.DOUBLE);
-        u.set(k, 1);
-        u.subtract(axis.copy().scale(axis.get(k)));
-        u.normalize();
+        final double[] unit = new double[axis.getDimension()];
+        unit[k] = 1;
+        final Vector<?> u = Vectors.create(unit, DataType.DOUBLE).subtract(axis.scale(axis.get(k))).normalize();
         final Vector<?> w = axis.cross(u);
         final var circles = new ArrayList<Circle>(2);
         final double radiusBottom = getRadiusBottom();
         final double radiusTop = getRadiusTop();
+        final SampleSystem ss = SampleSystem.of(crs);
         if (radiusBottom > 0) {
-            circles.add(circle(getBottom(), radiusBottom, u, w));
+            circles.add(circle(ss, getDataPoints().getPosition(0), radiusBottom, u, w));
         }
         if (radiusTop > 0) {
-            circles.add(circle(getTop(), radiusTop, u, w.copy().scale(-1)));
+            circles.add(circle(ss, getDataPoints().getPosition(1), radiusTop, u, w.scale(-1)));
         }
         return GeometryFactory.DEFAULT.createMultiCurve(crs, circles.toArray(Circle[]::new));
     }
@@ -302,27 +279,22 @@ public sealed interface Cylinder extends Surface
      * turning from {@code u} toward {@code w}. The circle is made of four quarter arcs, since a
      * single arc of a circle shall stay below a half turn.
      */
-    private static Circle circle(final ReadOnly.Vector<?> center, final double radius,
-                                 final ReadOnly.Vector<?> u, final ReadOnly.Vector<?> w)
+    private static Circle circle(SampleSystem system, final Vector<?> center, final double radius,
+                                 final Vector<?> u, final Vector<?> w)
     {
         final var points  = new ArrayList<Vector<?>>(5);
         final var centers = new ArrayList<Vector<?>>(4);
-        final ReadOnly.Vector<?>[] directions = {u, w, u.copy().scale(-1), w.copy().scale(-1), u};
-        for (final ReadOnly.Vector<?> direction : directions) {
-            final Vector<?> p = Vectors.create(center.getSampleSystem(), DataType.DOUBLE);
-            p.set(center);
-            p.add(direction.copy().scale(radius));
-            points.add(p);
+        final Vector<?>[] directions = {u, w, u.scale(-1), w.scale(-1), u};
+        for (final Vector<?> direction : directions) {
+            points.add(center.copy(DataType.DOUBLE).add(direction.scale(radius)));
         }
         for (int i = 0; i < 4; i++) {
-            final Vector<?> c = Vectors.create(center.getSampleSystem(), DataType.DOUBLE);
-            c.set(center);
-            centers.add(c);
+            centers.add(center.copy(DataType.DOUBLE));
         }
         final GeometryFactory factory = GeometryFactory.DEFAULT;
         return factory.createCircle(
-                factory.createDataPoints(NDArrays.of(points, center.getSampleSystem(), DataType.DOUBLE)),
-                NDArrays.of(centers, center.getSampleSystem(), DataType.DOUBLE), null);
+                factory.createDataPoints(NDArrays.of(points, system, DataType.DOUBLE)),
+                NDArrays.of(centers, system, DataType.DOUBLE), null);
     }
 
     @Override

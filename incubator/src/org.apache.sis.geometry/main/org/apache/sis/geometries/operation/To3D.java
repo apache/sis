@@ -38,6 +38,11 @@ import org.apache.sis.referencing.CommonCRS;
 
 
 /**
+ * Adds a Z axis to geometries.
+ *
+ * <p>The Z values are configured by an editor which receives a cursor positioned on each 3D position.
+ * The editor writes the Z value with {@code cursor.set(2, value)}, and can read the current position
+ * with {@code cursor.samples()}. If no editor is given, the Z value is set to 0.</p>
  *
  * @author Johann Sorel (Geomatys)
  */
@@ -45,10 +50,10 @@ public final class To3D {
 
     private To3D(){}
 
-    private static void zedit(Array array, Consumer<Vector> Zeditor) {
+    private static void zedit(Array array, Consumer<Cursor> Zeditor) {
         final Cursor cursor = array.cursor();
         while (cursor.next()) {
-            Zeditor.accept(cursor.samples());
+            Zeditor.accept(cursor);
         }
     }
 
@@ -60,12 +65,12 @@ public final class To3D {
         return new ArrayDataPoints(attributes);
     }
 
-    private static ArrayDataPoints to3d(DataPoints base, CoordinateReferenceSystem crs3d, Consumer<Vector> Zeditor) {
+    private static ArrayDataPoints to3d(DataPoints base, CoordinateReferenceSystem crs3d, Consumer<Cursor> Zeditor) {
 
         final ArrayDataPoints ps = copy(base);
 
         if (Zeditor == null) {
-            Zeditor = (Vector t) -> t.set(2, 0.0);
+            Zeditor = (Cursor c) -> c.set(2, 0.0);
         }
 
         Array positions = ps.getAttributeArray(DataPointsType.ATT_POSITION);
@@ -74,10 +79,10 @@ public final class To3D {
         return ps;
     }
 
-    private static Array to3d(Array positions, CoordinateReferenceSystem crs3d, Consumer<Vector> Zeditor) {
+    private static Array to3d(Array positions, CoordinateReferenceSystem crs3d, Consumer<Cursor> Zeditor) {
 
         if (Zeditor == null) {
-            Zeditor = (Vector t) -> t.set(2, 0.0);
+            Zeditor = (Cursor c) -> c.set(2, 0.0);
         }
 
         final CoordinateReferenceSystem geomCrs = positions.getCoordinateReferenceSystem();
@@ -104,11 +109,10 @@ public final class To3D {
             final Cursor target = array.cursor();
             final Cursor source = positions.cursor();
             while (source.next() && target.next()) {
-                Vector t = target.samples();
-                Vector s = source.samples();
-                t.set(0, s.get(0));
-                t.set(1, s.get(1));
-                Zeditor.accept(t);
+                final Vector<?> s = source.samples();
+                target.set(0, s.get(0));
+                target.set(1, s.get(1));
+                Zeditor.accept(target);
             }
             positions = array;
         }
@@ -118,7 +122,7 @@ public final class To3D {
     /**
      * Add Z axis to Point.
      */
-    public static Point to3D(Point base, CoordinateReferenceSystem crs3d, Consumer<Vector> zeditor) {
+    public static Point to3D(Point base, CoordinateReferenceSystem crs3d, Consumer<Cursor> zeditor) {
         final DataPoints copy3d = to3d(base.getDataPoints(), crs3d, zeditor);
         return GeometryFactory.DEFAULT.createPoint(copy3d);
     }
@@ -126,7 +130,7 @@ public final class To3D {
     /**
      * Add Z axis to LineString.
      */
-    public static LineString to3D(LineString base, CoordinateReferenceSystem crs3d, Consumer<Vector> zeditor) {
+    public static LineString to3D(LineString base, CoordinateReferenceSystem crs3d, Consumer<Cursor> zeditor) {
         final DataPoints copy3d = to3d(base.getDataPoints(), crs3d, zeditor);
         return GeometryFactory.DEFAULT.createLineString(copy3d);
     }
@@ -135,7 +139,7 @@ public final class To3D {
      * Add Z axis to Primitive.
      * Also works for ModelPrimitive.
      */
-    public static MeshPrimitive to3D(MeshPrimitive base, CoordinateReferenceSystem crs3d, Consumer<Vector> zeditor) {
+    public static MeshPrimitive to3D(MeshPrimitive base, CoordinateReferenceSystem crs3d, Consumer<Cursor> zeditor) {
         final MeshPrimitive copy3d = base.deepCopy();
 
         Array positions = copy3d.getPositions();

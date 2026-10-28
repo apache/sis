@@ -18,8 +18,7 @@ package org.apache.sis.geometries.spherical;
 
 import org.apache.sis.geometries.surface.Sphere;
 import org.apache.sis.maths.Array;
-import org.apache.sis.maths.ReadOnly;
-import org.apache.sis.maths.Vector3D;
+import org.apache.sis.maths.Vector;
 
 
 /**
@@ -57,7 +56,7 @@ public final class SphericalConvexPolygon {
      * @param vecP vector to test
      * @return true if vector is inside triangle
      */
-    public boolean contains(ReadOnly.Vector<?> vecP) {
+    public boolean contains(Vector<?> vecP) {
         return contains(vecP, -1e-9);
     }
 
@@ -68,14 +67,9 @@ public final class SphericalConvexPolygon {
      * @param epsilon edge tolerance, should be a negative value close to zero
      * @return true if vector is inside the polygon
      */
-    public boolean contains(ReadOnly.Vector<?> vecP, double epsilon) {
-        final Vector3D.Double va = new Vector3D.Double();
-        final Vector3D.Double vb = new Vector3D.Double();
-
+    public boolean contains(Vector<?> vecP, double epsilon) {
         for (long a = 0, n = points.getLength()-1; a < n; a++) {
-            points.get(a, va);
-            points.get(a + 1, vb);
-            if (vecP.dot(va.cross(vb)) < epsilon) {
+            if (vecP.dot(points.get(a).cross(points.get(a + 1))) < epsilon) {
                 return false;
             }
         }

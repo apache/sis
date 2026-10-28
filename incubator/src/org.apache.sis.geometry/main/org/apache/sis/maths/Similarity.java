@@ -46,11 +46,14 @@ public interface Similarity<T extends Similarity<T>> extends ReadOnly.Similarity
     /**
      * Update this similarity.
      * This method will send a change event if values have changed.
+     * The updater receives the rotation matrix and arrays of the scale and translation values,
+     * all of them can be modified. Modified scale and translation arrays are stored back
+     * in this similarity when the updater returns a non zero value.
      *
      * @param updater, gets rotation,scale,translation as input and returns the modified elements.
      * @return this similarity
      */
-    T update(TriFunction<Matrix<?>,Vector<?>,Vector<?>,Integer> updater);
+    T update(TriFunction<Matrix<?>,double[],double[],Integer> updater);
 
     /**
      * Get a general matrix view of size : dimension+1
@@ -126,7 +129,7 @@ public interface Similarity<T extends Similarity<T>> extends ReadOnly.Similarity
      * @param scale new scale
      * @return this instance
      */
-    T setScale(ReadOnly.Vector<?> scale);
+    T setScale(Vector<?> scale);
 
     /**
      * Update the translation.
@@ -135,7 +138,7 @@ public interface Similarity<T extends Similarity<T>> extends ReadOnly.Similarity
      * @param translation new translation
      * @return this instance
      */
-    T setTranslation(ReadOnly.Vector<?> translation);
+    T setTranslation(Vector<?> translation);
 
     /**
      * Set transform from given matrix.

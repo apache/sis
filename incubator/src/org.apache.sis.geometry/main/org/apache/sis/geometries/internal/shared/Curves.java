@@ -23,7 +23,6 @@ import org.apache.sis.geometries.DataPoints;
 import org.apache.sis.geometries.Point;
 import org.apache.sis.maths.DataType;
 import org.apache.sis.maths.NDRange;
-import org.apache.sis.maths.ReadOnly;
 import org.apache.sis.maths.Vector;
 import org.apache.sis.measure.Units;
 
@@ -121,13 +120,13 @@ public final class Curves {
      * @throws IllegalStateException if the arc is a full circle in more than two dimensions,
      *         since its plane is then not determined.
      */
-    public static void addArc(final NDRange envelope, final ReadOnly.Vector<?> start,
-                              final ReadOnly.Vector<?> middle, final ReadOnly.Vector<?> end)
+    public static void addArc(final NDRange envelope, final Vector<?> start,
+                              final Vector<?> middle, final Vector<?> end)
     {
         final int dimension = start.getDimension();
-        final Vector<?> mid = start .copy(DataType.DOUBLE).lerp(end, 0.5);      // Middle of the chord.
-        final Vector<?> u   = end   .copy(DataType.DOUBLE).subtract(start);     // Unit vector along the chord.
-        final Vector<?> n   = middle.copy(DataType.DOUBLE).subtract(mid);       // Unit vector perpendicular to the chord, toward the arc.
+        final Vector<?> mid = start .copy(DataType.DOUBLE).lerp(end, 0.5);     // Middle of the chord.
+        Vector<?> u = end.copy(DataType.DOUBLE).subtract(start);               // Unit vector along the chord.
+        Vector<?> n = middle.copy(DataType.DOUBLE).subtract(mid);              // Unit vector perpendicular to the chord, toward the arc.
         final double chord = u.length();
         if (chord == 0) {
             if (dimension != 2) {
@@ -142,14 +141,14 @@ public final class Curves {
             }
             return;
         }
-        u.scale(1 / chord);
+        u = u.scale(1 / chord);
         final double pu = n.dot(u);
-        n.perpendicular(u);
+        n = n.perpendicular(u);
         final double pn = n.length();
         if (!(pn > chord * 1E-12)) {
             return;                                     // Collinear points: a straight segment.
         }
-        n.scale(1 / pn);
+        n = n.scale(1 / pn);
         /*
          * With the half chord c, the centre is at t·n from the middle of the chord, where t makes the
          * centre equidistant from the start point and the middle point: c² + t² = pu² + (t − pn)².

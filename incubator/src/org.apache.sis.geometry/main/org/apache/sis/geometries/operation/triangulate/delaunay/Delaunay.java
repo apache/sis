@@ -19,17 +19,22 @@ package org.apache.sis.geometries.operation.triangulate.delaunay;
 import java.util.ArrayDeque;
 import java.util.Arrays;
 import java.util.HashSet;
+import java.util.Random;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.stream.IntStream;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.opengis.geometry.Envelope;
+import org.apache.sis.geometries.Geometries;
 import org.apache.sis.geometries.index.KdTree;
+import org.apache.sis.geometries.internal.shared.Planar;
 import org.apache.sis.geometries.mesh.MeshPrimitive;
 import org.apache.sis.geometries.mesh.MeshPrimitive.Vertex;
 import org.apache.sis.geometries.operation.OperationException;
 import org.apache.sis.geometry.GeneralEnvelope;
 import org.apache.sis.maths.Array;
+import org.apache.sis.maths.Cursor;
 import org.apache.sis.maths.Maths;
 import org.apache.sis.maths.NDArrays;
 import org.apache.sis.maths.Vector;
@@ -76,16 +81,8 @@ public final class Delaunay {
 
         @Override
         public void addFirst(OrientedEdge e) {
-            //create a key not affected by edge orientation
-            int idx0 = (int)e.getStart().getIndex();
-            int idx1 = (int)e.getEnd().getIndex();
-            if (idx0 > idx1) {
-                int i = idx0;
-                idx0 = idx1;
-                idx1 = i;
-            }
-            final long key = idx0 + ((long) idx1) << 32l;
-            if (unique.add(key)) {
+            //key not affected by edge orientation
+            if (unique.add(Planar.edgeKey((int) e.getStart().getIndex(), (int) e.getEnd().getIndex()))) {
                 super.addFirst(e);
             } else {
                 crossingConstraints.incrementAndGet();
@@ -132,13 +129,21 @@ public final class Delaunay {
      * Create delaunay triangulation.
      * This method should be called only once.
      * @param points not null
-     * @throws IllegalArgumentException if an index is incorrect
+     * @throws IllegalArgumentException if an index is incorrect or a position is not finite
      * @throws OperationException if an algorithm exception occurs
      */
-    public void build(MeshPrimitive.Points points) throws IllegalArgumentException, OperationException {
+    public void build(MeshPrimitive.Points points, boolean shuffleOnInsert) throws IllegalArgumentException, OperationException {
         ArgumentChecks.ensureNonNull("points", points);
+        //NaN or infinite values would make the geometric tests fail deep in the algorithm
+        final Cursor cursor = points.getPositions().cursor();
+        while (cursor.next()) {
+            final Vector<?> position = cursor.samples();
+            if (!Double.isFinite(position.get(0)) || !Double.isFinite(position.get(1))) {
+                throw new IllegalArgumentException("Position " + cursor.coordinate() + " is not finite: " + position);
+            }
+        }
         this.points = points;
-        delaunayTriangulation();
+        delaunayTriangulation(shuffleOnInsert);
     }
 
     /**
@@ -222,11 +227,47 @@ public final class Delaunay {
     }
 
     /**
+     * Computes a constrained Delaunay triangulation of points in the plane.
+     * The points must be distinct, and the constraint segments must not cross each other.
+     * Flat triangles are removed and the returned triangles are counterclockwise.
+     *
+     * @param xy           (x,y) coordinates of the points, two values per point.
+     * @param constraints  pairs of point indices of the segments which must be edges of the triangulation.
+     * @return indices of the points of the triangles, three values per triangle.
+     * @throws OperationException if an algorithm exception occurs
+     */
+    public static int[] triangulate(final double[] xy, final int[] constraints, boolean shuffleOnInsert) throws OperationException {
+        ArgumentChecks.ensureNonNull("xy", xy);
+        ArgumentChecks.ensureNonNull("constraints", constraints);
+        if (xy.length < 6) {
+            return new int[0];
+        }
+        final MeshPrimitive.Points points = new MeshPrimitive.Points();
+        points.setPositions(NDArrays.of(Geometries.getUndefinedCRS(2), xy.clone()));
+        final Delaunay delaunay = new Delaunay();
+        delaunay.build(points, shuffleOnInsert);
+        if (constraints.length > 0) {
+            delaunay.pushConstraint(NDArrays.ofUnsigned(1, constraints), true);
+        }
+        //triangles are counterclockwise, only flat ones need to be removed
+        final int[] index = delaunay.getTrianglesIndex().toArrayInt();
+        int n = 0;
+        for (int i = 0; i < index.length; i += 3) {
+            final int a = index[i]*2, b = index[i+1]*2, c = index[i+2]*2;
+            if (Maths.lineSide(xy[a], xy[a+1], xy[b], xy[b+1], xy[c], xy[c+1]) != 0) {
+                System.arraycopy(index, i, index, n, 3);
+                n += 3;
+            }
+        }
+        return Arrays.copyOf(index, n);
+    }
+
+    /**
      * Create the delaunay triangulation without constraints.
      * @throws IllegalArgumentException if an index is incorrect
      * @throws OperationException if an algorithm exception occurs
      */
-    private void delaunayTriangulation() throws OperationException, IllegalArgumentException {
+    private void delaunayTriangulation(boolean shufflePoints) throws OperationException, IllegalArgumentException {
         triangles.clear();
 
         // INITIALIZE //////////////////////////////////////////////////////////
@@ -250,15 +291,18 @@ public final class Delaunay {
         final Envelope envelope = buffer(points.getEnvelope(), 10.0);
         final double envelopeMinX = envelope.getMinimum(0);
         final double envelopeMinY = envelope.getMinimum(1);
-        final Vector<?> A = Vectors.create(positions.getSampleSystem(), positions.getDataType());
-        A.set(0, envelopeMinX);
-        A.set(1, envelopeMinY);
-        final Vector<?> B = A.copy();
-        B.set(0, envelopeMinX + envelope.getSpan(0) * 2);
-        B.set(1, envelopeMinY);
-        final Vector<?> C = A.copy();
-        C.set(0, envelopeMinX);
-        C.set(1, envelopeMinY + envelope.getSpan(1) * 2);
+        final double[] coordsA = new double[positions.getDimension()];
+        coordsA[0] = envelopeMinX;
+        coordsA[1] = envelopeMinY;
+        final double[] coordsB = coordsA.clone();
+        coordsB[0] = envelopeMinX + envelope.getSpan(0) * 2;
+        coordsB[1] = envelopeMinY;
+        final double[] coordsC = coordsA.clone();
+        coordsC[0] = envelopeMinX;
+        coordsC[1] = envelopeMinY + envelope.getSpan(1) * 2;
+        final Vector<?> A = Vectors.create(coordsA, positions.getDataType());
+        final Vector<?> B = Vectors.create(coordsB, positions.getDataType());
+        final Vector<?> C = Vectors.create(coordsC, positions.getDataType());
         rootOffset = Math.toIntExact(positions.getLength());
         final Array extraPositions = positions.resize(3);
         extraPositions.set(0, A);
@@ -285,16 +329,33 @@ public final class Delaunay {
 
 
         // TRIANGULATE /////////////////////////////////////////////////////////
-        final Array index = points.getIndex();
-        if (index == null) {
-            //use all points
-            for (long idx = 0, n = positions.getLength(); idx < n; idx++) {
+        if (shufflePoints) {
+            /*
+            Insert the points in a random order, with a fixed seed for reproducible results.
+            Points in a spatially sorted order, for example along a ring or a grid row, would make
+            the k-d tree degenerate into a chain as deep as the number of points.
+            */
+            final Array index = points.getIndex();
+            final int[] order = (index != null) ? index.toArrayInt()     // user defined points
+                    : IntStream.range(0, Math.toIntExact(positions.getLength())).toArray();
+            final Random random = new Random(order.length);
+            for (int i = order.length; --i > 0;) {
+                final int j = random.nextInt(i + 1);
+                final int t = order[i]; order[i] = order[j]; order[j] = t;
+            }
+            for (int idx : order) {
                 insertPoint(idx);
             }
         } else {
-            //user defined points
-            for (int idx : index.toArrayInt()) {
-                insertPoint(idx);
+            final Array index = points.getIndex();
+            if (index == null) {
+                for (long l = 0; l < positions.getLength(); l++) {
+                    insertPoint(l);
+                }
+            } else {
+                for (int idx : index.toArrayInt()) {
+                    insertPoint(idx);
+                }
             }
         }
     }
@@ -327,7 +388,8 @@ public final class Delaunay {
     private void solve(long nearestVertex, Vertex vertex) {
         OrientedEdge edge = indexToEdge[Math.toIntExact(nearestVertex)];
 
-        for (;;) {
+        for (int step = walkLimit(); ; step--) {
+            if (step < 0) throw new OperationException("No triangle found for a vertex, the triangulation is broken.");
             OrientedTriangle triangle = edge.getTriangle();
             if (solve(triangle, vertex)) return;
 
@@ -823,22 +885,17 @@ public final class Delaunay {
         final OrientedTriangle BDA = B_D.getTriangle();
         final OrientedTriangle DBC = D_B.getTriangle();
         final Vertex C = DBC.oppositePoint(D_B);
-
-        final double BDAradius = BDA.getDelaunayCircleRadiusSquare();
-        final double BDADistance = BDA.distanceToDelaunayCircleCenterSquare(C.getPosition().get(0), C.getPosition().get(1));
-        if (BDADistance < BDAradius) {
-            /*
-            In the Delaunay algorithm we may encounter the case where two triangles
-            can be flipped infinitely. This happens when the four points of two adjacent
-            triangles are contained in the two circle formed by each triangle.
-            Ensure this is not an infinite loop where triangles are both valid.
-            */
-            final Vertex A = BDA.oppositePoint(B_D);
-            final Vertex D = B_D.getEnd();
-            final OrientedTriangle BCA = new OrientedTriangle(B_D.getStart(), C, A);
-            if (!BCA.isInDelaunayCircle(D.getPosition().get(0), D.getPosition().get(1))) {
-                swapTriangles(B_D, true, false);
-            }
+        final Vertex A = BDA.oppositePoint(B_D);
+        /*
+        Robust test, a circle computed in floating point is not accurate enough for small triangles
+        far from the origin, for example longitudes and latitudes, and could flip a non convex
+        quadrilateral, creating an inverted triangle. With an exact test, the quadrilateral is
+        convex when C is strictly inside the circle, and the flip cannot be undone by the next test.
+        The convexity is still verified to be safe with flat triangles.
+        */
+        if (Maths.inCircle(BDA.a.getPosition(), BDA.b.getPosition(), BDA.c.getPosition(), C.getPosition())
+                && isConvex(A, B_D.getStart(), C, B_D.getEnd())) {
+            swapTriangles(B_D, true, false);
         }
     }
 
@@ -897,6 +954,10 @@ public final class Delaunay {
         final Vertex B = B_D.getStart();
         final Vertex C = DBC.oppositePoint(D_B);
         final Vertex D = B_D.getEnd();
+        if (!isConvex(A, B, C, D)) {
+            //the flip would create an inverted or flat triangle, breaking the triangulation
+            throw new OperationException("Cannot flip the diagonal of a non convex quadrilateral.");
+        }
 
         /* swap edge
 
@@ -960,7 +1021,8 @@ public final class Delaunay {
 
         OrientedEdge edge = indexToEdge[Math.toIntExact(startIndex)];
 
-        for (;;) {
+        for (int step = walkLimit(); ; step--) {
+            if (step < 0) throw new OperationException("No triangle found for a constraint, the triangulation is broken.");
             if (edge.getEnd().getIndex() == endIndex) {
                 //edge already exist
                 return edge;
@@ -1040,7 +1102,25 @@ public final class Delaunay {
      * @return true if d is in the angle format by vectors ab and ac.
      */
     private static boolean inScanArea(Vertex a, Vertex b, Vertex c, Vertex d) {
-        return Maths.lineSide(a.getPosition(), b.getPosition(), d.getPosition()) >= 0
+        //strict, a point on line AB would create a flat triangle ABD when flipping BC
+        return Maths.lineSide(a.getPosition(), b.getPosition(), d.getPosition()) > 0
          && Maths.lineSide(a.getPosition(), c.getPosition(), d.getPosition()) < 0;
+    }
+
+    /**
+     * Returns whether the diagonal BD of the counterclockwise quadrilateral ABCD can be replaced
+     * by the diagonal AC, which requires both new triangles ACD and ABC to be strictly counterclockwise.
+     */
+    private static boolean isConvex(Vertex a, Vertex b, Vertex c, Vertex d) {
+        return Maths.lineSide(a.getPosition(), c.getPosition(), d.getPosition()) > 0
+            && Maths.lineSide(a.getPosition(), b.getPosition(), c.getPosition()) > 0;
+    }
+
+    /**
+     * Returns the maximal number of steps of a walk in the triangulation, a walk taking more steps
+     * is going around in circles because the triangulation is broken.
+     */
+    private int walkLimit() {
+        return 3 * triangles.size() + 10;
     }
 }

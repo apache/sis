@@ -16,6 +16,8 @@
  */
 package org.apache.sis.maths;
 
+import java.util.Arrays;
+
 // Test dependencies
 import static org.junit.jupiter.api.Assertions.*;
 import org.junit.jupiter.api.Disabled;
@@ -119,6 +121,155 @@ public class MathsTest {
             assertEquals(0.0, distance, 0.0);
         }
 
+    }
+
+    /**
+     * Returns a vector of the given values.
+     */
+    private static Vector<?> vector(final double... values) {
+        return Vectors.create(values, DataType.DOUBLE);
+    }
+
+    /**
+     * Tests the robust {@link Maths#inTriangle(Vector, Vector, Vector, Vector)},
+     * which includes the edges and corners of the triangle, whatever its orientation.
+     */
+    @Test
+    public void testInTriangle() {
+        final Vector<?> a = vector(0, 0), b = vector(4, 0), c = vector(0, 4);
+        for (final Vector<?>[] triangle : new Vector<?>[][] {{a, b, c}, {a, c, b}}) {
+            assertTrue (Maths.inTriangle(triangle[0], triangle[1], triangle[2], vector(1, 1)), "Inside");
+            assertTrue (Maths.inTriangle(triangle[0], triangle[1], triangle[2], vector(2, 0)), "On an edge");
+            assertTrue (Maths.inTriangle(triangle[0], triangle[1], triangle[2], vector(4, 0)), "On a corner");
+            assertFalse(Maths.inTriangle(triangle[0], triangle[1], triangle[2], vector(3, 3)), "Outside");
+            assertFalse(Maths.inTriangle(triangle[0], triangle[1], triangle[2], vector(-1, 1)), "Outside");
+        }
+        //a degenerate triangle contains the points of its line between its corners.
+        final Vector<?> d = vector(2, 2), e = vector(4, 4);
+        assertTrue (Maths.inTriangle(a, d, e, vector(1, 1)));
+        assertFalse(Maths.inTriangle(a, d, e, vector(5, 5)));
+        assertFalse(Maths.inTriangle(a, d, e, vector(1, 0)));
+    }
+
+    /**
+     * Tests {@link Maths#isConvex(Vector, Vector, Vector, boolean)}.
+     */
+    @Test
+    public void testIsConvex() {
+        //the counterclockwise ring (0,0), (4,0), (4,4) turns left at (4,0).
+        assertTrue (Maths.isConvex(vector(0,0), vector(4,0), vector(4,4), false));
+        assertFalse(Maths.isConvex(vector(0,0), vector(4,0), vector(4,4), true));
+        assertTrue (Maths.isConvex(vector(4,4), vector(4,0), vector(0,0), true), "Same ring traversed clockwise");
+        //aligned vertices are not convex.
+        assertFalse(Maths.isConvex(vector(0,0), vector(2,0), vector(4,0), false));
+        assertFalse(Maths.isConvex(vector(0,0), vector(2,0), vector(4,0), true));
+    }
+
+    /**
+     * Tests {@link Maths#inCone(Vector, Vector, Vector, Vector, boolean)}
+     * at a convex vertex and at a reflex vertex, in counterclockwise and clockwise rings.
+     */
+    @Test
+    public void testInCone() {
+        //convex vertex (0,0) of the counterclockwise square (0,0), (4,0), (4,4), (0,4).
+        final Vector<?> vertex = vector(0,0), previous = vector(0,4), next = vector(4,0);
+        assertTrue (Maths.inCone(previous, vertex, next, vector( 2,  2), false));
+        assertFalse(Maths.inCone(previous, vertex, next, vector(-1, -1), false));
+        assertFalse(Maths.inCone(previous, vertex, next, vector( 2,  0), false), "Along an edge");
+        assertTrue (Maths.inCone(next, vertex, previous, vector( 2,  2), true), "Same ring traversed clockwise");
+        //reflex vertex (2,1) of the counterclockwise ring (0,0), (4,0), (4,4), (2,1), (0,4), with a notch above it.
+        final Vector<?> reflex = vector(2,1), before = vector(4,4), after = vector(0,4);
+        assertTrue (Maths.inCone(before, reflex, after, vector(2, 0), false));
+        assertFalse(Maths.inCone(before, reflex, after, vector(2, 3), false), "In the notch");
+        assertTrue (Maths.inCone(after, reflex, before, vector(2, 0), true), "Same ring traversed clockwise");
+    }
+
+    /**
+     * Tests {@link Maths#calculatePolygonNormal(Array)}, whose length is twice the area of the polygon.
+     */
+    @Test
+    public void testCalculatePolygonNormal() {
+        //a counterclockwise square in the (x,y) plane, closed or not.
+        assertArrayEquals(new double[] {0, 0, 8}, Maths.calculatePolygonNormal(
+                NDArrays.of(3, new double[] {0,0,0, 2,0,0, 2,2,0, 0,2,0, 0,0,0})), EPSILON);
+        assertArrayEquals(new double[] {0, 0, 8}, Maths.calculatePolygonNormal(
+                NDArrays.of(3, new double[] {0,0,0, 2,0,0, 2,2,0, 0,2,0})), EPSILON);
+        //a vertical square in the (x,z) plane, with collinear points.
+        assertArrayEquals(new double[] {0, -8, 0}, Maths.calculatePolygonNormal(
+                NDArrays.of(3, new double[] {0,1,0, 1,1,0, 2,1,0, 2,1,2, 0,1,2, 0,1,0})), EPSILON);
+        assertThrows(IllegalArgumentException.class, () -> Maths.calculatePolygonNormal(NDArrays.of(2, new double[] {0,0, 1,0, 0,1})));
+    }
+
+    /**
+     * Tests {@link Maths#projectionAxes(double[])} on the normals of the six faces of a cube.
+     * The axis left out is the one of the normal, and the order of the two others depends on its sign.
+     */
+    @Test
+    public void testProjectionAxes() {
+        assertArrayEquals(new int[] {0, 1, 2}, Maths.projectionAxes(new double[] { 0,  0,  1}));
+        assertArrayEquals(new int[] {1, 0, 2}, Maths.projectionAxes(new double[] { 0,  0, -1}));
+        assertArrayEquals(new int[] {1, 2, 0}, Maths.projectionAxes(new double[] { 1,  0,  0}));
+        assertArrayEquals(new int[] {2, 1, 0}, Maths.projectionAxes(new double[] {-1,  0,  0}));
+        assertArrayEquals(new int[] {2, 0, 1}, Maths.projectionAxes(new double[] { 0,  1,  0}));
+        assertArrayEquals(new int[] {0, 2, 1}, Maths.projectionAxes(new double[] { 0, -1,  0}));
+        assertArrayEquals(new int[] {0, 1, 2}, Maths.projectionAxes(new double[] { 0,  0,  0}), "A zero normal gives the (x,y) plane.");
+        assertArrayEquals(new int[] {0, 1, 2}, Maths.projectionAxes(new double[] { 1,  1,  1}), "Ties leave out z first.");
+        assertThrows(IllegalArgumentException.class, () -> Maths.projectionAxes(new double[] {0, 1}));
+    }
+
+    /**
+     * Tests {@link Maths#planeSide(double[], double[], double[], double[], double)} on a horizontal triangle,
+     * with and without tolerance, and on a triangle in an oblique plane with coordinates which are not integers.
+     */
+    @Test
+    public void testPlaneSide() {
+        final double[] a = {0, 0, 0}, b = {1, 0, 0}, c = {0, 1, 0};
+        assertEquals( 1, Maths.planeSide(a, b, c, new double[] {0.3, 0.3,  1}, 0), "Above, toward the normal.");
+        assertEquals(-1, Maths.planeSide(a, b, c, new double[] {0.3, 0.3, -1}, 0), "Below.");
+        assertEquals(-1, Maths.planeSide(a, c, b, new double[] {0.3, 0.3,  1}, 0), "Reversed triangle.");
+        assertEquals( 0, Maths.planeSide(a, b, c, new double[] {5,   5,    0}, 0), "On the plane, outside of the triangle.");
+        assertEquals( 1, Maths.planeSide(a, b, c, new double[] {0.3, 0.3, 1E-12}, 0));
+        assertEquals( 0, Maths.planeSide(a, b, c, new double[] {0.3, 0.3, 1E-12}, 1E-9), "Within the tolerance.");
+        assertEquals( 1, Maths.planeSide(a, b, c, new double[] {0.3, 0.3, 2E-9},  1E-9), "Beyond the tolerance.");
+        assertEquals( 0, Maths.planeSide(a, b, new double[] {2, 0, 0}, new double[] {0, 0, 1}, 0), "Degenerate triangle.");
+        /*
+         * A triangle made of two orthonormal vectors u and v of an oblique plane, whose normal is u × v.
+         */
+        final double[] o = {0.1, 0.2, 0.3}, u = {1/3., 2/3., 2/3.}, v = {2/3., 1/3., -2/3.};
+        final double[] n = Vectors.cross(u, v);
+        final double[] ou = Vectors.add(o, u), ov = Vectors.add(o, v);
+        final double[] inPlane = Vectors.add(o, Vectors.add(Vectors.scale(u, 0.4), Vectors.scale(v, 0.3)));
+        assertEquals( 1, Maths.planeSide(o, ou, ov, Vectors.add(inPlane, Vectors.scale(n,  1E-3)), 0));
+        assertEquals(-1, Maths.planeSide(o, ou, ov, Vectors.add(inPlane, Vectors.scale(n, -1E-3)), 0));
+        assertEquals( 0, Maths.planeSide(o, ou, ov, Vectors.add(inPlane, Vectors.scale(n,  1E-3)), 1E-2));
+        assertEquals( 0, Maths.planeSide(o, ou, ov, inPlane, 1E-12), "Rounding errors within the tolerance.");
+    }
+
+    /**
+     * Tests that {@link Maths#projectionAxes(double[])} keeps the orientation: a triangle whose normal has the
+     * direction given to the method is counterclockwise once projected, and the reversed triangle clockwise.
+     */
+    @Test
+    public void testProjectionAxesOrientation() {
+        final double[][] normals = {
+            {0, 0, 1}, {0, 0, -1}, {1, 0, 0}, {-1, 0, 0}, {0, 1, 0}, {0, -1, 0},
+            {1, 2, 3}, {-3, 1, -2}, {0.5, -4, 0.1}, {-0.2, 0.3, -0.25}
+        };
+        for (final double[] normal : normals) {
+            //two vectors of the plane such as t1 × t2 has the direction of the normal.
+            final double[] other = (Math.abs(normal[0]) < 0.9 * Vectors.length(normal)) ? new double[] {1, 0, 0} : new double[] {0, 1, 0};
+            final double[] t1 = Vectors.cross(normal, other);
+            final double[] t2 = Vectors.cross(normal, t1);
+            final Vector<?> a = vector(0.3, -1.7, 2.1);
+            final Vector<?> b = vector(a.get(0) + t1[0], a.get(1) + t1[1], a.get(2) + t1[2]);
+            final Vector<?> c = vector(a.get(0) + t2[0], a.get(1) + t2[1], a.get(2) + t2[2]);
+            final int[] axes = Maths.projectionAxes(normal);
+            final String message = Arrays.toString(normal);
+            assertTrue(Maths.lineSide(a.swizzle(axes), b.swizzle(axes), c.swizzle(axes)) > 0, message);
+            assertTrue(Maths.lineSide(a.swizzle(axes), c.swizzle(axes), b.swizzle(axes)) < 0, message);
+            assertEquals(Math.abs(normal[axes[2]]), Math.max(Math.abs(normal[0]), Math.max(Math.abs(normal[1]), Math.abs(normal[2]))),
+                         message + ": the axis left out shall be the largest component of the normal.");
+        }
     }
 
     @Test
@@ -228,11 +379,6 @@ public class MathsTest {
         assertEquals(0, Maths.toNormalizedULong(0.0));
         assertEquals(Long.MIN_VALUE, Maths.toNormalizedULong(0.5));
         assertEquals(0xFFFFFFFFFFFFFFFFL, Maths.toNormalizedULong(1.0));
-    }
-
-    @Test
-    public void testInTriangle() {
-
     }
 
     /**

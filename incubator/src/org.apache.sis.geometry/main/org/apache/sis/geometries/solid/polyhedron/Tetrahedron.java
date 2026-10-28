@@ -20,7 +20,7 @@ import org.apache.sis.geometries.surface.Polygon;
 import org.apache.sis.maths.Array;
 import org.apache.sis.maths.ArrayFactoryJava;
 import org.apache.sis.maths.DataType;
-import org.apache.sis.maths.ReadOnly;
+import org.apache.sis.maths.Vector;
 
 
 /**
@@ -31,7 +31,7 @@ import org.apache.sis.maths.ReadOnly;
 public final class Tetrahedron extends AbstractPolyhedron{
 
     private static final Array VERTICES = ArrayFactoryJava.INSTANCE.builder()
-        .dataType(DataType.DOUBLE).values(new ReadOnly.Vector<?>[]{
+        .dataType(DataType.DOUBLE).values(new Vector<?>[]{
         fromLatLon( CUBE_LAT,    Math.PI/4),
         fromLatLon(-CUBE_LAT,   -Math.PI/4),
         fromLatLon(-CUBE_LAT,  3*Math.PI/4),
@@ -58,7 +58,7 @@ public final class Tetrahedron extends AbstractPolyhedron{
     }
 
     @Override
-    public int getFace(ReadOnly.Vector<?> unitVector) {
+    public int getFace(Vector<?> unitVector) {
         return nearestFace(VERTICES, FACES, unitVector);
     }
 

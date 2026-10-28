@@ -43,6 +43,7 @@ import org.apache.sis.geometries.surface.Polygon;
 import org.apache.sis.geometries.surface.PolyhedralSurface;
 import org.apache.sis.geometries.surface.TIN;
 import org.apache.sis.geometries.surface.Triangle;
+import org.apache.sis.maths.DataType;
 import org.apache.sis.maths.Vector;
 import org.apache.sis.maths.Vectors;
 import org.apache.sis.measure.Units;
@@ -874,8 +875,7 @@ public final class GML3Reader extends AbstractGMLReader {
                         if (normal == null) {
                             throw new DataStoreContentException("A GML 3 ArcByBulge must contain a normal element.");
                         }
-                        final Vector<?> direction = Vectors.createDouble(normal.length);
-                        direction.set(normal);
+                        final Vector<?> direction = Vectors.create(normal, DataType.DOUBLE);
                         try {
                             return GeometryFactory.DEFAULT.createArcByBulge(coordinates.build(crs), bulge, direction);
                         } catch (IllegalArgumentException e) {

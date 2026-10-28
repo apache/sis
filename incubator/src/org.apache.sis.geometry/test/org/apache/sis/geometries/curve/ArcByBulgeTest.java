@@ -18,6 +18,7 @@ package org.apache.sis.geometries.curve;
 
 import org.opengis.geometry.Envelope;
 import org.apache.sis.geometries.GeometryFactory;
+import org.apache.sis.maths.DataType;
 import org.apache.sis.maths.Vector;
 import org.apache.sis.maths.Vectors;
 
@@ -92,8 +93,7 @@ public class ArcByBulgeTest extends GeometryTest {
 
     @Test
     public void testGetTopologicDimension() {
-        final Vector<?> normal = Vectors.createDouble(2);
-        normal.set(new double[] {0, 1});
+        final Vector<?> normal = Vectors.create(new double[] {0, 1}, DataType.DOUBLE);
         final ArcByBulge arc = GeometryFactory.DEFAULT.createArcByBulge(
                 GeometryFactory.DEFAULT.createDataPoints(CRS_2D, 0,0, 10,0), 2.0, normal);
         assertEquals(1, arc.getTopologicDimension());
@@ -285,8 +285,7 @@ public class ArcByBulgeTest extends GeometryTest {
     private static Envelope envelope(final double x0, final double y0, final double x1, final double y1,
                                      final double bulge, final double nx, final double ny)
     {
-        final Vector<?> normal = Vectors.createDouble(2);
-        normal.set(new double[] {nx, ny});
+        final Vector<?> normal = Vectors.create(new double[] {nx, ny}, DataType.DOUBLE);
         return GeometryFactory.DEFAULT.createArcByBulge(
                 GeometryFactory.DEFAULT.createDataPoints(CRS_2D, x0, y0, x1, y1), bulge, normal).getEnvelope();
     }
@@ -322,8 +321,7 @@ public class ArcByBulgeTest extends GeometryTest {
 
     @Test
     public void testGetEnvelope3D() {
-        final Vector<?> normal = Vectors.createDouble(3);
-        normal.set(new double[] {0, 0, 1});
+        final Vector<?> normal = Vectors.create(new double[] {0, 0, 1}, DataType.DOUBLE);
         final ArcByBulge arc = GeometryFactory.DEFAULT.createArcByBulge(
                 GeometryFactory.DEFAULT.createDataPoints(CRS_3D, 0,0,0, 10,0,0), 2.0, normal);
         assertEnvelope(arc.getEnvelope(), 0, 0, 0, 10, 0, 2);

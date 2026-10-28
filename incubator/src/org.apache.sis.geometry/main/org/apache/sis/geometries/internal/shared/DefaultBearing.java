@@ -27,6 +27,7 @@ import org.apache.sis.geometries.cs.Bearing;
 import org.apache.sis.geometries.cs.ReferenceDirection;
 import org.apache.sis.geometries.cs.Rotation;
 import org.apache.sis.maths.DataType;
+import org.apache.sis.maths.Sample;
 import org.apache.sis.maths.SampleSystem;
 import org.apache.sis.maths.Vector;
 import org.apache.sis.maths.Vectors;
@@ -162,14 +163,16 @@ public final class DefaultBearing implements Bearing {
      * that vector allows it. Only the direction of the given vector is retained; its length is
      * normalized to one.
      *
-     * @param  direction  vector giving the direction of the bearing, not null.
+     * @param  direction  vector giving the direction of the bearing, with the sample system in which
+     *                    its axes are located, not null.
      * @param  reference  direction from which the azimuth is measured, not null.
      * @param  rotation   sense in which the azimuth is measured, not null.
      * @throws IllegalArgumentException if the vector has a coordinate which is not finite, if its
      *         length is zero, or if the reference direction refers to this bearing.
      */
-    public DefaultBearing(final Vector<?> direction, final ReferenceDirection reference, final Rotation rotation) {
+    public DefaultBearing(final Sample direction, final ReferenceDirection reference, final Rotation rotation) {
         ArgumentChecks.ensureNonNull("direction", direction);
+        ArgumentChecks.ensureNonNull("direction.values", direction.values);
         ArgumentChecks.ensureNonNull("rotation",  rotation);
         this.reference = validate(reference);
         this.rotation  = rotation;
@@ -178,7 +181,7 @@ public final class DefaultBearing implements Bearing {
          * full precision. The vector is not copied then normalized, because a copy keeps the data
          * type of its source and normalizing an integer vector would round every coordinate.
          */
-        final double[] c = direction.toArrayDouble();
+        final double[] c = direction.values.toArrayDouble();
         for (final double v : c) {
             if (!Double.isFinite(v)) {
                 throw new IllegalArgumentException("The direction of a bearing shall have finite "
@@ -194,7 +197,7 @@ public final class DefaultBearing implements Bearing {
             c[i] /= length;
         }
         coordinates = c;
-        final SampleSystem s = direction.getSampleSystem();
+        final SampleSystem s = direction.sampleSystem;
         system = (s != null) ? s : SampleSystem.ofSize(c.length);
         /*
          * Derive the angles. `atan2(east, north)` and not `atan2(north, east)`, because the angle
@@ -367,17 +370,10 @@ public final class DefaultBearing implements Bearing {
 
     /**
      * {@inheritDoc}
-     *
-     * <p>This method returns a new vector on each call, because vectors are mutable.
-     * Modifying the returned vector has no effect on this bearing.</p>
      */
     @Override
     public Vector<?> getDirection() {
-        final Vector<?> v = Vectors.create(system, DataType.DOUBLE);
-        for (int i=0; i<coordinates.length; i++) {
-            v.set(i, coordinates[i]);
-        }
-        return v;
+        return Vectors.create(coordinates, DataType.DOUBLE);
     }
 
     /**

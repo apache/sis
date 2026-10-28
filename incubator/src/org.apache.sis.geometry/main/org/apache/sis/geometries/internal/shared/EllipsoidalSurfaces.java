@@ -24,9 +24,9 @@ import org.apache.sis.geometries.GeometryFactory;
 import org.apache.sis.maths.Array;
 import org.apache.sis.maths.DataType;
 import org.apache.sis.maths.NDArrays;
-import org.apache.sis.maths.ReadOnly;
 import org.apache.sis.maths.SampleSystem;
 import org.apache.sis.maths.Vector;
+import org.apache.sis.maths.Vectors;
 
 
 /**
@@ -62,17 +62,17 @@ final class EllipsoidalSurfaces {
      * @return position on the surface.
      * @throws IllegalStateException if the coordinate system has less than three dimensions.
      */
-    static Vector<?> position(final ReadOnly.Vector<?> center, final double[] semiAxes, final double u, final double v) {
+    static Vector<?> position(final Vector<?> center, final double[] semiAxes, final double u, final double v) {
         final int dimension = center.getDimension();
         if (dimension < 3) {
             throw new IllegalStateException("A sphere or an ellipsoid is a parametric surface in at least three"
                     + " dimensions, but the coordinate system has " + dimension + '.');
         }
-        final Vector<?> position = center.copy(DataType.DOUBLE);
-        position.set(0, center.get(0) + semiAxes[0] * Math.cos(u) * Math.cos(v));
-        position.set(1, center.get(1) + semiAxes[1] * Math.sin(u) * Math.cos(v));
-        position.set(2, center.get(2) + semiAxes[2] * Math.sin(v));
-        return position;
+        final double[] position = center.toArrayDouble();
+        position[0] = center.get(0) + semiAxes[0] * Math.cos(u) * Math.cos(v);
+        position[1] = center.get(1) + semiAxes[1] * Math.sin(u) * Math.cos(v);
+        position[2] = center.get(2) + semiAxes[2] * Math.sin(v);
+        return Vectors.create(position, DataType.DOUBLE);
     }
 
     /**
@@ -88,7 +88,7 @@ final class EllipsoidalSurfaces {
      *                   {@link org.apache.sis.geometries.curve.EllipticArc}.
      * @return the line of constant latitude.
      */
-    static Curve parallel(final CoordinateReferenceSystem crs, final ReadOnly.Vector<?> center,
+    static Curve parallel(final CoordinateReferenceSystem crs, final Vector<?> center,
                           final double[] semiAxes, final double v, final boolean circle)
     {
         final GeometryFactory factory = GeometryFactory.DEFAULT;
@@ -96,9 +96,9 @@ final class EllipsoidalSurfaces {
             final Vector<?> pole = position(center, semiAxes, 0, v);
             return factory.createLineString(factory.createDataPoints(array(crs, List.of(pole, pole))));
         }
-        final Vector<?> middle = position(center, semiAxes, 0, v);
-        middle.set(0, center.get(0));
-        middle.set(1, center.get(1));
+        final double[] coordinates = center.toArrayDouble();
+        coordinates[2] = center.get(2) + semiAxes[2] * Math.sin(v);
+        final Vector<?> middle = Vectors.create(coordinates, DataType.DOUBLE);
         final var points  = new ArrayList<Vector<?>>();
         final var centers = new ArrayList<Vector<?>>();
         if (circle) {
@@ -132,7 +132,7 @@ final class EllipsoidalSurfaces {
      *                   {@link org.apache.sis.geometries.curve.EllipticArc}.
      * @return the line of constant longitude.
      */
-    static Curve meridian(final CoordinateReferenceSystem crs, final ReadOnly.Vector<?> center,
+    static Curve meridian(final CoordinateReferenceSystem crs, final Vector<?> center,
                           final double[] semiAxes, final double u, final boolean circle)
     {
         final GeometryFactory factory = GeometryFactory.DEFAULT;
@@ -153,7 +153,7 @@ final class EllipsoidalSurfaces {
     /**
      * Returns the given positions as an array in the given reference system.
      */
-    private static Array array(final CoordinateReferenceSystem crs, final List<? extends ReadOnly.Vector<?>> positions) {
+    private static Array array(final CoordinateReferenceSystem crs, final List<? extends Vector<?>> positions) {
         return NDArrays.of(positions, SampleSystem.of(crs), DataType.DOUBLE);
     }
 }

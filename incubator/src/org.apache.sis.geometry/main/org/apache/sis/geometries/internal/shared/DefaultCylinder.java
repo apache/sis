@@ -17,11 +17,13 @@
 package org.apache.sis.geometries.internal.shared;
 
 import java.util.Objects;
+import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import org.apache.sis.geometries.DataPoints;
+import org.apache.sis.geometries.Geometries;
 import org.apache.sis.geometries.GeometryFactory;
 import org.apache.sis.geometries.surface.Cylinder;
 import org.apache.sis.maths.NDArrays;
-import org.apache.sis.maths.ReadOnly;
+import org.apache.sis.maths.SampleSystem;
 import org.apache.sis.maths.Vector;
 
 
@@ -48,13 +50,13 @@ public non-sealed class DefaultCylinder extends AbstractGeometry implements Cyli
 
     /**
      * Creates a cylinder along the axis joining the two given positions.
-     * The reference system of the cylinder is the one of those positions.
      *
+     * @param  crs     reference system of the cylinder, or {@code null} for an undefined one.
      * @param  bottom  the center of the bottom circle, not null.
      * @param  top     the center of the top circle, not null.
      */
-    public DefaultCylinder(Vector<?> bottom, Vector<?> top) {
-        points = GeometryFactory.DEFAULT.createDataPoints(NDArrays.of(bottom.getSampleSystem(), bottom.getDataType(), 2));
+    public DefaultCylinder(CoordinateReferenceSystem crs, Vector<?> bottom, Vector<?> top) {
+        points = GeometryFactory.DEFAULT.createDataPoints(NDArrays.of(SampleSystem.of(Geometries.orUndefinedCRS(crs, bottom.getDimension())), bottom.getDataType(), 2));
         points.setPosition(0, bottom);
         points.setPosition(1, top);
     }
@@ -77,26 +79,6 @@ public non-sealed class DefaultCylinder extends AbstractGeometry implements Cyli
     @Override
     public DataPoints getDataPoints() {
         return points;
-    }
-
-    @Override
-    public ReadOnly.Vector<?> getBottom() {
-        return points.getPosition(0);
-    }
-
-    @Override
-    public void setBottom(ReadOnly.Vector<?> position) {
-        points.setPosition(0, position);
-    }
-
-    @Override
-    public ReadOnly.Vector<?> getTop() {
-        return points.getPosition(1);
-    }
-
-    @Override
-    public void setTop(ReadOnly.Vector<?> position) {
-        points.setPosition(1, position);
     }
 
     @Override

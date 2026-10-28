@@ -19,11 +19,11 @@ package org.apache.sis.geometries.internal.shared;
 import java.util.Objects;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import org.apache.sis.geometries.DataPoints;
+import org.apache.sis.geometries.Geometries;
 import org.apache.sis.geometries.Point;
 import org.apache.sis.geometries.DataPointsType;
 import org.apache.sis.maths.DataType;
 import org.apache.sis.maths.NDArrays;
-import org.apache.sis.maths.ReadOnly;
 import org.apache.sis.maths.SampleSystem;
 import org.apache.sis.maths.Vector;
 
@@ -44,8 +44,8 @@ public non-sealed class DefaultPoint extends AbstractGeometry implements Point {
         points = new ArrayDataPoints(NDArrays.of(SampleSystem.of(crs), DataType.DOUBLE, 1));
     }
 
-    public DefaultPoint(Vector position) {
-        points = new ArrayDataPoints(NDArrays.of(position.getSampleSystem(), position.getDataType(), 1));
+    public DefaultPoint(CoordinateReferenceSystem crs, Vector<?> position) {
+        points = new ArrayDataPoints(NDArrays.of(SampleSystem.of(Geometries.orUndefinedCRS(crs, position.getDimension())), position.getDataType(), 1));
         points.setPosition(0, position);
     }
 
@@ -95,7 +95,7 @@ public non-sealed class DefaultPoint extends AbstractGeometry implements Point {
     }
 
     @Override
-    public void setAttribute(String name, ReadOnly.Vector tuple) {
+    public void setAttribute(String name, Vector tuple) {
         points.setAttribute(0, name, tuple);
     }
 

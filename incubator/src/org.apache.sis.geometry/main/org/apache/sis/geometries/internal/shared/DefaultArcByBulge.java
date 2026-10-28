@@ -106,7 +106,7 @@ public non-sealed class DefaultArcByBulge extends AbstractGeometry implements Ar
     public LineString asLine(final Quantity<?> spacing, final Quantity<?> offset) {
         final Vector<?> start = points.getPosition(0).copy(DataType.DOUBLE);
         final Vector<?> end   = points.getPosition(1).copy(DataType.DOUBLE);
-        final Vector<?> apex  = (bulge != 0) ? apex(start, end) : start.copy(DataType.DOUBLE).lerp(end, 0.5);
+        final Vector<?> apex  = (bulge != 0) ? apex(start, end) : start.lerp(end, 0.5);
         return CurveLinearizer.linearize(this, spacing, offset, List.of(CurveLinearizer.circularArc(start, apex, end, false)));
     }
 
@@ -116,22 +116,22 @@ public non-sealed class DefaultArcByBulge extends AbstractGeometry implements Ar
      * @throws IllegalStateException if the two end points are identical, or if the normal is parallel to the chord.
      */
     private Vector<?> apex(final Vector<?> start, final Vector<?> end) {
-        final Vector<?> u = end.copy(DataType.DOUBLE).subtract(start);     // Unit vector along the chord.
-        final Vector<?> n = normal.copy(DataType.DOUBLE);                  // Unit vector toward the side the arc bulges to.
+        Vector<?> u = end.copy(DataType.DOUBLE).subtract(start);          // Unit vector along the chord.
+        Vector<?> n = normal.copy(DataType.DOUBLE);                        // Unit vector toward the side the arc bulges to.
         final double chord = u.length();
         if (!(chord > 0)) {
             throw new IllegalStateException("The two end points of an arc by bulge are identical, so they do not determine a circle.");
         }
-        u.scale(1 / chord);
+        u = u.scale(1 / chord);
         // Only the part of the normal perpendicular to the chord tells the side of the arc.
         final double length = n.length();
-        n.perpendicular(u);
+        n = n.perpendicular(u);
         final double perpendicular = n.length();
         if (!(perpendicular > length * 1E-12)) {
             throw new IllegalStateException("The normal of an arc by bulge is parallel to its chord,"
                     + " so it does not tell which side the arc bulges towards.");
         }
-        return start.copy(DataType.DOUBLE).lerp(end, 0.5).add(n.scale(bulge / perpendicular));
+        return start.lerp(end, 0.5).add(n.scale(bulge / perpendicular));
     }
 
 }

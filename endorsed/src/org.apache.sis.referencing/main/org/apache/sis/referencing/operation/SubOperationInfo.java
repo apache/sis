@@ -16,6 +16,7 @@
  */
 package org.apache.sis.referencing.operation;
 
+import java.util.BitSet;
 import java.util.List;
 import org.opengis.referencing.crs.*;
 import org.opengis.referencing.cs.CoordinateSystemAxis;
@@ -270,34 +271,37 @@ searchSrc:  while (sourceComponentIndex < sourceComponentIsUsed.length) {
      * <abbr>CRS</abbr>, or {@code null} if that axis is unknown.
      *
      * @param  context  options supplied by the user, or {@code null}.
-     * @return the coordinate axis that could not be resolved, or {@code null} if none or unknown.
+     * @return the first coordinate axis that could not be resolved, or {@code null} if none or unknown.
      */
     private CoordinateSystemAxis fetchConstantsForMissingSourceDimensions(final CoordinateOperationContext context) {
         if (context != null) {
             final DirectPosition coordinates = context.getConstantCoordinates();
             if (coordinates != null) {
                 /*
-                 * Finds the index of the first coordinate to use among the constant coordinates.
+                 * Finds the indexes of the coordinates to use among the constant coordinates.
                  * The default CRS of `coordinates` is the full target CRS (with all dimensions).
-                 * If a different CRS is specified, search the index of this target CRS component.
+                 * If a different CRS is specified, search the indexes of that target component.
                  * No coordinate transformation is perfomed in this method, only selection.
                  */
-                int indexOfConstant = targetLowerDimension;     // Value for the default CRS.
+                final BitSet indexOfConstant;
                 final CoordinateReferenceSystem crs = coordinates.getCoordinateReferenceSystem();
                 if (crs != null) {
-                    indexOfConstant = CRS.locateDimensions(crs, targetComponent).nextSetBit(0);
-                    if (indexOfConstant < 0) {
-                        return null;
-                    }
+                    indexOfConstant = CRS.locateDimensions(crs, targetComponent);
+                } else {
+                    indexOfConstant = new BitSet();
+                    indexOfConstant.set(targetLowerDimension, targetUpperDimension);
                 }
-                final int d = coordinates.getDimension();
-                final var c = new double[targetUpperDimension - targetLowerDimension];
-                for (int i=0; i<c.length; i++) {
-                    if (indexOfConstant >= d || Double.isNaN(c[i] = coordinates.getCoordinate(indexOfConstant++))) {
-                        return targetComponent.getCoordinateSystem().getAxis(i);
+                if (!indexOfConstant.isEmpty()) {
+                    final var c = new double[targetUpperDimension - targetLowerDimension];
+                    for (int next = -1, i=0; i<c.length; i++) {
+                        next = indexOfConstant.nextSetBit(next + 1);
+                        if (next < 0 || Double.isNaN(c[i] = coordinates.getCoordinate(next))) {
+                            // Coordinate cannot be resolved. Return an object to use in error message.
+                            return targetComponent.getCoordinateSystem().getAxis(i);
+                        }
                     }
+                    constantCoordinates = c;
                 }
-                constantCoordinates = c;
             }
         }
         return null;

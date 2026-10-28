@@ -101,29 +101,15 @@ public interface Transform {
 
     /**
      * Transform a single tuple.
+     * The result is a new vector with the data type of the source tuple.
      *
      * @param source tuple, cannot be null.
-     * @param dest tuple, can be null.
-     * @return destination tuple.
+     * @return new transformed tuple.
      */
-    default Vector<?> transform(ReadOnly.Vector<?> source, Vector<?> dest) {
-        final int outSize = getOutputDimensions();
-        if (dest == null) dest = Vectors.create(outSize, source.getDataType());
-
-        final DataType numericType = dest.getDataType();
-        switch (numericType) {
-            case DOUBLE :
-                final double[] arrayd = new double[outSize];
-                transform(source.toArrayDouble(), 0, arrayd, 0, 1);
-                dest.set(arrayd);
-                return dest;
-            default :
-            case FLOAT :
-                final float[] arrayf = new float[outSize];
-                transform(source.toArrayFloat(), 0, arrayf, 0, 1);
-                dest.set(arrayf);
-                return dest;
-        }
+    default Vector<?> transform(Vector<?> source) {
+        final double[] array = new double[getOutputDimensions()];
+        transform(source.toArrayDouble(), 0, array, 0, 1);
+        return Vectors.create(array, source.getDataType());
     }
 
     /**

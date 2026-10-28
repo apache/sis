@@ -25,10 +25,10 @@ import org.apache.sis.maths.Array;
 import org.apache.sis.maths.DataType;
 import org.apache.sis.maths.NDArrays;
 import org.apache.sis.maths.NDRange;
-import org.apache.sis.maths.ReadOnly;
 import org.apache.sis.maths.SampleSystem;
 import org.apache.sis.maths.Vector;
 import org.apache.sis.maths.Vectors;
+import org.apache.sis.util.ArraysExt;
 
 
 /**
@@ -112,7 +112,7 @@ public interface DataPoints {
      * @param index searched index
      * @param value new attribute value
      */
-    void setPosition(int index, ReadOnly.Vector<?> value);
+    void setPosition(int index, Vector<?> value);
 
     /**
      * Get attribute value.
@@ -130,7 +130,7 @@ public interface DataPoints {
      * @param name attribute name
      * @param value new attribute value
      */
-    void setAttribute(int index, String name, ReadOnly.Vector<?> value);
+    void setAttribute(int index, String name, Vector<?> value);
 
     /**
      * Returns a new point between the two given points of this {@code DataPoints}, for example on a segment.
@@ -236,17 +236,27 @@ public interface DataPoints {
             case LINEAR:
             case LINEAR_NORMALIZED:
             case TRANSLATE: {
-                final Vector<?> value = getAttribute(indices[0], name).scale(weights[0]);
-                for (int i = 1; i < indices.length; i++) {
-                    value.add(getAttribute(indices[i], name).scale(weights[i]));
+                // Accumulate in double precision and cast only once at the end,
+                // otherwise integer attributes would be truncated on each weighted term.
+                final Vector<?> first = getAttribute(indices[0], name);
+                final double[] sum = new double[first.getDimension()];
+                for (int i = 0; i < indices.length; i++) {
+                    final Vector<?> v = (i == 0) ? first : getAttribute(indices[i], name);
+                    final double w = weights[i];
+                    for (int k = 0; k < sum.length; k++) {
+                        sum[k] += v.get(k) * w;
+                    }
                 }
                 if (method == AttributeInterpolation.LINEAR_NORMALIZED) {
                     // TODO: a glTF tangent has 4 components: the direction (x,y,z) and the handedness
                     // (w = ±1) of the bitangent. Only the direction should be normalized, while the
                     // handedness should be kept, for example taken from the nearest point.
-                    value.normalize();
+                    double length = 0;
+                    for (double s : sum) length += s * s;
+                    length = Math.sqrt(length);
+                    for (int k = 0; k < sum.length; k++) sum[k] /= length;
                 }
-                return value;
+                return Vectors.create(sum, first.getDataType());
             }
             case LEADING: {
                 return getAttribute(indices[(indices.length == 2 && weights[1] >= 1) ? 1 : 0], name);
@@ -289,13 +299,55 @@ public interface DataPoints {
         if (isEmpty()) {
             return null;
         }
-        final Vector<?> start = Vectors.create(getType().getAttributeSystem(name), getType().getAttributeType(name))
-                                       .set(getAttribute(0, name));
-        final NDRange env = new NDRange(start, start);
+        final SampleSystem system = getType().getAttributeSystem(name);
+        final Vector<?> start = getAttribute(0, name).copy(getType().getAttributeType(name));
+        final NDRange env = new NDRange(system, start, start);
         for (int i = 1, n = size(); i < n; i++) {
             env.add(getAttribute(i, name));
         }
         return env;
+    }
+
+    /**
+     * Returns a copy of the points at the given indices, with all their attributes. The point at index
+     * <var>i</var> of the returned {@code DataPoints} is a copy of the point at index {@code indices[i]}
+     * of this {@code DataPoints}. An index can be given more than once. The returned {@code DataPoints}
+     * is independent of this one: changing either of them does not change the other one.
+     *
+     * @param  indices  indices of the points to copy, in the order of the returned points.
+     * @return a new {@code DataPoints} of {@code indices.length} points with the attributes of this one.
+     * @throws IndexOutOfBoundsException if an index is negative or not smaller than {@link #size()}.
+     *
+     * @see #subset(int, int)
+     */
+    default DataPoints subset(final int[] indices) {
+        final DataPointsType type = getType();
+        final List<String> names = type.getAttributeNames();
+        final DataPoints subset = GeometryFactory.DEFAULT.createDataPoints(type, indices.length);
+        final int size = size();
+        for (int i = 0; i < indices.length; i++) {
+            final int index = Objects.checkIndex(indices[i], size);
+            for (final String name : names) {
+                subset.setAttribute(i, name, getAttribute(index, name));
+            }
+        }
+        return subset;
+    }
+
+    /**
+     * Returns a copy of the given range of points, with all their attributes. The returned {@code DataPoints}
+     * is independent of this one: changing either of them does not change the other one.
+     *
+     * @param  start   index of the first point to copy.
+     * @param  length  number of points to copy.
+     * @return a new {@code DataPoints} of {@code length} points with the attributes of this one.
+     * @throws IndexOutOfBoundsException if the range is not inside this {@code DataPoints}.
+     *
+     * @see #subset(int[])
+     */
+    default DataPoints subset(final int start, final int length) {
+        Objects.checkFromIndexSize(start, length, size());
+        return subset(ArraysExt.range(start, start + length));
     }
 
     /**
@@ -434,7 +486,7 @@ public interface DataPoints {
          * Throws {@link UnsupportedOperationException}: this point is a read-only view.
          */
         @Override
-        public void setAttribute(final String name, final ReadOnly.Vector<?> tuple) {
+        public void setAttribute(final String name, final Vector<?> tuple) {
             throw new UnsupportedOperationException("An interpolated point view is read-only.");
         }
 

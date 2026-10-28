@@ -52,6 +52,7 @@ import org.apache.sis.referencing.IdentifiedObjects;
 import org.apache.sis.referencing.internal.shared.AxisDirections;
 import org.apache.sis.referencing.internal.shared.TemporalAccessor;
 import org.apache.sis.referencing.internal.shared.ReferencingUtilities;
+import org.apache.sis.referencing.operation.transform.TransformFactoryException;
 import org.apache.sis.parameter.DefaultParameterDescriptor;
 import org.apache.sis.metadata.iso.extent.DefaultExtent;
 import org.apache.sis.metadata.iso.extent.DefaultVerticalExtent;
@@ -138,7 +139,7 @@ public final class ServicesForMetadata extends ReferencingServices {
                         Logging.recoverableException(getLogger(Modules.REFERENCING), Envelopes.class, findOpCaller, e);
                         return null;
                     }
-                    throw new TransformException(Resources.format(Resources.Keys.CanNotTransformEnvelopeToGeodetic), e);
+                    throw new TransformFactoryException(Resources.format(Resources.Keys.CanNotTransformEnvelopeToGeodetic), e);
                 }
                 envelope = Envelopes.transform(operation, envelope);
             }

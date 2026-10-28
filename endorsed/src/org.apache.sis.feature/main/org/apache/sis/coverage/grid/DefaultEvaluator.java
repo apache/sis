@@ -42,6 +42,7 @@ import org.apache.sis.referencing.operation.matrix.Matrices;
 import org.apache.sis.referencing.operation.matrix.MatrixSIS;
 import org.apache.sis.referencing.operation.transform.MathTransforms;
 import org.apache.sis.referencing.operation.transform.TransformSeparator;
+import org.apache.sis.referencing.operation.transform.TransformFactoryException;
 import org.apache.sis.geometry.CoordinateFormat;
 import org.apache.sis.feature.internal.Resources;
 import org.apache.sis.util.ArraysExt;
@@ -490,7 +491,7 @@ abstract class DefaultEvaluator implements GridCoverage.Evaluator {
             final int dimension = inputToGrid.getTargetDimensions();
             return new FractionalGridCoordinates(ArraysExt.resize(gridCoords, dimension));
         } catch (FactoryException e) {
-            throw new TransformException(e.getMessage(), e);
+            throw new TransformFactoryException(e);
         }
     }
 

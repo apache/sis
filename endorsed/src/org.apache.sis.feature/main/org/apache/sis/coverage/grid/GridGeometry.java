@@ -60,6 +60,7 @@ import org.apache.sis.referencing.operation.matrix.MatrixSIS;
 import org.apache.sis.referencing.operation.transform.MathTransforms;
 import org.apache.sis.referencing.operation.transform.LinearTransform;
 import org.apache.sis.referencing.operation.transform.PassThroughTransform;
+import org.apache.sis.referencing.operation.transform.TransformFactoryException;
 import org.apache.sis.referencing.factory.InvalidGeodeticParameterException;
 import org.apache.sis.referencing.internal.shared.ExtendedPrecisionMatrix;
 import org.apache.sis.referencing.internal.shared.DirectPositionView;
@@ -1131,7 +1132,7 @@ public class GridGeometry implements LenientComparable, Serializable {
             }
             return env;
         } catch (FactoryException e) {
-            throw new TransformException(e);
+            throw new TransformFactoryException(e);
         }
         throw incomplete(bitmask, errorKey);
     }
@@ -1994,7 +1995,7 @@ public class GridGeometry implements LenientComparable, Serializable {
         try {
             tr = finder.inverse();
         } catch (FactoryException e) {
-            throw new TransformException(e);
+            throw new TransformFactoryException(e);
         }
         return MathTransforms.concatenate(getGridToCRS(anchor), tr);
     }

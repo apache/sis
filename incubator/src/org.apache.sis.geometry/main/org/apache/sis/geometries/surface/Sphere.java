@@ -30,7 +30,7 @@ import org.apache.sis.geometries.GeometryType;
 import org.apache.sis.geometries.SurfaceInterpolation;
 import org.apache.sis.geometries.internal.shared.DefaultSphere;
 import org.apache.sis.maths.NDRange;
-import org.apache.sis.maths.ReadOnly;
+import org.apache.sis.maths.Vector;
 import org.apache.sis.measure.Quantities;
 
 
@@ -147,16 +147,16 @@ public sealed interface Sphere extends ParametricCurveSurface
 
     /**
      * Returns the sphere center. Writing in the returned tuple does not move this
-     * sphere; use {@link #setCenter(ReadOnly.Vector)} for that.
+     * sphere; use {@link #setCenter(Vector)} for that.
      *
      * @return sphere center.
      */
-    ReadOnly.Vector<?> getCenter();
+    Vector<?> getCenter();
 
     /**
      * @param position new center of the sphere
      */
-    void setCenter(ReadOnly.Vector<?> position);
+    void setCenter(Vector<?> position);
 
     /**
      * Returns the empty geometry: a sphere is a closed surface, so it has no edge.
@@ -189,7 +189,7 @@ public sealed interface Sphere extends ParametricCurveSurface
      */
     @Override
     default Envelope getEnvelope() {
-        final ReadOnly.Vector<?> center = getCenter();
+        final Vector<?> center = getCenter();
         final double radius = getRadius();
         final NDRange env = new NDRange(getCoordinateReferenceSystem());
         for (int i = 0, n = getDimension(); i < n; i++) {

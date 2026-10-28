@@ -37,8 +37,7 @@ import org.apache.sis.geometries.DataPointsType;
 import org.apache.sis.geometry.Envelopes;
 import org.apache.sis.geometry.GeneralEnvelope;
 import org.apache.sis.maths.Vector;
-import org.apache.sis.maths.Vector2D;
-import org.apache.sis.maths.Vectors;
+import org.apache.sis.maths.DataType;
 import org.apache.sis.referencing.CRS;
 import org.apache.sis.util.ArgumentChecks;
 
@@ -288,14 +287,11 @@ public sealed interface PreparedTIN extends TIN
         //cache last position crs
         private CoordinateReferenceSystem lastCrs;
         private MathTransform lastTransform;
-        private final Vector<?> target;
-        private final Vector2D.Double p = new Vector2D.Double();
         private final GeneralEnvelope env;
 
         private Evaluator(PreparedTIN tin) {
             this.tin = tin;
             this.tincrs = tin.getCoordinateReferenceSystem();
-            target = Vectors.createDouble(tincrs);
             env = new GeneralEnvelope(tincrs);
         }
 
@@ -307,8 +303,24 @@ public sealed interface PreparedTIN extends TIN
             this.epsilon = epsilon;
         }
 
+        /**
+         * Evaluates the TIN at the given position, assumed in the reference system of the TIN.
+         *
+         * @param dp position to evaluate
+         * @return point on the TIN at the given position, or empty if outside of the TIN
+         */
         public Optional<Point> evaluate(Vector<?> dp) throws CannotEvaluateException {
-            final CoordinateReferenceSystem dpCrs = dp.getCoordinateReferenceSystem();
+            return evaluate(null, dp);
+        }
+
+        /**
+         * Evaluates the TIN at the given position, transforming it to the reference system of the TIN if needed.
+         *
+         * @param dpCrs reference system of the position, null if the same as the TIN
+         * @param dp position to evaluate
+         * @return point on the TIN at the given position, or empty if outside of the TIN
+         */
+        public Optional<Point> evaluate(final CoordinateReferenceSystem dpCrs, Vector<?> dp) throws CannotEvaluateException {
             final MathTransform transform;
             if (dpCrs == null) {
                 //do nothing, we expect the same crs as the surface
@@ -335,22 +347,21 @@ public sealed interface PreparedTIN extends TIN
 
             if (transform != null) {
                 try {
-                    dp.transformTo(transform, target);
-                    dp = target;
+                    dp = dp.copy(DataType.DOUBLE).transform(transform);
                 } catch (TransformException ex) {
                     throw new CannotEvaluateException(ex.getMessage(), ex);
                 }
             }
-            p.x = dp.get(0);
-            p.y = dp.get(1);
+            final double px = dp.get(0);
+            final double py = dp.get(1);
 
             //use a local coordinate epsilon if undefined
             double epsilon = this.epsilon;
-            if (!Double.isFinite(epsilon)) epsilon = Math.max(Math.ulp(p.x), Math.ulp(p.y)) * 10;
+            if (!Double.isFinite(epsilon)) epsilon = Math.max(Math.ulp(px), Math.ulp(py)) * 10;
 
             double margin = epsilon;
-            env.setRange(0, p.x - margin, p.x + margin);
-            env.setRange(1, p.y - margin, p.y + margin);
+            env.setRange(0, px - margin, px + margin);
+            env.setRange(1, py - margin, py + margin);
 
             try (final Stream<Triangle> triangles = tin.getPatches(env)) {
                 final Iterator<Triangle> iterator = triangles.iterator();
@@ -364,7 +375,7 @@ public sealed interface PreparedTIN extends TIN
                             a.get(0), a.get(1),
                             b.get(0), b.get(1),
                             c.get(0), c.get(1),
-                            p.get(0), p.get(1),
+                            px, py,
                             epsilon, true);
                     if (bary != null) {
                         return Optional.of(triangle.interpolate(bary));

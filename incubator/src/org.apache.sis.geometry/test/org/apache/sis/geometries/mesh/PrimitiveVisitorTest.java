@@ -25,9 +25,6 @@ import org.apache.sis.geometries.Point;
 import org.apache.sis.geometries.curve.LineString;
 import org.apache.sis.geometries.surface.TIN;
 import org.apache.sis.geometries.surface.Triangle;
-import org.apache.sis.geometries.mesh.MeshPrimitive;
-import org.apache.sis.geometries.mesh.MeshPrimitiveVisitor;
-import org.apache.sis.maths.SampleSystem;
 import org.apache.sis.maths.NDArrays;
 import org.apache.sis.maths.Vector3D;
 
@@ -44,7 +41,6 @@ import org.junit.jupiter.api.Test;
 public class PrimitiveVisitorTest {
 
     private static final CoordinateReferenceSystem CRS3D = Geometries.getUndefinedCRS(3);
-    private static final SampleSystem SS3D = SampleSystem.of(CRS3D);
 
     /**
      * Test visiting Points.
@@ -68,8 +64,8 @@ public class PrimitiveVisitorTest {
 
         //test geometry collection
         assertEquals(2, geometry.getNumGeometries());
-        assertEquals(new Vector3D.Double(SS3D, 0, 1, 2), geometry.getGeometryN(0).getPosition());
-        assertEquals(new Vector3D.Double(SS3D, 3, 4, 5), geometry.getGeometryN(1).getPosition());
+        assertEquals(new Vector3D.Double(0, 1, 2), geometry.getGeometryN(0).getPosition());
+        assertEquals(new Vector3D.Double(3, 4, 5), geometry.getGeometryN(1).getPosition());
     }
 
     /**
@@ -97,9 +93,9 @@ public class PrimitiveVisitorTest {
 
         //test geometry collection
         assertEquals(3, geometry.getNumGeometries());
-        assertEquals(new Vector3D.Double(SS3D, 0, 1, 2), geometry.getGeometryN(0).getPosition());
-        assertEquals(new Vector3D.Double(SS3D, 3, 4, 5), geometry.getGeometryN(1).getPosition());
-        assertEquals(new Vector3D.Double(SS3D, 0, 1, 2), geometry.getGeometryN(2).getPosition());
+        assertEquals(new Vector3D.Double(0, 1, 2), geometry.getGeometryN(0).getPosition());
+        assertEquals(new Vector3D.Double(3, 4, 5), geometry.getGeometryN(1).getPosition());
+        assertEquals(new Vector3D.Double(0, 1, 2), geometry.getGeometryN(2).getPosition());
     }
 
     /**

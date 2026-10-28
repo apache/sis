@@ -16,26 +16,33 @@
  */
 package org.apache.sis.maths;
 
+import java.util.Arrays;
 import static org.apache.sis.maths.Matrix.ROW_ORDER;
 
 
 /**
  * Quaternion object.
+ * Quaternions are modifiable, operations store the result in this quaternion.
  *
  * Definition : http://en.wikipedia.org/wiki/Quaternion
  *
  * Original code from Unlicense.science
  */
-public class Quaternion extends VectorND.Double {
+public class Quaternion {
 
     private static final Vector3D.Double UNIT_X = new Vector3D.Double(1,0,0);
     private static final Vector3D.Double UNIT_Y = new Vector3D.Double(0,1,0);
 
     /**
+     * Quaternion values x, y, z, w.
+     */
+    public final double[] values;
+
+    /**
      * Default quaternion with values [0,0,0,1] .
      */
     public Quaternion() {
-        super(new double[]{0,0,0,1});
+        this.values = new double[]{0,0,0,1};
     }
 
     /**
@@ -46,7 +53,7 @@ public class Quaternion extends VectorND.Double {
      * @param w quaternion fourth value
      */
     public Quaternion(double x, double y, double z, double w) {
-        super(new double[]{x,y,z,w});
+        this.values = new double[]{x,y,z,w};
     }
 
     /**
@@ -55,7 +62,10 @@ public class Quaternion extends VectorND.Double {
      * @param values no copy of the array is made.
      */
     public Quaternion(double[] values) {
-        super(values);
+        if (values.length != 4) {
+            throw new IllegalArgumentException("Array must be of size 4");
+        }
+        this.values = values;
     }
 
     /**
@@ -64,18 +74,62 @@ public class Quaternion extends VectorND.Double {
      * @param values a copy of the array is made.
      */
     public Quaternion(float[] values) {
-        super(values);
+        if (values.length != 4) {
+            throw new IllegalArgumentException("Array must be of size 4");
+        }
+        this.values = new double[]{values[0], values[1], values[2], values[3]};
     }
 
     /**
      * Expect an tuple of size 4.
      * @param v quaternion values to copy from
      */
-    public Quaternion(ReadOnly.Vector<?> v) {
-        super(v);
+    public Quaternion(Vector<?> v) {
         if (v.getDimension()!= 4){
             throw new IllegalArgumentException("Tuple must be of size 4");
         }
+        this.values = v.toArrayDouble();
+    }
+
+    /**
+     * Copy constructor.
+     * @param q quaternion values to copy from
+     */
+    public Quaternion(Quaternion q) {
+        this.values = q.values.clone();
+    }
+
+    /**
+     * Get value at ordinate.
+     *
+     * @param indice ordinate index, from 0 to 3
+     * @throws IndexOutOfBoundsException if indice is out of range
+     * @return double
+     */
+    public double get(int indice) throws IndexOutOfBoundsException {
+        return values[indice];
+    }
+
+    /**
+     * Set value at ordinate.
+     *
+     * @param indice ordinate index, from 0 to 3
+     * @param value ordinate value
+     * @throws IndexOutOfBoundsException if indice is out of range
+     */
+    public void set(int indice, double value) throws IndexOutOfBoundsException {
+        values[indice] = value;
+    }
+
+    /**
+     * Copy values from given quaternion.
+     *
+     * @param q quaternion to copy values from
+     * @return this quaternion
+     */
+    public Quaternion set(Quaternion q) {
+        System.arraycopy(q.values, 0, values, 0, 4);
+        return this;
     }
 
     /**
@@ -85,7 +139,7 @@ public class Quaternion extends VectorND.Double {
      * @return double
      */
     public double getX() throws IndexOutOfBoundsException {
-        return get(0);
+        return values[0];
     }
 
     /**
@@ -95,7 +149,7 @@ public class Quaternion extends VectorND.Double {
      * @return double
      */
     public double getY() throws IndexOutOfBoundsException {
-        return get(1);
+        return values[1];
     }
 
     /**
@@ -105,7 +159,7 @@ public class Quaternion extends VectorND.Double {
      * @return double
      */
     public double getZ() throws IndexOutOfBoundsException {
-        return get(2);
+        return values[2];
     }
 
     /**
@@ -115,7 +169,7 @@ public class Quaternion extends VectorND.Double {
      * @return double
      */
     public double getW() throws IndexOutOfBoundsException {
-        return get(3);
+        return values[3];
     }
 
     /**
@@ -125,7 +179,7 @@ public class Quaternion extends VectorND.Double {
      * @throws IndexOutOfBoundsException if indice is out of range
      */
     public void setX(double x) throws IndexOutOfBoundsException {
-        set(0, x);
+        values[0] = x;
     }
 
     /**
@@ -135,7 +189,7 @@ public class Quaternion extends VectorND.Double {
      * @throws IndexOutOfBoundsException if indice is out of range
      */
     public void setY(double y) throws IndexOutOfBoundsException {
-        set(1, y);
+        values[1] = y;
     }
 
     /**
@@ -145,24 +199,37 @@ public class Quaternion extends VectorND.Double {
      * @throws IndexOutOfBoundsException if indice is out of range
      */
     public void setZ(double z) throws IndexOutOfBoundsException {
-        set(2, z);
+        values[2] = z;
     }
 
     /**
      * Convenient method to set value at ordinate 3.
      *
      * @param w fourth ordinate value
-     * @throws InvalidIndexException if indice is out of range
+     * @throws IndexOutOfBoundsException if indice is out of range
      */
     public void setW(double w) throws IndexOutOfBoundsException {
-        set(3, w);
+        values[3] = w;
+    }
+
+    /**
+     * @return copy of the quaternion values x, y, z, w
+     */
+    public double[] toArrayDouble() {
+        return values.clone();
+    }
+
+    /**
+     * @return quaternion values x, y, z, w as a new vector
+     */
+    public Vector4D.Double toVector() {
+        return new Vector4D.Double(values[0], values[1], values[2], values[3]);
     }
 
     /**
      * Normalize this quaternion.
      * @return this quaternion
      */
-    @Override
     public Quaternion normalize(){
         Quaternions.normalize(values, values);
         return this;
@@ -181,7 +248,7 @@ public class Quaternion extends VectorND.Double {
      * @return this quaternion
      */
     public Quaternion conjugate() {
-        set(Quaternions.conjugate(values, null));
+        Quaternions.conjugate(values, values);
         return this;
     }
 
@@ -191,7 +258,7 @@ public class Quaternion extends VectorND.Double {
      * @return this quaternion
      */
     public Quaternion add(Quaternion other) {
-        set(Quaternions.add(values, other.values, null));
+        Quaternions.add(values, other.values, values);
         return this;
     }
 
@@ -210,7 +277,7 @@ public class Quaternion extends VectorND.Double {
      * @return this quaternion
      */
     public Quaternion inverse() {
-        set(Quaternions.inverse(values, null));
+        System.arraycopy(Quaternions.inverse(values, null), 0, values, 0, 4);
         return this;
     }
 
@@ -218,32 +285,25 @@ public class Quaternion extends VectorND.Double {
      * Create a copy of this quaternion.
      * @return Quaternion, never null
      */
-    @Override
     public Quaternion copy() {
         return new Quaternion(this);
     }
 
     /**
-     * Rotate the given vector, store the result in buffer.
+     * Rotate the given vector.
      * @param v vector to rotate
-     * @param buffer can be null
-     * @return rotated vector
+     * @return new rotated vector
      */
-    public Vector<?> rotate(ReadOnly.Vector<?> v, Vector<?> buffer){
-        if (buffer == null) buffer = v.copy();
-        Matrix3D m = toMatrix3();
-        m.transform(v, buffer);
-        return buffer;
+    public Vector<?> rotate(Vector<?> v){
+        return toMatrix3().transform(v);
     }
 
     /**
-     * Rotate the given vector, store the result in buffer.
+     * Rotate the given vector.
      * @param v vector to rotate
-     * @param buffer can be null
-     * @return rotated vector
+     * @return new rotated vector
      */
-    public Vector<?> rotate(Vector3D.Double v, Vector<?> buffer) {
-        if (buffer == null) buffer = v.copy();
+    public Vector3D.Double rotate(Vector3D.Double v) {
         double qx = values[0];
         double qy = values[1];
         double qz = values[2];
@@ -267,10 +327,10 @@ public class Quaternion extends VectorND.Double {
         uuvy *= 2;
         uuvz *= 2;
         // return vec3.add(out, a, vec3.add(out, uv, uuv));
-        buffer.set(0, v.x + uvx + uuvx);
-        buffer.set(1, v.y + uvy + uuvy);
-        buffer.set(2, v.z + uvz + uuvz);
-        return buffer;
+        return new Vector3D.Double(
+                v.x + uvx + uuvx,
+                v.y + uvy + uuvy,
+                v.z + uvz + uuvz);
     }
 
     /**
@@ -283,8 +343,7 @@ public class Quaternion extends VectorND.Double {
      * @return this interpolated quaternion
      */
     public Quaternion lerp(final Quaternion other, final double ratio){
-        final double[] lerp = Quaternions.lerp(values, other.toArrayDouble(), ratio, new double[4]);
-        set(lerp);
+        System.arraycopy(Quaternions.lerp(values, other.values, ratio, new double[4]), 0, values, 0, 4);
         return this;
     }
 
@@ -298,8 +357,7 @@ public class Quaternion extends VectorND.Double {
      * @return this interpolated quaternion
      */
     public Quaternion slerp(final Quaternion other, final double ratio){
-        final double[] slerp = Quaternions.slerp(values, other.toArrayDouble(), ratio, new double[4]);
-        set(slerp);
+        System.arraycopy(Quaternions.slerp(values, other.values, ratio, new double[4]), 0, values, 0, 4);
         return this;
     }
 
@@ -334,15 +392,13 @@ public class Quaternion extends VectorND.Double {
 
     /**
      * Convert quaternion to axis angle.
-     * @param axisBuffer
-     * @return angle in radians
+     * @return rotation axis x, y, z values followed by the rotation angle in radians
      */
-    public double toAxisAngle(Vector<?> axisBuffer){
+    public double[] toAxisAngle(){
         final double[] values = Vectors.normalize(this.values);
         final double[] array = new double[4];
-        final double angle = Quaternions.toAxisAngle(values,array);
-        axisBuffer.set(array);
-        return angle;
+        array[3] = Quaternions.toAxisAngle(values, array);
+        return array;
     }
 
     /**
@@ -382,7 +438,10 @@ public class Quaternion extends VectorND.Double {
             z = 0.25 * s;
             w = (m[0][1] - m[1][0]) / s;
         }
-        set(new double[]{x,y,z,w});
+        values[0] = x;
+        values[1] = y;
+        values[2] = z;
+        values[3] = w;
         return this;
     }
 
@@ -392,7 +451,7 @@ public class Quaternion extends VectorND.Double {
      * @param angle rotation angle, in radians
      * @return this quaternion
      */
-    public Quaternion setFromAngle(ReadOnly.Vector<?> axis, double angle) {
+    public Quaternion setFromAngle(Vector<?> axis, double angle) {
         Quaternions.fromAngle(axis, angle, values);
         return this;
     }
@@ -403,7 +462,7 @@ public class Quaternion extends VectorND.Double {
      * @param euler angles in radians (heading/yaw , elevation/pitch , bank/roll)
      * @return this quaternion
      */
-    public Quaternion setFromEuler(ReadOnly.Vector<?> euler) {
+    public Quaternion setFromEuler(Vector<?> euler) {
         return setFromMatrix(new Matrix3D().setFromEuler(euler));
     }
 
@@ -414,7 +473,7 @@ public class Quaternion extends VectorND.Double {
      * @param target target vector of unit length
      * @return this quaternion
      */
-    public Quaternion setFromUnitVectors(ReadOnly.Vector<?> base, ReadOnly.Vector<?> target) {
+    public Quaternion setFromUnitVectors(Vector<?> base, Vector<?> target) {
         final double dot = base.dot(target);
         if (dot < -0.999999) {
             //try to find a better value on other axis
@@ -422,8 +481,7 @@ public class Quaternion extends VectorND.Double {
             if (tmpvec3.length() < 0.000001) {
                 tmpvec3 = UNIT_Y.cross(base);
             }
-            tmpvec3.normalize();
-            setFromAngle(tmpvec3, Math.PI);
+            setFromAngle(tmpvec3.normalize(), Math.PI);
         } else if (dot > 0.999999) {
             //no rotation
             values[0] = 0;
@@ -439,6 +497,35 @@ public class Quaternion extends VectorND.Double {
             normalize();
         }
         return this;
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (this == obj) return true;
+        if (!(obj instanceof Quaternion other)) return false;
+        for (int i = 0; i < 4; i++) {
+            final double v1 = values[i], v2 = other.values[i];
+            //positive and negative zero are equal, NaN are equal
+            if (v1 != v2 && Double.doubleToRawLongBits(v1) != Double.doubleToRawLongBits(v2)) {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    @Override
+    public int hashCode() {
+        int hash = 31;
+        for (double value : values) {
+            //positive and negative zero are equal, so they shall have the same hash code.
+            hash += 31 * hash + Double.hashCode(value == 0 ? 0 : value);
+        }
+        return hash;
+    }
+
+    @Override
+    public String toString() {
+        return "Quaternion" + Arrays.toString(values);
     }
 
 }

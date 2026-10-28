@@ -19,13 +19,41 @@ package org.apache.sis.maths;
 
 /**
  * A cursor allows to iterate over a tuple array without copying datas.
- * Any change made to the cursor samples are made in the tuple array.
+ * Values are written in the tuple array with the cursor set methods.
  *
  * API copied from Unlicense.science
  */
 public interface Cursor {
 
+    /**
+     * Get a view on the values of the current tuple.
+     * The view can not be modified, but its values change when the cursor moves
+     * or when values are written with this cursor.
+     * Use {@link Vector#copy()} to obtain a vector independent of the cursor.
+     *
+     * @return view on the current tuple values
+     */
     Vector<?> samples();
+
+    /**
+     * Write a sample value of the current tuple in the array.
+     *
+     * @param sampleIndex sample index in the tuple
+     * @param value sample value
+     * @throws IndexOutOfBoundsException if index is not valid
+     */
+    void set(int sampleIndex, double value);
+
+    /**
+     * Write all sample values of the current tuple in the array.
+     *
+     * @param values values to write, of the tuple dimension
+     */
+    default void set(Vector<?> values) {
+        for (int i = 0, n = values.getDimension(); i < n; i++) {
+            set(i, values.get(i));
+        }
+    }
 
     /**
      * Get the current tuple coordinate.

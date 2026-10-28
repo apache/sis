@@ -75,9 +75,9 @@ public abstract class AbstractSimilarity<T extends AbstractSimilarity<T>> extend
         if (dirty){
             dirty = false;
             //update matrix
-            final ReadOnly.Vector<?> translation = getTranslation();
+            final Vector<?> translation = getTranslation();
             final ReadOnly.Matrix<?> rotation = getRotation();
-            final ReadOnly.Vector<?> scale = getScale();
+            final Vector<?> scale = getScale();
             matrix.setToIdentity();
             matrix.set(rotation);
             matrix.scale(scale.extend(1).toArrayDouble());
@@ -143,7 +143,7 @@ public abstract class AbstractSimilarity<T extends AbstractSimilarity<T>> extend
      */
     @Override
     public T setFromMatrix(ReadOnly.Matrix<?> matrix) {
-        return update((Matrix<?> rotation, Vector<?> scale, Vector<?> translation) -> {
+        return update((Matrix<?> rotation, double[] scale, double[] translation) -> {
             final int dimension = matrix.getNumCol()-1;
             if (dimension == 2){
                 final double scaleX = Math.sqrt(matrix.get(0,0)*matrix.get(0,0)
@@ -156,10 +156,10 @@ public abstract class AbstractSimilarity<T extends AbstractSimilarity<T>> extend
                 rot.scale(invertScale);
 
                 rotation.set(rot);
-                scale.set(0,scaleX);
-                scale.set(1,scaleY);
-                translation.set(0, matrix.get(0,2));
-                translation.set(1, matrix.get(1,2));
+                scale[0] = scaleX;
+                scale[1] = scaleY;
+                translation[0] = matrix.get(0,2);
+                translation[1] = matrix.get(1,2);
             } else if (dimension == 3){
                 final double scaleX = Math.sqrt(matrix.get(0,0)*matrix.get(0,0)
                         + matrix.get(1,0)*matrix.get(1,0)
@@ -175,12 +175,12 @@ public abstract class AbstractSimilarity<T extends AbstractSimilarity<T>> extend
                 rot.scale(invertScale);
 
                 rotation.set(rot);
-                scale.set(0, scaleX);
-                scale.set(1, scaleY);
-                scale.set(2, scaleZ);
-                translation.set(0,matrix.get(0,3));
-                translation.set(1,matrix.get(1,3));
-                translation.set(2,matrix.get(2,3));
+                scale[0] = scaleX;
+                scale[1] = scaleY;
+                scale[2] = scaleZ;
+                translation[0] = matrix.get(0,3);
+                translation[1] = matrix.get(1,3);
+                translation[2] = matrix.get(2,3);
 
             } else {
                 throw new UnsupportedOperationException("Only works for 2D and 3D for now. TODO");
@@ -191,19 +191,19 @@ public abstract class AbstractSimilarity<T extends AbstractSimilarity<T>> extend
 
     @Override
     public T setToTranslation(double[] trs){
-        return update((Matrix<?> rotation, Vector<?> scale, Vector<?> translation) -> {
+        return update((Matrix<?> rotation, double[] scale, double[] translation) -> {
             boolean change = false;
             if (!rotation.isIdentity()){
                 change = true;
                 rotation.setToIdentity();
             }
-            if (!scale.isAll(1.0)){
+            if (!isAll(scale, 1.0)){
                 change = true;
-                scale.setAll(1.0);
+                Arrays.fill(scale, 1.0);
             }
-            if (!Arrays.equals(trs, translation.toArrayDouble())){
+            if (!Arrays.equals(trs, translation)){
                 change = true;
-                translation.set(trs);
+                System.arraycopy(trs, 0, translation, 0, translation.length);
             }
             return change ? ALL_UPDATED : 0;
         });
@@ -211,22 +211,32 @@ public abstract class AbstractSimilarity<T extends AbstractSimilarity<T>> extend
 
     @Override
     public T setToIdentity(){
-        return update((Matrix<?> rotation, Vector<?> scale, Vector<?> translation) -> {
+        return update((Matrix<?> rotation, double[] scale, double[] translation) -> {
             boolean change = false;
             if (!rotation.isIdentity()){
                 change = true;
                 rotation.setToIdentity();
             }
-            if (!scale.isAll(1.0)){
+            if (!isAll(scale, 1.0)){
                 change = true;
-                scale.setAll(1.0);
+                Arrays.fill(scale, 1.0);
             }
-            if (!translation.isAll(0.0)){
+            if (!isAll(translation, 0.0)){
                 change = true;
-                translation.setAll(0.0);
+                Arrays.fill(translation, 0.0);
             }
             return change ? ALL_UPDATED : 0;
         });
+    }
+
+    /**
+     * @return true if all array values are equal to the given value
+     */
+    private static boolean isAll(double[] array, double value) {
+        for (double v : array) {
+            if (v != value) return false;
+        }
+        return true;
     }
 
     @Override
@@ -255,8 +265,8 @@ public abstract class AbstractSimilarity<T extends AbstractSimilarity<T>> extend
     }
 
     @Override
-    public Vector<?> transform(ReadOnly.Vector<?> source, Vector<?> out) {
-        return toAffine().transform(source, out);
+    public Vector<?> transform(Vector<?> source) {
+        return toAffine().transform(source);
     }
 
     @Override
@@ -280,8 +290,8 @@ public abstract class AbstractSimilarity<T extends AbstractSimilarity<T>> extend
     }
 
     @Override
-    public Vector<?> inverseTransform(ReadOnly.Vector<?> source, Vector<?> dest) {
-        return toAffine().invert().transform(source, dest);
+    public Vector<?> inverseTransform(Vector<?> source) {
+        return toAffine().invert().transform(source);
     }
 
     @Override

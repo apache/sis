@@ -166,7 +166,7 @@ public interface ArrayFactory {
                 if (ite.hasNext()) {
                     final Object o = ite.next();
                     if (o instanceof Vector<?> t) {
-                        return t.getSampleSystem();
+                        return SampleSystem.ofSize(t.getDimension());
                     } else if (o != null && o.getClass().isArray()) {
                         final int size = java.lang.reflect.Array.getLength(o);
                         return SampleSystem.ofSize(size);
@@ -176,11 +176,11 @@ public interface ArrayFactory {
                 }
             } else if (values != null && values.getClass().isArray()) {
                 final Class<?> componentType = values.getClass().getComponentType();
-                if (ReadOnly.Vector.class.isAssignableFrom(componentType)) {
+                if (Vector.class.isAssignableFrom(componentType)) {
                     final int size = java.lang.reflect.Array.getLength(values);
                     if (size != 0) {
-                        final ReadOnly.Vector tuple = (ReadOnly.Vector) java.lang.reflect.Array.get(values, 0);
-                        return tuple.getSampleSystem();
+                        final Vector tuple = (Vector) java.lang.reflect.Array.get(values, 0);
+                        return SampleSystem.ofSize(tuple.getDimension());
                     }
                 }
             }
@@ -198,7 +198,7 @@ public interface ArrayFactory {
             } else if (values != null && values.getClass().isArray()) {
                 final int size = java.lang.reflect.Array.getLength(values);
                 final Class<?> componentType = values.getClass().getComponentType();
-                if (ReadOnly.Vector.class.isAssignableFrom(componentType)) {
+                if (Vector.class.isAssignableFrom(componentType)) {
                     return new long[]{size};
                 } else {
                     if ((size % nbSample) != 0) throw new IllegalArgumentException("Values size : " + size + " is not a multiple of sample system size : " + nbSample);
@@ -217,10 +217,10 @@ public interface ArrayFactory {
                 return nd.getDataType();
             } else if (values != null && values.getClass().isArray()) {
                 final Class<?> componentType = values.getClass().getComponentType();
-                if (ReadOnly.Vector.class.isAssignableFrom(componentType)) {
+                if (Vector.class.isAssignableFrom(componentType)) {
                     final int size = java.lang.reflect.Array.getLength(values);
                     if (size != 0) {
-                        final ReadOnly.Vector tuple = (ReadOnly.Vector) java.lang.reflect.Array.get(values, 0);
+                        final Vector tuple = (Vector) java.lang.reflect.Array.get(values, 0);
                         return tuple.getDataType();
                     }
                 } else {
@@ -252,20 +252,18 @@ public interface ArrayFactory {
                     target.set(0, array, 0, array.getLength());
                 } else if (values != null && valueClass.isArray()) {
                     Class<?> componentType = valueClass.getComponentType();
-                    if (ReadOnly.Vector.class.isAssignableFrom(componentType)) {
+                    if (Vector.class.isAssignableFrom(componentType)) {
                         int idx = 0;
                         final Cursor cursor = target.cursor();
                         while (cursor.next()) {
-                            final Vector tuple = cursor.samples();
-                            tuple.set((ReadOnly.Vector) java.lang.reflect.Array.get(values, idx++));
+                            cursor.set((Vector) java.lang.reflect.Array.get(values, idx++));
                         }
                     } else {
                         int idx = 0;
                         final Cursor cursor = target.cursor();
                         while (cursor.next()) {
-                            final Vector tuple = cursor.samples();
                             for (int i = 0; i < nbDim; i++) {
-                                tuple.set(i, java.lang.reflect.Array.getDouble(values, idx));
+                                cursor.set(i, java.lang.reflect.Array.getDouble(values, idx));
                                 idx++;
                             }
                         }
@@ -276,12 +274,11 @@ public interface ArrayFactory {
                     while (ite.hasNext()) {
                         cursor.next();
                         final Object o = ite.next();
-                        final Vector tuple = cursor.samples();
                         if (o instanceof Vector<?> t) {
-                            tuple.set(t);
+                            cursor.set(t);
                         } else if (o != null && o.getClass().isArray()) {
                             for (int i = 0; i < nbDim; i++) {
-                                tuple.set(i, java.lang.reflect.Array.getDouble(o, i));
+                                cursor.set(i, java.lang.reflect.Array.getDouble(o, i));
                             }
                         } else {
                             throw new IllegalArgumentException("Values iterable is not made of Tuple or primitive array");
@@ -293,13 +290,14 @@ public interface ArrayFactory {
             } else if (fill != null) {
 
                 Vector<?> f;
-                if (fill instanceof ReadOnly.Vector<?> t) {
-                    f = t.copy();
+                if (fill instanceof Vector<?> t) {
+                    f = t;
                 } else if (fill.getClass().isArray()) {
-                    f = Vectors.create(system, target.getDataType());
+                    final double[] fillValues = new double[system.getSize()];
                     for (int i = 0; i < nbDim; i++) {
-                        f.set(i, java.lang.reflect.Array.getDouble(fill, i));
+                        fillValues[i] = java.lang.reflect.Array.getDouble(fill, i);
                     }
+                    f = Vectors.create(fillValues, target.getDataType());
                 } else {
                  throw new IllegalArgumentException("Fill value is not a Tuple or primitive array");
                 }

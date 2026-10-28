@@ -19,7 +19,6 @@ package org.apache.sis.geometries.internal.shared;
 import java.util.Arrays;
 import java.util.List;
 import javax.measure.Quantity;
-import org.opengis.geometry.Envelope;
 import org.apache.sis.geometries.DataPoints;
 import org.apache.sis.geometries.DataPointsType;
 import org.apache.sis.geometries.Geometries;
@@ -158,7 +157,7 @@ public non-sealed class DefaultNurbCurve extends AbstractGeometry implements Nur
         for (int c = 0; c < spatialDim; c++) {
             result[c] = (Cwp.get(c) - wp * Cu[c]) / w;
         }
-        return Vectors.createDouble(result.length).set(result);
+        return Vectors.create(result, DataType.DOUBLE);
     }
 
     /**
@@ -225,7 +224,7 @@ public non-sealed class DefaultNurbCurve extends AbstractGeometry implements Nur
             }
             for (int i = k - p + 1; i <= k - s; i++) {
                 final double alpha = (u - kn[i]) / (kn[i + p] - kn[i]);
-                Qw[i] = Pw[i - 1].copy().lerp(Pw[i], alpha);
+                Qw[i] = Pw[i - 1].lerp(Pw[i], alpha);
             }
             for (int i = k - s; i <= n; i++) {
                 Qw[i + 1] = Pw[i];
@@ -245,7 +244,7 @@ public non-sealed class DefaultNurbCurve extends AbstractGeometry implements Nur
                 for (int c = 0; c < spatialDim; c++) {
                     arr[c] = Qw[i].get(c) / w;
                 }
-                newCtrl[i] = Vectors.createDouble(arr.length).set(arr);
+                newCtrl[i] = Vectors.create(arr, DataType.DOUBLE);
             }
 
             ctrl = newCtrl;
@@ -313,9 +312,9 @@ public non-sealed class DefaultNurbCurve extends AbstractGeometry implements Nur
      * @return the bounding box of this curve
      */
     @Override
-    public Envelope getEnvelope() {
-        final Vector<?> start = Vectors.create(getCoordinateReferenceSystem(), DataType.DOUBLE).set(controlPoints[0]);
-        final NDRange bbox = new NDRange(start, start);
+    public NDRange getEnvelope() {
+        final Vector<?> start = controlPoints[0].copy(DataType.DOUBLE);
+        final NDRange bbox = new NDRange(getCoordinateReferenceSystem(), start, start);
         for (final Vector<?> p : controlPoints) {
             bbox.add(p);
         }

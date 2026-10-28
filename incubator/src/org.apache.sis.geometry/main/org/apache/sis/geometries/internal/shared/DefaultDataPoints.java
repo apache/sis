@@ -22,7 +22,6 @@ import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import org.apache.sis.geometries.DataPoints;
 import org.apache.sis.geometries.Point;
 import org.apache.sis.geometries.DataPointsType;
-import org.apache.sis.maths.ReadOnly;
 import org.apache.sis.maths.Vector;
 import org.apache.sis.util.ArgumentChecks;
 
@@ -78,8 +77,8 @@ public final class DefaultDataPoints implements DataPoints {
     }
 
     @Override
-    public void setPosition(int index, ReadOnly.Vector value) {
-        points.get(index).getPosition().set(value);
+    public void setPosition(int index, Vector value) {
+        points.get(index).setAttribute(DataPointsType.ATT_POSITION, value);
     }
 
     @Override
@@ -88,7 +87,7 @@ public final class DefaultDataPoints implements DataPoints {
     }
 
     @Override
-    public void setAttribute(int index, String name, ReadOnly.Vector value) {
+    public void setAttribute(int index, String name, Vector value) {
         points.get(index).setAttribute(name, value);
     }
 

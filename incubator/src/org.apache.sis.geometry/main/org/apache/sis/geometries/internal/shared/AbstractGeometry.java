@@ -26,8 +26,8 @@ import org.apache.sis.geometry.GeneralEnvelope;
 import org.apache.sis.maths.Array;
 import org.apache.sis.maths.DataType;
 import org.apache.sis.maths.NDRange;
+import org.apache.sis.maths.SampleSystem;
 import org.apache.sis.maths.Vector;
-import org.apache.sis.maths.Vectors;
 
 
 /**
@@ -118,13 +118,14 @@ public abstract non-sealed class AbstractGeometry implements Geometry {
             if (homogeneous) {
                 final int dimension = position.getDimension() - 1;
                 final double weight = position.get(dimension);
-                position = Vectors.createDouble(dimension).set(position).scale(1 / weight);
+                position = position.copy(DataType.DOUBLE).shrink(dimension).scale(1 / weight);
             }
             if (envelope == null) {
-                final Vector<?> start = (points != null)
-                        ? Vectors.create(points.getCoordinateReferenceSystem(), DataType.DOUBLE).set(position)
-                        : position.copy(DataType.DOUBLE);
-                envelope = new NDRange(start, start);
+                final Vector<?> start = position.copy(DataType.DOUBLE);
+                envelope = (points != null)
+                        ? new NDRange(points.getCoordinateReferenceSystem(), start, start)
+                        : new NDRange(homogeneous ? SampleSystem.ofSize(start.getDimension())
+                                                  : controlPoints.getSampleSystem(), start, start);
             } else {
                 envelope.add(position);
             }

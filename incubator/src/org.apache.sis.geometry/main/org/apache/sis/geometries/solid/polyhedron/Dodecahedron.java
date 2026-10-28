@@ -20,7 +20,7 @@ import org.apache.sis.geometries.surface.Polygon;
 import org.apache.sis.maths.Array;
 import org.apache.sis.maths.ArrayFactoryJava;
 import org.apache.sis.maths.DataType;
-import org.apache.sis.maths.ReadOnly;
+import org.apache.sis.maths.Vector;
 
 
 /**
@@ -35,7 +35,7 @@ public final class Dodecahedron extends AbstractPolyhedron{
      * centroid, normalized), so both solids share a consistent orientation.
      */
     private static final Array VERTICES = ArrayFactoryJava.INSTANCE.builder()
-        .dataType(DataType.DOUBLE).values(new ReadOnly.Vector<?>[]{
+        .dataType(DataType.DOUBLE).values(new Vector<?>[]{
         fromLatLon(     ATAN_PHI2,                         0),
         fromLatLon(     ATAN_PHI2,                   Math.PI),
         fromLatLon(      CUBE_LAT,                 Math.PI/4),
@@ -86,7 +86,7 @@ public final class Dodecahedron extends AbstractPolyhedron{
     }
 
     @Override
-    public int getFace(ReadOnly.Vector<?> unitVector) {
+    public int getFace(Vector<?> unitVector) {
         return nearestFace(VERTICES, FACES, unitVector);
     }
 

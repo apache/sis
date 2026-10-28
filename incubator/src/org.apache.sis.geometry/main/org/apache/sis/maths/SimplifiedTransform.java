@@ -47,14 +47,10 @@ abstract class SimplifiedTransform implements Transform{
     }
 
     @Override
-    public Vector<?> transform(ReadOnly.Vector<?> source, Vector<?> dest) {
+    public Vector<?> transform(Vector<?> source) {
         final double[] array = new double[getOutputDimensions()];
         transform(source.toArrayDouble(), 0, array, 0, 1);
-        if (dest == null) {
-            dest = Vectors.create(getOutputDimensions(), DataType.DOUBLE);
-        }
-        dest.set(array);
-        return dest;
+        return Vectors.create(array, DataType.DOUBLE);
     }
 
     @Override

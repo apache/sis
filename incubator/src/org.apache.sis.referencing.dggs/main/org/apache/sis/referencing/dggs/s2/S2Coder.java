@@ -26,6 +26,7 @@ import org.opengis.referencing.operation.TransformException;
 import org.opengis.util.FactoryException;
 import org.apache.sis.referencing.CRS;
 import org.apache.sis.referencing.dggs.DiscreteGlobalGridReferenceSystem;
+import org.apache.sis.referencing.operation.transform.TransformFactoryException;
 import org.apache.sis.util.Utilities;
 
 
@@ -74,7 +75,7 @@ final class S2Coder extends DiscreteGlobalGridReferenceSystem.Coder{
                 trs = CRS.findOperation(dpcrs, baseCrs, null).getMathTransform();
                 dp = trs.transform(dp, null);
             } catch (FactoryException ex) {
-                throw new TransformException(ex.getMessage(), ex);
+                throw new TransformFactoryException(ex);
             }
         }
         S2CellId cid = S2CellId.fromLatLng(S2LatLng.fromDegrees(dp.getCoordinate(1), dp.getCoordinate(0)));

@@ -492,7 +492,18 @@ public class Convention {
             final String nameLC = name.toLowerCase(Decoder.DATA_LOCALE);
             Object value;
             switch (nameLC) {
-                case CF.GRID_MAPPING_NAME: continue;        // Already stored.
+                case CF.GRID_MAPPING_NAME: {
+                    // Already stored.
+                    continue;
+                }
+                case CF.SEMI_MAJOR_AXIS:
+                case CF.SEMI_MINOR_AXIS:
+                case CF.INVERSE_FLATTENING:
+                case LONGITUDE_OF_PRIME_MERIDIAN: {
+                    value = node.getAttributeAsNumber(name);
+                    if (value == null) continue;
+                    break;
+                }
                 case TOWGS84: {
                     /*
                      * Conversion to WGS 84 datum may be specified as Bursa-Wolf parameters. Encoding this information
@@ -509,18 +520,13 @@ public class Convention {
                 default: {
                     if (nameLC.endsWith(NAME_SUFFIX)) {
                         value = node.getAttributeAsString(name);
-                        if (value == null) continue;
                     } else {
-                        /*
-                         * Assume that all map projection parameters in netCDF files are numbers or array of numbers.
-                         * If values are array, then they are converted to an array of {@code double[]} type.
-                         */
                         value = node.getAttributeValue(name);
-                        if (value == null) continue;
                         if (value instanceof Vector) {
                             value = ((Vector) value).doubleValues();
                         }
                     }
+                    if (value == null) continue;
                     break;
                 }
             }
@@ -535,9 +541,10 @@ public class Convention {
     }
 
     /**
-     * Returns the <i>grid corner to CRS</i> transform for the given node. This method is invoked after call
-     * to {@link #projection(Node)} method resulted in creation of a projected coordinate reference system.
-     * The {@linkplain ProjectedCRS#getBaseCRS() base CRS} is fixed to (latitude, longitude) axes in degrees,
+     * Returns the <i>grid corner to <abbr>CRS</abbr></i> transform for the given node.
+     * This method is invoked after a call to {@link #projection(Node)} method resulted
+     * in the creation of a geographic or projected coordinate reference system.
+     * The {@linkplain ProjectedCRS#getBaseCRS() base CRS} is fixed to (latitude,longitude) axes in degrees,
      * but the projected CRS axes may have any order and units. In the particular case of "latitude_longitude"
      * pseudo-projection, the "projected" CRS is actually a {@link GeographicCRS} instance.
      * The returned transform, if non-null, shall map cell corners.
@@ -550,12 +557,12 @@ public class Convention {
      *   <li>Base CRS axis order is (latitude, longitude) for increasing the chances to have a CRS identified by EPSG.</li>
      * </ul>
      *
-     * @param  node       the same node as the one given to {@link #projection(Node)}.
-     * @param  baseToCRS  conversion from (latitude, longitude) in degrees to the projected CRS.
+     * @param  node             the same node as the one given to {@link #projection(Node)}.
+     * @param  geographicToCRS  conversion from (latitude,longitude) in degrees to the projected CRS.
      * @return the <i>grid corner to CRS</i> transform, or {@code null} if none or unknown.
      * @throws TransformException if a coordinate operation was required but failed.
      */
-    public MathTransform gridToCRS(final Node node, final MathTransform baseToCRS) throws TransformException {
+    public MathTransform gridToCRS(Node node, MathTransform geographicToCRS) throws TransformException {
         return null;
     }
 

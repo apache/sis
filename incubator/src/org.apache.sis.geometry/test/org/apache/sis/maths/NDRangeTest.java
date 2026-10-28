@@ -37,11 +37,11 @@ public class NDRangeTest {
     private static final CoordinateReferenceSystem CRS = CommonCRS.WGS84.geographic3D();
 
     private static Vector<?> vector(double... values) {
-        return Vectors.create(CRS, DataType.DOUBLE).set(values);
+        return Vectors.create(values, DataType.DOUBLE);
     }
 
     private static NDRange range() {
-        return new NDRange(vector(1, 2, 3), vector(4, 6, 3));
+        return new NDRange(CRS, vector(1, 2, 3), vector(4, 6, 3));
     }
 
     @Test
@@ -70,15 +70,13 @@ public class NDRangeTest {
     }
 
     /**
-     * The range keeps its own copy of the bounds, and gives copies of them.
+     * The bounds are immutable, the corners can not be modified.
      */
     @Test
     public void testCopies() {
         final Vector<?> lower = vector(1, 2, 3);
         final NDRange range = new NDRange(lower, vector(4, 6, 3));
-        lower.set(0, -100);
-        range.getLower().set(0, -100);
-        range.getLowerCorner().setCoordinate(0, -100);
+        assertThrows(UnsupportedOperationException.class, () -> range.getLowerCorner().setCoordinate(0, -100));
         assertEquals(1, range.getMinimum(0));
     }
 
@@ -87,8 +85,8 @@ public class NDRangeTest {
      */
     @Test
     public void testDataType() {
-        final Vector<?> lower = Vectors.createInt(2).set(new double[] {1, 2});
-        final Vector<?> upper = Vectors.createInt(2).set(new double[] {5, 7});
+        final Vector<?> lower = Vectors.create(new double[] {1, 2}, DataType.INT);
+        final Vector<?> upper = Vectors.create(new double[] {5, 7}, DataType.INT);
         final NDRange range = new NDRange(lower, upper);
         assertEquals(DataType.INT, range.getLower().getDataType());
         assertEquals(5, range.getMaximum(0));
@@ -108,8 +106,8 @@ public class NDRangeTest {
     public void testInvalid() {
         assertThrows(MismatchedDimensionException.class, () -> new NDRange(vector(1, 2, 3), Vectors.createDouble(2)));
         assertThrows(IllegalArgumentException.class, () -> new NDRange(vector(5, 2, 3), vector(4, 6, 3)));
-        assertThrows(IllegalArgumentException.class, () -> new NDRange(vector(1, 2, 3),
-                Vectors.create(CommonCRS.WGS84.geocentric(), DataType.DOUBLE).set(new double[] {4, 6, 3})));
+        assertThrows(MismatchedDimensionException.class, () -> new NDRange(CommonCRS.WGS84.geographic(),
+                vector(1, 2, 3), vector(4, 6, 3)));
     }
 
     /**
@@ -129,7 +127,7 @@ public class NDRangeTest {
         assertArrayEquals(new double[] {4, 6, 10}, range.getUpper().toArrayDouble());
         // A position inside the range does not change it.
         range.add(vector(2, 3, 5));
-        assertEquals(new NDRange(vector(0, 2, 3), vector(4, 6, 10)), range);
+        assertEquals(new NDRange(CRS, vector(0, 2, 3), vector(4, 6, 10)), range);
         // A NaN coordinate is ignored.
         range.add(vector(Double.NaN, 8, 5));
         assertArrayEquals(new double[] {4, 8, 10}, range.getUpper().toArrayDouble());
@@ -156,19 +154,19 @@ public class NDRangeTest {
      */
     @Test
     public void testAddRounding() {
-        final NDRange integers = new NDRange(Vectors.createInt(1).set(new double[] {1}), Vectors.createInt(1).set(new double[] {5}));
-        integers.add(Vectors.createDouble(1).set(new double[] {7.5}));
-        integers.add(Vectors.createDouble(1).set(new double[] {0.5}));
+        final NDRange integers = new NDRange(Vectors.create(new double[] {1}, DataType.INT), Vectors.create(new double[] {5}, DataType.INT));
+        integers.add(Vectors.create(new double[] {7.5}, DataType.DOUBLE));
+        integers.add(Vectors.create(new double[] {0.5}, DataType.DOUBLE));
         assertEquals(0, integers.getMinimum(0));
         assertEquals(8, integers.getMaximum(0));
-        assertTrue(integers.contains(Vectors.createDouble(1).set(new double[] {7.5})));
+        assertTrue(integers.contains(Vectors.create(new double[] {7.5}, DataType.DOUBLE)));
 
-        final NDRange floats = new NDRange(Vectors.createFloat(1).set(new double[] {1}), Vectors.createFloat(1).set(new double[] {2}));
-        floats.add(Vectors.createDouble(1).set(new double[] {0.1}));
-        floats.add(Vectors.createDouble(1).set(new double[] {2.3}));
+        final NDRange floats = new NDRange(Vectors.create(new double[] {1}, DataType.FLOAT), Vectors.create(new double[] {2}, DataType.FLOAT));
+        floats.add(Vectors.create(new double[] {0.1}, DataType.DOUBLE));
+        floats.add(Vectors.create(new double[] {2.3}, DataType.DOUBLE));
         assertTrue(floats.getMinimum(0) <= 0.1);
         assertTrue(floats.getMaximum(0) >= 2.3);
-        assertTrue(floats.contains(Vectors.createDouble(1).set(new double[] {0.1})));
+        assertTrue(floats.contains(Vectors.create(new double[] {0.1}, DataType.DOUBLE)));
     }
 
     @Test
@@ -181,6 +179,46 @@ public class NDRangeTest {
         assertFalse(range.contains(vector(Double.NaN, 3, 3)));
         assertTrue (range.contains(Vectors.asDirectPostion(vector(4, 2, 3))));
         assertThrows(MismatchedDimensionException.class, () -> range.contains(Vectors.createDouble(2)));
+    }
+
+    /**
+     * Ranges intersect if they overlap, touch, or are separated by no more than the tolerance in every dimension.
+     */
+    @Test
+    public void testIntersects() {
+        final NDRange range = range();
+        final NDRange overlapping = new NDRange(vector(3, 5, 3), vector(7, 8, 3));
+        assertTrue(range.intersects(overlapping, 0));
+        assertTrue(overlapping.intersects(range, 0));
+        assertTrue(range.intersects(range(), 0), "A range intersects itself.");
+        assertTrue(range.intersects(new NDRange(vector(2, 3, 3), vector(3, 4, 3)), 0), "A contained range intersects.");
+        assertTrue(range.intersects(new NDRange(vector(4, 6, 3), vector(5, 7, 3)), 0), "Touching ranges intersect.");
+
+        // Separated by 0.5 along the first axis only.
+        final NDRange near = new NDRange(vector(4.5, 2, 3), vector(5, 6, 3));
+        assertFalse(range.intersects(near, 0));
+        assertFalse(range.intersects(near, 0.25));
+        assertTrue (range.intersects(near, 0.5));
+        assertTrue (near.intersects(range, 0.5));
+
+        // Overlapping along two axes is not enough.
+        assertFalse(range.intersects(new NDRange(vector(1, 2, 4), vector(4, 6, 5)), 0));
+
+        // Any envelope implementation is accepted.
+        final GeneralEnvelope envelope = new GeneralEnvelope(CRS);
+        envelope.setEnvelope(0, 0, 0, 1, 2, 3);
+        assertTrue (range.intersects(envelope, 0));
+        envelope.setEnvelope(0, 0, 0, 0.9, 2, 3);
+        assertFalse(range.intersects(envelope, 0));
+
+        // A NaN bound makes the range empty.
+        final NDRange empty = new NDRange(vector(Double.NaN, 2, 3), vector(Double.NaN, 6, 3));
+        assertFalse(range.intersects(empty, 1));
+        assertFalse(empty.intersects(range, 1));
+
+        assertThrows(MismatchedDimensionException.class, () -> range.intersects(new NDRange(2), 0));
+        assertThrows(IllegalArgumentException.class, () -> range.intersects(overlapping, -1));
+        assertThrows(IllegalArgumentException.class, () -> range.intersects(overlapping, Double.NaN));
     }
 
     /**

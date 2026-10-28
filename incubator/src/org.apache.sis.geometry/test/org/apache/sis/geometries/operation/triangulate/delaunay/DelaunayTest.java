@@ -21,9 +21,11 @@ import org.apache.sis.geometries.mesh.MeshPrimitive;
 import org.apache.sis.geometries.mesh.MeshPrimitiveComparator;
 import org.apache.sis.maths.NDArrays;
 import org.apache.sis.maths.Array;
+import org.apache.sis.maths.Maths;
 import org.apache.sis.referencing.CommonCRS;
 
 // Test dependencies
+import static org.junit.jupiter.api.Assertions.*;
 import org.junit.jupiter.api.Test;
 
 
@@ -56,7 +58,7 @@ public class DelaunayTest {
         points.setPositions(positions);
 
         final Delaunay delaunay = new Delaunay();
-        delaunay.build(points);
+        delaunay.build(points, false);
         final Array triangles = delaunay.getTrianglesIndex();
 
         compare(positions, new int[]{0,1,2}, triangles);
@@ -64,6 +66,8 @@ public class DelaunayTest {
 
     /**
      * Test triangulation of 4 points.
+     * The points are on a circle, so both diagonals give a valid Delaunay triangulation.
+     * Which one is chosen depends on the points insertion order.
      * 2  3
      * +--+
      * |\ |
@@ -84,10 +88,14 @@ public class DelaunayTest {
         points.setPositions(positions);
 
         final Delaunay delaunay = new Delaunay();
-        delaunay.build(points);
+        delaunay.build(points, false);
         final Array triangles = delaunay.getTrianglesIndex();
 
-        compare(positions, new int[]{0,1,2, 1,3,2}, triangles);
+        try {
+            compare(positions, new int[]{0,1,2, 1,3,2}, triangles);
+        } catch (IllegalArgumentException e) {
+            compare(positions, new int[]{0,1,3, 0,3,2}, triangles);
+        }
     }
 
     /**
@@ -112,7 +120,7 @@ public class DelaunayTest {
         points.setPositions(positions);
 
         final Delaunay delaunay = new Delaunay();
-        delaunay.build(points);
+        delaunay.build(points, false);
         final Array triangles = delaunay.getTrianglesIndex();
 
         compare(positions, new int[]{2,0,3, 1,2,3}, triangles);
@@ -145,7 +153,7 @@ public class DelaunayTest {
         points.setPositions(positions);
 
         final Delaunay delaunay = new Delaunay();
-        delaunay.build(points);
+        delaunay.build(points, false);
         final Array triangles = delaunay.getTrianglesIndex();
 
         compare(positions, new int[]{0,4,2, 4,1,2, 0,3,4, 4,3,1}, triangles);
@@ -169,7 +177,7 @@ public class DelaunayTest {
         points.setPositions(positions);
 
         final Delaunay delaunay = new Delaunay();
-        delaunay.build(points);
+        delaunay.build(points, false);
         delaunay.pushConstraint(constraints, true);
         final Array triangles = delaunay.getTrianglesIndex();
 
@@ -199,7 +207,7 @@ public class DelaunayTest {
         points.setPositions(positions);
 
         final Delaunay delaunay = new Delaunay();
-        delaunay.build(points);
+        delaunay.build(points, false);
         delaunay.pushConstraint(constraints, true);
         final Array triangles = delaunay.getTrianglesIndex();
 
@@ -234,7 +242,7 @@ public class DelaunayTest {
         points.setPositions(positions);
 
         final Delaunay delaunay = new Delaunay();
-        delaunay.build(points);
+        delaunay.build(points, false);
         //add a soft constraint to match the example
         delaunay.pushConstraint(2,5, false);
         delaunay.pushConstraint(constraints, true);
@@ -274,7 +282,7 @@ public class DelaunayTest {
         points.setPositions(positions);
 
         final Delaunay delaunay = new Delaunay();
-        delaunay.build(points);
+        delaunay.build(points, false);
         //add a soft constraint to match the example
         delaunay.pushConstraint(1,5, false);
         delaunay.pushConstraint(2,5, false);
@@ -316,7 +324,7 @@ public class DelaunayTest {
         points.setPositions(positions);
 
         final Delaunay delaunay = new Delaunay();
-        delaunay.build(points);
+        delaunay.build(points, false);
         delaunay.pushConstraint(constraints, true);
         final Array triangles = delaunay.getTrianglesIndex();
 
@@ -331,6 +339,45 @@ public class DelaunayTest {
             0,2,1,
             0,7,6
         }, triangles);
+    }
+
+    /**
+     * Small triangles far from the origin, as longitudes and latitudes, with collinear points.
+     * Floating point circle tests are not accurate enough for those coordinates and could flip
+     * non convex quadrilaterals, creating inverted triangles. All triangles shall be counterclockwise
+     * and the constraints shall be edges of the triangulation.
+     */
+    @Test
+    public void testSmallFarTriangles() {
+        final double x0 = 5.386590116164263, y0 = 43.31551467671114;
+        final double[] xy = {
+            x0, y0,                                         // 0
+            x0 + 3.082451586e-6, y0 + 3.082451585e-6,       // 1, almost collinear with 0 and 4
+            5.386562347412109, 43.31554111681486,           // 2
+            5.386562347412109, 43.315521240234375,          // 3
+            5.386607056910576, 43.31553161745745,           // 4
+            x0 + 6.1649e-6, y0 + 6.1649e-6,                 // 5, on the same line
+            x0 + 1.2e-5, y0 - 4.1e-6,                       // 6
+            x0 - 7.3e-6, y0 - 9.8e-6,                       // 7
+            x0 + 2.2e-5, y0 + 3.0e-6,                       // 8
+            x0 - 1.1e-5, y0 + 2.9e-5                        // 9
+        };
+        final int[] constraints = {0,1, 1,5, 5,4, 3,0, 7,6, 6,8};
+        final int[] triangles = Delaunay.triangulate(xy, constraints, false);
+        assertTrue(triangles.length >= 3*8, "Missing triangles.");
+        final java.util.Set<Long> edges = new java.util.HashSet<>();
+        for (int i = 0; i < triangles.length; i += 3) {
+            final int a = triangles[i]*2, b = triangles[i+1]*2, c = triangles[i+2]*2;
+            assertTrue(Maths.lineSide(xy[a], xy[a+1], xy[b], xy[b+1], xy[c], xy[c+1]) > 0, "Inverted or flat triangle.");
+            for (int k = 0; k < 3; k++) {
+                final int u = triangles[i+k], v = triangles[i+(k+1)%3];
+                edges.add(((long) Math.min(u, v) << 32) | Math.max(u, v));
+            }
+        }
+        for (int i = 0; i < constraints.length; i += 2) {
+            final int u = constraints[i], v = constraints[i+1];
+            assertTrue(edges.contains(((long) Math.min(u, v) << 32) | Math.max(u, v)), "Missing constraint " + u + "-" + v);
+        }
     }
 
     /**

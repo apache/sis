@@ -55,12 +55,14 @@ import org.apache.sis.geometry.wrapper.GeometryType;
 import org.apache.sis.geometry.wrapper.GeometryWrapper;
 import org.apache.sis.maths.Array;
 import org.apache.sis.maths.NDArrays;
+import org.apache.sis.maths.SampleSystem;
 import org.apache.sis.maths.Vectors;
 import org.apache.sis.maths.Vector;
 import org.apache.sis.measure.Quantities;
 import org.apache.sis.measure.Units;
 import org.apache.sis.referencing.CRS;
 import org.apache.sis.referencing.operation.transform.MathTransforms;
+import org.apache.sis.referencing.operation.transform.TransformFactoryException;
 import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.Debug;
 import org.apache.sis.util.UnconvertibleObjectException;
@@ -214,7 +216,7 @@ public final class Wrapper extends GeometryWrapper {
             // The centroid of an empty geometry is the empty geometry, which is no position.
             return null;
         }
-        return new GeneralDirectPosition(Vectors.asDirectPostion(centroid.getPosition()));
+        return new GeneralDirectPosition(Vectors.asDirectPostion(centroid.getPosition(), centroid.getCoordinateReferenceSystem()));
     }
 
     /**
@@ -305,10 +307,9 @@ add:    for (Geometry next = geometry;;) {
      * @param  lines        where to add the line string, if such object is created.
      * @param  coordinates  positions of the line string to create. This list is cleared by this method.
      */
-    private static void addPolyline(final List<LineString> lines, final List<Vector<?>> coordinates) {
+    private void addPolyline(final List<LineString> lines, final List<Vector<?>> coordinates) {
         if (coordinates.size() >= 2) {
-            final Vector<?> first = coordinates.get(0);
-            final Array positions = NDArrays.of(coordinates, first.getSampleSystem(), first.getDataType());
+            final Array positions = NDArrays.of(coordinates, SampleSystem.of(crs), coordinates.get(0).getDataType());
             lines.add(GeometryFactory.DEFAULT.createLineString(GeometryFactory.DEFAULT.createDataPoints(positions)));
         }
         coordinates.clear();
@@ -323,7 +324,7 @@ add:    for (Geometry next = geometry;;) {
      * @param  coordinates  positions accumulated so far, cleared by this method if they are used.
      * @param  line         the line string to append.
      */
-    private static void addPolyline(final List<LineString> lines, final List<Vector<?>> coordinates, final LineString line) {
+    private void addPolyline(final List<LineString> lines, final List<Vector<?>> coordinates, final LineString line) {
         if (coordinates.isEmpty()) {
             lines.add(line);
         } else {
@@ -676,7 +677,7 @@ add:    for (Geometry next = geometry;;) {
         try {
             return transform(CRS.findOperation(crs, targetCRS, null), false);
         } catch (FactoryException e) {
-            throw new TransformException(e);
+            throw new TransformFactoryException(e);
         }
     }
 

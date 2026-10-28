@@ -41,7 +41,6 @@ import org.apache.sis.maths.Cursor;
 import org.apache.sis.maths.DataType;
 import org.apache.sis.maths.NDArrays;
 import org.apache.sis.maths.NDRange;
-import org.apache.sis.maths.ReadOnly;
 import org.apache.sis.maths.SampleSystem;
 import org.apache.sis.maths.Vector;
 import org.apache.sis.maths.Vectors;
@@ -187,12 +186,11 @@ public final class JTSAdapter {
             final Cursor cursor = positions.cursor();
             int i = 0;
             while (cursor.next()) {
-                final Vector samples = cursor.samples();
-                samples.set(0, cs.getOrdinate(i, 0));
-                samples.set(1, cs.getOrdinate(i, 1));
+                cursor.set(0, cs.getOrdinate(i, 0));
+                cursor.set(1, cs.getOrdinate(i, 1));
                 if (dimension > 2) {
                     //JTS only goes up to 3 dimensions
-                    samples.set(2, cs.getOrdinate(i, 2));
+                    cursor.set(2, cs.getOrdinate(i, 2));
                 }
                 i++;
             }
@@ -265,15 +263,15 @@ public final class JTSAdapter {
 
         @Override
         public Vector getPosition(int index) {
-            final Vector v = Vectors.create(crs, DataType.DOUBLE);
+            final double[] v = new double[crs.getCoordinateSystem().getDimension()];
             for (int i = 0; i < dim; i++) {
-                v.set(i, jts.getOrdinate(index, i));
+                v[i] = jts.getOrdinate(index, i);
             }
-            return v;
+            return Vectors.create(v, DataType.DOUBLE);
         }
 
         @Override
-        public void setPosition(int index, ReadOnly.Vector value) {
+        public void setPosition(int index, Vector value) {
             for (int i = 0; i < dim; i++) {
                 jts.setOrdinate(index, i, value.get(i));
             }
@@ -288,7 +286,7 @@ public final class JTSAdapter {
         }
 
         @Override
-        public void setAttribute(int index, String name, ReadOnly.Vector value) {
+        public void setAttribute(int index, String name, Vector value) {
             if (DataPointsType.ATT_POSITION.equals(name)) {
                 setPosition(index, value);
             } else {
@@ -356,8 +354,9 @@ public final class JTSAdapter {
         @Override
         public void setOrdinate(int index, int ordinateIndex, double value) {
             final Vector<?> position = points.getPosition(index);
-            position.set(ordinateIndex, value);
-            points.setPosition(index, position);
+            final double[] values = position.toArrayDouble();
+            values[ordinateIndex] = value;
+            points.setPosition(index, Vectors.create(values, position.getDataType()));
         }
 
         @Override

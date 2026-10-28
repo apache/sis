@@ -20,6 +20,9 @@ import java.util.Arrays;
 import javax.measure.Quantity;
 import javax.measure.quantity.Angle;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
+import org.apache.sis.maths.DataType;
+import org.apache.sis.maths.Sample;
+import org.apache.sis.maths.SampleSystem;
 import org.apache.sis.maths.Vector;
 import org.apache.sis.maths.Vectors;
 import org.apache.sis.measure.Quantities;
@@ -59,22 +62,21 @@ public class BearingTest {
      * Creates a vector with the given coordinates, in no particular coordinate reference system.
      */
     private static Vector<?> vector(final double... values) {
-        final Vector<?> v = Vectors.createDouble(values.length);
-        for (int i=0; i<values.length; i++) {
-            v.set(i, values[i]);
-        }
-        return v;
+        return Vectors.create(values, DataType.DOUBLE);
     }
 
     /**
-     * Creates a vector with the given coordinates in the given coordinate reference system.
+     * Creates a direction with the given coordinates in the given coordinate reference system.
      */
-    private static Vector<?> vector(final CoordinateReferenceSystem crs, final double... values) {
-        final Vector<?> v = Vectors.createDouble(crs);
-        for (int i=0; i<values.length; i++) {
-            v.set(i, values[i]);
-        }
-        return v;
+    private static Sample direction(final CoordinateReferenceSystem crs, final double... values) {
+        return new Sample(SampleSystem.of(crs), vector(values));
+    }
+
+    /**
+     * Creates a bearing measured clockwise from true north in the direction of the given sample.
+     */
+    private static Bearing ofDirection(final Sample direction) {
+        return Bearing.ofDirection(direction, FixedDirection.TRUE_NORTH, Rotation.CLOCKWISE);
     }
 
     /**
@@ -347,23 +349,6 @@ public class BearingTest {
     }
 
     /**
-     * Test that a bearing shares no mutable state with its argument or with its result.
-     */
-    @Test
-    public void testDefensiveCopy() {
-        final Vector<?> source = vector(0, 1);
-        final Bearing bearing = Bearing.ofDirection(source);
-        source.set(0, 100);
-        assertArrayEquals(new double[] {0, 1}, bearing.getDirection().toArrayDouble(), TOLERANCE,
-                          "Modifying the given vector shall not modify the bearing.");
-
-        final Vector<?> result = bearing.getDirection();
-        result.set(0, 100);
-        assertArrayEquals(new double[] {0, 1}, bearing.getDirection().toArrayDouble(), TOLERANCE,
-                          "Modifying the returned vector shall not modify the bearing.");
-    }
-
-    /**
      * Test that the azimuth does not depend on the order in which the axes are given.
      */
     @Test
@@ -375,10 +360,10 @@ public class BearingTest {
          */
         final CoordinateReferenceSystem eastNorth = CommonCRS.WGS84.normalizedGeographic();
         final CoordinateReferenceSystem northEast = CommonCRS.WGS84.geographic();
-        assertEquals(90, azimuth(Bearing.ofDirection(vector(eastNorth, 1, 0))), TOLERANCE, "Toward east.");
-        assertEquals(90, azimuth(Bearing.ofDirection(vector(northEast, 0, 1))), TOLERANCE, "Toward east.");
-        assertEquals( 0, azimuth(Bearing.ofDirection(vector(eastNorth, 0, 1))), TOLERANCE, "Toward north.");
-        assertEquals( 0, azimuth(Bearing.ofDirection(vector(northEast, 1, 0))), TOLERANCE, "Toward north.");
+        assertEquals(90, azimuth(ofDirection(direction(eastNorth, 1, 0))), TOLERANCE, "Toward east.");
+        assertEquals(90, azimuth(ofDirection(direction(northEast, 0, 1))), TOLERANCE, "Toward east.");
+        assertEquals( 0, azimuth(ofDirection(direction(eastNorth, 0, 1))), TOLERANCE, "Toward north.");
+        assertEquals( 0, azimuth(ofDirection(direction(northEast, 1, 0))), TOLERANCE, "Toward north.");
     }
 
     @Test

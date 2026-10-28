@@ -37,8 +37,8 @@ import org.apache.sis.geometries.surface.Triangle;
 import org.apache.sis.maths.Array;
 import org.apache.sis.maths.Maths;
 import org.apache.sis.maths.NDArrays;
+import org.apache.sis.maths.SampleSystem;
 import org.apache.sis.maths.Vector;
-import org.apache.sis.referencing.CRS;
 import org.apache.sis.util.ArgumentChecks;
 
 
@@ -71,6 +71,7 @@ public final class TINBuilder {
      *     | / |
      *  p2 +---+ p3
      *
+     * @param crs coordinate reference system of the dem corners and of the points to insert, not null
      * @param p0 first dem corner
      * @param p1 second dem corner
      * @param p2 third dem corner
@@ -78,15 +79,9 @@ public final class TINBuilder {
      * @param delta minimum distance to dem to include point
      * @throws OperationException if an invalid geometry state occurs
      */
-    public TINBuilder(Vector p0, Vector p1, Vector p2, Vector p3, double delta, BiFunction<Vector,Triangle,Double> errorCalculator) throws OperationException {
-        this.crs = p0.getCoordinateReferenceSystem();
+    public TINBuilder(CoordinateReferenceSystem crs, Vector p0, Vector p1, Vector p2, Vector p3, double delta, BiFunction<Vector,Triangle,Double> errorCalculator) throws OperationException {
         ArgumentChecks.ensureNonNull("crs", crs);
-        if (  !crs.equals(p1.getCoordinateReferenceSystem())
-           || !crs.equals(p2.getCoordinateReferenceSystem())
-           || !crs.equals(p3.getCoordinateReferenceSystem())
-            ) {
-            throw new IllegalArgumentException("All corner points must have the same crs");
-        }
+        this.crs = crs;
 
         this.delta = delta;
         this.errorCalculator = errorCalculator;
@@ -97,8 +92,8 @@ public final class TINBuilder {
         final Edge e31 = new Edge(p3, p1);
         final Edge e32 = new Edge(p3, p2);
 
-        final WTriangle t0 = new WTriangle(e01,e12,e02, errorCalculator);
-        final WTriangle t1 = new WTriangle(e12,e31,e32, errorCalculator);
+        final WTriangle t0 = new WTriangle(crs, e01,e12,e02, errorCalculator);
+        final WTriangle t1 = new WTriangle(crs, e12,e31,e32, errorCalculator);
 
         e01.t1 = t0;
         e02.t0 = t0;
@@ -123,7 +118,7 @@ public final class TINBuilder {
         final List<Triangle> triangles = new ArrayList<>(finished.size());
         for (int i = 0, n = finished.size(); i < n; i++) {
             final WTriangle t = finished.get(i);
-            final Array positions = NDArrays.of(Arrays.asList(t.p0, t.p1, t.p2, t.p0), t.p0.getSampleSystem(), t.p0.getDataType());
+            final Array positions = NDArrays.of(Arrays.asList(t.p0, t.p1, t.p2, t.p0), SampleSystem.of(crs), t.p0.getDataType());
             final DataPoints points = GeometryFactory.DEFAULT.createDataPoints(positions);
             final LinearRing exterior = GeometryFactory.DEFAULT.createLinearRing(points);
             triangles.add(GeometryFactory.DEFAULT.createTriangle(exterior));
@@ -158,9 +153,6 @@ public final class TINBuilder {
         final Set<Point2D.Double> set = new HashSet<>(pts.size());
         final List<Vector> uniques = new ArrayList<>();
         for (Vector t : pts) {
-            if (!CRS.equivalent(crs, t.getCoordinateReferenceSystem())) {
-                throw new OperationException("Points must have the same crs avec corner points");
-            }
             if (set.add(new Point2D.Double(t.get(0), t.get(1)))) {
                 uniques.add(t);
             } else {
@@ -291,9 +283,9 @@ public final class TINBuilder {
         final Edge e1 = new Edge(p1, c);
         final Edge e2 = new Edge(p2, c);
         //create the 3 new triangles
-        final WTriangle t0 = new WTriangle(a0, e1, e0, errorCalculator);
-        final WTriangle t1 = new WTriangle(a1, e2, e1, errorCalculator);
-        final WTriangle t2 = new WTriangle(a2, e0, e2, errorCalculator);
+        final WTriangle t0 = new WTriangle(crs, a0, e1, e0, errorCalculator);
+        final WTriangle t1 = new WTriangle(crs, a1, e2, e1, errorCalculator);
+        final WTriangle t2 = new WTriangle(crs, a2, e0, e2, errorCalculator);
         //assign edge triangles
         a0.change(t, t0);
         a1.change(t, t1);
@@ -366,8 +358,8 @@ public final class TINBuilder {
             if (t0.e2.hasPoint(edge.p0)) a0 = t0.e2;
             if (t0.e2.hasPoint(edge.p1)) a1 = t0.e2;
         }
-        final WTriangle t0_0 = new WTriangle(e0, a0, e2, errorCalculator);
-        final WTriangle t0_1 = new WTriangle(e1, a1, e2, errorCalculator);
+        final WTriangle t0_0 = new WTriangle(crs, e0, a0, e2, errorCalculator);
+        final WTriangle t0_1 = new WTriangle(crs, e1, a1, e2, errorCalculator);
         //affect triangles to edges
         e0.t0 = t0_0; e0.t1 = t1;
         e1.t0 = t0_1; e1.t1 = t1;
@@ -404,8 +396,8 @@ public final class TINBuilder {
                 if (t1.e2.hasPoint(edge.p1)) a1 = t1.e2;
             }
 
-            final WTriangle t1_0 = new WTriangle(e0, a0, e2, errorCalculator);
-            final WTriangle t1_1 = new WTriangle(e1, a1, e2, errorCalculator);
+            final WTriangle t1_0 = new WTriangle(crs, e0, a0, e2, errorCalculator);
+            final WTriangle t1_1 = new WTriangle(crs, e1, a1, e2, errorCalculator);
             //affect triangles to edges
             e0.change(t1, t1_0);
             e1.change(t1, t1_1);
@@ -485,8 +477,8 @@ public final class TINBuilder {
             t0.obsolete();
             t1.obsolete();
             final Edge e1 = new Edge(p0, p2);
-            final WTriangle t2 = new WTriangle(e1, a0, a1, errorCalculator);
-            final WTriangle t3 = new WTriangle(e1, a2, a3, errorCalculator);
+            final WTriangle t2 = new WTriangle(crs, e1, a0, a1, errorCalculator);
+            final WTriangle t3 = new WTriangle(crs, e1, a2, a3, errorCalculator);
             e1.t0 = t2;
             e1.t1 = t3;
             a0.change(t0, t2);

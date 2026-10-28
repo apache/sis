@@ -18,7 +18,7 @@ package org.apache.sis.geometries.spherical;
 
 import org.apache.sis.geometries.surface.Sphere;
 import org.apache.sis.maths.Maths;
-import org.apache.sis.maths.ReadOnly;
+import org.apache.sis.maths.Vector;
 import org.apache.sis.util.ArgumentChecks;
 
 
@@ -37,15 +37,15 @@ public final class SphericalTriangle {
     /**
      * first triangle point, as a unit direction vector from the sphere center
      */
-    private final ReadOnly.Vector<?> vecA;
+    private final Vector<?> vecA;
     /**
      * second triangle point, as a unit direction vector from the sphere center
      */
-    private final ReadOnly.Vector<?> vecB;
+    private final Vector<?> vecB;
     /**
      * third triangle point, as a unit direction vector from the sphere center
      */
-    private final ReadOnly.Vector<?> vecC;
+    private final Vector<?> vecC;
 
     /**
      * Create a new spherical triangle on given sphere.
@@ -58,9 +58,9 @@ public final class SphericalTriangle {
      * @param vecC third triangle point, as a unit direction vector from the sphere center
      */
     public SphericalTriangle(Sphere sphere,
-            ReadOnly.Vector<?> vecA,
-            ReadOnly.Vector<?> vecB,
-            ReadOnly.Vector<?> vecC) {
+            Vector<?> vecA,
+            Vector<?> vecB,
+            Vector<?> vecC) {
         this.sphere = sphere;
         this.vecA = vecA;
         this.vecB = vecB;
@@ -77,29 +77,29 @@ public final class SphericalTriangle {
     /**
      * @return first triangle point, as a unit direction vector from the sphere center
      */
-    public ReadOnly.Vector<?> getA() {
+    public Vector<?> getA() {
         return vecA;
     }
 
     /**
      * @return second triangle point, as a unit direction vector from the sphere center
      */
-    public ReadOnly.Vector<?> getB() {
+    public Vector<?> getB() {
         return vecB;
     }
 
     /**
      * @return third triangle point, as a unit direction vector from the sphere center
      */
-    public ReadOnly.Vector<?> getC() {
+    public Vector<?> getC() {
         return vecC;
     }
 
     /**
      * @return triangle centroid unit direction vector from the sphere center
      */
-    public ReadOnly.Vector<?> getCentroidVector() {
-        return vecA.copy().add(vecB).add(vecC).normalize();
+    public Vector<?> getCentroidVector() {
+        return vecA.add(vecB).add(vecC).normalize();
     }
 
     /**
@@ -138,7 +138,7 @@ public final class SphericalTriangle {
      * @param vecP vector to test
      * @return true if vector is inside triangle
      */
-    public boolean contains(ReadOnly.Vector<?> vecP) {
+    public boolean contains(Vector<?> vecP) {
         return contains(vecP, -1e-9);
     }
 
@@ -149,7 +149,7 @@ public final class SphericalTriangle {
      * @param epsilon edge tolerance, should be a negative value close to zero
      * @return true if vector is inside the triangle
      */
-    public boolean contains(ReadOnly.Vector<?> vecP, double epsilon) {
+    public boolean contains(Vector<?> vecP, double epsilon) {
         return vecP.dot(vecA.cross(vecB)) >= epsilon
             && vecP.dot(vecB.cross(vecC)) >= epsilon
             && vecP.dot(vecC.cross(vecA)) >= epsilon;
@@ -195,13 +195,13 @@ public final class SphericalTriangle {
          * vertices spread on the arc going from the A→B edge to the A→C edge at fraction
          * r/n. Row 0 degenerates to corner A, row n is the B→C edge.
          */
-        final ReadOnly.Vector<?>[][] lattice = new ReadOnly.Vector<?>[n+1][];
-        lattice[0] = new ReadOnly.Vector<?>[]{vecA};
+        final Vector<?>[][] lattice = new Vector<?>[n+1][];
+        lattice[0] = new Vector<?>[]{vecA};
         for (int r = 1; r <= n; r++) {
             //the last row ends on the original corners, keep them as they are
-            final ReadOnly.Vector<?> left  = (r == n) ? vecB : GreatCircleArc.interpolate(vecA, vecB, r / (double) n);
-            final ReadOnly.Vector<?> right = (r == n) ? vecC : GreatCircleArc.interpolate(vecA, vecC, r / (double) n);
-            final ReadOnly.Vector<?>[] row = new ReadOnly.Vector<?>[r+1];
+            final Vector<?> left  = (r == n) ? vecB : GreatCircleArc.interpolate(vecA, vecB, r / (double) n);
+            final Vector<?> right = (r == n) ? vecC : GreatCircleArc.interpolate(vecA, vecC, r / (double) n);
+            final Vector<?>[] row = new Vector<?>[r+1];
             row[0] = left;
             row[r] = right;
             for (int k = 1; k < r; k++) {

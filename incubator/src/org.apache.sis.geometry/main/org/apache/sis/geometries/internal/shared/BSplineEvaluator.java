@@ -311,11 +311,11 @@ final class BSplineEvaluator {
                 sum[c] += w * positions[i][c];
             }
         }
-        final Vector<?> position = Vectors.create(SampleSystem.of(controls.getCoordinateReferenceSystem()), DataType.DOUBLE);
+        final double[] position = new double[controls.getDimension()];
         for (int c = 0; c < dim; c++) {
-            position.set(c, sum[c] / W);
+            position[c] = sum[c] / W;
         }
-        return position;
+        return Vectors.create(position, DataType.DOUBLE);
     }
 
     /**
@@ -430,13 +430,14 @@ final class BSplineEvaluator {
                 case LINEAR:
                 case LINEAR_NORMALIZED:
                 case TRANSLATE: {
-                    value = controls.getAttribute(first, name).scale(R[0]);
+                    Vector<?> blend = controls.getAttribute(first, name).scale(R[0]);
                     for (int r = 1; r <= degree; r++) {
-                        value.add(controls.getAttribute(first + r, name).scale(R[r]));
+                        blend = blend.add(controls.getAttribute(first + r, name).scale(R[r]));
                     }
                     if (method == AttributeInterpolation.LINEAR_NORMALIZED) {
-                        value.normalize();
+                        blend = blend.normalize();
                     }
+                    value = blend;
                     break;
                 }
                 case LEADING: value = controls.getAttribute(leading, name);  break;

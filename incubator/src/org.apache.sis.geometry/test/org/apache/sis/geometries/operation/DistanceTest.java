@@ -16,11 +16,15 @@
  */
 package org.apache.sis.geometries.operation;
 
+import java.util.List;
 import javax.measure.Quantity;
 import org.apache.sis.geometries.Geometry;
 import org.apache.sis.geometries.GeometryFactory;
 import org.apache.sis.geometries.Point;
 import org.apache.sis.maths.SampleSystem;
+import org.apache.sis.maths.Vector;
+import org.apache.sis.maths.DataType;
+import org.apache.sis.maths.Vectors;
 import org.apache.sis.measure.Quantities;
 import org.apache.sis.measure.Units;
 import org.apache.sis.referencing.CommonCRS;
@@ -28,6 +32,7 @@ import org.apache.sis.referencing.CommonCRS;
 // Test dependencies
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import org.junit.jupiter.api.Test;
 
 
@@ -168,4 +173,24 @@ public class DistanceTest extends AbstractD9IMTest {
         return result.getValue().doubleValue();
     }
 
+    /**
+     * Returns a vector of the given values.
+     */
+    private static Vector<?> vector(final double... values) {
+        return Vectors.create(values, DataType.DOUBLE);
+    }
+
+    /**
+     * Tests {@code Distance.nearestSegment(…)}, which clamps the nearest point inside the segments.
+     */
+    @Test
+    public void testNearestSegment() {
+        final List<Vector<?>> polyline = List.of(vector(0,0), vector(4,0), vector(4,4));
+        assertEquals(new Distance.SegmentPoint(0, 0.25), Distance.nearestSegment(polyline, vector( 1,  2)));
+        assertEquals(new Distance.SegmentPoint(1, 0.75), Distance.nearestSegment(polyline, vector( 5,  3)));
+        assertEquals(new Distance.SegmentPoint(0, 0),    Distance.nearestSegment(polyline, vector(-2, -1)), "Before the start");
+        //a segment without length is a point.
+        assertEquals(new Distance.SegmentPoint(1, 0.5), Distance.nearestSegment(List.of(vector(0,0), vector(0,0), vector(2,0)), vector(1, 1)));
+        assertThrows(IllegalArgumentException.class, () -> Distance.nearestSegment(List.of(vector(0,0)), vector(1, 1)));
+    }
 }

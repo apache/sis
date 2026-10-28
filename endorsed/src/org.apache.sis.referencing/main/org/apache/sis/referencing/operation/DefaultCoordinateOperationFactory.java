@@ -46,7 +46,6 @@ import org.apache.sis.referencing.internal.shared.CoordinateOperations;
 import org.apache.sis.referencing.internal.shared.ReferencingFactoryContainer;
 import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.Classes;
-import org.apache.sis.util.Debug;
 import org.apache.sis.util.LenientComparable;
 import org.apache.sis.util.internal.shared.Constants;
 import org.apache.sis.util.collection.WeakHashSet;
@@ -84,17 +83,10 @@ import org.opengis.referencing.crs.ProjectedCRS;
  * This class is safe for multi-thread usage if all referenced factories are thread-safe.
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
- * @version 1.7
+ * @version 1.8
  * @since   0.6
  */
 public class DefaultCoordinateOperationFactory extends AbstractFactory implements CoordinateOperationFactory {
-    /**
-     * Whether this class is allowed to use the EPSG authority factory for searching coordinate operation paths.
-     * This flag should always be {@code true}, except temporarily for testing purposes.
-     */
-    @Debug
-    static final boolean USE_EPSG_FACTORY = true;
-
     /**
      * The default properties, or an empty map if none. This map shall be immutable
      * in order to allow usage without synchronization in multi-thread context.
@@ -720,7 +712,13 @@ next:   for (SingleCRS component : CRS.getSingleComponents(targetCRS)) {
                 op = handler.peek();
                 if (op == null) {
                     final CoordinateOperationFinder finder = createOperationFinder(getFactorySIS(), context);
-                    op = finder.createOperation(sourceCRS, targetCRS);
+                    try {
+                        op = finder.createOperation(sourceCRS, targetCRS);
+                    } catch (InvalidGeodeticParameterException e) {
+                        // Exceptions that may be caused by invalid (source, target) pair.
+                        // Maintenance note: keep the exception list consistent with `createOperations(…)`
+                        throw new OperationNotFoundException(finder.notFoundMessage(sourceCRS, targetCRS), e);
+                    }
                     if (context != null) {
                         resultWasContextSensitive = context.resultWasContextSensitive();
                     }
@@ -775,18 +773,23 @@ next:   for (SingleCRS component : CRS.getSingleComponents(targetCRS)) {
                                                       final CoordinateOperationContext context)
             throws OperationNotFoundException, FactoryException
     {
-        return createOperationFinder(getFactorySIS(), context).createOperations(sourceCRS, targetCRS);
+        final CoordinateOperationFinder finder = createOperationFinder(getFactorySIS(), context);
+        try {
+            return finder.createOperations(sourceCRS, targetCRS);
+        } catch (InvalidGeodeticParameterException e) {
+            // Exceptions that may be caused by invalid (source, target) pair.
+            // Maintenance note: keep the exception list consistent with `createOperation(…)`
+            throw new OperationNotFoundException(finder.notFoundMessage(sourceCRS, targetCRS), e);
+        }
     }
 
     /**
      * Returns the Apache <abbr>SIS</abbr> implementation of the <abbr>EPSG</abbr> factory, or {@code null} if none.
      */
     private static CoordinateOperationAuthorityFactory getFactorySIS() throws FactoryException {
-        if (USE_EPSG_FACTORY) {
-            AuthorityFactory registry = CRS.getAuthorityFactory(Constants.EPSG);
-            if (registry instanceof CoordinateOperationAuthorityFactory) {
-                return (CoordinateOperationAuthorityFactory) registry;
-            }
+        AuthorityFactory registry = CRS.getAuthorityFactory(Constants.EPSG);
+        if (registry instanceof CoordinateOperationAuthorityFactory) {
+            return (CoordinateOperationAuthorityFactory) registry;
         }
         return null;
     }

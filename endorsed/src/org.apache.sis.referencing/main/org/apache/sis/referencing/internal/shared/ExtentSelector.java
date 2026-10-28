@@ -201,7 +201,7 @@ public final class ExtentSelector<T> {
      */
     public ExtentSelector(final Extent domain) {
         if (!setExtentOfInterest(domain, null, null)) {
-            throw new IllegalArgumentException();
+            throw new IllegalArgumentException(Errors.format(Errors.Keys.EmptyArgument_1, "domain"));
         }
     }
 

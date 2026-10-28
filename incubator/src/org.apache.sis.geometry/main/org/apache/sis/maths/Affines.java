@@ -25,15 +25,8 @@ public final class Affines {
 
     private Affines(){}
 
-    public static Vector<?> transformNormal(ReadOnly.Affine<?> affine, ReadOnly.Vector<?> t, Vector<?> buffer) {
-        final Vector<?> v = t.extend(0.0);
-        affine.toMatrix().transform(v, v);
-        if (buffer == null) {
-            return v.shrink(3);
-        } else {
-            buffer.set(v);
-            return buffer;
-        }
+    public static Vector<?> transformNormal(ReadOnly.Affine<?> affine, Vector<?> t) {
+        return affine.toMatrix().transform(t.extend(0.0)).shrink(3);
     }
 
 }

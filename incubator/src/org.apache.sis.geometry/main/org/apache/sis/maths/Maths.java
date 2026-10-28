@@ -100,15 +100,93 @@ public final class Maths {
     }
 
     public static Vector<?> calculateNormal(Vector<?> a, Vector<?> b, Vector<?> c){
-        Vector<?> ab = Vectors.createDouble(a.getDimension());
-        ab.add(b);
-        ab.subtract(a);
-        Vector ac = Vectors.createDouble(a.getDimension());
-        ac.add(c);
-        ac.subtract(a);
-        Vector<?> res = ab.cross(ac);
-        res.normalize();
-        return res;
+        final Vector<?> ab = b.subtract(a);
+        final Vector<?> ac = c.subtract(a);
+        return ab.cross(ac).normalize();
+    }
+
+    /**
+     * Calculate normal of a polygon with Newell's method. Unlike the normal of a triangle made of three
+     * points of the polygon, this normal is reliable for any ring, including rings with collinear points
+     * and rings which are not exactly planar. The normal follows the right-hand rule: it points toward an
+     * observer who sees the ring counterclockwise. It is not normalized: for a planar ring, its length is
+     * twice the area of the polygon.
+     *
+     * @param positions positions of the ring, closed or not. Only the three first coordinates are used.
+     * @return polygon normal as (x,y,z) components, zero for a degenerate ring
+     * @throws IllegalArgumentException if the positions have less than 3 coordinates
+     */
+    public static double[] calculatePolygonNormal(Array positions){
+        final int dim = positions.getDimension();
+        if (dim < 3) {
+            throw new IllegalArgumentException("Positions shall have at least 3 coordinates, found " + dim + ".");
+        }
+        final double[] c = positions.toArrayDouble();
+        final double[] normal = new double[3];
+        for (int a = 0; a < c.length; a += dim) {
+            final int b = (a + dim) % c.length;
+            normal[0] += (c[a+1] - c[b+1]) * (c[a+2] + c[b+2]);
+            normal[1] += (c[a+2] - c[b+2]) * (c[a]   + c[b]);
+            normal[2] += (c[a]   - c[b])   * (c[a+1] + c[b+1]);
+        }
+        return normal;
+    }
+
+    /**
+     * Returns the order of the coordinates for projecting a planar figure on a coordinate plane without changing
+     * its orientation, to be given to {@link Vector#swizzle(int...)}. The projection plane is made of the two first
+     * axes of the returned order. The last axis is the one along which the normal is the largest, so that a figure
+     * perpendicular to another coordinate plane is not degenerate. The two first axes are ordered so that a figure
+     * seen counterclockwise from the side where the normal points is counterclockwise in the projection plane.
+     * For example, a triangle (a,b,c) whose normal (b−a)×(c−a) has the direction of the given normal is on the
+     * left side of {@linkplain #lineSide(Vector, Vector, Vector) line side} once projected,
+     * and a ring is counterclockwise in the projection plane of its {@linkplain #calculatePolygonNormal(Array) normal}.
+     *
+     * <p>The orientation is kept because each component of the normal is twice the area of the figure projected
+     * on the coordinate plane of the two following axes in cyclic order, positive if counterclockwise. A zero
+     * normal gives the (x,y) plane.</p>
+     *
+     * @param normal normal of the plane. Only the three first components are used, and only their direction matters.
+     * @return the order of the three axes: the two axes of the projection plane, then the axis left out.
+     * @throws IllegalArgumentException if the normal has less than 3 components
+     */
+    public static int[] projectionAxes(double[] normal) {
+        if (normal.length < 3) {
+            throw new IllegalArgumentException("The normal shall have at least 3 components, found " + normal.length + ".");
+        }
+        final double nx = Math.abs(normal[0]), ny = Math.abs(normal[1]), nz = Math.abs(normal[2]);
+        final int drop = (nz >= nx && nz >= ny) ? 2 : (nx >= ny) ? 0 : 1;
+        //the cyclic order keeps the handedness, then swapping the plane axes reverses the orientation.
+        final int u = (drop + 1) % 3, v = (drop + 2) % 3;
+        return (normal[drop] < 0) ? new int[] {v, u, drop} : new int[] {u, v, drop};
+    }
+
+    /**
+     * Returns the side of a point relative to the plane of a triangle, with a tolerance. The point is on the plane
+     * if its distance to the plane is not greater than the tolerance. Otherwise its side is given by the robust
+     * {@link ShewchukPredicates#orient3d orient3d} predicate, so that the side is right even very close to the plane
+     * when the tolerance is zero. Only the three first coordinates are used.
+     *
+     * @param a first corner of the triangle
+     * @param b second corner of the triangle
+     * @param c third corner of the triangle
+     * @param p point to test
+     * @param tolerance largest distance to the plane for considering the point on it, zero for an exact test
+     * @return +1 if the point is on the side toward which the normal (b−a)×(c−a) points, −1 if it is on the
+     *         other side, 0 if it is on the plane. A degenerate triangle has no plane: every point is on it.
+     */
+    public static int planeSide(double[] a, double[] b, double[] c, double[] p, double tolerance) {
+        final double ux = b[0] - a[0], uy = b[1] - a[1], uz = b[2] - a[2];
+        final double vx = c[0] - a[0], vy = c[1] - a[1], vz = c[2] - a[2];
+        final double nx = uy*vz - uz*vy, ny = uz*vx - ux*vz, nz = ux*vy - uy*vx;
+        //the distance to the plane multiplied by the length of the normal.
+        final double distance = nx * (p[0] - a[0]) + ny * (p[1] - a[1]) + nz * (p[2] - a[2]);
+        if (Math.abs(distance) <= tolerance * Math.sqrt(nx*nx + ny*ny + nz*nz)) {
+            return 0;
+        }
+        //orient3d is positive below the plane, on the side opposite to the normal.
+        return (int) -Math.signum(ShewchukPredicates.orient3d(a[0], a[1], a[2], b[0], b[1], b[2],
+                                                              c[0], c[1], c[2], p[0], p[1], p[2]));
     }
 
     public static double[] subtract(float[] A, float[] B){
@@ -168,7 +246,7 @@ public final class Maths {
      * @param p Point to test
      * @return true/false
      */
-    public static boolean isOnLine(ReadOnly.Vector<?> a, ReadOnly.Vector<?> b, ReadOnly.Vector<?> p) {
+    public static boolean isOnLine(Vector<?> a, Vector<?> b, Vector<?> p) {
 //        final double d = Math.abs(distanceSquare(a, b, p));
 //        return d < TOLERANCE && d > -TOLERANCE;
 
@@ -209,7 +287,7 @@ public final class Maths {
     /**
      * @see #lineSideFast(double, double, double, double, double, double)
      */
-    public static double lineSideFast(ReadOnly.Vector<?> a, ReadOnly.Vector<?> b, ReadOnly.Vector<?> c) {
+    public static double lineSideFast(Vector<?> a, Vector<?> b, Vector<?> c) {
         return lineSideFast(a.get(0), a.get(1), b.get(0), b.get(1), c.get(0), c.get(1));
     }
 
@@ -243,7 +321,7 @@ public final class Maths {
     /**
      * @see #lineSide(double, double, double, double, double, double)
      */
-    public static double lineSide(ReadOnly.Vector<?> a, ReadOnly.Vector<?> b, ReadOnly.Vector<?> c) {
+    public static double lineSide(Vector<?> a, Vector<?> b, Vector<?> c) {
         return lineSide(a.get(0), a.get(1), b.get(0), b.get(1), c.get(0), c.get(1));
     }
 
@@ -280,6 +358,57 @@ public final class Maths {
     }
 
     /**
+     * Test if a ring is convex at a vertex, which is whether the ring turns toward its inside at that vertex:
+     * to the right for a clockwise ring, to the left for a counterclockwise ring. Only X,Y ordinates are used.
+     * A vertex aligned with its two neighbors is not convex. A vertex where the ring turns toward its outside,
+     * called reflex, is convex for the ring traversed in the opposite direction.
+     *
+     * @param previous vertex before the tested vertex in the ring
+     * @param vertex tested vertex
+     * @param next vertex after the tested vertex in the ring
+     * @param clockwise whether the ring is clockwise
+     * @return true if the ring is convex at the vertex
+     */
+    public static boolean isConvex(Vector<?> previous,
+                                   Vector<?> vertex,
+                                   Vector<?> next,
+                                   boolean clockwise) {
+        final double side = lineSide(previous, vertex, next);
+        return clockwise ? side < 0 : side > 0;
+    }
+
+    /**
+     * Test if the segment from a vertex of a ring toward a point starts inside the ring, which is between
+     * the two edges of the ring at that vertex. A segment along one of the edges is not inside.
+     * Only X,Y ordinates are used. This is the {@code InCone} test of Joseph O'Rourke in
+     * <cite>Computational Geometry in C</cite>, which tells whether a segment between two vertices
+     * of a polygon is a diagonal near its ends.
+     *
+     * @param previous vertex before the tested vertex in the ring
+     * @param vertex start of the segment, a vertex of the ring
+     * @param next vertex after the tested vertex in the ring
+     * @param point end of the segment
+     * @param clockwise whether the ring is clockwise
+     * @return true if the segment starts inside the ring
+     */
+    public static boolean inCone(Vector<?> previous,
+                                 Vector<?> vertex,
+                                 Vector<?> next,
+                                 Vector<?> point,
+                                 boolean clockwise)
+    {
+        final double sign = clockwise ? -1 : 1;
+        if (sign * lineSide(vertex, next, previous) >= 0) {
+            //convex vertex: the segment shall be strictly between the two edges.
+            return sign * lineSide(vertex, point, previous) > 0
+                && sign * lineSide(point, vertex, next) > 0;
+        }
+        //reflex vertex: the segment shall not be in the outside wedge, its edges included.
+        return !(sign * lineSide(vertex, point, next) >= 0
+              && sign * lineSide(point, vertex, previous) >= 0);
+    }
+
+    /**
      * Test if point is inside triangle using barycentric weights.
      * Only X,Y ordinates are used.
      *
@@ -289,7 +418,7 @@ public final class Maths {
      * @param p test point
      * @return true if point is inside triangle
      */
-    public static boolean isPointInTriangle_BaryAlgo(ReadOnly.Vector<?> a, ReadOnly.Vector<?> b, ReadOnly.Vector<?> c, ReadOnly.Vector<?> p){
+    public static boolean isPointInTriangle_BaryAlgo(Vector<?> a, Vector<?> b, Vector<?> c, Vector<?> p){
         return isPointInTriangle_BaryAlgo(a.get(0), a.get(1), b.get(0), b.get(1), c.get(0), c.get(1), p.get(0), p.get(1));
     }
 
@@ -332,7 +461,7 @@ public final class Maths {
      * @param p test point
      * @return true if point is inside triangle
      */
-    public static boolean isPointInTriangle_SideAlgo(ReadOnly.Vector<?> a, ReadOnly.Vector<?> b, ReadOnly.Vector<?> c, ReadOnly.Vector<?> p) {
+    public static boolean isPointInTriangle_SideAlgo(Vector<?> a, Vector<?> b, Vector<?> c, Vector<?> p) {
         final double x = p.get(0);
         final double y = p.get(1);
         final double x1 = a.get(0);
@@ -423,7 +552,7 @@ public final class Maths {
      * @param b second triangle point
      * @param c third triangle point
      */
-    public static boolean isCounterClockwise(ReadOnly.Vector<?> a, ReadOnly.Vector<?> b, ReadOnly.Vector<?> c) {
+    public static boolean isCounterClockwise(Vector<?> a, Vector<?> b, Vector<?> c) {
         return lineSide(a, b, c) > 0;
     }
 
@@ -446,7 +575,7 @@ public final class Maths {
      * @param b second triangle point
      * @param c third triangle point
      */
-    public static double[] getBarycentricValue2D(ReadOnly.Vector<?> a, ReadOnly.Vector<?> b, ReadOnly.Vector<?> c, ReadOnly.Vector<?> p){
+    public static double[] getBarycentricValue2D(Vector<?> a, Vector<?> b, Vector<?> c, Vector<?> p){
         return Maths.getBarycentricValue2D(a.get(0), a.get(1), b.get(0), b.get(1), c.get(0), c.get(1), p.get(0), p.get(1));
     }
 
@@ -501,7 +630,7 @@ public final class Maths {
     /**
      * @see #inCircleFast(double, double, double, double, double, double, double, double)
      */
-    public static boolean inCircleFast(ReadOnly.Vector<?> a, ReadOnly.Vector<?> b, ReadOnly.Vector<?> c, ReadOnly.Vector<?> d) {
+    public static boolean inCircleFast(Vector<?> a, Vector<?> b, Vector<?> c, Vector<?> d) {
         return inCircleFast(a.get(0), a.get(1), b.get(0), b.get(1), c.get(0), c.get(1), d.get(0), d.get(1));
     }
 
@@ -539,7 +668,7 @@ public final class Maths {
     /**
      * @see #inCircle(double, double, double, double, double, double, double, double)
      */
-    public static boolean inCircle(ReadOnly.Vector<?> a, ReadOnly.Vector<?> b, ReadOnly.Vector<?> c, ReadOnly.Vector<?> d) {
+    public static boolean inCircle(Vector<?> a, Vector<?> b, Vector<?> c, Vector<?> d) {
         return inCircle(a.get(0), a.get(1), b.get(0), b.get(1), c.get(0), c.get(1), d.get(0), d.get(1));
     }
 
@@ -628,7 +757,7 @@ public final class Maths {
         return x1 * x2 + y1 * y2;
     }
 
-    public static double distance(ReadOnly.Vector<?> a, ReadOnly.Vector<?> planNormal, double planD){
+    public static double distance(Vector<?> a, Vector<?> planNormal, double planD){
         return planNormal.dot(a) - planD;
     }
 
@@ -755,6 +884,34 @@ public final class Maths {
     }
 
     /**
+     * Test if a point is inside given triangle, its edges and corners included. Only X,Y ordinates are used.
+     * Robust variant : the side of the point compared to each edge is computed with
+     * {@link #lineSide(Vector, Vector, Vector)}, without division.
+     * The triangle can be clockwise or counterclockwise. A degenerate triangle, whose three corners
+     * are on a same line, contains the points of that line between its corners.
+     *
+     * @param a first triangle point
+     * @param b second triangle point
+     * @param c third triangle point
+     * @param p point to test
+     * @return true if point is inside triangle
+     */
+    public static boolean inTriangle(Vector<?> a, Vector<?> b, Vector<?> c, Vector<?> p) {
+        final double d1 = lineSide(a, b, p);
+        final double d2 = lineSide(b, c, p);
+        final double d3 = lineSide(c, a, p);
+        final boolean left  = d1 > 0 || d2 > 0 || d3 > 0;
+        final boolean right = d1 < 0 || d2 < 0 || d3 < 0;
+        if (left || right) {
+            return !(left && right);
+        }
+        //the point is on the lines of the three edges, which happens only if the triangle is degenerate.
+        final double x = p.get(0), y = p.get(1);
+        return x >= Math.min(a.get(0), Math.min(b.get(0), c.get(0))) && x <= Math.max(a.get(0), Math.max(b.get(0), c.get(0)))
+            && y >= Math.min(a.get(1), Math.min(b.get(1), c.get(1))) && y <= Math.max(a.get(1), Math.max(b.get(1), c.get(1)));
+    }
+
+    /**
      * Calculate the barycentric value in triangle for given point.
      *
      * @param a first triangle point
@@ -812,7 +969,7 @@ public final class Maths {
      * @param coordinates line coordinates
      * @return true if clockwise
      */
-    public static boolean isClockWise(List<? extends ReadOnly.Vector<?>> coordinates){
+    public static boolean isClockWise(List<? extends Vector<?>> coordinates){
         final double area = calculateArea(coordinates);
         return area > 0;
     }
@@ -824,12 +981,12 @@ public final class Maths {
      * @param coordinates polygon outer line
      * @return area
      */
-    public static double calculateArea(List<? extends ReadOnly.Vector<?>> coordinates){
+    public static double calculateArea(List<? extends Vector<?>> coordinates){
         double area = 0;
         final int numPoints = coordinates.size();
         for(int i=0;i<numPoints-1;i++){
-            final ReadOnly.Vector<?> start = coordinates.get(i);
-            final ReadOnly.Vector<?> end = coordinates.get(i+1);
+            final Vector<?> start = coordinates.get(i);
+            final Vector<?> end = coordinates.get(i+1);
             area += (start.get(0)+end.get(0)) * (start.get(1)-end.get(1));
         }
         return area/2.0;

@@ -16,13 +16,13 @@
  */
 package org.apache.sis.geometries.internal.shared;
 
+import java.util.function.Consumer;
 import java.util.function.Supplier;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import org.apache.sis.geometries.DataPoints;
 import org.apache.sis.geometries.DataPointsType;
 import org.apache.sis.geometries.Point;
 import org.apache.sis.maths.DataType;
-import org.apache.sis.maths.ReadOnly;
 import org.apache.sis.maths.SampleSystem;
 import org.apache.sis.maths.Vector;
 
@@ -47,17 +47,34 @@ public final class SinglePositionDataPoints implements DataPoints {
     private final Supplier<Vector<?>> position;
 
     /**
+     * How to replace the position of the geometry this view is built on.
+     * Vectors are immutable, so writing through this view gives the new position to the geometry.
+     */
+    private final Consumer<Vector<?>> setter;
+
+    /**
+     * How to reach the reference system of the geometry this view is built on.
+     * Vectors do not carry a reference system, so it is read from the geometry.
+     */
+    private final Supplier<CoordinateReferenceSystem> crs;
+
+    /**
      * Creates a view over the position the given supplier reads.
      *
+     * @param  crs       how to read the reference system of the geometry, not null.
      * @param  position  how to read the position of the geometry, not null.
+     * @param  setter    how to replace the position of the geometry, not null.
      */
-    public SinglePositionDataPoints(final Supplier<Vector<?>> position) {
+    public SinglePositionDataPoints(final Supplier<CoordinateReferenceSystem> crs, final Supplier<Vector<?>> position,
+                                    final Consumer<Vector<?>> setter) {
+        this.crs = crs;
         this.position = position;
+        this.setter = setter;
     }
 
     @Override
     public CoordinateReferenceSystem getCoordinateReferenceSystem() {
-        return position.get().getSampleSystem().getCoordinateReferenceSystem();
+        return crs.get();
     }
 
     @Override
@@ -68,14 +85,13 @@ public final class SinglePositionDataPoints implements DataPoints {
     /**
      * {@inheritDoc}
      *
-     * <p>The type is derived from the position, which carries its own sample system and data
-     * type, so that this {@code DataPoints} describes the single attribute it holds.</p>
+     * <p>The type is derived from the reference system of the geometry and from the data type
+     * of the position, so that this {@code DataPoints} describes the single attribute it holds.</p>
      */
     @Override
     public DataPointsType getType() {
-        final Vector<?> p = position.get();
-        final SampleSystem ss = p.getSampleSystem();
-        final DataType dt = p.getDataType();
+        final SampleSystem ss = SampleSystem.of(crs.get());
+        final DataType dt = position.get().getDataType();
         final DataPointsType.Template type = new DataPointsType.Template();
         type.addOrReplaceAttribute(DataPointsType.ATT_POSITION, ss, dt);
         return type;
@@ -99,9 +115,9 @@ public final class SinglePositionDataPoints implements DataPoints {
     }
 
     @Override
-    public void setPosition(int index, ReadOnly.Vector<?> value) {
+    public void setPosition(int index, Vector<?> value) {
         ensureValid(index);
-        position.get().set(value);
+        setter.accept(value);
     }
 
     @Override
@@ -111,12 +127,12 @@ public final class SinglePositionDataPoints implements DataPoints {
     }
 
     @Override
-    public void setAttribute(int index, String name, ReadOnly.Vector<?> value) {
+    public void setAttribute(int index, String name, Vector<?> value) {
         ensureValid(index);
         if (!DataPointsType.ATT_POSITION.equals(name)) {
             throw new IllegalArgumentException("This sequence holds no \"" + name + "\" attribute.");
         }
-        position.get().set(value);
+        setter.accept(value);
     }
 
     /**

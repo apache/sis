@@ -24,6 +24,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.Objects;
 import java.util.Optional;
+import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import org.apache.sis.util.collection.CheckedContainer;
 
 
@@ -73,6 +74,7 @@ public final class Utilities {
      *
      * @see #deepEquals(Object, Object, ComparisonMode)
      * @see ComparisonMode#IGNORE_METADATA
+     * @see org.apache.sis.referencing.CRS#equivalent(CoordinateReferenceSystem, CoordinateReferenceSystem)
      */
     public static boolean equalsIgnoreMetadata(final Object object1, final Object object2) {
         return deepEquals(object1, object2, ComparisonMode.IGNORE_METADATA);

@@ -19,9 +19,13 @@ package org.apache.sis.referencing;
 import java.util.Map;
 import java.util.List;
 import java.util.ArrayList;
+import java.util.Set;
 import java.util.BitSet;
+import java.util.HashSet;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.function.Predicate;
+import java.util.function.BiPredicate;
 import java.util.logging.Filter;
 import java.util.logging.Logger;
 import java.util.logging.LogRecord;
@@ -92,8 +96,10 @@ import org.apache.sis.metadata.iso.extent.DefaultGeographicBoundingBox;
 import org.apache.sis.metadata.iso.extent.Extents;
 import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.ComparisonMode;
+import org.apache.sis.util.LenientComparable;
 import org.apache.sis.util.OptionalCandidate;
 import org.apache.sis.util.Utilities;
+import org.apache.sis.util.Classes;
 import org.apache.sis.util.internal.shared.Constants;
 import org.apache.sis.util.resources.Errors;
 import org.apache.sis.util.logging.Logging;
@@ -104,6 +110,7 @@ import org.opengis.referencing.crs.GeneralDerivedCRS;
 // Specific to the geoapi-3.1 and geoapi-4.0 branches:
 import org.opengis.referencing.ObjectDomain;
 import org.opengis.referencing.crs.DerivedCRS;
+import org.opengis.referencing.datum.DatumEnsemble;
 import org.opengis.referencing.datum.DynamicReferenceFrame;
 import org.opengis.coordinate.CoordinateMetadata;
 
@@ -118,12 +125,12 @@ import org.opengis.coordinate.CoordinateMetadata;
  *   <li>Finding coordinate operations between a source and a target <abbr>CRS</abbr>.</li>
  * </ul>
  *
- * <h2>Usage example</h2>
+ * <h2>Getting a <abbr>CRS</abbr> and a coordinate operation</h2>
  * The most frequently used methods in this class are {@link #forCode forCode(…)}, {@link #fromWKT fromWKT(…)}
  * and {@link #findOperation(CoordinateReferenceSystem, CoordinateReferenceSystem, GeographicBoundingBox) findOperation(…)}.
  * An usage example is like below
- * (see the <a href="https://sis.apache.org/tables/CoordinateReferenceSystems.html">Apache <abbr>SIS</abbr>™
- * Coordinate Reference System (<abbr>CRS</abbr>) codes</a> page for the complete list of EPSG codes):
+ * (see the <a href="https://sis.apache.org/tables/CoordinateReferenceSystems.html">Coordinate Reference Systems</a>
+ * page for the complete list of <abbr>EPSG</abbr> codes):
  *
  * {@snippet lang="java" :
  *     CoordinateReferenceSystem source = CRS.forCode("EPSG:4326");                   // WGS 84
@@ -139,7 +146,7 @@ import org.opengis.coordinate.CoordinateMetadata;
  *     System.out.println(position);
  *     }
  *
- * <h2>Note on kinds of <abbr>CRS</abbr></h2>
+ * <h2>Identifying the kind of <abbr>CRS</abbr></h2>
  * The {@link #getSingleComponents(CoordinateReferenceSystem)} method decomposes an arbitrary CRS into a flat
  * list of single components. In such flat list, vertical and temporal components can easily be identified by
  * {@code instanceof} checks. But identifying the horizontal component is not as easy. The list below suggests
@@ -154,7 +161,7 @@ import org.opengis.coordinate.CoordinateMetadata;
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @author  Alexis Manin (Geomatys)
- * @version 1.7
+ * @version 1.8
  * @since   0.3
  */
 public final class CRS {
@@ -227,7 +234,7 @@ public final class CRS {
      * If the EPSG geodetic dataset has been used, the {@linkplain NamedIdentifier#getAuthority() authority} title
      * will be something like <q>EPSG geodetic dataset</q>, otherwise it will be <q>Subset of EPSG</q>.
      *
-     * <h4>Extended set of codes</h4>
+     * <h4>Extended set of <abbr>CRS</abbr> authority codes</h4>
      * If this method is invoked during the parsing of a GML document,
      * then the set of known codes temporarily includes the {@code <gml:identifier>} values
      * of all {@link CoordinateReferenceSystem} definitions which have been parsed before this method call.
@@ -236,8 +243,8 @@ public final class CRS {
      * This feature allows embedded or linked data to references a CRS definition
      * in the same file or a file included by an {@code xlink:href} attribute.
      *
-     * <h4>URI forms</h4>
-     * This method accepts also the URN and URL syntaxes.
+     * <h4><abbr>URI</abbr> forms of <abbr>CRS</abbr> authority codes</h4>
+     * This method accepts also the <abbr>URN</abbr> and <abbr>URL</abbr> syntaxes.
      * For example, the following codes are considered equivalent to {@code "EPSG:4326"}:
      * <ul>
      *   <li>{@code "EPSG::4326"}</li>
@@ -246,8 +253,8 @@ public final class CRS {
      *   <li>{@code "http://www.opengis.net/gml/srs/epsg.xml#4326"}</li>
      * </ul>
      *
-     * URIs can be combined for creating larger objects. For example, the following URIs combine a
-     * two-dimensional WGS84 reference system (EPSG:4326) with a Mean Sea Level height (EPSG:5714).
+     * <abbr>URI</abbr>s can be combined for creating larger objects. For example, the following <abbr>URI</abbr>s
+     * combine a two-dimensional WGS84 reference system (EPSG:4326) with a Mean Sea Level height (EPSG:5714).
      * The result is a three-dimensional {@linkplain org.apache.sis.referencing.crs.DefaultCompoundCRS
      * compound coordinate reference system}:
      *
@@ -258,7 +265,7 @@ public final class CRS {
      *            2=http://www.opengis.net/def/crs/epsg/0/5714"</code></li>
      * </ul>
      *
-     * <p>URNs (but not URLs) can also combine a
+     * <p><abbr>URN</abbr>s (but not <abbr>URL</abbr>s) can also combine a
      * {@linkplain org.apache.sis.referencing.datum.DefaultGeodeticDatum geodetic reference frame} with an
      * {@linkplain org.apache.sis.referencing.cs.DefaultEllipsoidalCS ellipsoidal coordinate system} for creating a new
      * {@linkplain org.apache.sis.referencing.crs.DefaultGeographicCRS geographic CRS}, or a base geographic CRS with a
@@ -266,9 +273,9 @@ public final class CRS {
      * {@linkplain org.apache.sis.referencing.cs.DefaultCartesianCS Cartesian coordinate system} for creating a new
      * {@linkplain org.apache.sis.referencing.crs.DefaultProjectedCRS projected coordinate reference system}.</p>
      *
-     * <h4>Reverse operation</h4>
-     * The {@link IdentifiedObjects#lookupURN(IdentifiedObject, Citation)} method can be seen
-     * as a converse of this method: from a CRS object, it tries to find a URN that describes it.
+     * <h4>Reverse of <abbr>CRS</abbr> from authority codes</h4>
+     * The {@link IdentifiedObjects#lookupURN(IdentifiedObject, Citation)} method can be seen as a converse of
+     * this method: from a <abbr>CRS</abbr> object, it tries to find a <abbr>URN</abbr> that identifies it.
      * More codes may also be supported depending on which extension modules are available.
      *
      * @param  code  the authority code.
@@ -499,26 +506,37 @@ public final class CRS {
     /**
      * Returns whether the given Coordinate Reference Systems can be considered as equivalent.
      * Two <abbr>CRS</abbr>s are considered equivalent if they may have some differences in metadata or data structure,
-     * but replacing one <abbr>CRS</abbr> by the other should not change the input and output coordinate values in operations.
-     *
-     * <h4>Implementation note</h4>
-     * This is a convenience method for the following method call:
+     * but replacing one <abbr>CRS</abbr> by the other does not change the input and output coordinate values in operations.
+     * Invoking this method is equivalent to the following method call:
      *
      * {@snippet lang="java" :
-     *     return deepEquals(object1, object2, ComparisonMode.IGNORE_METADATA);
+     *     return deepEquals(crs1, crs2, ComparisonMode.COMPATIBILITY);
      *     }
      *
-     * @param  object1  the first object to compare (may be null).
-     * @param  object2  the second object to compare (may be null).
-     * @return {@code true} if both objects are equivalent.
+     * @param  crs1  the first <abbr>CRS</abbr> to compare (can be null).
+     * @param  crs2  the second <abbr>CRS</abbr> to compare (can be null).
+     * @return {@code true} if both <abbr>CRS</abbr>s are equivalent for coordinate operation purposes.
      *
      * @see ComparisonMode#COMPATIBILITY
+     * @see EquivalenceProperty#COMPONENT
      * @see Utilities#equalsIgnoreMetadata(Object, Object)
      *
      * @since 1.5
      */
-    public static boolean equivalent(final CoordinateReferenceSystem object1, final CoordinateReferenceSystem object2) {
-        return Utilities.deepEquals(object1, object2, ComparisonMode.COMPATIBILITY);
+    public static boolean equivalent(final CoordinateReferenceSystem crs1, final CoordinateReferenceSystem crs2) {
+        if (crs1 == crs2) {
+            return true;
+        }
+        if (crs1 == null || crs2 == null) {
+            return false;
+        }
+        if (crs1 instanceof LenientComparable) {
+            return ((LenientComparable) crs1).equals(crs2, ComparisonMode.COMPATIBILITY);
+        }
+        if (crs2 instanceof LenientComparable) {
+            return ((LenientComparable) crs2).equals(crs1, ComparisonMode.COMPATIBILITY);
+        }
+        return crs1.equals(crs2);
     }
 
     /**
@@ -699,14 +717,14 @@ public final class CRS {
      * If there is no known operation between the given pair of <abbr>CRS</abbr>s,
      * then this method throws an {@link OperationNotFoundException}.</p>
      *
-     * <h4>Inverse operation</h4>
+     * <h4>Equivalence of inverse coordinate operation</h4>
      * Note that <code>CRS.findOperation(<var>B</var>, <var>A</var>, <var>aoi</var>)</code> is not necessarily
      * the exact converse of <code>CRS.findOperation(<var>A</var>, <var>B</var>, <var>aoi</var>)</code>.
      * Some deviations may exist, for example because of different paths explored in the geodetic database.
      * For the mathematical inverse of an existing {@link CoordinateOperation}, using
      * {@link org.opengis.referencing.operation.MathTransform#inverse()} is preferable.
      *
-     * <h4>Advanced usages</h4>
+     * <h4>Using coordinate operations with more complex objects</h4>
      * It is not recommended to use the returned coordinate operation for transforming bounding boxes simply by
      * transforming the four corners. Use the {@linkplain Envelopes#transform(Envelope, CoordinateReferenceSystem)
      * envelope transformation methods} instead. These methods will take care of line curvature, envelope spanning
@@ -764,7 +782,7 @@ public final class CRS {
      * If there is no known operation between the given pair of <abbr>CRS</abbr>s,
      * then this method throws an {@link OperationNotFoundException}.</p>
      *
-     * <h4>Inverse operation</h4>
+     * <h4>Equivalence of inverse coordinate operation</h4>
      * Note that <code>CRS.findOperation(<var>B</var>, <var>A</var>, <var>context</var>)</code> is not necessarily
      * the exact converse of <code>CRS.findOperation(<var>A</var>, <var>B</var>, <var>context</var>)</code>.
      * Some deviations may exist, for example because of different paths explored in the geodetic database.
@@ -1084,7 +1102,7 @@ public final class CRS {
      *
      * @param  crs  the coordinate reference frame from which to get the epoch, or {@code null}.
      * @return epoch to which the coordinates of stations defining the dynamic CRS frame are referenced.
-     * @throws GeodeticException if some CRS components haave different epochs.
+     * @throws GeodeticException if some <abbr>CRS</abbr> components have different epochs.
      *
      * @since 1.5
      */
@@ -1178,15 +1196,15 @@ public final class CRS {
      * {@linkplain org.apache.sis.metadata.iso.extent.DefaultExtent#intersect intersection}
      * of the domain of validity of all components.
      *
-     * <h4>Ellipsoidal height</h4>
+     * <h4>Augmenting a two-dimensional <abbr>CRS</abbr> with an ellipsoidal height</h4>
      * If a two-dimensional geographic or projected CRS is followed or preceded by a vertical CRS with ellipsoidal
      * {@linkplain org.apache.sis.referencing.datum.DefaultVerticalDatum#getRealizationMethod() realization method},
-     * this method combines them in a single three-dimensional geographic or projected CRS.  Note that standalone
-     * ellipsoidal heights are not allowed according ISO 19111. But if such situation is nevertheless found, then
-     * the action described here fixes the issue. This is the reverse of <code>{@linkplain #getVerticalComponent
-     * getVerticalComponent}(crs, true)</code>.
+     * this method combines them in a single three-dimensional geographic or projected <abbr>CRS</abbr>.
+     * Note that standalone ellipsoidal heights are not allowed according <abbr>ISO</abbr> 19111.
+     * But if such situation is nevertheless found, then the action described here fixes the standard violation.
+     * This is the reverse of <code>{@linkplain #getVerticalComponent getVerticalComponent}(crs, true)</code>.
      *
-     * <h4>Components order</h4>
+     * <h4>{@code SingleCRS} component order in {@code CompoundCRS}</h4>
      * Apache SIS is permissive on the order of components that can be used in a compound CRS.
      * However for better inter-operability, users are encouraged to follow the order mandated by ISO 19162:
      *
@@ -1218,17 +1236,188 @@ public final class CRS {
     }
 
     /**
-     * Returns a mask of the dimensions where a {@code subCRS} element is found in the given <abbr>CRS</abbr>.
-     * If the given {@code crs} is {@linkplain #equivalent equivalent} to an element of the {@code subCRS} array,
-     * then this method returns a {@link BitSet} in which all bits are set to {@code true} in the range from 0 to
-     * <var>n</var>−1, where <var>n</var> is the number of dimensions of {@code crs}.
-     * Otherwise, if {@code crs} is an instance of {@link CompoundCRS}, then the {@code crs} components are traversed
-     * recursively and compared in the same way as described above, except that the range of bits set to {@code true}
-     * does not start at index 0. Instead, the range starts at the index of the first dimension of the matched
-     * {@code crs} component. If no match is found, then the returned {@link BitSet} is empty.
+     * Identification of a property that defines when two <abbr>CRS</abbr>s are considered equivalent.
+     * A comparison between two {@link SingleCRS} instances can take in account all properties relevant
+     * to coordinate operations, or only the datum, or only the datum <em>type</em>.
+     * These properties are compared in {@linkplain ComparisonMode#COMPATIBILITY compatibility mode}.
      *
-     * <h4>Example</h4>
-     * The following snippet gets the dimensions of the temporal and vertical components of a <abbr>CRS</abbr>:
+     * <p>Enumeration values are ordered from strictest criterion to most lenient criterion.</p>
+     *
+     * @author  Martin Desruisseaux (Geomatys)
+     * @version 1.8
+     *
+     * @see ComparisonMode#COMPATIBILITY
+     *
+     * @since 1.8
+     */
+    public enum EquivalenceProperty implements BiPredicate<SingleCRS, SingleCRS> {
+        /**
+         * Compares all {@code SingleCRS} properties relevant to coordinate operations.
+         * Invoking <code>COMPONENT.{@link #test test}(<var>a</var>, <var>b</var>)</code> is equivalent
+         * to invoking <code>{@link #equivalent(CoordinateReferenceSystem, CoordinateReferenceSystem)
+         * CRS.equivalent}(<var>a</var>, <var>b</var>)</code>.
+         *
+         * @see #equivalent(CoordinateReferenceSystem, CoordinateReferenceSystem)
+         */
+        COMPONENT,
+
+        /**
+         * Compares only the {@code SingleCRS} datum properties; coordinate systems are ignored.
+         * Therefore, the <abbr>CRS</abbr> comparisons are insensitive to coordinate system type,
+         * axis order, axis directions and axis units of measurements.
+         * Datum properties are compared in {@linkplain ComparisonMode#COMPATIBILITY compatibility mode}.
+         *
+         * <p>The type of a <abbr>CRS</abbr> is closely related to the type of its datum.
+         * Since this criterion matches <abbr>CRS</abbr> with the same datum,
+         * it indirectly requires the matched <abbr>CRS</abbr>s to be of the same type ignoring specializations
+         * (<i>e.g.</i>, the difference between {@link GeographicCRS} and geocentric <abbr>CRS</abbr> is ignored).
+         * Furthermore, a {@link DerivedCRS} is considered equivalent to its base <abbr>CRS</abbr>.</p>
+         *
+         * @see SingleCRS#getDatum()
+         */
+        DATUM {
+            @Override Predicate<SingleCRS> comparator(final SingleCRS crs) {
+                final IdentifiedObject datum = DatumOrEnsemble.of(crs);
+                return (other) -> Utilities.deepEquals(datum, DatumOrEnsemble.of(other), ComparisonMode.COMPATIBILITY);
+            }
+        },
+
+        /**
+         * Compares only the {@code SingleCRS} datum <em>types</em>.
+         * Not only coordinate systems are ignored, but datum changes are also ignored.
+         * Datum ensembles are considered equivalent to ordinary datums,
+         * but dynamic datums are not considered equivalent to static datum
+         * (because dynamic datums require more information: a data epoch).
+         *
+         * <p><b>Example:</b>
+         * <q><abbr>WGS</abbr> 1972</q> and <q><abbr>WGS</abbr> 1984</q> are considered equivalent
+         * even if they are different datums requiring a coordinate transformation between them.</p>
+         */
+        DATUM_TYPE {
+            @Override Predicate<SingleCRS> comparator(final SingleCRS crs) {
+                final Set<Class<? extends Datum>> types = getDatumType(crs);
+                return (other) -> types.equals(getDatumType(other));
+            }
+        };
+
+        /**
+         * Returns the datum types implemented by the datum of the given <abbr>CRS</abbr>.
+         * The return value should contain exactly one element, but a collection is used for robustness.
+         * If the {@code crs} is {@code null} or has no datum, an empty set is returned (not {@code null}).
+         *
+         * @param  crs  the <abbr>CRS</abbr> component from which to get the datum type, or {@code null}.
+         * @return the datum type(s) of the given <abbr>CRS</abbr> component, or an empty set if none.
+         */
+        private static Set<Class<? extends Datum>> getDatumType(final SingleCRS crs) {
+            final var types = new HashSet<Class<? extends Datum>>(4);
+            for (Class<? extends Datum> type : Classes.getLeafInterfaces(Classes.getClass(DatumOrEnsemble.of(crs)), Datum.class)) {
+                if (!DatumEnsemble.class.isAssignableFrom(type)) {
+                    types.add(type);
+                }
+            }
+            return types;
+        }
+
+        /**
+         * Creates a comparator for comparing the given <abbr>CRS</abbr> component with other components.
+         * The {@code crs} argument may be {@code null} and the returned predicate must accept {@code null}.
+         *
+         * @param  crs  the <abbr>CRS</abbr> component to compare, or {@code null}.
+         * @return a predicate for comparing the given component with other components.
+         */
+        Predicate<SingleCRS> comparator(final SingleCRS crs) {
+            return (other) -> equivalent(crs, other);
+        }
+
+        /**
+         * Compares two <abbr>CRS</abbr> components for equivalence.
+         * If this method is invoked on the {@link #COMPONENT} enumeration value,
+         * replacing one <abbr>CRS</abbr> by the other does not change the result of coordinate operations.
+         * When invoked on other enumeration values, more lenient comparisons are performed which can accept
+         * changes in coordinate system types, axis orders, directions, units of measurement or datum properties.
+         *
+         * @param  crs1  the first <abbr>CRS</abbr> to compare (can be null).
+         * @param  crs2  the second <abbr>CRS</abbr> to compare (can be null).
+         * @return whether the properties identified by this enumeration value are equivalent.
+         */
+        @Override
+        public final boolean test(final SingleCRS crs1, final SingleCRS crs2) {
+            return comparator(crs1).test(crs2);
+        }
+
+        /**
+         * Returns a mask of the dimensions where a component matches one of the {@code search} elements.
+         * The search is lenient, with "lenient" defined by this enumeration value.
+         *
+         * <p>If {@code overwrite} is true, this method overwrites the {@code search} array.
+         * The {@code overwrite} flag should be {@code false} for user-supplied arrays.</p>
+         *
+         * @param  components  value of {@code getSingleComponents(crs)}.
+         * @param  search      the elements to search in the {@code components} list.
+         * @param  overwrite   whether to overwrite the {@code search} array for matching elements only once.
+         * @return mask with indexes of dimensions where a {@code search} element is leniently found.
+         */
+        final BitSet locateDimensions(final List<SingleCRS> components, final SingleCRS[] search, final boolean overwrite) {
+            final var mask = new BitSet();
+            if (search != null) {
+                int count = search.length;
+                for (final EquivalenceProperty criterion : values()) {
+                    /*
+                     * Try more specific criteria before this criterion. For example, if `this` is `DATUM_TYPE`,
+                     * matches will first be attempted using the `COMPONENT` and `DATUM` criteria in that order.
+                     * More restrictive criteria are tried first because datum comparisons may be ambiguous.
+                     * For example, some meteorological data have two temporal axes, which can result in two
+                     * equivalent temporal datums.
+                     */
+                    int lower = 0;
+                    for (final SingleCRS component : components) {
+                        final Predicate<SingleCRS> comparator = criterion.comparator(component);
+                        final int upper = lower + getDimensionOrZero(component);
+                        for (int i=0; i<count; i++) {
+                            if (comparator.test(search[i])) {
+                                mask.set(lower, upper);
+                                if (overwrite) {
+                                    // Remove this component from the elements to test.
+                                    if (--count == 0) return mask;  // Short-circuit.
+                                    System.arraycopy(search, i+1, search, i, count - i);
+                                }
+                                break;
+                            }
+                        }
+                        lower = upper;
+                    }
+                    if (criterion == this) {
+                        // Finished execution with the user requested criterion.
+                        break;
+                    }
+                }
+            }
+            return mask;
+        }
+    }
+
+    /**
+     * Returns a mask of the {@code crs} dimensions where a component is equivalent to a {@code search} elements.
+     * The returned {@code BitSet} contains bits that are set to {@code true} at indexes equal to all {@code crs}
+     * dimensions where a {@linkplain #getSingleComponents(CoordinateReferenceSystem) single component} of
+     * {@code crs} is {@linkplain #equivalent equivalent} to an element of the given {@code search} array.
+     * In other words, if <var>i</var> is the first dimension of a single {@code crs} component and <var>n</var>
+     * is its number of dimensions, and if that component is equivalent to an element of the {@code search} array,
+     * then bits in the range from <var>i</var> to <var>i</var>+<var>n</var>−1 inclusive are set to {@code true}.
+     *
+     * <p>The order of elements in the {@code search} array is not significant,
+     * but the axis order and units of measurement inside each {@link SingleCRS} is significant.
+     * For more lenient methods ignoring also axis order, axis units and (to some extent) to <abbr>CRS</abbr> type,
+     * see the {@link #locateDimensions(CoordinateReferenceSystem, CoordinateReferenceSystem, EquivalenceProperty)}
+     * method.</p>
+     *
+     * <p>This method is null-safe: if {@code crs} or {@code search} is {@code null}, this method returns an empty set.
+     * If {@code search} contains {@code null} elements, these elements are ignored. The latter tolerance makes easy to
+     * use directly the return value of methods such as {@link #getTemporalComponent(CoordinateReferenceSystem)}.</p>
+     *
+     * <p><b>Example:</b>
+     * the following snippet gets the dimensions in {@code crs} of the temporal and vertical components,
+     * if these components are present and have the same axis order and units of measurement:</p>
      *
      * {@snippet lang="java" :
      *     CoordinateReferenceSystem crs = ...;
@@ -1244,34 +1433,40 @@ public final class CRS {
      * <p><b>Tip 2:</b> for locating all dimensions <em>except</em> the vertical and temporal ones, use
      * <code>mask.{@linkplain BitSet#flip(int, int) flip}(0, CRS.getDimensionOrZero(crs))</code>.</p>
      *
-     * <h4>Null values</h4>
-     * This method is null-safe: if {@code crs} or {@code subCRS} is {@code null}, this method returns an empty set.
-     * If {@code subCRS} contains {@code null} elements, these elements are ignored. The latter makes easy to use
-     * directly the return value of methods such as {@link #getTemporalComponent(CoordinateReferenceSystem)}.
-     *
      * @param  crs     the <abbr>CRS</abbr> for which the indexes of some dimensions are wanted.
-     * @param  subCRS  the <abbr>CRS</abbr>s to compare with {@code crs} or {@code crs} components.
-     * @return indexes of the dimensions where a {@code subCRS} element is found in {@code crs}.
+     * @param  search  the components to compare with {@code crs} or components of {@code crs}.
+     * @return mask indicating, for each dimension of {@code crs}, whether that dimension is part
+     *         of a component which is equivalent to an element of the {@code search} array.
      *
      * @see #selectDimensions(CoordinateReferenceSystem, BitSet, SeparationMode)
      *
      * @since 1.6
      */
-    public static BitSet locateDimensions(final CoordinateReferenceSystem crs, final SingleCRS... subCRS) {
-        final var mask = new BitSet();
-        if (subCRS != null) {
-            int lower = 0;
-            for (final CoordinateReferenceSystem component : getSingleComponents(crs)) {
-                final int upper = lower + getDimensionOrZero(component);
-                for (final CoordinateReferenceSystem search : subCRS) {
-                    if (equivalent(component, search)) {
-                        mask.set(lower, upper);
-                    }
-                }
-                lower = upper;
-            }
-        }
-        return mask;
+    public static BitSet locateDimensions(final CoordinateReferenceSystem crs, final SingleCRS... search) {
+        return EquivalenceProperty.COMPONENT.locateDimensions(getSingleComponents(crs), search, false);
+    }
+
+    /**
+     * Returns a mask of the {@code crs} dimensions where an equivalence with a {@code search} component is found.
+     * This method is a more lenient version of {@link #locateDimensions(CoordinateReferenceSystem, SingleCRS...)}
+     * where coordinate systems (their types, axis orders, directions and units of measurement) can be ignored.
+     * In addition, some differences in <abbr>CRS</abbr> types and datums can optionally be tolerated.
+     *
+     * @param  crs        the <abbr>CRS</abbr> for which the indexes of some dimensions are wanted.
+     * @param  search     the <abbr>CRS</abbr>s to compare with {@code crs} or components of {@code crs}.
+     * @param  criterion  the {@link SingleCRS} property to compare for deciding if two instances are equivalent.
+     * @return mask indicating, for each dimension of {@code crs}, whether that dimension is part
+     *         of a component which is equivalent to a component of the {@code search} <abbr>CRS</abbr>.
+     *
+     * @see #locateDimensions(CoordinateReferenceSystem, SingleCRS...)
+     *
+     * @since 1.8
+     */
+    public static BitSet locateDimensions(final CoordinateReferenceSystem crs,
+                                          final CoordinateReferenceSystem search,
+                                          final EquivalenceProperty criterion)
+    {
+        return criterion.locateDimensions(getSingleComponents(crs), getSingleComponents(search).toArray(SingleCRS[]::new), true);
     }
 
     /**
@@ -1281,14 +1476,14 @@ public final class CRS {
      * the given mask is updated to the dimensions that the {@code crs} dimensions that were effectively retained.
      * The return value is always a <abbr>CRS</abbr> with axes in the same order as the given {@code crs}.
      *
-     * <h4>Ellipsoidal height</h4>
+     * <h4>Extraction of ellipsoidal height</h4>
      * This method can transform a three-dimensional geographic <abbr>CRS</abbr> into a two-dimensional geographic
      * <abbr>CRS</abbr>, i.e. this method can do the converse of {@link #compound(CoordinateReferenceSystem...)}.
      * This method can also extract the {@linkplain CommonCRS.Vertical#ELLIPSOIDAL ellipsoidal height}
      * from a three-dimensional geographic <abbr>CRS</abbr>, but this is generally not recommended because
      * ellipsoidal heights make little sense without the (<var>latitude</var>, <var>longitude</var>) coordinates.
      *
-     * <h4>Unseparable <abbr>CRS</abbr></h4>
+     * <h4>Requesting parts of nondivisible <abbr>CRS</abbr></h4>
      * It is illegal to extract only the latitude or longitude axis from a geodetic <abbr>CRS</abbr>.
      * Similar constraints exist also for projected and engineering <abbr>CRS</abbr>. If {@code crs}
      * or a component of {@code crs} cannot be separated as requested by the {@code dimensions} mask,

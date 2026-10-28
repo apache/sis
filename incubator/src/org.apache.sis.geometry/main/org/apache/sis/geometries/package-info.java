@@ -66,7 +66,8 @@
  * Geometry.getMaximalComplex returns a Geometry until this interface exists.
  *
  * <h3>TODO : ISO 19107 Topology (Section 10)</h3>
- * No interface or implementation yet.
+ * {@link org.apache.sis.geometries.topology} declares the interfaces, no implementation yet.
+ * The derived topological relations (Section 10.8) are not declared.
  * This work would be interesting to formalize delaunay classes.
  *
  * <h3>TODO : ISO 19107 Simplex (Section 11.1)</h3>

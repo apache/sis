@@ -30,8 +30,6 @@ import org.apache.sis.geometries.SurfaceInterpolation;
 import org.apache.sis.geometries.internal.shared.DefaultCapsule;
 import org.apache.sis.maths.DataType;
 import org.apache.sis.maths.NDRange;
-import org.apache.sis.maths.ReadOnly;
-import org.apache.sis.maths.Vectors;
 import org.apache.sis.maths.Vector;
 
 
@@ -79,26 +77,6 @@ public sealed interface Capsule extends Surface
     }
 
     /**
-     * @return the center of the bottom sphere
-     */
-    ReadOnly.Vector<?> getBottom();
-
-    /**
-     * @param position new center of the bottom sphere
-     */
-    void setBottom(ReadOnly.Vector<?> position);
-
-    /**
-     * @return the center of the top sphere
-     */
-    ReadOnly.Vector<?> getTop();
-
-    /**
-     * @param position new center of the top sphere
-     */
-    void setTop(ReadOnly.Vector<?> position);
-
-    /**
      * @return capsule top sphere radius
      */
     double getRadiusTop();
@@ -126,11 +104,8 @@ public sealed interface Capsule extends Surface
      * @return the capsule height
      */
     default double getHeight() {
-        final ReadOnly.Vector<?> bottom = getBottom();
-        final Vector<?> axis = Vectors.create(bottom.getSampleSystem(), DataType.DOUBLE);
-        axis.set(getTop());
-        axis.subtract(bottom);
-        return axis.length();
+        final Vector<?> bottom = getDataPoints().getPosition(0);
+        return getDataPoints().getPosition(1).copy(DataType.DOUBLE).subtract(bottom).length();
     }
 
     /**
@@ -143,8 +118,8 @@ public sealed interface Capsule extends Surface
      */
     @Override
     default Envelope getEnvelope() {
-        final ReadOnly.Vector<?> bottom = getBottom();
-        final ReadOnly.Vector<?> top = getTop();
+        final Vector<?> bottom = getDataPoints().getPosition(0);
+        final Vector<?> top = getDataPoints().getPosition(1);
         final double radiusBottom = getRadiusBottom();
         final double radiusTop = getRadiusTop();
         final int dim = getDataPoints().getDimension();

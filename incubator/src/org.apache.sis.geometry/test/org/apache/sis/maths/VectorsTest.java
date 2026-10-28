@@ -50,32 +50,27 @@ public class VectorsTest {
         res = Vectors.octToNormal(bytes[0], bytes[1]);
         assertArrayEquals(normal.toArrayFloat(), res.toArrayFloat(), .01f);
 
-        normal = new Vector3D.Float(0.5f,0,0.5f);
-        normal.normalize();
+        normal = new Vector3D.Float(0.5f,0,0.5f).normalize();
         bytes = Vectors.toOctByte(normal);
         res = Vectors.octToNormal(bytes[0], bytes[1]);
         assertArrayEquals(normal.toArrayFloat(), res.toArrayFloat(), .01f);
 
-        normal = new Vector3D.Float(-1,0,0);
-        normal.normalize();
+        normal = new Vector3D.Float(-1,0,0).normalize();
         bytes = Vectors.toOctByte(normal);
         res = Vectors.octToNormal(bytes[0], bytes[1]);
         assertArrayEquals(normal.toArrayFloat(), res.toArrayFloat(), .01f);
 
-        normal = new Vector3D.Float(0,-1,0);
-        normal.normalize();
+        normal = new Vector3D.Float(0,-1,0).normalize();
         bytes = Vectors.toOctByte(normal);
         res = Vectors.octToNormal(bytes[0], bytes[1]);
         assertArrayEquals(normal.toArrayFloat(), res.toArrayFloat(), .01f);
 
-        normal = new Vector3D.Float(0,0,-1);
-        normal.normalize();
+        normal = new Vector3D.Float(0,0,-1).normalize();
         bytes = Vectors.toOctByte(normal);
         res = Vectors.octToNormal(bytes[0], bytes[1]);
         assertArrayEquals(normal.toArrayFloat(), res.toArrayFloat(), .01f);
 
-        normal = new Vector3D.Float(0,-0.5f,0.5f);
-        normal.normalize();
+        normal = new Vector3D.Float(0,-0.5f,0.5f).normalize();
         bytes = Vectors.toOctByte(normal);
         res = Vectors.octToNormal(bytes[0], bytes[1]);
         assertArrayEquals(normal.toArrayFloat(), res.toArrayFloat(), .02f);
@@ -92,8 +87,8 @@ public class VectorsTest {
         final Vector3D.Double coord1 = new Vector3D.Double(0,100,-300);
         final Vector3D.Double coord2 = new Vector3D.Double(100,300,-100);
 
-        final Vector dp1 = Vectors.toQuantizedEncoding(coord1, quantizeBox, 32767, null);
-        final Vector dp2 = Vectors.toQuantizedEncoding(coord2, quantizeBox, 32767, null);
+        final Vector dp1 = Vectors.toQuantizedEncoding(coord1, quantizeBox, 32767);
+        final Vector dp2 = Vectors.toQuantizedEncoding(coord2, quantizeBox, 32767);
 
         assertEquals(new Vector3D.Double(0, 0, 0), dp1);
         assertEquals(new Vector3D.Double(32767, 32767, 32767), dp2);
@@ -117,11 +112,8 @@ public class VectorsTest {
         final Vector3D.Double coord1 = new Vector3D.Double(0,100,-300);
         final Vector3D.Double coord2 = new Vector3D.Double(100,300,-100);
 
-        coord1.transform(trs);
-        coord2.transform(trs);
-
-        assertArrayEquals(new double[] {0, 0, 0}, coord1.toArrayDouble(), DELTA);
-        assertArrayEquals(new double[] {32767, 32767, 32767}, coord2.toArrayDouble(), DELTA);
+        assertArrayEquals(new double[] {0, 0, 0}, coord1.transform(trs).toArrayDouble(), DELTA);
+        assertArrayEquals(new double[] {32767, 32767, 32767}, coord2.transform(trs).toArrayDouble(), DELTA);
 
     }
 
@@ -225,18 +217,18 @@ public class VectorsTest {
     }
 
     /**
-     * The interpolation must also be reachable from the vector itself, mutating it.
+     * The interpolation must also be reachable from the vector itself, creating a new vector.
      */
     @Test
     public void slerpOnVectorTest() {
         final Vector3D.Double start = new Vector3D.Double(1, 0, 0);
         final Vector3D.Double end   = new Vector3D.Double(0, 1, 0);
         final Vector3D.Double result = start.slerp(end, 0.5);
-        //the vector is mutated in place and returned
-        assertSame(start, result);
+        assertNotSame(start, result);
         final double h = Math.sqrt(0.5);
         assertArrayEquals(new double[] {h, h, 0}, result.toArrayDouble(), SLERP_TOLERANCE);
-        //the other vector is left alone
+        //both vectors are left alone
+        assertArrayEquals(new double[] {1, 0, 0}, start.toArrayDouble(), SLERP_TOLERANCE);
         assertArrayEquals(new double[] {0, 1, 0}, end.toArrayDouble(), SLERP_TOLERANCE);
     }
 }

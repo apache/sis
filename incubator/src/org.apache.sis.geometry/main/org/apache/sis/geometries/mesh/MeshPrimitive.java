@@ -50,12 +50,10 @@ import org.apache.sis.maths.DataType;
 import org.apache.sis.maths.Maths;
 import org.apache.sis.maths.NDArrays;
 import org.apache.sis.maths.NDRange;
-import org.apache.sis.maths.ReadOnly;
 import org.apache.sis.maths.SampleSystem;
 import org.apache.sis.maths.Vector;
 import org.apache.sis.maths.Vector1D;
 import org.apache.sis.maths.Vector3D;
-import org.apache.sis.maths.Vectors;
 import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.collection.Containers;
 
@@ -694,10 +692,11 @@ public sealed interface MeshPrimitive extends Geometry
 
             final int dimension = ta.getDimension();
             final long length = ta.getLength();
-            final Vector tuple = Vectors.createDouble(dimension);
+            final Cursor cursor = ta.cursor();
+            final Vector tuple = cursor.samples();
 
             for (int i = 0; i <length; i++) {
-                ta.get(i, tuple);
+                cursor.moveTo(i);
                 if (!tuple.isFinite()) {
                     throw new IllegalArgumentException("Found a NaN on attribute " + name +" at index "+ i);
                 }
@@ -747,57 +746,49 @@ public sealed interface MeshPrimitive extends Geometry
         @Override
         public void computeFaceNormals() {
             if (Type.TRIANGLES.equals(type)) {
-                final Cursor icursor = getIndex().cursor();
-                final Array vertices = getPositions();
-                final Cursor vcursor = vertices.cursor();
-
-                final long size = vertices.getLength();
-                final Array normals = NDArrays.of(positions.getSampleSystem(), new float[(int)size * 3]);
-                final Cursor ncursor = normals.cursor();
-                final Vector nv = ncursor.samples();
-                final Vector v0 = Vectors.createFloat(3);
-                final Vector v1 = Vectors.createFloat(3);
-                final Vector v2 = Vectors.createFloat(3);
-                Vector normal = null;
-
-                // accumulate normal vectors
-                final int offset = 0;
-                for (long i=0,n=index.getLength();i<n;i+=3) {
-                    icursor.moveTo(i+offset);
-                    final int idx0 = (int) icursor.samples().get(0);
-                    icursor.next();
-                    final int idx1 = (int) icursor.samples().get(0);
-                    icursor.next();
-                    final int idx2 = (int) icursor.samples().get(0);
-                    vcursor.moveTo(idx0); v0.set(vcursor.samples());
-                    vcursor.moveTo(idx1); v1.set(vcursor.samples());
-                    vcursor.moveTo(idx2); v2.set(vcursor.samples());
-                    normal = Maths.calculateNormal(v0, v1, v2);
-
-                    //a normal may already be set at given index, we accumulate
-                    //values and we will normalize them in a second loop
-                    ncursor.moveTo(idx0); nv.add(normal);
-                    ncursor.moveTo(idx1); nv.add(normal);
-                    ncursor.moveTo(idx2); nv.add(normal);
+                /*
+                 * Positions are read in double precision: geocentric coordinates are millions of meters,
+                 * in float precision the edges of small triangles would be mostly rounding noise.
+                 * The not normalized cross products are accumulated, so each triangle contributes
+                 * in proportion of its area, and degenerated triangles contribute nothing.
+                 */
+                final int[] idx = MeshPrimitiveIndexes.toTriangles(getIndex(), type).toArrayInt();
+                final double[] xyz = getPositions().toArrayDouble();
+                final int dim = getPositions().getDimension();
+                final int size = xyz.length / dim;
+                final double[] sum = new double[size * 3];
+                final boolean[] used = new boolean[size];
+                for (int i = 0; i + 2 < idx.length; i += 3) {
+                    final int a = idx[i] * dim, b = idx[i+1] * dim, c = idx[i+2] * dim;
+                    final double ux = xyz[b] - xyz[a], uy = xyz[b+1] - xyz[a+1], uz = xyz[b+2] - xyz[a+2];
+                    final double vx = xyz[c] - xyz[a], vy = xyz[c+1] - xyz[a+1], vz = xyz[c+2] - xyz[a+2];
+                    final double nx = uy*vz - uz*vy, ny = uz*vx - ux*vz, nz = ux*vy - uy*vx;
+                    for (int k = 0; k < 3; k++) used[idx[i+k]] = true;
+                    if (!Double.isFinite(nx + ny + nz) || (nx == 0 && ny == 0 && nz == 0)) {
+                        //degenerated triangle, it has no normal
+                        continue;
+                    }
+                    for (int k = 0; k < 3; k++) {
+                        final int v = idx[i+k] * 3;
+                        sum[v] += nx; sum[v+1] += ny; sum[v+2] += nz;
+                    }
                 }
 
                 //normalize normals
-                for (long i=0,n=index.getLength();i<n;i+=3) {
-                    icursor.moveTo(i+offset);
-                    final int idx0 = (int) icursor.samples().get(0);
-                    icursor.next();
-                    final int idx1 = (int) icursor.samples().get(0);
-                    icursor.next();
-                    final int idx2 = (int) icursor.samples().get(0);
-                    ncursor.moveTo(idx0); nv.normalize();
-                    if (!nv.isFinite()) nv.set(new double[]{1,0,0});
-                    ncursor.moveTo(idx1); nv.normalize();
-                    if (!nv.isFinite()) nv.set(new double[]{1,0,0});
-                    ncursor.moveTo(idx2); nv.normalize();
-                    if (!nv.isFinite()) nv.set(new double[]{1,0,0});
+                final float[] normals = new float[size * 3];
+                for (int v = 0; v < size; v++) {
+                    final double x = sum[v*3], y = sum[v*3+1], z = sum[v*3+2];
+                    final double length = Math.sqrt(x*x + y*y + z*z);
+                    if (length > 0 && Double.isFinite(length)) {
+                        normals[v*3]   = (float) (x / length);
+                        normals[v*3+1] = (float) (y / length);
+                        normals[v*3+2] = (float) (z / length);
+                    } else if (used[v]) {
+                        //only used by degenerated triangles, any direction is as good
+                        normals[v*3] = 1;
+                    }
                 }
-
-                setNormals(normals);
+                setNormals(NDArrays.of(getPositions().getSampleSystem(), normals));
             }
         }
 
@@ -812,12 +803,7 @@ public sealed interface MeshPrimitive extends Geometry
             final Array normals = NDArrays.of(positions.getSampleSystem(), DataType.FLOAT, positions.getLength());
 
             //compute smooth normals
-            final Vector pos0 = Vectors.createDouble(3);
-            final Vector pos1 = Vectors.createDouble(3);
-            final Vector pos2 = Vectors.createDouble(3);
-            final Vector nor0 = Vectors.createDouble(3);
-            final Vector nor1 = Vectors.createDouble(3);
-            final Vector nor2 = Vectors.createDouble(3);
+            final Cursor posCursor = positions.cursor();
 
             new MeshPrimitiveVisitor(this) {
                 @Override
@@ -834,9 +820,12 @@ public sealed interface MeshPrimitive extends Geometry
                         //flat triangle ignore it
                         return;
                     }
-                    positions.get(idx0, pos0);
-                    positions.get(idx1, pos1);
-                    positions.get(idx2, pos2);
+                    posCursor.moveTo(idx0);
+                    final Vector pos0 = new Vector3D.Double(posCursor.samples());
+                    posCursor.moveTo(idx1);
+                    final Vector pos1 = new Vector3D.Double(posCursor.samples());
+                    posCursor.moveTo(idx2);
+                    final Vector pos2 = new Vector3D.Double(posCursor.samples());
 
                     if (fastEquals(pos0, pos1) || fastEquals(pos0, pos2) || fastEquals(pos1, pos2)) {
                         //flat triangle ignore it
@@ -846,15 +835,9 @@ public sealed interface MeshPrimitive extends Geometry
                     final Vector normal = Maths.calculateNormal(pos0, pos1, pos2);
                     if (normal.isFinite()) {
                         //we do this check to ignore bad or degenerated triangles
-                        normals.get(idx0, nor0);
-                        normals.get(idx1, nor1);
-                        normals.get(idx2, nor2);
-                        nor0.add(normal);
-                        nor1.add(normal);
-                        nor2.add(normal);
-                        normals.set(idx0, nor0);
-                        normals.set(idx1, nor1);
-                        normals.set(idx2, nor2);
+                        normals.set(idx0, normals.get(idx0).add(normal));
+                        normals.set(idx1, normals.get(idx1).add(normal));
+                        normals.set(idx2, normals.get(idx2).add(normal));
                     }
                 }
 
@@ -863,16 +846,10 @@ public sealed interface MeshPrimitive extends Geometry
                     final DataPoints points = candidate.getDataPoints();
                     long idx0 = ((MeshPrimitive.Vertex)points.getPoint(0)).getIndex();
                     long idx1 = ((MeshPrimitive.Vertex)points.getPoint(1)).getIndex();
-                    positions.get(idx0, pos0);
-                    positions.get(idx1, pos1);
                     final Vector normal = new Vector3D.Float(0,0,1);
 
-                    normals.get(idx0, nor0);
-                    normals.get(idx1, nor1);
-                    nor0.add(normal);
-                    nor1.add(normal);
-                    normals.set(idx0, nor0);
-                    normals.set(idx1, nor1);
+                    normals.set(idx0, normals.get(idx0).add(normal));
+                    normals.set(idx1, normals.get(idx1).add(normal));
                 }
 
                 @Override
@@ -886,8 +863,7 @@ public sealed interface MeshPrimitive extends Geometry
 
             //normalize
             for (long i = 0, n = normals.getLength(); i < n; i++) {
-                normals.get(i, nor0);
-                nor0.normalize();
+                final Vector nor0 = normals.get(i).normalize();
                 if (nor0.isFinite()) {
                     //we do this check to ignore bad or degenerated triangles
                     normals.set(i, nor0);
@@ -1045,12 +1021,12 @@ public sealed interface MeshPrimitive extends Geometry
         }
 
         @Override
-        public void setAttribute(String name, ReadOnly.Vector tuple) {
+        public void setAttribute(String name, Vector tuple) {
             final Array tupleGrid = parent.attributes.get(name);
             if (tupleGrid == null) throw new IllegalArgumentException("Attribute " + name + " do not exist");
             final Cursor cursor = tupleGrid.cursor();
             cursor.moveTo(index);
-            cursor.samples().set(tuple);
+            cursor.set(tuple);
         }
 
         @Override
@@ -1129,12 +1105,12 @@ public sealed interface MeshPrimitive extends Geometry
         }
 
         @Override
-        public void setPosition(int index, ReadOnly.Vector value) {
+        public void setPosition(int index, Vector value) {
             primitive.getPositions().set(this.index[index], value);
         }
 
         @Override
-        public void setAttribute(int index, String name, ReadOnly.Vector value) {
+        public void setAttribute(int index, String name, Vector value) {
             primitive.getAttribute(name).set(this.index[index], value);
         }
 

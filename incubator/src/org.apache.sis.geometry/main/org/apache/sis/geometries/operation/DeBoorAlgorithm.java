@@ -16,7 +16,6 @@
  */
 package org.apache.sis.geometries.operation;
 
-import org.apache.sis.maths.ReadOnly;
 import org.apache.sis.maths.Vector;
 
 
@@ -108,7 +107,7 @@ public final class DeBoorAlgorithm {
                 final double denom = knots[i + degree - r + 1] - knots[i];
                 final double alpha = (denom == 0.0) ? 0.0 : (u - knots[i]) / denom;
                 // Linear interpolation (1-alpha)*d[j-1] + alpha*d[j] : the heart of the recursion.
-                d[j] = d[j - 1].copy().lerp(d[j], alpha);
+                d[j] = d[j - 1].lerp(d[j], alpha);
             }
         }
         return d[degree];
@@ -127,12 +126,12 @@ public final class DeBoorAlgorithm {
      * @param degree curve degree
      * @return the control points of the derivative, one less than the given ones
      */
-    public static Vector<?>[] derivativeControlPoints(final ReadOnly.Vector<?>[] ctrl, final double[] knots, final int degree) {
+    public static Vector<?>[] derivativeControlPoints(final Vector<?>[] ctrl, final double[] knots, final int degree) {
         final int m = ctrl.length - 1;
         final Vector<?>[] deriv = new Vector<?>[m];
         for (int i = 0; i < m; i++) {
             final double denom = knots[i + degree + 1] - knots[i + 1];
-            deriv[i] = ctrl[i + 1].copy().subtract(ctrl[i]).scale((denom == 0.0) ? 0 : degree / denom);
+            deriv[i] = ctrl[i + 1].subtract(ctrl[i]).scale((denom == 0.0) ? 0 : degree / denom);
         }
         return deriv;
     }
