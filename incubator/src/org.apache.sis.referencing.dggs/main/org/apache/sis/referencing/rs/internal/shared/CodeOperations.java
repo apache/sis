@@ -17,6 +17,7 @@
 package org.apache.sis.referencing.rs.internal.shared;
 
 import java.util.Arrays;
+import java.util.List;
 import org.opengis.geometry.DirectPosition;
 import org.opengis.referencing.ReferenceSystem;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
@@ -149,12 +150,40 @@ public final class CodeOperations {
 
         private final ReferenceSystem sourceRs;
         private final ReferenceSystem targetRs;
+        /**
+         * For each target component, the index of the source component.
+         */
         private final int[] targetMapping;
+        /**
+         * For each source component, the offset of its first ordinate.
+         */
+        private final int[] componentOffsets;
+        /**
+         * For each source component, the number of ordinates.
+         */
+        private final int[] componentDimensions;
+        private final int dimRes;
 
         public Reorder(ReferenceSystem sourceRs, ReferenceSystem targetRs, int[] targetMapping) {
             this.sourceRs = sourceRs;
             this.targetRs = targetRs;
             this.targetMapping = targetMapping;
+
+            //same decomposition as ReferenceSystems.findOperation
+            final List<ReferenceSystem> components = ReferenceSystems.getSingleComponents(sourceRs, false);
+            componentOffsets = new int[components.size()];
+            componentDimensions = new int[components.size()];
+            int offset = 0;
+            for (int i = 0; i < componentOffsets.length; i++) {
+                componentOffsets[i] = offset;
+                componentDimensions[i] = ReferenceSystems.getDimension(components.get(i));
+                offset += componentDimensions[i];
+            }
+            int dim = 0;
+            for (int k : targetMapping) {
+                dim += componentDimensions[k];
+            }
+            dimRes = dim;
         }
 
         @Override
@@ -185,8 +214,15 @@ public final class CodeOperations {
 
         @Override
         public Code transform(Code source, Code target) throws TransformException {
-            if (target == null) return new Code(targetRs);
-            target.setOrdinates(source.getOrdinates());
+            final Object[] ordinates = source.getOrdinates();
+            final Object[] result = new Object[dimRes];
+            int k = 0;
+            for (int c : targetMapping) {
+                System.arraycopy(ordinates, componentOffsets[c], result, k, componentDimensions[c]);
+                k += componentDimensions[c];
+            }
+            if (target == null) return new Code(targetRs, result);
+            target.setOrdinates(result);
             return target;
         }
 
@@ -450,7 +486,7 @@ public final class CodeOperations {
 
         public Compound(CodeOperation op1, CodeOperation op2, ReferenceSystem sourceRS, ReferenceSystem targetRS) {
             this.sourceRS = sourceRS == null ? ReferenceSystems.createCompound(op1.getSourceRS(), op2.getSourceRS()) : sourceRS;
-            this.targetRS = targetRS == null ? ReferenceSystems.createCompound(op1.getTargetRS(), op2.getTargetRS()) : sourceRS;
+            this.targetRS = targetRS == null ? ReferenceSystems.createCompound(op1.getTargetRS(), op2.getTargetRS()) : targetRS;
             this.op1 = op1;
             this.op2 = op2;
             this.dim1 = ReferenceSystems.getDimension(op1.getSourceRS());

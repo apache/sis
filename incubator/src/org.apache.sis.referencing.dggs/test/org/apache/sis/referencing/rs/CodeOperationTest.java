@@ -174,4 +174,105 @@ public class CodeOperationTest {
         }
 
     }
+
+    /**
+     * Tests {@link CodeOperations.Reorder} selecting a single component.
+     */
+    @Test
+    public void reorderSelect() throws TransformException {
+        {   //first component
+            final ReferenceSystem source = ReferenceSystems.createCompound(MGRS, TIME_JAVA);
+            final CodeOperation operation = CodeOperations.reorder(source, MGRS, new int[]{0});
+            final Code code = operation.transform(new Code(source, "4Q FJ 12 67", 1000.0), null);
+            assertEquals(MGRS, code.getReferenceSystem());
+            assertArrayEquals(new Object[]{"4Q FJ 12 67"}, code.getOrdinates());
+        }
+        {   //second component
+            final ReferenceSystem source = ReferenceSystems.createCompound(TIME_JAVA, MGRS);
+            final CodeOperation operation = CodeOperations.reorder(source, MGRS, new int[]{1});
+            final Code code = operation.transform(new Code(source, 1000.0, "4Q FJ 12 67"), null);
+            assertEquals(MGRS, code.getReferenceSystem());
+            assertArrayEquals(new Object[]{"4Q FJ 12 67"}, code.getOrdinates());
+        }
+    }
+
+    /**
+     * Tests {@link CodeOperations.Reorder} swapping components, and its inverse.
+     */
+    @Test
+    public void reorderSwap() throws TransformException {
+        final ReferenceSystem source = ReferenceSystems.createCompound(MGRS, TIME_JAVA);
+        final ReferenceSystem target = ReferenceSystems.createCompound(TIME_JAVA, MGRS);
+        final CodeOperation operation = CodeOperations.reorder(source, target, new int[]{1, 0});
+
+        final Code code = operation.transform(new Code(source, "4Q FJ 12 67", 1000.0), null);
+        assertEquals(target, code.getReferenceSystem());
+        assertArrayEquals(new Object[]{1000.0, "4Q FJ 12 67"}, code.getOrdinates());
+
+        final CodeOperation inverse = operation.inverse();
+        assertEquals(target, inverse.getSourceRS());
+        assertEquals(source, inverse.getTargetRS());
+        final Code back = inverse.transform(code, null);
+        assertEquals(source, back.getReferenceSystem());
+        assertArrayEquals(new Object[]{"4Q FJ 12 67", 1000.0}, back.getOrdinates());
+    }
+
+    /**
+     * Tests {@link CodeOperations.Reorder} with a component of more than one dimension,
+     * the mapping is on components, not on ordinates.
+     */
+    @Test
+    public void reorderMultiDimensionalComponent() throws TransformException {
+        final ReferenceSystem geographic = CommonCRS.WGS84.normalizedGeographic();
+        final ReferenceSystem source = ReferenceSystems.createCompound(geographic, TIME_JAVA);
+        {   //swap
+            final ReferenceSystem target = ReferenceSystems.createCompound(TIME_JAVA, geographic);
+            final CodeOperation operation = CodeOperations.reorder(source, target, new int[]{1, 0});
+            final Code code = operation.transform(new Code(source, 10.0, 20.0, 1000.0), null);
+            assertArrayEquals(new Object[]{1000.0, 10.0, 20.0}, code.getOrdinates());
+        }
+        {   //select the multi-dimensional component
+            final CodeOperation operation = CodeOperations.reorder(source, geographic, new int[]{0});
+            final Code code = operation.transform(new Code(source, 10.0, 20.0, 1000.0), null);
+            assertArrayEquals(new Object[]{10.0, 20.0}, code.getOrdinates());
+        }
+        {   //select the one-dimensional component after it
+            final CodeOperation operation = CodeOperations.reorder(source, TIME_JAVA, new int[]{1});
+            final Code code = operation.transform(new Code(source, 10.0, 20.0, 1000.0), null);
+            assertArrayEquals(new Object[]{1000.0}, code.getOrdinates());
+        }
+    }
+
+    /**
+     * Tests {@link CodeOperations.Reorder} writing in a given target code.
+     */
+    @Test
+    public void reorderInTarget() throws TransformException {
+        final ReferenceSystem source = ReferenceSystems.createCompound(MGRS, TIME_JAVA);
+        final CodeOperation operation = CodeOperations.reorder(source, MGRS, new int[]{0});
+        final Code target = new Code(MGRS);
+        final Code code = operation.transform(new Code(source, "4Q FJ 12 67", 1000.0), target);
+        assertSame(target, code);
+        assertArrayEquals(new Object[]{"4Q FJ 12 67"}, code.getOrdinates());
+    }
+
+    /**
+     * Tests operations found by {@link ReferenceSystems#findOperation} which drop a component.
+     */
+    @Test
+    public void reorderFromFindOperation() throws FactoryException, TransformException {
+        {   //only a reorder is needed
+            final ReferenceSystem mrgs3d = ReferenceSystems.createCompound(MGRS, TIME_JAVA);
+            final CodeOperation operation = ReferenceSystems.findOperation(mrgs3d, MGRS, null);
+            assertTrue(operation instanceof CodeOperations.Reorder);
+            final Code code = operation.transform(new Code(mrgs3d, "4Q FJ 12 67", 1000.0), null);
+            assertArrayEquals(new Object[]{"4Q FJ 12 67"}, code.getOrdinates());
+        }
+        {   //reorder followed by a conversion
+            final ReferenceSystem mrgs3d = ReferenceSystems.createCompound(TIME_JAVA, MGRS);
+            final CodeOperation operation = ReferenceSystems.findOperation(mrgs3d, GEOHASH, null);
+            final Code code = operation.transform(new Code(mrgs3d, 1000.0, "4Q FJ 12 67"), null);
+            assertEquals("87z9y8fhdbff", code.getOrdinate(0));
+        }
+    }
 }
