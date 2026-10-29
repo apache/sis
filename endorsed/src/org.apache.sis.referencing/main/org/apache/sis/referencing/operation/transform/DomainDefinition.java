@@ -28,11 +28,11 @@ import org.apache.sis.geometry.GeneralEnvelope;
 
 
 /**
- * Specification about how to estimate a domain of validity for transforms.
+ * Builder of the mathematical domain of validity of a {@code MathTransform}.
  * Contrary to {@linkplain CRS#getDomainOfValidity(CoordinateReferenceSystem) CRS domain of validity},
- * this class estimates a domain based on mathematical behavior only, not on "real world" considerations.
- * For example, the Mercator projection tends to infinity when approaching poles, so it is recommended to
- * not use it above some latitude threshold, typically 80° or 84°. The exact limit is arbitrary.
+ * this class estimates a domain based on mathematical behavior only, not on real world considerations.
+ * For example, the Mercator projection tends to infinity when approaching poles, so it is recommended
+ * to not use it above some latitude threshold, typically 80° or 84°. The exact limit is arbitrary.
  * This is different than the domain of validity of CRS, which is often limited to a particular country.
  * In general, the CRS domain of validity is much smaller than the domain computed by this class.
  *

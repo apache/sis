@@ -36,12 +36,14 @@ import org.apache.sis.referencing.CRS;
 import org.apache.sis.referencing.operation.transform.MathTransforms;
 import org.apache.sis.referencing.operation.transform.TransformFactoryException;
 import org.apache.sis.referencing.internal.shared.ReferencingUtilities;
+import org.apache.sis.metadata.iso.extent.DefaultGeographicBoundingBox;
 import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.Classes;
 import org.apache.sis.util.Debug;
 import org.apache.sis.util.UnconvertibleObjectException;
 import org.apache.sis.util.collection.BackingStoreException;
 import org.apache.sis.util.resources.Errors;
+import org.apache.sis.util.logging.Logging;
 
 // Specific to the geoapi-3.1 and geoapi-4.0 branches:
 import java.util.Set;
@@ -68,6 +70,17 @@ import org.opengis.coordinate.MismatchedDimensionException;
  * @see Geometries#wrap(Object)
  */
 public abstract class GeometryWrapper extends AbstractGeometry implements Geometry {
+    /**
+     * Whether to compare the <abbr>CRS</abbr> of the geometry with the source <abbr>CRS</abbr>
+     * of the coordinate operation. For performance reasons, this flag should be {@code false}
+     * when the caller already knows that these <abbr>CRS</abbr>s are equivalent.
+     *
+     * <p>This is fixed to {@code false} for now because all callers made the above-cited check
+     * in the current version of Apache <abbr>SIS</abbr>. But this flag may become an option in
+     * the future if transforms become used in different contexts.</p>
+     */
+    protected static final boolean VERIFY_GEOMETRY_CRS_BEFORE_OPERATION = false;
+
     /**
      * The coordinate reference system, or {@code null} if unspecified.
      * The value of this field should be set by subclass constructors.
@@ -492,26 +505,24 @@ public abstract class GeometryWrapper extends AbstractGeometry implements Geomet
 
     /**
      * Transforms this geometry using the given coordinate operation.
-     * If the geometry uses a different <abbr>CRS</abbr> than the source <abbr>CRS</abbr>
-     * of the given {@code operation} and if the {@code validate} argument is {@code true},
-     * then a new operation to the target <abbr>CRS</abbr> will be automatically computed.
+     * The caller is responsible to ensure that the source <abbr>CRS</abbr> of the given {@code operation}
+     * is equivalent to {@link #getCoordinateReferenceSystem()}. This is not verified by this method.
      *
      * <p>This method is preferred to the {@link #transform(CoordinateReferenceSystem)} method
      * because not all geometry libraries store the <abbr>CRS</abbr> of their objects.</p>
      *
      * @param  operation  the coordinate operation to apply.
-     * @param  validate   whether to validate the operation source <abbr>CRS</abbr>.
      * @return the transformed geometry (may be the same geometry instance, but never {@code null}).
      * @throws UnsupportedOperationException if this operation is not supported for current implementation.
-     * @throws FactoryException if transformation to the target <abbr>CRS</abbr> cannot be found.
+     * @throws FactoryException if a problem happened while building a <abbr>CRS</abbr> from a <abbr>SRID</abbr>.
      * @throws TransformException if the geometry cannot be transformed.
      * @throws BackingStoreException if the operation failed because of another checked exception.
      */
-    public GeometryWrapper transform(final CoordinateOperation operation, boolean validate)
+    protected GeometryWrapper transform(final CoordinateOperation operation)
             throws FactoryException, TransformException
     {
         MathTransform transform = operation.getMathTransform();
-        if (validate && crs != null) {
+        if (VERIFY_GEOMETRY_CRS_BEFORE_OPERATION && crs != null) {
             CoordinateOperation step = CRS.findOperation(crs, operation.getSourceCRS(), null);
             transform = MathTransforms.concatenate(step.getMathTransform(), transform);
         }
@@ -529,10 +540,10 @@ public abstract class GeometryWrapper extends AbstractGeometry implements Geomet
      * @return the transformed geometry (may be the same geometry instance, but never {@code null}).
      * @throws UnsupportedOperationException if this operation is not supported for current implementation.
      * @throws TransformException if the geometry cannot be transformed.
-     * @throws FactoryException if a problem happened while setting the <abbr>CRS</abbr>.
+     * @throws FactoryException should never happen (declared because some constructors declare this exception).
      * @throws BackingStoreException if the operation failed because of another checked exception.
      */
-    public GeometryWrapper transform(final MathTransform transform)
+    protected GeometryWrapper transform(final MathTransform transform)
             throws FactoryException, TransformException
     {
         if (transform.isIdentity()) {
@@ -546,25 +557,37 @@ public abstract class GeometryWrapper extends AbstractGeometry implements Geomet
      * If the given <abbr>CRS</abbr> is {@code null} or the same as the current <abbr>CRS</abbr>,
      * or if the geometry has no <abbr>CRS</abbr>, then this wrapper is returned unchanged.
      *
-     * <p>Consider using {@link #transform(CoordinateOperation, boolean)} instead of this method,
-     * for performance reasons and because not all geometry libraries associate <abbr>CRS</abbr>
-     * with their geometric objects.</p>
+     * <p>Consider using {@link SpatialOperationContext#transform(GeometryWrapper)} instead of this method,
+     * for performance reasons, accuracy reasons (domain of validity) and because not all geometry libraries
+     * store information about the <abbr>CRS</abbr> in their geometric objects.</p>
      *
      * @param  targetCRS  the target coordinate reference system, or {@code null}.
      * @return the transformed geometry (may be the same geometry but never {@code null}).
      * @throws UnsupportedOperationException if this operation is not supported for current implementation.
-     * @throws TransformException if the given geometry has no CRS or cannot be transformed.
+     * @throws TransformException if the given geometry has no <abbr>CRS</abbr> or cannot be transformed.
      * @throws BackingStoreException if the operation failed because of another checked exception.
      *
      * @see #getCoordinateReferenceSystem()
+     * @see SpatialOperationContext#transform(GeometryWrapper)
      */
     @Override
-    public GeometryWrapper transform(final CoordinateReferenceSystem targetCRS) throws TransformException {
+    public final GeometryWrapper transform(final CoordinateReferenceSystem targetCRS) throws TransformException {
         if (targetCRS == null || targetCRS == crs || crs == null) {
             return this;
         }
+        DefaultGeographicBoundingBox bbox = null;
+        final GeneralEnvelope envelope = getEnvelope();
+        if (!envelope.isEmpty()) {
+            bbox = new DefaultGeographicBoundingBox();
+            try {
+                bbox.setBounds(envelope);
+            } catch (TransformException ex) {
+                bbox = null;
+                Logging.ignorableException(Geometries.LOGGER, GeometryWrapper.class, "transform", ex);
+            }
+        }
         try {
-            return transform(CRS.findOperation(crs, targetCRS, null), false);
+            return transform(CRS.findOperation(crs, targetCRS, bbox));
         } catch (FactoryException e) {
             throw new TransformFactoryException(e);
         }
@@ -637,6 +660,8 @@ public abstract class GeometryWrapper extends AbstractGeometry implements Geomet
 
     /**
      * Returns a hash code value based on the wrapped geometry.
+     *
+     * @return a hash code value based on the wrapped geometry.
      */
     @Override
     public final int hashCode() {
@@ -646,6 +671,8 @@ public abstract class GeometryWrapper extends AbstractGeometry implements Geomet
     /**
      * Returns the string representation of the wrapped geometry
      * (typically the class name and the bounds).
+     *
+     * @return a string representation of the wrapped geometry.
      */
     @Override
     public final String toString() {

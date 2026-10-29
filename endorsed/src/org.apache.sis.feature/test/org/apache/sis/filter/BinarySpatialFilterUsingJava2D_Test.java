@@ -28,6 +28,7 @@ import org.junit.jupiter.api.Test;
  *
  * @author  Martin Desruisseaux (Geomatys)
  */
+@SuppressWarnings("exports")
 public final class BinarySpatialFilterUsingJava2D_Test extends BinarySpatialFilterTestCase<Shape> {
     /**
      * Creates a new test.

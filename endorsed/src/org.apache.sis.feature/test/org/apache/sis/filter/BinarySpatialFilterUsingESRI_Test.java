@@ -29,6 +29,7 @@ import org.junit.jupiter.api.Test;
  * @author  Johann Sorel (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
  */
+@SuppressWarnings("exports")
 public final class BinarySpatialFilterUsingESRI_Test extends BinarySpatialFilterTestCase<Geometry> {
     /**
      * Creates a new test.

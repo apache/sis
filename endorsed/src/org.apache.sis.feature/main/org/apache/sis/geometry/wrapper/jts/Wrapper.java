@@ -43,11 +43,9 @@ import org.locationtech.jts.simplify.TopologyPreservingSimplifier;
 import org.opengis.util.FactoryException;
 import org.opengis.geometry.DirectPosition;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
-import org.opengis.referencing.operation.CoordinateOperation;
 import org.opengis.referencing.operation.MathTransform;
 import org.opengis.referencing.operation.TransformException;
 import org.apache.sis.referencing.CRS;
-import org.apache.sis.referencing.operation.transform.TransformFactoryException;
 import org.apache.sis.geometry.DirectPosition2D;
 import org.apache.sis.geometry.GeneralDirectPosition;
 import org.apache.sis.geometry.GeneralEnvelope;
@@ -702,53 +700,17 @@ add:    for (Geometry next = geometry;;) {
     }
 
     /**
-     * Transforms this geometry using the given coordinate operation.
-     * If the operation is {@code null}, then the geometry is returned unchanged.
-     * If the geometry uses a different CRS than the source CRS of the given operation
-     * and {@code validate} is {@code true},
-     * then a new operation to the target CRS will be automatically computed.
-     *
-     * @param  operation  the coordinate operation to apply, or {@code null}.
-     * @param  validate   whether to validate the operation source CRS.
-     * @throws FactoryException if transformation to the target CRS cannot be found.
-     * @throws TransformException if the geometry cannot be transformed.
-     */
-    @Override
-    public GeometryWrapper transform(final CoordinateOperation operation, final boolean validate)
-            throws FactoryException, TransformException
-    {
-        return rewrap(JTS.transform(geometry, operation, validate));
-    }
-
-    /**
-     * Transforms this geometry to the specified Coordinate Reference System (CRS).
-     * If the given CRS is null or is the same CRS as current one, the geometry is returned unchanged.
-     * If the geometry has no Coordinate Reference System, then the geometry is returned unchanged.
-     *
-     * @param  targetCRS  the target coordinate reference system, or {@code null}.
-     * @return the transformed geometry (may be the same geometry instance), or {@code null}.
-     * @throws TransformException if this geometry cannot be transformed.
-     */
-    @Override
-    public GeometryWrapper transform(final CoordinateReferenceSystem targetCRS) throws TransformException {
-        try {
-            return rewrap(JTS.transform(geometry, targetCRS));
-        } catch (FactoryException e) {
-            throw new TransformFactoryException(e);
-        }
-    }
-
-    /**
      * Transforms this geometry using the given transform.
      * If the transform is {@code null}, then the geometry is returned unchanged.
      * Otherwise, a new geometry is returned without CRS.
      *
      * @param  transform  the math transform to apply, or {@code null}.
      * @return the transformed geometry (may be the same geometry instance, but never {@code null}).
+     * @throws FactoryException should never happen (declared because the constructor declares this exception).
      * @throws TransformException if the geometry cannot be transformed.
      */
     @Override
-    public GeometryWrapper transform(final MathTransform transform) throws FactoryException, TransformException {
+    protected GeometryWrapper transform(final MathTransform transform) throws FactoryException, TransformException {
         return rewrap(JTS.transform(geometry, transform));
     }
 

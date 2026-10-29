@@ -1180,6 +1180,8 @@ public abstract class AbstractEnvelope extends FormattableObject implements Enve
 
     /**
      * Returns a hash value for this envelope.
+     *
+     * @return a hash value for this envelope.
      */
     @Override
     public int hashCode() {

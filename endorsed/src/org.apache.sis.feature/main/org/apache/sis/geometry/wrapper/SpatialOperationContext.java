@@ -56,11 +56,13 @@ import org.opengis.referencing.crs.DerivedCRS;
 
 
 /**
- * Context (such as desired CRS) in which a spatial operator will be executed.
+ * Context (such as desired <abbr>CRS</abbr>) in which a spatial operator will be executed.
  *
  * <p>Instances of this class are immutable and thread-safe.</p>
  *
- * <p>The serialization form is not a committed API and may change in any future version.</p>
+ * <p>This class is serializable because some filter implementations contain field of this
+ * type and are serializable (example: {@link org.apache.sis.filter.BinaryGeometryFilter}).
+ * But the serialization form is not a committed API and may change in any future version.</p>
  *
  * @author  Martin Desruisseaux (Geomatys)
  */
@@ -71,18 +73,13 @@ public final class SpatialOperationContext implements Serializable {
     private static final long serialVersionUID = -6197547343970700471L;
 
     /**
-     * The {@value} value, for identifying code that assume two-dimensional objects.
-     */
-    private static final int BIDIMENSIONAL = 2;
-
-    /**
      * Approximate geographic area of geometries, or {@code null} if unspecified.
      */
     @SuppressWarnings("serial")         // Most SIS implementations are serializable.
     private final GeographicBoundingBox areaOfInterest;
 
     /**
-     * The target CRS in which to transform geometries, or {@code null} for inferring automatically.
+     * The target <abbr>CRS</abbr> in which to transform geometries, or {@code null} for inferring automatically.
      */
     @SuppressWarnings("serial")         // Most SIS implementations are serializable.
     private final CoordinateReferenceSystem computationCRS;
@@ -146,14 +143,14 @@ public final class SpatialOperationContext implements Serializable {
      * that {@link ReferencingUtilities#getUnit(CoordinateSystem)} returns {@code null}.
      */
     private static CoordinateReferenceSystem to2D(CoordinateReferenceSystem crs) {
-        if (CRS.getDimensionOrZero(crs) > BIDIMENSIONAL) {
-            crs = CRS.getComponentAt(crs, 0, BIDIMENSIONAL);
+        if (CRS.getDimensionOrZero(crs) > Geometries.BIDIMENSIONAL) {
+            crs = CRS.getComponentAt(crs, 0, Geometries.BIDIMENSIONAL);
         }
         return crs;
     }
 
     /**
-     * Transforms the specified geometry to the computation CRS.
+     * Transforms the specified geometry to the computation <abbr>CRS</abbr>.
      * Geometries with unspecified CRS will be used as-is, without transformation.
      * The common CRS is stored in the {@link #commonCRS} field.
      *
@@ -166,7 +163,7 @@ public final class SpatialOperationContext implements Serializable {
         if (computationCRS != null) {
             final CoordinateReferenceSystem sourceCRS = to2D(geometry.getCoordinateReferenceSystem());
             if (sourceCRS != null && !CRS.equivalent(computationCRS, sourceCRS)) {
-                geometry = geometry.transform(CRS.findOperation(sourceCRS, computationCRS, areaOfInterest), false);
+                geometry = geometry.transform(CRS.findOperation(sourceCRS, computationCRS, areaOfInterest));
             }
         }
         return geometry;
@@ -255,7 +252,7 @@ select: if (commonCRS == null) {
                 return false;                       // Geometries are in incompatible CRS.
             }
             if (systemUnit != null) {
-                for (int i=allCRS.length; --i >= 0;) {
+                for (int i = allCRS.length; --i >= 0;) {
                     final CoordinateReferenceSystem crs = allCRS[i];
                     if (crs != null) {
                         commonCRS = usingSystemUnit(geometries[i], crs, commonCRS, systemUnit);
@@ -269,11 +266,11 @@ select: if (commonCRS == null) {
          * At this point, `commonCRS` is the CRS to use for converting all geometries.
          * Perform the conversions in-place.
          */
-        for (int i=0; i<allCRS.length; i++) {
+        for (int i=0; i < allCRS.length; i++) {
             if (i != skipIndex) {
                 final CoordinateReferenceSystem sourceCRS = allCRS[i];
                 if (!CRS.equivalent(commonCRS, sourceCRS)) {
-                    geometries[i] = geometries[i].transform(CRS.findOperation(sourceCRS, commonCRS, areaOfInterest), false);
+                    geometries[i] = geometries[i].transform(CRS.findOperation(sourceCRS, commonCRS, areaOfInterest));
                 }
             }
         }
@@ -400,7 +397,7 @@ select: if (commonCRS == null) {
              */
             final CoordinateSystem cs = geometryCRS.getCoordinateSystem();
             double latitude = Double.NaN, longitude = Double.NaN;
-            for (int i=0; i<BIDIMENSIONAL; i++) {
+            for (int i = 0; i < Geometries.BIDIMENSIONAL; i++) {
                 final CoordinateSystemAxis axis = cs.getAxis(i);
                 double coordinate = centroid.getCoordinate(i);
                 coordinate = axis.getUnit().getConverterToAny(Units.DEGREE).convert(coordinate);

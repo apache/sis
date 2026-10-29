@@ -31,6 +31,7 @@ import org.locationtech.jts.geom.Polygon;
 import org.opengis.referencing.operation.TransformException;
 import org.apache.sis.util.Classes;
 import org.apache.sis.util.resources.Errors;
+import org.apache.sis.referencing.operation.transform.GeometryTransformException;
 
 
 /**
@@ -79,7 +80,7 @@ public abstract class GeometryTransform {
         if (geom instanceof Polygon)            return transform((Polygon)            geom);
         if (geom instanceof MultiPolygon)       return transform((MultiPolygon)       geom);
         if (geom instanceof GeometryCollection) return transform((GeometryCollection) geom);
-        throw new IllegalArgumentException(Errors.format(Errors.Keys.UnsupportedType_1, Classes.getClass(geom)));
+        throw new GeometryTransformException(Errors.format(Errors.Keys.UnsupportedType_1, Classes.getClass(geom)));
     }
 
     /**

@@ -22,7 +22,6 @@ import java.awt.Shape;
 import org.locationtech.jts.algorithm.Orientation;
 import org.locationtech.jts.geom.CoordinateSequence;
 import org.locationtech.jts.geom.CoordinateSequences;
-import org.locationtech.jts.geom.Envelope;
 import org.locationtech.jts.geom.Geometry;
 import org.locationtech.jts.geom.GeometryFactory;
 import org.locationtech.jts.geom.LinearRing;
@@ -32,19 +31,14 @@ import org.locationtech.jts.geom.GeometryCollection;
 import org.opengis.metadata.Identifier;
 import org.opengis.util.FactoryException;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
-import org.opengis.referencing.operation.CoordinateOperation;
 import org.opengis.referencing.operation.MathTransform;
 import org.opengis.referencing.operation.TransformException;
 import org.apache.sis.referencing.CRS;
 import org.apache.sis.referencing.IdentifiedObjects;
 import org.apache.sis.referencing.crs.AbstractCRS;
 import org.apache.sis.referencing.cs.AxesConvention;
-import org.apache.sis.util.logging.Logging;
-import org.apache.sis.metadata.iso.citation.Citations;
-import org.apache.sis.metadata.iso.extent.DefaultGeographicBoundingBox;
-import org.apache.sis.geometry.GeneralEnvelope;
 import org.apache.sis.util.internal.shared.Constants;
-import static org.apache.sis.geometry.wrapper.Geometries.LOGGER;
+import org.apache.sis.metadata.iso.citation.Citations;
 
 
 /**
@@ -159,104 +153,6 @@ public final class JTS {
             }
         }
         target.setUserData(crs);
-    }
-
-    /**
-     * Finds an operation between the given CRS valid in the given area of interest.
-     * This method does not verify the <abbr>CRS</abbr> of the given geometry.
-     *
-     * @param  sourceCRS       the CRS of source coordinates.
-     * @param  targetCRS       the CRS of target coordinates.
-     * @param  areaOfInterest  the area of interest.
-     * @return the mathematical operation from {@code sourceCRS} to {@code targetCRS}.
-     * @throws FactoryException if the operation cannot be created.
-     */
-    private static CoordinateOperation findOperation(final CoordinateReferenceSystem sourceCRS,
-                                                     final CoordinateReferenceSystem targetCRS,
-                                                     final Geometry areaOfInterest)
-            throws FactoryException
-    {
-        DefaultGeographicBoundingBox bbox = null;
-        if (!areaOfInterest.isEmpty()) {
-            bbox = new DefaultGeographicBoundingBox();
-            try {
-                final Envelope e = areaOfInterest.getEnvelopeInternal();
-                final var env = new GeneralEnvelope(sourceCRS);     // May be 3- or 4-dimensional.
-                env.setRange(0, e.getMinX(), e.getMaxX());
-                env.setRange(1, e.getMinY(), e.getMaxY());
-                bbox.setBounds(env);
-            } catch (TransformException ex) {
-                bbox = null;
-                Logging.ignorableException(LOGGER, JTS.class, "transform", ex);
-            }
-        }
-        return CRS.findOperation(sourceCRS, targetCRS, bbox);
-    }
-
-    /**
-     * Transforms the given geometry to the specified Coordinate Reference System (<abbr>CRS</abbr>).
-     * If the given geometry is {@code null}, or if the given <abbr>CRS</abbr> is {@code null} or the
-     * same as the current geometry <abbr>CRS</abbr>, then the given geometry is returned unchanged.
-     * If the geometry has no Coordinate Reference System, then the geometry is returned unchanged.
-     *
-     * <p><b>This operation may be slow!</b>
-     * If many geometries need to be transformed, it is better to fetch the {@link CoordinateOperation} only once,
-     * then invoke {@link #transform(Geometry, CoordinateOperation, boolean)} for each geometry.
-     * Alternatively, the geometries can be stored in a single geometry collection
-     * in order to invoke this method only once.</p>
-     *
-     * @param  geometry   the geometry to transform, or {@code null}.
-     * @param  targetCRS  the target coordinate reference system, or {@code null}.
-     * @return the transformed geometry, or the same geometry if it is already in target CRS.
-     * @throws FactoryException if transformation to the target CRS cannot be constructed.
-     * @throws TransformException if the given geometry cannot be transformed.
-     */
-    public static Geometry transform(Geometry geometry, final CoordinateReferenceSystem targetCRS)
-            throws FactoryException, TransformException
-    {
-        if (geometry != null && targetCRS != null) {
-            final CoordinateReferenceSystem sourceCRS = getCoordinateReferenceSystem(geometry);
-            if (sourceCRS != null) {
-                if (!CRS.equivalent(sourceCRS, targetCRS)) {
-                    geometry = transform(geometry, findOperation(sourceCRS, targetCRS, geometry), false);
-                }
-            }
-        }
-        return geometry;
-    }
-
-    /**
-     * Transforms the given geometry using the given coordinate operation.
-     * If the geometry or the operation is null, then the geometry is returned unchanged.
-     * If the source CRS is not equals to the geometry CRS and {@code validate} is {@code true},
-     * then a new operation is inferred.
-     *
-     * @todo Handle antimeridian case.
-     *
-     * @param  geometry   the geometry to transform, or {@code null}.
-     * @param  operation  the coordinate operation to apply, or {@code null}.
-     * @param  validate   whether to validate the operation source CRS.
-     * @return the transformed geometry, or the same geometry if it is already in target CRS.
-     * @throws FactoryException if transformation to the target CRS cannot be found.
-     * @throws TransformException if the given geometry cannot be transformed.
-     */
-    public static Geometry transform(Geometry geometry, CoordinateOperation operation, final boolean validate)
-            throws FactoryException, TransformException
-    {
-        if (geometry != null && operation != null) {
-            if (validate) {
-                final CoordinateReferenceSystem sourceCRS = operation.getSourceCRS();
-                if (sourceCRS != null) {
-                    final CoordinateReferenceSystem crs = getCoordinateReferenceSystem(geometry);
-                    if (crs != null && !CRS.equivalent(sourceCRS, crs)) {
-                        operation = findOperation(crs, operation.getTargetCRS(), geometry);
-                    }
-                }
-            }
-            geometry = transform(geometry, operation.getMathTransform());
-            geometry.setUserData(operation.getTargetCRS());
-        }
-        return geometry;
     }
 
     /**

@@ -25,6 +25,7 @@ import org.locationtech.jts.geom.Geometry;
  * @author  Johann Sorel (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
  */
+@SuppressWarnings("exports")
 public final class BinarySpatialFilterUsingJTS_Test extends BinarySpatialFilterTestCase<Geometry> {
     /**
      * Creates a new test.

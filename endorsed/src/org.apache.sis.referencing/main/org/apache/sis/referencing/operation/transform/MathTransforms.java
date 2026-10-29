@@ -786,17 +786,17 @@ public final class MathTransforms {
     }
 
     /**
-     * Returns source coordinate values where the transform is mathematically and numerically applicable.
+     * Returns the ranges of source coordinate values where the given transform is mathematically applicable.
      * This is <em>not</em> the domain of validity for which a coordinate reference system has been defined,
-     * because this method ignores "real world" considerations such as datum and country boundaries.
+     * because this method ignores real world considerations such as datum and country boundaries.
      * This method is for allowing callers to crop their data for removing areas that may cause numerical problems,
-     * for example latitudes too close to a pole before Mercator projection.
+     * for example latitudes too close to a pole used as inputs of a Mercator projection.
      *
      * <p>See {@link AbstractMathTransform#getDomain(DomainDefinition)} for more information.
      * This static method delegates to above-cited method if possible, or returns an empty value otherwise.</p>
      *
      * @param  evaluated  transform for which to evaluate a domain, or {@code null}.
-     * @return estimation of a domain where this transform is considered numerically applicable.
+     * @return estimation of ranges of source coordinate values where the transform is numerically applicable.
      * @throws TransformException if the domain cannot be estimated.
      *
      * @see AbstractMathTransform#getDomain(DomainDefinition)
