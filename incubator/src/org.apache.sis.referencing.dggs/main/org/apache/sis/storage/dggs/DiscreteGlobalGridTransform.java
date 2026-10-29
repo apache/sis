@@ -206,7 +206,7 @@ public abstract class DiscreteGlobalGridTransform extends SubTransform {
             if (zids != null) return;
 
             final DiscreteGlobalGridHierarchy dggh = dggrs.getGridSystem().getHierarchy();
-            zids = new Object[(int) extent.getSize(0)];
+            final Object[] array = new Object[(int) extent.getSize(0)];
             final Zone zone = dggh.getZone(baseZoneIds[0]);
             final int searchedLevel = zone.getLocationType().getRefinementLevel() + relativeDepth;
             int idx = 0;
@@ -214,11 +214,22 @@ public abstract class DiscreteGlobalGridTransform extends SubTransform {
                 Iterator<Object> iterator = s.iterator();
                 while (iterator.hasNext()) {
                     Object zid = iterator.next();
-                    zids[idx] = zid;
+                    if (idx >= array.length) {
+                        index.clear();
+                        throw new TransformException("Zone " + baseZoneIds[0] + " declares " + array.length
+                                + " children at relative depth " + relativeDepth + " but the grid returned more.");
+                    }
+                    array[idx] = zid;
                     index.put(zid, idx);
                     idx++;
                 }
             }
+            if (idx != array.length) {
+                index.clear();
+                throw new TransformException("Zone " + baseZoneIds[0] + " declares " + array.length
+                        + " children at relative depth " + relativeDepth + " but the grid returned " + idx + ".");
+            }
+            zids = array;
         }
 
         @Override
