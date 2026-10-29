@@ -18,18 +18,11 @@ package org.apache.sis.storage.rs.internal.shared;
 
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.Comparator;
-import java.util.LinkedHashMap;
 import java.util.List;
-import java.util.Map;
-import java.util.Map.Entry;
 import java.util.Optional;
 import java.util.Set;
 import java.util.TreeSet;
 import org.opengis.referencing.ReferenceSystem;
-import org.opengis.referencing.crs.CoordinateReferenceSystem;
-import org.opengis.referencing.crs.VerticalCRS;
-import org.opengis.referencing.operation.MathTransform;
 import org.opengis.referencing.operation.TransformException;
 import org.opengis.util.FactoryException;
 import org.opengis.util.GenericName;
@@ -38,15 +31,16 @@ import org.apache.sis.coverage.grid.GridExtent;
 import org.apache.sis.coverage.grid.GridGeometry;
 import org.apache.sis.coverage.grid.PixelInCell;
 import org.apache.sis.referencing.CRS;
-import org.apache.sis.referencing.dggs.DiscreteGlobalGridReferenceSystem;
 import org.apache.sis.referencing.operation.transform.MathTransforms;
 import org.apache.sis.referencing.rs.ReferenceSystems;
 import org.apache.sis.storage.AbstractResource;
 import org.apache.sis.storage.DataStoreException;
-import org.apache.sis.storage.dggs.DiscreteGlobalGridGeometry;
 import org.apache.sis.storage.rs.CodedCoverage;
 import org.apache.sis.storage.rs.CodedGeometry;
+import static org.apache.sis.storage.rs.CodedGeometry.compound;
 import org.apache.sis.storage.rs.CodedResource;
+import org.opengis.referencing.crs.CoordinateReferenceSystem;
+import org.opengis.referencing.operation.MathTransform;
 
 
 /**
@@ -108,98 +102,118 @@ public final class CompoundCodedResource extends AbstractResource implements Cod
 
     @Override
     public CodedCoverage read(CodedGeometry geometry, int... range) throws DataStoreException {
-        geometry = CodedResources.align(this, geometry);
+        /*
+         * Do not align the query on this resource geometry : it has no extent and no transform,
+         * aligning would only add undefined components, resulting in a geometry without extent.
+         * Each resource aligns the query on its own geometry.
+         */
         try {
-            final CodedCoverage[] resampled = new CodedCoverage[resources.size()];
-            for (int i = 0; i < resampled.length; i++) {
-                final CodedResource resource = resources.get(i);
-                CodedCoverage coverage = resources.get(i).read(geometry);
-                if (!geometry.equals(coverage.getGeometry())) {
-                    coverage = new ResampledCodedCoverage(resource.getIdentifier().get(), coverage, geometry);
-                }
-                resampled[i] = coverage;
+            final CodedCoverage[] coverages = new CodedCoverage[resources.size()];
+            final CodedGeometry[] geometries = new CodedGeometry[coverages.length + 1];
+            geometries[0] = geometry;
+            for (int i = 0; i < coverages.length; i++) {
+                coverages[i] = resources.get(i).read(geometry);
+                geometries[i+1] = coverages[i].getGeometry();
             }
-            return new CompoundCodedCoverage(name, resampled, sampleDimensions);
-        } catch (FactoryException ex) {
+            //sources may have added dimensions which are not in the query, aggregate them
+            final CodedGeometry target;
+            try {
+                target = aggregate(geometries);
+            } catch (IllegalArgumentException ex) {
+                throw new DataStoreException(ex.getMessage(), ex);
+            }
+            for (int i = 0; i < coverages.length; i++) {
+                if (!target.equals(coverages[i].getGeometry())) {
+                    coverages[i] = new ResampledCodedCoverage(resources.get(i).getIdentifier().get(), coverages[i], target);
+                }
+            }
+            return new CompoundCodedCoverage(name, coverages, sampleDimensions);
+        } catch (FactoryException | TransformException ex) {
             throw new DataStoreException(ex.getMessage(), ex);
         }
     }
 
-    private CodedGeometry compound(List<CodedGeometry> geometries) {
+    /**
+     * Aggregates the given geometries in a single geometry.
+     * The first geometry is the reference, it is copied unchanged at the beginning of the result.
+     * The components of the other geometries which can not be mapped from any component of the
+     * reference are appended after it. Such components are typically temporal or vertical axes.
+     * Equivalent components found in several geometries are merged in a single component
+     * containing all their values.
+     *
+     * @param  geometries  geometries to aggregate, the first one is the reference.
+     * @return the aggregated geometry, or the reference if no other geometry has extra components.
+     * @throws IllegalArgumentException if an extra component can not be aggregated.
+     * @throws FactoryException if an operation between equivalent components can not be created.
+     * @throws TransformException if the values of equivalent components can not be converted.
+     */
+    private static CodedGeometry aggregate(CodedGeometry ... geometries) throws FactoryException, TransformException {
+        if (geometries.length == 0) return null;
+        final CodedGeometry reference = geometries[0];
+        final ReferenceSystem referenceRs = reference.getReferenceSystem();
+        if (referenceRs == null) return reference;
+        final List<ReferenceSystem> referenceComponents = ReferenceSystems.getSingleComponents(referenceRs, true);
 
-        final Map<ReferenceSystem,CodedGeometry> map = new LinkedHashMap();
+        final List<CodedGeometry> extras = new ArrayList<>();
+        for (int g = 1; g < geometries.length; g++) {
+            final CodedGeometry geometry = geometries[g];
+            if (geometry.getReferenceSystem() == null) continue;
+            componentLoop:
+            for (ReferenceSystem component : ReferenceSystems.getSingleComponents(geometry.getReferenceSystem(), true)) {
+                if (isMappable(referenceComponents, component)) continue;
+                if (!(component instanceof CoordinateReferenceSystem crs) || ReferenceSystems.getDimension(crs) != 1) {
+                    throw new IllegalArgumentException("Can not aggregate component " + component.getName()
+                            + ", only one-dimensional coordinate reference systems are supported.");
+                }
+                final CodedGeometry slice = geometry.slice(component).get();
 
-        //cut each geometry in dimensions slice and try to merge them
-        for (CodedGeometry geom : geometries) {
-            final ReferenceSystem referenceSystem = geom.getReferenceSystem();
-            final List<ReferenceSystem> singleComponents = ReferenceSystems.getSingleComponents(referenceSystem, true);
-            sliceLoop:
-            for (ReferenceSystem rs : singleComponents) {
-                final CodedGeometry slice = geom.slice(rs).get();
-
-                //make a more accurate test to find a match
-                for (Entry<ReferenceSystem, CodedGeometry> entry : map.entrySet()) {
-                    final ReferenceSystem krs = entry.getKey();
-                    if (rs instanceof DiscreteGlobalGridReferenceSystem && krs instanceof DiscreteGlobalGridReferenceSystem) {
-                        final CodedGeometry result = mergeDggrs(entry.getValue(), slice);
-                        map.remove(entry.getKey());
-                        map.put(result.getReferenceSystem(), result);
-                        continue sliceLoop;
-                    } else if (rs instanceof CoordinateReferenceSystem crs1 && krs instanceof CoordinateReferenceSystem crs2) {
-                        try {
-                            CRS.findOperation(crs2, crs1, null);
-                            final CodedGeometry result = mergeGrids(entry.getValue(), slice);
-                            map.remove(entry.getKey());
-                            map.put(result.getReferenceSystem(), result);
-                            continue sliceLoop;
-                        } catch (FactoryException | TransformException ex) {
-                            //do nothing, continue
-                        }
+                for (int i = 0, n = extras.size(); i < n; i++) {
+                    final CodedGeometry extra = extras.get(i);
+                    try {
+                        CRS.findOperation(crs, (CoordinateReferenceSystem) extra.getReferenceSystem(), null);
+                    } catch (FactoryException ex) {
+                        //not an equivalent axis, continue
+                        continue;
                     }
+                    if (extra.isRegularGrid().isEmpty() || slice.isRegularGrid().isEmpty()) {
+                        throw new IllegalArgumentException("Can not aggregate component " + component.getName()
+                                + ", only regular grids can be merged.");
+                    }
+                    extras.set(i, mergeGrids(extra, slice));
+                    continue componentLoop;
                 }
 
-                //no equivalent dimension, we can add it
-                map.put(rs, slice);
+                //no equivalent component, we can add it
+                extras.add(slice);
             }
         }
+        if (extras.isEmpty()) return reference;
+        extras.add(0, reference);
+        return compound(extras.toArray(CodedGeometry[]::new));
+    }
 
-        final List<CodedGeometry> sliceQuery = new ArrayList<>(map.values());
-
-        //place RS in order : horiontal > vertical > others
-        sliceQuery.sort(new Comparator<CodedGeometry>() {
-            @Override
-            public int compare(CodedGeometry o1, CodedGeometry o2) {
-                final ReferenceSystem rs1 = o1.getReferenceSystem();
-                final ReferenceSystem rs2 = o2.getReferenceSystem();
-                if (rs1 instanceof DiscreteGlobalGridReferenceSystem) return -1;
-                if (rs2 instanceof DiscreteGlobalGridReferenceSystem) return +1;
-
-                final CoordinateReferenceSystem crs1 = (CoordinateReferenceSystem) rs1;
-                final CoordinateReferenceSystem crs2 = (CoordinateReferenceSystem) rs2;
-                if (CRS.isHorizontalCRS(crs1)) return -1;
-                if (CRS.isHorizontalCRS(crs2)) return +1;
-                if (crs1 instanceof VerticalCRS) return -1;
-                if (crs2 instanceof VerticalCRS) return +1;
-                return 0;
+    /**
+     * Returns true if an operation exists from one of the reference components to the given component.
+     */
+    private static boolean isMappable(List<ReferenceSystem> referenceComponents, ReferenceSystem component) {
+        for (ReferenceSystem candidate : referenceComponents) {
+            try {
+                ReferenceSystems.findOperation(candidate, component, null);
+                return true;
+            } catch (FactoryException ex) {
+                //not mappable from this component, try next
             }
-        });
-        return CodedGeometry.compound(sliceQuery.toArray(CodedGeometry[]::new));
-    }
-
-    private CodedGeometry mergeDggrs(CodedGeometry cg1, CodedGeometry cg2) {
-        final DiscreteGlobalGridReferenceSystem dggrs1 = (DiscreteGlobalGridReferenceSystem) cg1.getReferenceSystem();
-        final DiscreteGlobalGridReferenceSystem dggrs2 = (DiscreteGlobalGridReferenceSystem) cg2.getReferenceSystem();
-        if (!dggrs1.equals(dggrs2)) {
-            throw new IllegalArgumentException("Two code geometries use different DGGRS");
         }
-        return DiscreteGlobalGridGeometry.unstructured(dggrs1, null, null);
+        return false;
     }
 
-    private CodedGeometry mergeGrids(CodedGeometry cg1, CodedGeometry cg2) throws FactoryException, TransformException {
+    /**
+     * Merges two one-dimensional regular grids in a grid containing the values of both.
+     */
+    private static CodedGeometry mergeGrids(CodedGeometry cg1, CodedGeometry cg2) throws FactoryException, TransformException {
         final GridGeometry grid1 = cg1.isRegularGrid().get();
         GridGeometry grid2 = cg2.isRegularGrid().get();
         final CoordinateReferenceSystem crs1 = grid1.getCoordinateReferenceSystem();
-        final CoordinateReferenceSystem crs2 = grid2.getCoordinateReferenceSystem();
 
         if ( grid1.isDefined(GridGeometry.EXTENT | GridGeometry.GRID_TO_CRS)
            && grid2.isDefined(GridGeometry.EXTENT | GridGeometry.GRID_TO_CRS)) {
@@ -208,6 +222,10 @@ public final class CompoundCodedResource extends AbstractResource implements Cod
             final double[] array1 = allTransformedValues(grid1);
             final double[] array2 = allTransformedValues(grid2);
             final double[] all = merge(array1, array2);
+            if (all.length == array1.length) {
+                //second grid does not add any value, preserve the original transform
+                return cg1;
+            }
 
             final MathTransform trs = MathTransforms.interpolate(null, all);
             final GridGeometry result = new GridGeometry(new GridExtent(null, 0, all.length, false), PixelInCell.CELL_CENTER, trs, crs1);
@@ -220,7 +238,7 @@ public final class CompoundCodedResource extends AbstractResource implements Cod
         }
     }
 
-    private GridGeometry toOther(GridGeometry grid, CoordinateReferenceSystem target) throws FactoryException {
+    private static GridGeometry toOther(GridGeometry grid, CoordinateReferenceSystem target) throws FactoryException {
         final CoordinateReferenceSystem source = grid.getCoordinateReferenceSystem();
         final GridExtent sourceExtent = grid.getExtent();
         final MathTransform sourceGridToCRS = grid.getGridToCRS(PixelInCell.CELL_CENTER);
@@ -247,10 +265,9 @@ public final class CompoundCodedResource extends AbstractResource implements Cod
     }
 
     private static double[] merge(double[] array1, double[] array2) {
-        final Set<Double> all = new TreeSet();
+        final Set<Double> all = new TreeSet<>();
         for (double d : array1) all.add(d);
         for (double d : array2) all.add(d);
         return all.stream().mapToDouble(Double::doubleValue).toArray();
     }
-
 }
