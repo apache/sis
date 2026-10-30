@@ -170,7 +170,7 @@ public non-sealed class DefaultNurbSurface extends AbstractGeometry implements N
     private static Vector<?> partialDerivative(final double param, final Vector<?>[] flattenedHomogeneous, final double[] knots, final int degree,
             final double w, final double[] surfacePoint, final int spatialDim) {
         if (degree == 0) {
-            return Vectors.createDouble(spatialDim);
+            return Vectors.create(spatialDim, DataType.DOUBLE);
         }
 
         final Vector<?>[] derivCtrl = DeBoorAlgorithm.derivativeControlPoints(flattenedHomogeneous, knots, degree);

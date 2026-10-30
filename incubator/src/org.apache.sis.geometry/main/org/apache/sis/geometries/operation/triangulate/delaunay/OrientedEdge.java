@@ -248,8 +248,8 @@ public final class OrientedEdge extends AbstractGeometry implements LineString, 
     @Override
     public Vector getPosition(int index) {
         switch (index) {
-            case 0 : return (reversed ? structure.end : structure.start).getPosition().copy();
-            case 1 : return (reversed ? structure.start : structure.end).getPosition().copy();
+            case 0 : return (reversed ? structure.end : structure.start).getPosition();
+            case 1 : return (reversed ? structure.start : structure.end).getPosition();
             default : throw new ArrayIndexOutOfBoundsException();
         }
     }

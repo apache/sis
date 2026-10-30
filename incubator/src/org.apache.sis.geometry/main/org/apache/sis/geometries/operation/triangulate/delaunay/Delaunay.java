@@ -137,7 +137,7 @@ public final class Delaunay {
         //NaN or infinite values would make the geometric tests fail deep in the algorithm
         final Cursor cursor = points.getPositions().cursor();
         while (cursor.next()) {
-            final Vector<?> position = cursor.samples();
+            final Vector<?> position = cursor.getSamples();
             if (!Double.isFinite(position.get(0)) || !Double.isFinite(position.get(1))) {
                 throw new IllegalArgumentException("Position " + cursor.coordinate() + " is not finite: " + position);
             }
@@ -375,7 +375,7 @@ public final class Delaunay {
         final long nearestVertex = tree.nearest(position).getValue();
         solve(nearestVertex, vertex);
 
-        tree.insertNoCopy(vertex.getPosition(),vertex.getIndex());
+        tree.insert(vertex.getPosition(),vertex.getIndex());
         //solve delaunay edges
         for (OrientedEdge edge = triangulationStackEdges.poll(); edge != null; edge = triangulationStackEdges.poll()) {
             //delaunay simplification test

@@ -113,7 +113,7 @@ public final class Plane extends AbstractGeometry{
     }
 
     public void setNormal(Vector<?> normal) {
-        this.normal = normal.copy();
+        this.normal = normal;
     }
 
     /**

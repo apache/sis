@@ -20,7 +20,16 @@ package org.apache.sis.maths;
  *
  * @author Johann Sorel (Geomatys)
  */
-public abstract class Vector1D<T extends Vector1D<T>> extends AbstractVector<T> {
+public abstract sealed class Vector1D<T extends Vector1D<T>> extends AbstractVector<T>
+        permits Vector1D.Byte,
+                Vector1D.UByte,
+                Vector1D.Short,
+                Vector1D.UShort,
+                Vector1D.Int,
+                Vector1D.UInt,
+                Vector1D.Long,
+                Vector1D.Float,
+                Vector1D.Double{
 
     public Vector1D() {
     }
@@ -29,24 +38,6 @@ public abstract class Vector1D<T extends Vector1D<T>> extends AbstractVector<T> 
     public final int getDimension() {
         return 1;
     }
-
-    @Override
-    public abstract T with(int indice, double value) throws IndexOutOfBoundsException;
-
-    @Override
-    public abstract T add(Vector<?> other);
-
-    @Override
-    public abstract T subtract(Vector<?> other);
-
-    @Override
-    public abstract T multiply(Vector<?> other);
-
-    @Override
-    public abstract T divide(Vector<?> other);
-
-    @Override
-    public abstract T scale(double scale);
 
     /**
      * Create a new vector, linear combination of this vector and the other vector : a*this + b*other.
@@ -84,9 +75,6 @@ public abstract class Vector1D<T extends Vector1D<T>> extends AbstractVector<T> 
         ensureDimension(unit, 1);
         return combine(1, unit, -dot(unit));
     }
-
-    @Override
-    public abstract T lerp(Vector<?> other, double ratio);
 
     @Override
     public T lerpAccurate(Vector<?> other, double ratio) {
@@ -132,13 +120,9 @@ public abstract class Vector1D<T extends Vector1D<T>> extends AbstractVector<T> 
         return d0*d0;
     }
 
-    public static class Byte extends Vector1D<Byte> {
+    public static final class Byte extends Vector1D<Byte> {
 
         public final byte x;
-
-        public Byte() {
-            this.x = 0;
-        }
 
         public Byte(byte x) {
             this.x = x;
@@ -260,11 +244,6 @@ public abstract class Vector1D<T extends Vector1D<T>> extends AbstractVector<T> 
         }
 
         @Override
-        public Byte copy() {
-            return this;
-        }
-
-        @Override
         public boolean isFinite() {
             return true;
         }
@@ -281,13 +260,9 @@ public abstract class Vector1D<T extends Vector1D<T>> extends AbstractVector<T> 
 
     }
 
-    public static class UByte extends Vector1D<UByte> {
+    public static final class UByte extends Vector1D<UByte> {
 
         public final byte x;
-
-        public UByte() {
-            this.x = 0;
-        }
 
         public UByte(byte x) {
             this.x = x;
@@ -409,11 +384,6 @@ public abstract class Vector1D<T extends Vector1D<T>> extends AbstractVector<T> 
         }
 
         @Override
-        public UByte copy() {
-            return this;
-        }
-
-        @Override
         public boolean isFinite() {
             return true;
         }
@@ -430,13 +400,9 @@ public abstract class Vector1D<T extends Vector1D<T>> extends AbstractVector<T> 
 
     }
 
-    public static class Short extends Vector1D<Short> {
+    public static final class Short extends Vector1D<Short> {
 
         public final short x;
-
-        public Short() {
-            this.x = 0;
-        }
 
         public Short(short x) {
             this.x = x;
@@ -558,11 +524,6 @@ public abstract class Vector1D<T extends Vector1D<T>> extends AbstractVector<T> 
         }
 
         @Override
-        public Short copy() {
-            return this;
-        }
-
-        @Override
         public boolean isFinite() {
             return true;
         }
@@ -579,13 +540,9 @@ public abstract class Vector1D<T extends Vector1D<T>> extends AbstractVector<T> 
 
     }
 
-    public static class UShort extends Vector1D<UShort> {
+    public static final class UShort extends Vector1D<UShort> {
 
         public final short x;
-
-        public UShort() {
-            this.x = 0;
-        }
 
         public UShort(short x) {
             this.x = x;
@@ -707,11 +664,6 @@ public abstract class Vector1D<T extends Vector1D<T>> extends AbstractVector<T> 
         }
 
         @Override
-        public UShort copy() {
-            return this;
-        }
-
-        @Override
         public boolean isFinite() {
             return true;
         }
@@ -728,13 +680,9 @@ public abstract class Vector1D<T extends Vector1D<T>> extends AbstractVector<T> 
 
     }
 
-    public static class Int extends Vector1D<Int> {
+    public static final class Int extends Vector1D<Int> {
 
         public final int x;
-
-        public Int() {
-            this.x = 0;
-        }
 
         public Int(int x) {
             this.x = x;
@@ -856,11 +804,6 @@ public abstract class Vector1D<T extends Vector1D<T>> extends AbstractVector<T> 
         }
 
         @Override
-        public Int copy() {
-            return this;
-        }
-
-        @Override
         public boolean isFinite() {
             return true;
         }
@@ -877,13 +820,9 @@ public abstract class Vector1D<T extends Vector1D<T>> extends AbstractVector<T> 
 
     }
 
-    public static class UInt extends Vector1D<UInt> {
+    public static final class UInt extends Vector1D<UInt> {
 
         public final int x;
-
-        public UInt() {
-            this.x = 0;
-        }
 
         public UInt(int x) {
             this.x = x;
@@ -1005,11 +944,6 @@ public abstract class Vector1D<T extends Vector1D<T>> extends AbstractVector<T> 
         }
 
         @Override
-        public UInt copy() {
-            return this;
-        }
-
-        @Override
         public boolean isFinite() {
             return true;
         }
@@ -1026,13 +960,9 @@ public abstract class Vector1D<T extends Vector1D<T>> extends AbstractVector<T> 
 
     }
 
-    public static class Long extends Vector1D<Long> {
+    public static final class Long extends Vector1D<Long> {
 
         public final long x;
-
-        public Long() {
-            this.x = 0;
-        }
 
         public Long(long x) {
             this.x = x;
@@ -1154,11 +1084,6 @@ public abstract class Vector1D<T extends Vector1D<T>> extends AbstractVector<T> 
         }
 
         @Override
-        public Long copy() {
-            return this;
-        }
-
-        @Override
         public boolean isFinite() {
             return true;
         }
@@ -1175,13 +1100,9 @@ public abstract class Vector1D<T extends Vector1D<T>> extends AbstractVector<T> 
 
     }
 
-    public static class Float extends Vector1D<Float> {
+    public static final class Float extends Vector1D<Float> {
 
         public final float x;
-
-        public Float() {
-            this.x = 0;
-        }
 
         public Float(float x) {
             this.x = x;
@@ -1321,11 +1242,6 @@ public abstract class Vector1D<T extends Vector1D<T>> extends AbstractVector<T> 
         }
 
         @Override
-        public Float copy() {
-            return this;
-        }
-
-        @Override
         public boolean isFinite() {
             return java.lang.Float.isFinite(x);
         }
@@ -1351,13 +1267,9 @@ public abstract class Vector1D<T extends Vector1D<T>> extends AbstractVector<T> 
 
     }
 
-    public static class Double extends Vector1D<Double> {
+    public static final class Double extends Vector1D<Double> {
 
         public final double x;
-
-        public Double() {
-            this.x = 0;
-        }
 
         public Double(double x) {
             this.x = x;
@@ -1499,11 +1411,6 @@ public abstract class Vector1D<T extends Vector1D<T>> extends AbstractVector<T> 
             }
             return new Double(
                     x + ratio * (other.get(0) - x));
-        }
-
-        @Override
-        public Double copy() {
-            return this;
         }
 
         @Override

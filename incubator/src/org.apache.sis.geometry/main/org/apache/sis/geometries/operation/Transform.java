@@ -143,7 +143,7 @@ public final class Transform {
                 if (normals != null || tangents != null) {
                     for (long i = 0, n = positions.getLength(); i < n; i++) {
                         final Vector<?> pos = positions.get(i);
-                        final MatrixSIS matrix = MatrixSIS.castOrCopy(transform.derivative(Vectors.asDirectPostion(pos)));
+                        final MatrixSIS matrix = MatrixSIS.castOrCopy(transform.derivative(pos.asDirectPostion(null)));
                         if (cpn != null) {
                             final Vector<?> nor = Vectors.create(matrix.multiply(cpn.get(i).toArrayDouble()), cpn.getDataType());
                             cpn.set(i, nor.normalize());

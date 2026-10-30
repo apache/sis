@@ -31,11 +31,11 @@ public final class Motion {
 
     private boolean isKinematic = false;
     private double mass = 1.0;
-    private Vector3D.Double centerOfMass = new Vector3D.Double();
-    private Vector3D.Double inertialDiagonal = new Vector3D.Double();
+    private Vector3D.Double centerOfMass = new Vector3D.Double(0,0,0);
+    private Vector3D.Double inertialDiagonal = new Vector3D.Double(0,0,0);
     private Quaternion inertiaOrientation = new Quaternion();
-    private Vector3D.Double linearVelocity = new Vector3D.Double();
-    private Vector3D.Double angularVelocity = new Vector3D.Double();
+    private Vector3D.Double linearVelocity = new Vector3D.Double(0,0,0);
+    private Vector3D.Double angularVelocity = new Vector3D.Double(0,0,0);
     private double gravityFactor = 1.0;
 
     /**

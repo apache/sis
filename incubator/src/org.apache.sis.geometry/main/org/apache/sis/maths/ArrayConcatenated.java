@@ -151,18 +151,23 @@ final class ArrayConcatenated extends AbstractArray {
         private final Cursor[] cursors = new Cursor[arrays.length];
 
         @Override
-        public Vector samples() {
-            return current().samples();
+        public Vector getSamples() {
+            return current().getSamples();
         }
 
         @Override
-        public void set(int sampleIndex, double value) {
-            current().set(sampleIndex, value);
+        public double getSample(int sampleIndex) {
+            return current().getSample(sampleIndex);
         }
 
         @Override
-        public void set(Vector<?> values) {
-            current().set(values);
+        public void setSample(int sampleIndex, double value) {
+            current().setSample(sampleIndex, value);
+        }
+
+        @Override
+        public void setSamples(Vector<?> values) {
+            current().setSamples(values);
         }
 
         /**

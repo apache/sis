@@ -277,9 +277,9 @@ public final class OrientedTriangle extends AbstractGeometry implements Triangle
     @Override
     public Vector getPosition(int index) {
         return switch (index) {
-            case 0, 3 -> a.getPosition().copy();
-            case 1 -> b.getPosition().copy();
-            case 2 -> c.getPosition().copy();
+            case 0, 3 -> a.getPosition();
+            case 1 -> b.getPosition();
+            case 2 -> c.getPosition();
             default -> throw new ArrayIndexOutOfBoundsException();
         };
     }

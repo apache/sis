@@ -70,7 +70,7 @@ public final class To3D {
         final ArrayDataPoints ps = copy(base);
 
         if (Zeditor == null) {
-            Zeditor = (Cursor c) -> c.set(2, 0.0);
+            Zeditor = (Cursor c) -> c.setSample(2, 0.0);
         }
 
         Array positions = ps.getAttributeArray(DataPointsType.ATT_POSITION);
@@ -82,7 +82,7 @@ public final class To3D {
     private static Array to3d(Array positions, CoordinateReferenceSystem crs3d, Consumer<Cursor> Zeditor) {
 
         if (Zeditor == null) {
-            Zeditor = (Cursor c) -> c.set(2, 0.0);
+            Zeditor = (Cursor c) -> c.setSample(2, 0.0);
         }
 
         final CoordinateReferenceSystem geomCrs = positions.getCoordinateReferenceSystem();
@@ -109,9 +109,9 @@ public final class To3D {
             final Cursor target = array.cursor();
             final Cursor source = positions.cursor();
             while (source.next() && target.next()) {
-                final Vector<?> s = source.samples();
-                target.set(0, s.get(0));
-                target.set(1, s.get(1));
+                final Vector<?> s = source.getSamples();
+                target.setSample(0, s.get(0));
+                target.setSample(1, s.get(1));
                 Zeditor.accept(target);
             }
             positions = array;

@@ -61,7 +61,7 @@ public final class SutherlandHodgman {
                     if (!isInside(clipEdgeStart, clipEdgeEnd, start)){
                         outputList.add(computeIntersection(clipEdgeStart, clipEdgeEnd, start, end));
                     }
-                    outputList.add(end.copy());
+                    outputList.add(end);
                 } else if (isInside(clipEdgeStart, clipEdgeEnd, start)){
                     outputList.add(computeIntersection(clipEdgeStart, clipEdgeEnd, start, end));
                 }

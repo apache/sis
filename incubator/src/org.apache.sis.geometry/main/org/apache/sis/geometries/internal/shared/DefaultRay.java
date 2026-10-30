@@ -93,7 +93,7 @@ public non-sealed class DefaultRay extends AbstractGeometry implements Ray {
 
     @Override
     public void setDirection(Vector<?> direction) {
-        this.direction = direction.copy();
+        this.direction = direction;
     }
 
     @Override

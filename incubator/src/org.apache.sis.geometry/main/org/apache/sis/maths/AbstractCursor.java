@@ -21,7 +21,7 @@ package org.apache.sis.maths;
  *
  * @author Johann Sorel (Geomatys)
  */
-abstract class AbstractCursor extends AbstractVector implements Cursor {
+abstract class AbstractCursor implements Cursor {
 
     private final Array array;
     protected long offset = -1;
@@ -31,8 +31,8 @@ abstract class AbstractCursor extends AbstractVector implements Cursor {
     }
 
     @Override
-    public Vector<?> samples() {
-        return this;
+    public Vector<?> getSamples() {
+        return array.get(offset);
     }
 
     @Override
@@ -55,22 +55,12 @@ abstract class AbstractCursor extends AbstractVector implements Cursor {
     }
 
     @Override
-    public DataType getDataType() {
-        return array.getDataType();
-    }
-
-    @Override
-    public int getDimension() {
-        return array.getDimension();
-    }
-
-    @Override
-    public double get(int indice) {
+    public double getSample(int indice) {
         return get(offset, indice);
     }
 
     @Override
-    public void set(int indice, double value) {
+    public void setSample(int indice, double value) {
         set(offset, indice, value);
     }
 

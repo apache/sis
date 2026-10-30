@@ -150,7 +150,7 @@ public final class ArrayCodedCoverage extends AbstractCodedCoverage{
         @Override
         public void setSample(int band, double value) {
             cursors[band].moveTo(Math.toIntExact(linearPosition));
-            cursors[band].set(0, value);
+            cursors[band].setSample(0, value);
         }
 
         @Override
@@ -192,7 +192,7 @@ public final class ArrayCodedCoverage extends AbstractCodedCoverage{
         @Override
         public double getSampleDouble(int band) {
             cursors[band].moveTo(Math.toIntExact(linearPosition));
-            return cursors[band].samples().get(0);
+            return cursors[band].getSamples().get(0);
         }
 
         @Override

@@ -23,7 +23,7 @@ import java.util.Arrays;
  *
  * @author Johann Sorel (Geomatys)
  */
-abstract class AbstractVector<T extends AbstractVector<T>> implements Vector<T> {
+abstract sealed class AbstractVector<T extends AbstractVector<T>> implements Vector<T> permits Vector1D, Vector2D, Vector3D, Vector4D, VectorND {
 
     public AbstractVector() {
     }

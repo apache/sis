@@ -624,7 +624,7 @@ public sealed interface MeshPrimitive extends Geometry
                 final Set<Long> usedIndexes = new HashSet<>();
                 final Cursor cursor = index.cursor();
                 while (cursor.next()) {
-                    long i = (long) cursor.samples().get(0);
+                    long i = (long) cursor.getSamples().get(0);
                     if (i < 0 || i >= size) throw new IllegalArgumentException("Index " + i + " is not in range 0:"+size);
                     usedIndexes.add(i);
                 }
@@ -693,7 +693,7 @@ public sealed interface MeshPrimitive extends Geometry
             final int dimension = ta.getDimension();
             final long length = ta.getLength();
             final Cursor cursor = ta.cursor();
-            final Vector tuple = cursor.samples();
+            final Vector tuple = cursor.getSamples();
 
             for (int i = 0; i <length; i++) {
                 cursor.moveTo(i);
@@ -821,11 +821,11 @@ public sealed interface MeshPrimitive extends Geometry
                         return;
                     }
                     posCursor.moveTo(idx0);
-                    final Vector pos0 = new Vector3D.Double(posCursor.samples());
+                    final Vector pos0 = new Vector3D.Double(posCursor.getSamples());
                     posCursor.moveTo(idx1);
-                    final Vector pos1 = new Vector3D.Double(posCursor.samples());
+                    final Vector pos1 = new Vector3D.Double(posCursor.getSamples());
                     posCursor.moveTo(idx2);
-                    final Vector pos2 = new Vector3D.Double(posCursor.samples());
+                    final Vector pos2 = new Vector3D.Double(posCursor.getSamples());
 
                     if (fastEquals(pos0, pos1) || fastEquals(pos0, pos2) || fastEquals(pos1, pos2)) {
                         //flat triangle ignore it
@@ -902,16 +902,16 @@ public sealed interface MeshPrimitive extends Geometry
             final List<Vector1D.Int> newIndex = new ArrayList<>();
 
             while (cursorIdx.next()) {
-                int idx = (int) cursorIdx.samples().get(0);
+                int idx = (int) cursorIdx.getSamples().get(0);
                 cursorPos.moveTo(idx);
-                final Vector position = cursorPos.samples().copy();
+                final Vector position = cursorPos.getSamples();
 
                 int newIdx = aNewAttribute.size();
                 Integer previous = reindex.putIfAbsent(position, newIdx);
                 if (previous == null) {
                     //copy attributes
                     for (Entry<List<Vector<?>>,Array> entry : mapping) {
-                        entry.getKey().add(entry.getValue().get(idx).copy());
+                        entry.getKey().add(entry.getValue().get(idx));
                     }
                     newIndex.add(new Vector1D.Int(newIdx));
                 } else {
@@ -992,7 +992,7 @@ public sealed interface MeshPrimitive extends Geometry
         public Vector getPosition() {
             final Cursor cursor = parent.getPositions().cursor();
             cursor.moveTo(index);
-            return cursor.samples();
+            return cursor.getSamples();
         }
 
         @Override
@@ -1017,7 +1017,7 @@ public sealed interface MeshPrimitive extends Geometry
             if (tupleGrid == null) return null;
             final Cursor cursor = tupleGrid.cursor();
             cursor.moveTo(index);
-            return cursor.samples();
+            return cursor.getSamples();
         }
 
         @Override
@@ -1026,7 +1026,7 @@ public sealed interface MeshPrimitive extends Geometry
             if (tupleGrid == null) throw new IllegalArgumentException("Attribute " + name + " do not exist");
             final Cursor cursor = tupleGrid.cursor();
             cursor.moveTo(index);
-            cursor.set(tuple);
+            cursor.setSamples(tuple);
         }
 
         @Override

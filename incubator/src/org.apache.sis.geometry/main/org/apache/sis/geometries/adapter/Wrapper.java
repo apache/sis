@@ -54,7 +54,6 @@ import org.apache.sis.geometry.wrapper.GeometryWrapper;
 import org.apache.sis.maths.Array;
 import org.apache.sis.maths.NDArrays;
 import org.apache.sis.maths.SampleSystem;
-import org.apache.sis.maths.Vectors;
 import org.apache.sis.maths.Vector;
 import org.apache.sis.measure.Quantities;
 import org.apache.sis.measure.Units;
@@ -211,7 +210,7 @@ public final class Wrapper extends GeometryWrapper {
             // The centroid of an empty geometry is the empty geometry, which is no position.
             return null;
         }
-        return new GeneralDirectPosition(Vectors.asDirectPostion(centroid.getPosition(), centroid.getCoordinateReferenceSystem()));
+        return new GeneralDirectPosition(centroid.getPosition().asDirectPostion(centroid.getCoordinateReferenceSystem()));
     }
 
     /**

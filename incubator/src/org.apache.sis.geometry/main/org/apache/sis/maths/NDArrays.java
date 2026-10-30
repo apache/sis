@@ -211,14 +211,14 @@ public final class NDArrays {
 
         final Cursor cursor = array.cursor();
         if (cursor.next()) {
-            cursor.samples().toArrayDouble(buffer, 0);
+            cursor.getSamples().toArrayDouble(buffer, 0);
             System.arraycopy(buffer, 0, min, 0, dim);
             System.arraycopy(buffer, 0, max, 0, dim);
         }
 
         int i;
         while (cursor.next()) {
-            cursor.samples().toArrayDouble(buffer, 0);
+            cursor.getSamples().toArrayDouble(buffer, 0);
             for (i = 0; i < dim; i++) {
                 if (Double.isNaN(buffer[i])) continue;
                 if (Double.isNaN(min[i]) || (buffer[i] < min[i])) min[i] = buffer[i];
@@ -345,9 +345,9 @@ public final class NDArrays {
             cursor.moveTo(0);
             resultCursor.moveTo(0);
             for (int i = 0; i < length; i++, cursor.next(), resultCursor.next()) {
-                final Vector source = cursor.samples();
+                final Vector source = cursor.getSamples();
                 for (int s = 0; s < dim; s++) {
-                    resultCursor.set(s+offset, source.get(s));
+                    resultCursor.setSample(s+offset, source.get(s));
                 }
             }
             offset += dim;
@@ -427,11 +427,11 @@ public final class NDArrays {
         //it speeds up the operation and prevents the quicksort to make a java.lang.StackOverflowError
         array.swap((low+high)/2, high);
         cursor1.moveTo(high);
-        final Vector pivot = cursor1.samples();
+        final Vector pivot = cursor1.getSamples();
         long i = low - 1;
         for (long j = low; j <= high - 1; j++) {
             cursor2.moveTo(j);
-            if (comparator.compare(cursor2.samples(),pivot) < 0) {
+            if (comparator.compare(cursor2.getSamples(),pivot) < 0) {
                 i++;
                 if (i != j) array.swap(i, j);
             }
@@ -573,21 +573,27 @@ public final class NDArrays {
             return new Cursor() {
                 private long coordinate = -1;
                 @Override
-                public Vector<?> samples() {
+                public Vector<?> getSamples() {
                     bc.moveTo(index[Math.toIntExact(coordinate)]);
-                    return bc.samples();
+                    return bc.getSamples();
                 }
 
                 @Override
-                public void set(int sampleIndex, double value) {
+                public double getSample(int sampleIndex) {
                     bc.moveTo(index[Math.toIntExact(coordinate)]);
-                    bc.set(sampleIndex, value);
+                    return bc.getSample(sampleIndex);
                 }
 
                 @Override
-                public void set(Vector<?> values) {
+                public void setSample(int sampleIndex, double value) {
                     bc.moveTo(index[Math.toIntExact(coordinate)]);
-                    bc.set(values);
+                    bc.setSample(sampleIndex, value);
+                }
+
+                @Override
+                public void setSamples(Vector<?> values) {
+                    bc.moveTo(index[Math.toIntExact(coordinate)]);
+                    bc.setSamples(values);
                 }
 
                 @Override

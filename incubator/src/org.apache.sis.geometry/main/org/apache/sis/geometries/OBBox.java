@@ -22,7 +22,6 @@ import org.apache.sis.geometries.internal.shared.AbstractGeometry;
 import org.apache.sis.geometries.internal.shared.SinglePositionDataPoints;
 import org.apache.sis.maths.DataType;
 import org.apache.sis.maths.NDRange;
-import org.apache.sis.maths.Vectors;
 import org.apache.sis.maths.Vector;
 import org.apache.sis.maths.Vector3D;
 
@@ -56,10 +55,10 @@ public final class OBBox extends AbstractGeometry {
             throw new IllegalArgumentException("Oriented BBox only support 3 dimensions.");
         }
         this.crs = crs;
-        center = Vectors.createDouble(3);
-        xAxis = Vectors.createDouble(3);
-        yAxis = Vectors.createDouble(3);
-        zAxis = Vectors.createDouble(3);
+        center = Vector.of(0,0,0);
+        xAxis = Vector.of(0,0,0);
+        yAxis = Vector.of(0,0,0);
+        zAxis = Vector.of(0,0,0);
     }
 
     @Override

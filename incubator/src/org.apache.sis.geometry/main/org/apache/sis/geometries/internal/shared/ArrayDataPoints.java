@@ -229,7 +229,7 @@ public final class ArrayDataPoints implements DataPoints, DataPointsType {
         public Vector getPosition() {
             final Cursor cursor = parent.positions.cursor();
             cursor.moveTo(index);
-            return cursor.samples();
+            return cursor.getSamples();
         }
 
         /**
@@ -245,7 +245,7 @@ public final class ArrayDataPoints implements DataPoints, DataPointsType {
             if (tupleGrid == null) return null;
             final Cursor cursor = tupleGrid.cursor();
             cursor.moveTo(index);
-            return cursor.samples();
+            return cursor.getSamples();
         }
 
         @Override
@@ -254,7 +254,7 @@ public final class ArrayDataPoints implements DataPoints, DataPointsType {
             if (tupleGrid == null) throw new IllegalArgumentException("Attribute " + name + " do not exist");
             final Cursor cursor = tupleGrid.cursor();
             cursor.moveTo(index);
-            cursor.set(tuple);
+            cursor.setSamples(tuple);
         }
 
         @Override

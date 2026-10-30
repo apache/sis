@@ -139,7 +139,7 @@ public final class Intersection {
         final Cursor cursor = positions.cursor();
         final List<Integer> values = new ArrayList<>();
         while (cursor.next()) {
-            final Vector<?> position = cursor.samples();
+            final Vector<?> position = cursor.getSamples();
             if (evaluator.evaluate(position).isPresent()) {
                 values.add(Math.toIntExact(cursor.coordinate()));
             }

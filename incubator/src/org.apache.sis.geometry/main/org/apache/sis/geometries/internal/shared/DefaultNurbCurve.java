@@ -146,7 +146,7 @@ public non-sealed class DefaultNurbCurve extends AbstractGeometry implements Nur
         }
 
         if (degree == 0) {
-            return Vectors.createDouble(spatialDim); // constant curve -> null derivative
+            return Vectors.create(spatialDim, DataType.DOUBLE); // constant curve -> null derivative
         }
         final Vector<?>[] derivCtrl = DeBoorAlgorithm.derivativeControlPoints(hom, knots, degree);
         final double[] derivKnots = Arrays.copyOfRange(knots, 1, knots.length - 1);

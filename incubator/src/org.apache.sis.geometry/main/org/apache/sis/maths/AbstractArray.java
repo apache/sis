@@ -36,7 +36,7 @@ abstract class AbstractArray implements Array {
         while (cursor.next()) {
             final long idx = cursor.coordinate();
             if (idx >= newSize) break;
-            copy.set(idx, cursor.samples());
+            copy.set(idx, cursor.getSamples());
         }
         return copy;
     }

@@ -119,15 +119,15 @@ public final class MeshPrimitiveIndexes {
         final int length = Math.toIntExact(triangleStripIndex.getLength());
         int[] triangles = new int[(length-2)*3];
         cursor.moveTo(0);
-        int idx0 = (int) cursor.samples().get(0);
+        int idx0 = (int) cursor.getSamples().get(0);
         cursor.moveTo(1);
-        int idx1 = (int) cursor.samples().get(0);
+        int idx1 = (int) cursor.getSamples().get(0);
 
         int realsize = 0;
         int maxIdx = Math.max(idx0, idx1);
         for (int i = 2, n = length, k = 0; i < n; i++) {
             cursor.moveTo(i);
-            int idx2 = (int) cursor.samples().get(0);
+            int idx2 = (int) cursor.getSamples().get(0);
             maxIdx = Math.max(maxIdx, idx2);
 
             //check for empty triangle and remove them
@@ -190,11 +190,11 @@ public final class MeshPrimitiveIndexes {
         //build edges map
         final Cursor cursor = index.cursor();
         while (cursor.next()) {
-            final int i0 = (int) cursor.samples().get(0);
+            final int i0 = (int) cursor.getSamples().get(0);
             cursor.next();
-            final int i1 = (int) cursor.samples().get(0);
+            final int i1 = (int) cursor.getSamples().get(0);
             cursor.next();
-            final int i2 = (int) cursor.samples().get(0);
+            final int i2 = (int) cursor.getSamples().get(0);
             final Triangle t = new Triangle(i0,i1,i2);
             t.buildEdges(map);
             edges.add(t.edge0);

@@ -87,22 +87,22 @@ public class ArrayConcatenatedTest extends AbstractArrayTest {
         final Cursor cursor = cnt.cursor();
         assertTrue(cursor.next());
         assertEquals(0, cursor.coordinate());
-        assertEquals(new Vector2D.Double(0,1), cursor.samples());
+        assertEquals(new Vector2D.Double(0,1), cursor.getSamples());
         assertTrue(cursor.next());
         assertEquals(1, cursor.coordinate());
-        assertEquals(new Vector2D.Double(2,3), cursor.samples());
+        assertEquals(new Vector2D.Double(2,3), cursor.getSamples());
         assertTrue(cursor.next());
         assertEquals(2, cursor.coordinate());
-        assertEquals(new Vector2D.Double(4,5), cursor.samples());
+        assertEquals(new Vector2D.Double(4,5), cursor.getSamples());
         assertTrue(cursor.next());
         assertEquals(3, cursor.coordinate());
-        assertEquals(new Vector2D.Double(6,7), cursor.samples());
+        assertEquals(new Vector2D.Double(6,7), cursor.getSamples());
         assertTrue(cursor.next());
         assertEquals(4, cursor.coordinate());
-        assertEquals(new Vector2D.Double(8,9), cursor.samples());
+        assertEquals(new Vector2D.Double(8,9), cursor.getSamples());
         assertTrue(cursor.next());
         assertEquals(5, cursor.coordinate());
-        assertEquals(new Vector2D.Double(10,11), cursor.samples());
+        assertEquals(new Vector2D.Double(10,11), cursor.getSamples());
         assertFalse(cursor.next());
     }
 
