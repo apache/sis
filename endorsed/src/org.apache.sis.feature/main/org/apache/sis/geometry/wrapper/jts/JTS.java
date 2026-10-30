@@ -158,6 +158,7 @@ public final class JTS {
     /**
      * Transforms the given geometry using the given math transform.
      * If the geometry or the transform is null or identity, then the geometry is returned unchanged.
+     * The <abbr>CRS</abbr> of the geometry is unchanged, caller may need to set that <abbr>CRS</abbr>.
      *
      * @param  geometry   the geometry to transform, or {@code null}.
      * @param  transform  the transform to apply, or {@code null}.
@@ -166,8 +167,7 @@ public final class JTS {
      */
     public static Geometry transform(Geometry geometry, final MathTransform transform) throws TransformException {
         if (geometry != null && transform != null && !transform.isIdentity()) {
-            final var gct = new GeometryCoordinateTransform(transform, geometry.getFactory());
-            geometry = gct.transform(geometry);
+            geometry = new GeometryCoordinateTransform(transform, geometry.getFactory()).transform(geometry);
         }
         return geometry;
     }

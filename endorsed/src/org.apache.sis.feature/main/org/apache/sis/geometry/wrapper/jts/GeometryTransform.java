@@ -205,6 +205,8 @@ public abstract class GeometryTransform {
 
     /**
      * Transforms the given sequence of coordinate tuples, producing a new sequence of tuples.
+     * Note that the {@link CoordinateSequence} interface has a {@code setOrdinate(…)} method,
+     * so it may be necessary to copy the coordinate values even for an identity transform.
      *
      * @param  sequence   sequence of coordinate tuples to transform.
      * @param  minPoints  minimum number of points to preserve.

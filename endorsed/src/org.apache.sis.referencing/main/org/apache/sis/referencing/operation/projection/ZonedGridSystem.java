@@ -153,12 +153,14 @@ public class ZonedGridSystem extends AbstractMathTransform2D implements Serializ
      * Returns the domain of input coordinates.
      * The limits defined by this method are arbitrary and may change in any future implementation.
      * Current implementation sets a longitude range of ±180° (i.e. the world) and a latitude range
-     * from 84°S to 84°N.
+     * which excludes polar regions by default.
      */
     @Override
     public Optional<Envelope> getDomain(final DomainDefinition criteria) {
-        final double y = -NormalizedProjection.POLAR_AREA_LIMIT;
-        return Optional.of(new Envelope2D(null, -PI, y, 2*PI, -2*y));
+        final Envelope2D domain = NormalizedProjection.domain(criteria.canApproachAsymptotes());
+        domain.x     =  -PI;
+        domain.width = 2*PI;
+        return Optional.of(domain);
     }
 
     /**

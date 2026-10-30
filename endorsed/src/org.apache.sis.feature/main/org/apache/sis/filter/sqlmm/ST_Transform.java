@@ -130,7 +130,7 @@ final class ST_Transform<R> extends FunctionWithSRID<R> {
         final GeometryWrapper value = geometry.apply(input);
         if (value != null) try {
             // Note: `transform(…)` does nothing if the CRS is null.
-            return getGeometryLibrary().getGeometry(value.transform(getTargetCRS(input)));
+            return getGeometryLibrary().getGeometry(value.transform(getTargetCRS(input), false));
         } catch (BackingStoreException e) {
             final Throwable cause = e.getCause();
             warning((cause instanceof Exception) ? (Exception) cause : e);

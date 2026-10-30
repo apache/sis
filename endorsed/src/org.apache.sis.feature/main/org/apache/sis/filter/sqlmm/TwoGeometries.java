@@ -17,6 +17,8 @@
 package org.apache.sis.filter.sqlmm;
 
 import java.util.List;
+import org.opengis.util.FactoryException;
+import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import org.opengis.referencing.operation.TransformException;
 import org.apache.sis.filter.Optimization;
 import org.apache.sis.geometry.wrapper.Geometries;
@@ -77,14 +79,15 @@ class TwoGeometries<R> extends SpatialFunction<R> {
         if (unwrap(geometry2) instanceof Literal<?,?>) {
             final GeometryWrapper literal = geometry2.apply(null);
             if (literal != null) try {
-                final GeometryWrapper transformed = literal.transform(optimization.findExpectedCRS(unwrap(geometry1)).orElse(null));
+                final CoordinateReferenceSystem crs = optimization.findExpectedCRS(unwrap(geometry1)).orElse(null);
+                final GeometryWrapper transformed = literal.transform(crs, true);
                 if (transformed != literal) {
                     @SuppressWarnings({"unchecked","rawtypes"})
                     final Expression<R,?>[] effective = getParameters().toArray(Expression[]::new);
                     effective[1] = Optimization.literal(transformed);
                     return recreate(effective);
                 }
-            } catch (PropertyNotFoundException | TransformException e) {
+            } catch (PropertyNotFoundException | FactoryException | TransformException e) {
                 optimization.warning(e, false);
             }
         }

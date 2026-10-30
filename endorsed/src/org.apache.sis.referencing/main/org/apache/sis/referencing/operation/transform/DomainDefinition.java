@@ -28,7 +28,7 @@ import org.apache.sis.geometry.GeneralEnvelope;
 
 
 /**
- * Builder of the mathematical domain of validity of a {@code MathTransform}.
+ * Builder of a {@code MathTransform} domain of validity where the function is considered well-behaved.
  * Contrary to {@linkplain CRS#getDomainOfValidity(CoordinateReferenceSystem) CRS domain of validity},
  * this class estimates a domain based on mathematical behavior only, not on real world considerations.
  * For example, the Mercator projection tends to infinity when approaching poles, so it is recommended
@@ -36,14 +36,9 @@ import org.apache.sis.geometry.GeneralEnvelope;
  * This is different than the domain of validity of CRS, which is often limited to a particular country.
  * In general, the CRS domain of validity is much smaller than the domain computed by this class.
  *
- * <p>Current implementation does not yet provide ways to describe how a domain is decided.
- * A future version may, for example, allows to specify a maximal deformation tolerated for map projections.
- * In current implementation, the estimation can be customized by overriding the
- * {@link #estimate(MathTransform)} or {@link #intersect(Envelope)} methods.</p>
- *
- * <p>Each {@code DomainDefinition} instance should be used only once for an {@link AbstractMathTransform}
- * instance, unless that transform is a chain of concatenated transforms (this case is handled automatically
- * by Apache SIS). Usage example:</p>
+ * <p>Each {@code DomainDefinition} instance should be used only once for an {@link AbstractMathTransform} instance,
+ * unless that transform is a chain of concatenated transforms (handled automatically by Apache <abbr>SIS</abbr>).
+ * Usage example:</p>
  *
  * {@snippet lang="java" :
  *     AbstractMathTransform transform = …;
@@ -56,7 +51,7 @@ import org.apache.sis.geometry.GeneralEnvelope;
  * when the default implementation is sufficient.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.3
+ * @version 1.8
  *
  * @see MathTransforms#getDomain(MathTransform)
  * @see AbstractMathTransform#getDomain(DomainDefinition)
@@ -65,6 +60,12 @@ import org.apache.sis.geometry.GeneralEnvelope;
  * @since 1.3
  */
 public class DomainDefinition {
+    /**
+     * Whether the domain is allowed to approach input values producing infinite output values.
+     * By default, the domain is cropped at values considered reasonably far from asymptotes.
+     */
+    private boolean canApproachAsymptotes;
+
     /**
      * Limits computed so far, or {@code null} if none.
      */
@@ -135,12 +136,56 @@ public class DomainDefinition {
     }
 
     /**
+     * Returns whether the domain is allowed to approach input values producing infinite output values.
+     * For example, the Mercator projection has asymptotes at 90°N and 90°S, because the projection outputs
+     * tend toward infinity as the latitude approaches a pole.
+     * If this method returns {@code false} (the default), the domain is cropped at an arbitrary distance
+     * from the asymptotes (for example, 84° of latitude).
+     *
+     * @return whether to allow the domain to approach asymptotes.
+     *
+     * @since 1.8
+     */
+    public boolean canApproachAsymptotes() {
+        return canApproachAsymptotes;
+    }
+
+    /**
+     * Sets whether the domain is allowed to approach input values producing infinite output values.
+     * The default value is {@code false}, which crops the domain at some distance from asymptotes.
+     * For example, Mercator projections may limit their domain to 84° of latitude North and South.
+     * Setting this flag to {@code true} raises the limit (in the Mercator projection case) to 90°.
+     *
+     * <p>A value of {@code true} does not mean that the domain will extend to the asymptotes,
+     * only that it is <em>allowed</em> to do so. A transform may choose to restrict the domain
+     * anyway, for example because the function is not stable that far.</p>
+     *
+     * <h4>Guidelines for approaching (or not) the asymptotes</h4>
+     * <p>The domain of validity should stay relatively far from asymptotes ({@code allowed = false})
+     * when the domain is used for cropping map bounds at rendering time. For example, a world-wide map
+     * rendered in a Mercator projection needs to exclude polar regions when computing the initial zoom,
+     * otherwise most of Earth's surface would be squashed by the near infinite values of polar regions.</p>
+     *
+     * <p>It can be useful to let the domain of validity extent to infinity ({@code allowed = true})
+     * when the domain is used for {@linkplain GeneralEnvelope#contains(Envelope) testing inclusions}.
+     * As long as the function is monotonic, operations based on comparisons of numerical values stay
+     * generally reliable.</p>
+     *
+     * @param  allowed  whether to allow the domain to approach asymptotes.
+     *
+     * @since 1.8
+     */
+    public void canApproachAsymptotes(final boolean allowed) {
+        canApproachAsymptotes = allowed;
+    }
+
+    /**
      * Estimates the domain of the given math transform and intersects it with previously computed domains.
      * The result can be obtained by a call to {@link #result()}.
      *
      * <p>The default implementation invokes {@link AbstractMathTransform#getDomain(DomainDefinition)} if possible,
-     * or does nothing otherwise. The domain provided by the transform is given to {@link #intersect(Envelope)}.
-     * Subclasses can override for modifying this behavior.</p>
+     * or does nothing otherwise. The transform implementation should callback the {@link #intersect(Envelope)} method.
+     * {@code DomainDefinition} Subclasses can override for modifying the default behavior.</p>
      *
      * @param  evaluated  the transform for which to estimate the domain.
      * @throws TransformException if the domain cannot be estimated.

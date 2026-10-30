@@ -18,6 +18,8 @@ package org.apache.sis.filter;
 
 import java.util.List;
 import javax.measure.Unit;
+import org.opengis.util.FactoryException;
+import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import org.opengis.referencing.operation.TransformException;
 import org.apache.sis.geometry.wrapper.Geometries;
 import org.apache.sis.geometry.wrapper.GeometryWrapper;
@@ -216,13 +218,14 @@ abstract class BinaryGeometryFilter<R> extends Node implements SpatialOperator<R
              */
             final GeometryWrapper geometry = wrapper.apply(null);
             if (geometry != null) try {
-                final GeometryWrapper transformed = geometry.transform(optimization.findExpectedCRS(other).orElse(null));
+                final CoordinateReferenceSystem crs = optimization.findExpectedCRS(other).orElse(null);
+                final GeometryWrapper transformed = geometry.transform(crs, true);
                 if (geometry != transformed) {
                     literal = Optimization.literal(transformed);
                     if (literal == effective1) effective1 = literal;
                     else effective2 = literal;
                 }
-            } catch (PropertyNotFoundException | TransformException e) {
+            } catch (PropertyNotFoundException | FactoryException | TransformException e) {
                 optimization.warning(e, false);
             }
             /*

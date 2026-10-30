@@ -199,6 +199,11 @@ public class Resources extends IndexedResourceBundle {
         public static final short EmptyTileOrImageRegion = 20;
 
         /**
+         * The geometry extends into a region where the “{0}” operation may not behave correctly.
+         */
+        public static final short GeometryOutOfTransformDomain_1 = 97;
+
+        /**
          * Grid coordinates ({3}) are outside the coverage domain. The coordinate in the {0} dimension
          * shall be between {1,number} and {2,number} inclusive.
          */

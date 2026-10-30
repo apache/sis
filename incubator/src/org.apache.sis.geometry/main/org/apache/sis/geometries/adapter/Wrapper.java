@@ -30,10 +30,8 @@ import org.opengis.filter.DistanceOperatorName;
 import org.opengis.filter.SpatialOperatorName;
 import org.opengis.geometry.DirectPosition;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
-import org.opengis.referencing.operation.CoordinateOperation;
 import org.opengis.referencing.operation.MathTransform;
 import org.opengis.referencing.operation.TransformException;
-import org.opengis.util.FactoryException;
 import org.apache.sis.filter.sqlmm.SQLMM;
 import org.apache.sis.geometries.Curve;
 import org.apache.sis.geometries.DE9IM;
@@ -60,8 +58,6 @@ import org.apache.sis.maths.Vectors;
 import org.apache.sis.maths.Vector;
 import org.apache.sis.measure.Quantities;
 import org.apache.sis.measure.Units;
-import org.apache.sis.referencing.CRS;
-import org.apache.sis.referencing.operation.transform.MathTransforms;
 import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.Debug;
 import org.apache.sis.util.UnconvertibleObjectException;
@@ -635,39 +631,22 @@ add:    for (Geometry next = geometry;;) {
     }
 
     /**
-     * Transforms this geometry using the given coordinate operation.
-     * If the operation is {@code null}, then the geometry is returned unchanged.
-     *
-     * @param  operation    the coordinate operation to apply.
-     * @throws FactoryException if transformation to the target CRS cannot be found.
-     * @throws TransformException if the geometry cannot be transformed.
-     */
-    @Override
-    protected GeometryWrapper transform(final CoordinateOperation operation)
-            throws FactoryException, TransformException
-    {
-        MathTransform mt = operation.getMathTransform();
-        if (VERIFY_GEOMETRY_CRS_BEFORE_OPERATION && crs != null) {
-            final CoordinateOperation step = CRS.findOperation(crs, operation.getSourceCRS(), null);
-            mt = MathTransforms.concatenate(step.getMathTransform(), mt);
-        }
-        return new Wrapper(new GeometryProcessor().transform(geometry, operation.getTargetCRS(), mt));
-    }
-
-    /**
      * Transforms this geometry using the given transform.
      * If the transform is {@code null}, then the geometry is returned unchanged.
      *
      * @param  transform  the math transform to apply.
+     * @param  targetCRS  <abbr>CRS</abbr> to set on the returned geometry, or {@code null} if none.
      * @return the transformed geometry (may be the same geometry instance, but never {@code null}).
      * @throws TransformException if the geometry cannot be transformed.
      */
     @Override
-    protected GeometryWrapper transform(final MathTransform transform) throws TransformException {
+    protected GeometryWrapper transform(final MathTransform transform, final CoordinateReferenceSystem targetCRS)
+            throws TransformException
+    {
         if (transform.isIdentity()) {
             return this;
         }
-        return new Wrapper(this, new GeometryProcessor().transform(geometry, null, transform));
+        return new Wrapper(this, new GeometryProcessor().transform(geometry, targetCRS, transform));
     }
 
     /**

@@ -94,7 +94,6 @@ import org.opengis.coordinate.CoordinateSet;
  *   <li>An estimation of the {@linkplain #getCoordinateOperationAccuracy() operation accuracy}.</li>
  * </ul>
  *
- * <h2>Instantiation</h2>
  * This class is conceptually <i>abstract</i>, even if it is technically possible to instantiate it.
  * Typical applications should create instances of the most specific subclass prefixed by {@code Default} instead.
  * An exception to this rule may occur when it is not possible to identify the exact operation type.
@@ -103,8 +102,8 @@ import org.opengis.coordinate.CoordinateSet;
  * This base class is immutable and thus thread-safe if the property <em>values</em> (not necessarily the map itself)
  * given to the constructor are also immutable. Most SIS subclasses and related classes are immutable under similar
  * conditions. This means that unless otherwise noted in the javadoc, {@code CoordinateOperation} instances created
- * using only SIS factories and static constants can be shared by many objects and passed between threads without
- * synchronization.
+ * using only <abbr>SIS</abbr> factories and static constants can be shared by many objects and passed between threads
+ * without synchronization.
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @version 1.7

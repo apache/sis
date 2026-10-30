@@ -49,12 +49,12 @@
  * transform factory}.
  *
  *
- * <h2>Non-spatial coordinates</h2>
+ * <h2>Transform between values that are not coordinates</h2>
  * {@code MathTransform} usually performs conversions or transformations from points given in a
  * {@linkplain org.apache.sis.referencing.operation.AbstractCoordinateOperation#getSourceCRS()
  * source coordinate reference system} to coordinate values for the same points in the
  * {@linkplain org.apache.sis.referencing.operation.AbstractCoordinateOperation#getTargetCRS()
- * target coordinate reference system}. However, the conversions are not necessarily between CRS;
+ * target coordinate reference system}. However, the conversions are not necessarily between <abbr>CRS</abbr>s.
  * a {@code MathTransform} can also be used for converting the sample values in a raster for example.
  * Such kind of transforms are named {@linkplain org.apache.sis.referencing.operation.transform.TransferFunction
  * transfer functions}.

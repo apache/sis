@@ -32,6 +32,8 @@ import org.opengis.referencing.crs.ProjectedCRS;
 import org.opengis.referencing.crs.GeographicCRS;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import org.opengis.referencing.operation.OperationMethod;
+import org.opengis.referencing.operation.CoordinateOperation;
+import org.opengis.referencing.operation.MathTransform;
 import org.opengis.referencing.operation.TransformException;
 import org.apache.sis.referencing.ImmutableIdentifier;
 import org.apache.sis.referencing.CRS;
@@ -86,8 +88,8 @@ public final class SpatialOperationContext implements Serializable {
 
     /**
      * If the CRS needs to be in some units of measurement, the {@link Unit#getSystemUnit()} value.
-     * For example, is units need to be linear, then {@code systemUnit} shall be {@link Units#METRE}.
-     * Note that it does not mean that the units of measurement must be meters; only that they must
+     * For example, if units need to be linear, then {@code systemUnit} shall be {@link Units#METRE}.
+     * Note that it does not mean that the units of measurement must be meters, only that they must
      * be compatible with meters.
      */
     @SuppressWarnings("serial")         // Most SIS implementations are serializable.
@@ -98,12 +100,6 @@ public final class SpatialOperationContext implements Serializable {
      * This is used for avoiding unnecessary check of its CRS.
      */
     private final int skipIndex;
-
-    /**
-     * The common CRS found by {@link #transform(GeometryWrapper[])}. May be null.
-     */
-    @SuppressWarnings("serial")         // Most SIS implementations are serializable.
-    CoordinateReferenceSystem commonCRS;
 
     /**
      * Creates a new context.
@@ -151,8 +147,7 @@ public final class SpatialOperationContext implements Serializable {
 
     /**
      * Transforms the specified geometry to the computation <abbr>CRS</abbr>.
-     * Geometries with unspecified CRS will be used as-is, without transformation.
-     * The common CRS is stored in the {@link #commonCRS} field.
+     * Geometries with unspecified <abbr>CRS</abbr> will be used as-is, without transformation.
      *
      * @param  geometry  the geometry to transform.
      * @return the transformed geometry, or the same instance if no transformation was applied.
@@ -163,7 +158,9 @@ public final class SpatialOperationContext implements Serializable {
         if (computationCRS != null) {
             final CoordinateReferenceSystem sourceCRS = to2D(geometry.getCoordinateReferenceSystem());
             if (sourceCRS != null && !CRS.equivalent(computationCRS, sourceCRS)) {
-                geometry = geometry.transform(CRS.findOperation(sourceCRS, computationCRS, areaOfInterest));
+                final CoordinateOperation operation = CRS.findOperation(sourceCRS, computationCRS, areaOfInterest);
+                final MathTransform transform = operation.getMathTransform();
+                geometry = geometry.transform(transform, operation.getTargetCRS());
             }
         }
         return geometry;
@@ -172,107 +169,105 @@ public final class SpatialOperationContext implements Serializable {
     /**
      * Transforms the specified geometries to the common <abbr>CRS</abbr>.
      * If {@link #computationCRS} is {@code null}, then this method tries to infer one automatically.
-     * Geometries with unspecified CRS will be used as-is, without transformation.
-     * The common CRS is stored in the {@link #commonCRS} field.
+     * Geometries with unspecified <abbr>CRS</abbr> will be used as-is, without coordinate operation.
+     * The unit of measurement is stored in the {@code commonUnit} array if non-null.
      *
      * @param  geometries  the geometries to transform. Results will be stored in-place.
+     * @param  commonUnit  where to store the unit of measurement of the common CRS, or {@code null}.
      * @return whether this method has been able to find a common CRS.
      * @throws FactoryException if an error occurred while fetching a CRS.
      * @throws TransformException if a coordinate conversion was required but failed.
      * @throws IncommensurableException if a geographic CRS does not use angular units (should not happen).
      */
-    final boolean transform(final GeometryWrapper[] geometries)
+    final boolean transform(final GeometryWrapper[] geometries, final Unit<?>[] commonUnit)
             throws FactoryException, TransformException, IncommensurableException
     {
-        final CoordinateReferenceSystem[] allCRS = new CoordinateReferenceSystem[geometries.length];
-        try {
-            for (int i = allCRS.length; --i >= 0;) {
-                allCRS[i] = (i == skipIndex) ? computationCRS : to2D(geometries[i].getCoordinateReferenceSystem());
-            }
-        } catch (BackingStoreException e) {
-            throw e.unwrapOrRethrow(FactoryException.class);
-        }
-        /*
-         * Search for an arbitrary non-null CRS. Then check in the next loop if all other CRS are equal,
-         * ignoring metadata and ignoring null CRS. If this is the case, then we do not transform anything.
-         */
-        {
-            int i = allCRS.length;
-            do if (--i < 0) return true;
-            while ((commonCRS = allCRS[i]) == null);
-            /*
-             * Found a CRS potentially common to all geometries (this will be checked in next loop).
-             * But if units of measurement are restricted to some kind, we will accept that common CRS
-             * only if its unit is of the requested type.
-             */
-            boolean reject = false;
-            if (systemUnit != null && commonCRS != computationCRS) {
-                reject = isCompatibleUnit(commonCRS, systemUnit);
-            }
-            if (!reject) {
-                // Potential common CRS accepted, verify if all other geometries use the same CRS.
-                CoordinateReferenceSystem crs;
-                do {
-                    if (--i < 0) return true;       // All geometries are in common CRS.
-                    crs = allCRS[i];
-                } while (crs == null || CRS.equivalent(commonCRS, crs));
-            }
-        }
-        /*
-         * At least one geometry needs to be transformed. Get a CRS which can be a common target
-         * for the specified geometries. The `if` block should be executed only if both operands
-         * are dynamic (non-literal) values. The rules applied inside the block are arbitrary
-         * and may change in any future version.
-         */
-        commonCRS = computationCRS;
-select: if (commonCRS == null) {
-            /*
-             * If there is a restriction on the unit of measurement, check if an existing CRS
-             * met that criterion. We do this check before invoking `suggestCommonTarget(…)`
-             * because that method may replace `ProjectedCRS` by `GeographicCRS` in order to
-             * cover a larger area, and we usually want the `ProjectedCRS`.
-             */
-            if (systemUnit != null) {
-                for (int i=allCRS.length; --i >= 0;) {
-                    commonCRS = allCRS[i];
-                    final Unit<?> unit = ReferencingUtilities.getUnit(commonCRS);
-                    if (unit != null && systemUnit.equals(unit.getSystemUnit())) {
-                        break select;       // Use the `commonCRS` we just found.
-                    }
-                }
-            }
-            /*
-             * If there are no restrictions on units of measurement, or if no geometry CRS met that restriction,
-             * request a CRS which may be different than the CRS of all geometries. The search takes in account
-             * the CRS domains of validity. The CRS found may be derived in order to be made compatible with the
-             * desired units of measurement.
-             */
-            commonCRS = CRS.suggestCommonTarget(areaOfInterest, allCRS);
-            if (commonCRS == null) {
-                return false;                       // Geometries are in incompatible CRS.
-            }
-            if (systemUnit != null) {
+        CoordinateReferenceSystem commonCRS = null;
+apply:  {
+            final var allCRS = new CoordinateReferenceSystem[geometries.length];
+            try {
                 for (int i = allCRS.length; --i >= 0;) {
-                    final CoordinateReferenceSystem crs = allCRS[i];
-                    if (crs != null) {
-                        commonCRS = usingSystemUnit(geometries[i], crs, commonCRS, systemUnit);
-                        break select;
+                    allCRS[i] = (i == skipIndex) ? computationCRS : to2D(geometries[i].getCoordinateReferenceSystem());
+                }
+                int i = allCRS.length;
+                do if (--i < 0) break apply;
+                while ((commonCRS = allCRS[i]) == null);
+                /*
+                 * Found an arbitrary non-null CRS. If that CRS is compatible with `systemUnit`,
+                 * then verify if all other geometries use the same CRS. If yes, we are done (exit).
+                 * Otherwise, continue with the rest of this method for searching another common CRS.
+                 */
+                if (systemUnit == null || commonCRS == computationCRS || isCompatibleUnit(commonCRS, systemUnit)) {
+                    CoordinateReferenceSystem crs;
+                    do {
+                        if (--i < 0) break apply;   // All geometries are in common CRS.
+                        crs = allCRS[i];
+                    } while (crs == null || CRS.equivalent(commonCRS, crs));
+                }
+            } catch (BackingStoreException e) {
+                throw e.unwrapOrRethrow(FactoryException.class);
+            }
+            /*
+             * At least one geometry needs to be transformed. Get a CRS which can be a common target
+             * for the specified geometries. The `if` block should be executed only if both operands
+             * are dynamic (non-literal) values. The rules applied inside the block are arbitrary
+             * and may change in any future version.
+             */
+            commonCRS = computationCRS;
+select:     if (commonCRS == null) {
+                /*
+                 * If there is a restriction on the unit of measurement, check if an existing CRS
+                 * met that criterion. We do this check before invoking `suggestCommonTarget(…)`
+                 * because that method may replace `ProjectedCRS` by `GeographicCRS` in order to
+                 * cover a larger area, and we usually want the `ProjectedCRS`.
+                 */
+                if (systemUnit != null) {
+                    for (int i=allCRS.length; --i >= 0;) {
+                        commonCRS = allCRS[i];
+                        final Unit<?> unit = ReferencingUtilities.getUnit(commonCRS);
+                        if (unit != null && systemUnit.equals(unit.getSystemUnit())) {
+                            break select;       // Use the `commonCRS` we just found.
+                        }
                     }
                 }
-                return false;               // Unable to use the desired units of measurement.
-            }
-        }
-        /*
-         * At this point, `commonCRS` is the CRS to use for converting all geometries.
-         * Perform the conversions in-place.
-         */
-        for (int i=0; i < allCRS.length; i++) {
-            if (i != skipIndex) {
-                final CoordinateReferenceSystem sourceCRS = allCRS[i];
-                if (!CRS.equivalent(commonCRS, sourceCRS)) {
-                    geometries[i] = geometries[i].transform(CRS.findOperation(sourceCRS, commonCRS, areaOfInterest));
+                /*
+                 * If there are no restrictions on units of measurement, or if no geometry CRS met that restriction,
+                 * request a CRS which may be different than the CRS of all geometries. The search takes in account
+                 * the CRS domains of validity. The CRS found may be derived in order to be made compatible with the
+                 * desired units of measurement.
+                 */
+                commonCRS = CRS.suggestCommonTarget(areaOfInterest, allCRS);
+                if (commonCRS == null) {
+                    return false;           // Geometries are in incompatible CRS.
+                }
+                if (systemUnit != null) {
+                    for (int i = allCRS.length; --i >= 0;) {
+                        final CoordinateReferenceSystem crs = allCRS[i];
+                        if (crs != null) {
+                            commonCRS = usingSystemUnit(geometries[i], crs, commonCRS, systemUnit);
+                            break select;
+                        }
+                    }
+                    return false;           // Unable to use the desired units of measurement.
                 }
             }
+            /*
+             * At this point, `commonCRS` is the CRS to use for converting all geometries.
+             * Perform the conversions in-place.
+             */
+            for (int i=0; i < allCRS.length; i++) {
+                if (i != skipIndex) {
+                    final CoordinateReferenceSystem sourceCRS = allCRS[i];
+                    if (!CRS.equivalent(commonCRS, sourceCRS)) {
+                        final CoordinateOperation operation = CRS.findOperation(sourceCRS, commonCRS, areaOfInterest);
+                        final MathTransform transform = operation.getMathTransform();
+                        geometries[i] = geometries[i].transform(transform, operation.getTargetCRS());
+                    }
+                }
+            }
+        }
+        if (commonUnit != null) {
+            commonUnit[0] = ReferencingUtilities.getUnit(commonCRS);
         }
         return true;
     }

@@ -701,17 +701,24 @@ add:    for (Geometry next = geometry;;) {
 
     /**
      * Transforms this geometry using the given transform.
-     * If the transform is {@code null}, then the geometry is returned unchanged.
-     * Otherwise, a new geometry is returned without CRS.
+     * If the transform is {@code null} or identity, this wrapper is returned unchanged (same <abbr>CRS</abbr>).
+     * Otherwise, a new geometry is returned without <abbr>CRS</abbr>.
      *
      * @param  transform  the math transform to apply, or {@code null}.
-     * @return the transformed geometry (may be the same geometry instance, but never {@code null}).
-     * @throws FactoryException should never happen (declared because the constructor declares this exception).
+     * @param  targetCRS  <abbr>CRS</abbr> to set on the returned geometry, or {@code null} if none.
+     * @return the transformed geometry (may be the same geometry wrapper instance, but never {@code null}).
+     * @throws FactoryException if a problem happened while mapping a <abbr>CRS</abbr> from/to a <abbr>SRID</abbr>.
      * @throws TransformException if the geometry cannot be transformed.
      */
     @Override
-    protected GeometryWrapper transform(final MathTransform transform) throws FactoryException, TransformException {
-        return rewrap(JTS.transform(geometry, transform));
+    protected GeometryWrapper transform(final MathTransform transform, final CoordinateReferenceSystem targetCRS)
+            throws FactoryException, TransformException
+    {
+        final Wrapper result = rewrap(JTS.transform(geometry, transform));
+        if (targetCRS != null && result != this) {
+            result.setCoordinateReferenceSystem(targetCRS);
+        }
+        return result;
     }
 
     /**

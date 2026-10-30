@@ -162,25 +162,23 @@ public abstract class AbstractMathTransform extends FormattableObject
     public abstract int getTargetDimensions();
 
     /**
-     * Returns the ranges of source coordinate values where this transform is mathematically applicable.
+     * Returns the ranges of source coordinate values where this transform is considered well-behaved.
      * This is <em>not</em> the domain of validity for which a coordinate reference system has been defined,
      * because this method ignores real world considerations such as datum and country boundaries.
-     * This method can be used for cropping data in order to exclude areas that may cause numerical problems.
+     * Instead this method estimates, for example, where the function is monotonic and reasonably far from infinity.
+     *
+     * <p>This method can be used for cropping data in order to exclude areas that may cause numerical problems.
      * For example, the results of a Mercator projection tend to infinity when the latitude values approach a pole.
      * For avoiding data structures with unreasonably large values or {@link Double#NaN} values,
      * an arbitrary maximal latitude value (typically 80° or 84°) can be enforced before projection.
      * Those limits are arbitrary, the transform does not become suddenly invalid after a limit.
      * But enforcing such limits can (for example) avoid chaotic viewer behavior when attempting
-     * to render a world-wide image.
+     * to render a world-wide image.</p>
      *
      * <p>Many transforms, in particular affine transforms, have no mathematical limits.
      * Therefore, the default implementation returns an empty value, but it does not mean that the associated
      * {@linkplain org.apache.sis.referencing.operation.AbstractCoordinateOperation coordinate operation}
      * has no geospatial domain of validity.</p>
-     *
-     * <p>Callers do not need to search through {@linkplain MathTransforms#getSteps(MathTransform) transform steps}.
-     * The Apache <abbr>SIS</abbr> implementation of {@link MathTransforms#concatenate(MathTransform, MathTransform)
-     * concatenated transforms} does that automatically.</p>
      *
      * @param  criteria  controls the definition of transform domain.
      * @return estimation of ranges of source coordinate values where the transform is numerically applicable.
