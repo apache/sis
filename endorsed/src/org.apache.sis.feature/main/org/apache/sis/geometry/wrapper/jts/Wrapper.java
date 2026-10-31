@@ -249,6 +249,23 @@ final class Wrapper extends GeometryWrapper {
     }
 
     /**
+     * Returns whether the coordinates in the two first dimensions are finite.
+     * The <abbr>Z</abbr> and <abbr>M</abbr> coordinates are ignored.
+     * For performance reasons, this method checks only the envelope.
+     *
+     * @return whether the two-dimensional coordinates are non-NaN and finite.
+     */
+    @Override
+    public boolean isFinite2D() {
+        final Envelope bounds = geometry.getEnvelopeInternal();
+        return !bounds.isNull()
+                && Double.isFinite(bounds.getMinX())
+                && Double.isFinite(bounds.getMinY())
+                && Double.isFinite(bounds.getMaxX())
+                && Double.isFinite(bounds.getMaxY());
+    }
+
+    /**
      * Merges a sequence of points or paths after the wrapped geometry.
      *
      * @throws ClassCastException if an element in the iterator is not a JTS geometry.

@@ -31,7 +31,7 @@ import org.opengis.filter.Literal;
 
 
 /**
- * SQLMM spatial functions taking two geometry operands.
+ * <abbr>SQLMM</abbr> spatial functions taking two geometry operands.
  *
  * @author  Johann Sorel (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
@@ -81,7 +81,13 @@ class TwoGeometries<R> extends SpatialFunction<R> {
             if (literal != null) try {
                 final CoordinateReferenceSystem crs = optimization.findExpectedCRS(unwrap(geometry1)).orElse(null);
                 final GeometryWrapper transformed = literal.transform(crs, true);
-                if (transformed != literal) {
+                if (transformed != literal && transformed.isFinite2D()) {
+                    /*
+                     * While infinite bounds are okay when computing intersections between Apache SIS envelopes,
+                     * they may be problematic for more complex geometries or for operations computing distances.
+                     * Skipping the optimization in such cases (above condition) is conservative: transforms will
+                     * be applied at evaluation time, maybe by delegating to a storage engine such as PostGIS.
+                     */
                     @SuppressWarnings({"unchecked","rawtypes"})
                     final Expression<R,?>[] effective = getParameters().toArray(Expression[]::new);
                     effective[1] = Optimization.literal(transformed);
@@ -138,7 +144,7 @@ class TwoGeometries<R> extends SpatialFunction<R> {
 
 
     /**
-     * SQLMM spatial functions taking a single geometry operand with one argument.
+     * <abbr>SQLMM</abbr> spatial functions taking a single geometry operand with one argument.
      *
      * @param  <R>  the type of resources (e.g. {@code Feature}) used as inputs.
      */

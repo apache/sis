@@ -48,7 +48,7 @@ import org.opengis.filter.SpatialOperatorName;
 
 
 /**
- * The wrapper of ERSI geometries.
+ * The wrapper of <abbr>ERSI</abbr> geometries.
  *
  * @author  Johann Sorel (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
@@ -84,7 +84,7 @@ final class Wrapper extends GeometryWrapper {
     }
 
     /**
-     * Returns the ESRI envelope as an Apache SIS implementation.
+     * Returns the <abbr>ESRI</abbr> envelope as an Apache <abbr>SIS</abbr> implementation.
      *
      * @return the envelope.
      */

@@ -215,12 +215,19 @@ abstract class BinaryGeometryFilter<R> extends Node implements SpatialOperator<R
              * If we are optimizing for a feature type, and if the other expression is a property value,
              * then try to fetch the CRS of the property values. If we can transform the literal to that
              * CRS, do it now in order to avoid doing this transformation for all feature instances.
+             *
+             * The transformed geometry may have infinite bounds (for example world-wide box in a Mercator projection),
+             * which is okay for operations such as disjoin, touches, within, overlaps, crosses, intersects or contains
+             * when those operations are applied on Apache SIS envelopes, but uncertain with more complex geometries.
+             * Infinite bounds may also be problematic for operations involving a distance such as beyond and d-within.
+             * In such cases, do not optimize and let the feature geometries be transformed at evaluation time.
+             * Maybe a different CRS will be selected, or maybe PostGIS (for example) will use a different strategy.
              */
             final GeometryWrapper geometry = wrapper.apply(null);
             if (geometry != null) try {
                 final CoordinateReferenceSystem crs = optimization.findExpectedCRS(other).orElse(null);
                 final GeometryWrapper transformed = geometry.transform(crs, true);
-                if (geometry != transformed) {
+                if (geometry != transformed && transformed.isFinite2D()) {
                     literal = Optimization.literal(transformed);
                     if (literal == effective1) effective1 = literal;
                     else effective2 = literal;

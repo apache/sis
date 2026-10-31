@@ -32,8 +32,6 @@ import org.opengis.referencing.crs.ProjectedCRS;
 import org.opengis.referencing.crs.GeographicCRS;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import org.opengis.referencing.operation.OperationMethod;
-import org.opengis.referencing.operation.CoordinateOperation;
-import org.opengis.referencing.operation.MathTransform;
 import org.opengis.referencing.operation.TransformException;
 import org.apache.sis.referencing.ImmutableIdentifier;
 import org.apache.sis.referencing.CRS;
@@ -158,9 +156,7 @@ public final class SpatialOperationContext implements Serializable {
         if (computationCRS != null) {
             final CoordinateReferenceSystem sourceCRS = to2D(geometry.getCoordinateReferenceSystem());
             if (sourceCRS != null && !CRS.equivalent(computationCRS, sourceCRS)) {
-                final CoordinateOperation operation = CRS.findOperation(sourceCRS, computationCRS, areaOfInterest);
-                final MathTransform transform = operation.getMathTransform();
-                geometry = geometry.transform(transform, operation.getTargetCRS());
+                geometry = geometry.transform(CRS.findOperation(sourceCRS, computationCRS, areaOfInterest));
             }
         }
         return geometry;
@@ -259,9 +255,7 @@ select:     if (commonCRS == null) {
                 if (i != skipIndex) {
                     final CoordinateReferenceSystem sourceCRS = allCRS[i];
                     if (!CRS.equivalent(commonCRS, sourceCRS)) {
-                        final CoordinateOperation operation = CRS.findOperation(sourceCRS, commonCRS, areaOfInterest);
-                        final MathTransform transform = operation.getMathTransform();
-                        geometries[i] = geometries[i].transform(transform, operation.getTargetCRS());
+                        geometries[i] = geometries[i].transform(CRS.findOperation(sourceCRS, commonCRS, areaOfInterest));
                     }
                 }
             }

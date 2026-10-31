@@ -230,6 +230,18 @@ public abstract class GeometryWrapper extends AbstractGeometry implements Geomet
     public abstract double[] getAllCoordinates();
 
     /**
+     * Returns whether the coordinates in the two first dimensions are finite.
+     * The <abbr>Z</abbr> and <abbr>M</abbr> coordinates are ignored.
+     * For performance reasons, this method checks only the envelope.
+     * Note that a finite envelope may be empty.
+     *
+     * @return whether the two-dimensional coordinates are non-NaN and finite.
+     */
+    public boolean isFinite2D() {
+        return getEnvelope().subEnvelope(0, Geometries.BIDIMENSIONAL).isFinite();
+    }
+
+    /**
      * Appends a sequence of points or polylines after this geometry.
      * Each previous polyline will be a separated path in the new polyline instance.
      *
@@ -493,6 +505,22 @@ public abstract class GeometryWrapper extends AbstractGeometry implements Geomet
             return this;
         }
         throw new UnconvertibleObjectException(Errors.format(Errors.Keys.CanNotConvertFromType_2, geometry.getClass(), type));
+    }
+
+    /**
+     * Transforms this geometry using the given coordinate operation.
+     * The caller is responsible to ensure that the source <abbr>CRS</abbr> of the given {@code operation}
+     * is equivalent to {@link #getCoordinateReferenceSystem()}. This is not verified by this method.
+     *
+     * @param  operation  the coordinate operation to apply.
+     * @return the transformed geometry (may be the same geometry instance, but never {@code null}).
+     * @throws UnsupportedOperationException if this operation is not supported for current implementation.
+     * @throws FactoryException if a problem happened while mapping a <abbr>CRS</abbr> from/to a <abbr>SRID</abbr>.
+     * @throws TransformException if the geometry cannot be transformed.
+     * @throws BackingStoreException if the operation failed because of another checked exception.
+     */
+    final GeometryWrapper transform(final CoordinateOperation operation) throws FactoryException, TransformException {
+        return transform(operation.getMathTransform(), operation.getTargetCRS());
     }
 
     /**

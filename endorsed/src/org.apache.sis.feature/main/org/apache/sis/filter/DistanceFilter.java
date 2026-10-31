@@ -36,11 +36,11 @@ import org.opengis.filter.DistanceOperatorName;
 
 /**
  * Spatial operations between two geometries and using a distance.
- * The nature of the operation depends on the subclass.
+ * The nature of the operation depends on {@link #getOperatorType()}.
  *
- * <h2>API design note</h2>
+ * <p><b><abbr>API</abbr> design note:</b>
  * This class has 3 parameters, but the third one is not an expression.
- * It still a "binary" operator if we count only the expressions.
+ * It still a "binary" operator if we count only the expressions.</p>
  *
  * @author  Johann Sorel (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
