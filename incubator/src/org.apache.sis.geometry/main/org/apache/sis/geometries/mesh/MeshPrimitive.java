@@ -336,9 +336,38 @@ public sealed interface MeshPrimitive extends Geometry
             getPositions().setSampleSystem(SampleSystem.of(crs));
         }
 
+        /**
+         * Returns the vertices of this primitive, in storage order, regardless of the index.
+         * Subclasses viewed as a sequence of points may return the vertices in index order instead.
+         */
         @Override
         public ArrayDataPoints getDataPoints() {
             return dataPoints;
+        }
+
+        /**
+         * Returns a copy of the vertices in the order of the index, or in storage order if there is no index.
+         *
+         * @param close whether to repeat the first point at the end.
+         * @return vertices in index order.
+         */
+        protected ArrayDataPoints indexedDataPoints(boolean close) {
+            if (index == null && !close) {
+                return dataPoints;
+            }
+            final int[] indices;
+            if (index == null) {
+                indices = new int[dataPoints.size()];
+                for (int i = 0; i < indices.length; i++) indices[i] = i;
+            } else {
+                indices = index.toArrayInt();
+            }
+            if (close && indices.length > 0) {
+                final int[] closed = Arrays.copyOf(indices, indices.length + 1);
+                closed[indices.length] = indices[0];
+                return (ArrayDataPoints) dataPoints.subset(closed);
+            }
+            return (ArrayDataPoints) dataPoints.subset(indices);
         }
 
         @Override
@@ -353,7 +382,7 @@ public sealed interface MeshPrimitive extends Geometry
          */
         @Override
         public Envelope getEnvelope() {
-            final Array positions = getDataPoints().getAttribute(ATT_POSITION);
+            final Array positions = dataPoints.getAttribute(ATT_POSITION);
             if (positions.isEmpty()) {
                 final GeneralEnvelope env = new GeneralEnvelope(getCoordinateReferenceSystem());
                 env.setToNaN();
@@ -502,7 +531,7 @@ public sealed interface MeshPrimitive extends Geometry
             ArgumentChecks.ensureNonNull(ATT_POSITION, array);
             ArgumentChecks.ensureNonNull("positions crs", array.getCoordinateReferenceSystem());
             this.positions = array;
-            getDataPoints().setAttribute(ATT_POSITION, array);
+            dataPoints.setAttribute(ATT_POSITION, array);
         }
 
         /**
@@ -510,12 +539,12 @@ public sealed interface MeshPrimitive extends Geometry
          */
         @Override
         public Array getNormals() {
-            return getDataPoints().getAttribute(ATT_NORMAL);
+            return dataPoints.getAttribute(ATT_NORMAL);
         }
 
         @Override
         public void setNormals(Array array) {
-            getDataPoints().setAttribute(ATT_NORMAL, array);
+            dataPoints.setAttribute(ATT_NORMAL, array);
         }
 
         /**
@@ -528,7 +557,7 @@ public sealed interface MeshPrimitive extends Geometry
 
         @Override
         public void setTangents(Array array) {
-            getDataPoints().setAttribute(ATT_TANGENT, array);
+            dataPoints.setAttribute(ATT_TANGENT, array);
         }
 
         /**
@@ -541,7 +570,7 @@ public sealed interface MeshPrimitive extends Geometry
 
         @Override
         public void setColors(int index, Array array) {
-            getDataPoints().setAttribute(ATT_COLOR + "_" + index, array);
+            dataPoints.setAttribute(ATT_COLOR + "_" + index, array);
         }
 
         /**
@@ -554,7 +583,7 @@ public sealed interface MeshPrimitive extends Geometry
 
         @Override
         public void setTexCoords(int index, Array array) {
-            getDataPoints().setAttribute(ATT_TEXCOORD + "_" + index, array);
+            dataPoints.setAttribute(ATT_TEXCOORD + "_" + index, array);
         }
 
         /**
@@ -567,7 +596,7 @@ public sealed interface MeshPrimitive extends Geometry
 
         @Override
         public void setJoints(int index, Array array) {
-            getDataPoints().setAttribute(ATT_JOINTS + "_" + index, array);
+            dataPoints.setAttribute(ATT_JOINTS + "_" + index, array);
         }
 
         /**
@@ -580,7 +609,7 @@ public sealed interface MeshPrimitive extends Geometry
 
         @Override
         public void setWeights(int index, Array array) {
-            getDataPoints().setAttribute(ATT_WEIGHTS + "_" + index, array);
+            dataPoints.setAttribute(ATT_WEIGHTS + "_" + index, array);
         }
 
         /**
@@ -594,8 +623,8 @@ public sealed interface MeshPrimitive extends Geometry
             }
 
             long size = -1;
-            for (String attName : getDataPoints().getAttributeNames()) {
-                Array array = getDataPoints().getAttribute(attName);
+            for (String attName : dataPoints.getAttributeNames()) {
+                Array array = dataPoints.getAttribute(attName);
                 validate(attName, array);
                 if (size == -1) {
                     size = array.getLength();
@@ -706,7 +735,7 @@ public sealed interface MeshPrimitive extends Geometry
         public MeshPrimitive deepCopy() {
             final Abs copy = (Abs) create(type);
 
-            for (String attName : getDataPoints().getAttributeNames()) {
+            for (String attName : dataPoints.getAttributeNames()) {
                 copy.dataPoints.setAttribute(attName, dataPoints.getAttribute(attName).copy());
             }
 
@@ -1083,6 +1112,14 @@ public sealed interface MeshPrimitive extends Geometry
         public LineLoop(ArrayDataPoints dp) {
             super(Type.LINE_LOOP, dp);
         }
+
+        /**
+         * Returns the points of this line, in index order, the first point repeated at the end.
+         */
+        @Override
+        public ArrayDataPoints getDataPoints() {
+            return indexedDataPoints(true);
+        }
     }
 
     public static final class LineStrip extends Abs implements LineString {
@@ -1092,6 +1129,14 @@ public sealed interface MeshPrimitive extends Geometry
 
         public LineStrip(ArrayDataPoints dp) {
             super(Type.LINE_STRIP, dp);
+        }
+
+        /**
+         * Returns the points of this line, in index order.
+         */
+        @Override
+        public ArrayDataPoints getDataPoints() {
+            return indexedDataPoints(false);
         }
     }
 
