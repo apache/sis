@@ -25,7 +25,6 @@ import org.apache.sis.geometries.Geometry;
 import org.apache.sis.geometries.GeometryCollection;
 import org.apache.sis.geometries.GeometryFactory;
 import org.apache.sis.geometries.GeometryType;
-import org.apache.sis.geometries.Point;
 import org.apache.sis.geometries.Geometries;
 import org.apache.sis.referencing.CRS;
 import org.apache.sis.util.ArgumentChecks;
@@ -88,26 +87,6 @@ public non-sealed class DefaultGeometryCollection<T extends Geometry> extends Ab
     @Override
     public T getGeometryN(int n) {
         return geometries.get(n);
-    }
-
-    @Override
-    public Point getCentroid() {
-        if (isEmpty()) {
-            // The centroid of the empty set is undefined.
-            return null;
-        }
-        //TODO : fallback on JTS until implemented
-        return (Point) fromJTS(asJTS().getCentroid());
-    }
-
-    @Override
-    public Point getRepresentativePoint() {
-        if (isEmpty()) {
-            // The empty set has no interior position.
-            return null;
-        }
-        //TODO : fallback on JTS until implemented
-        return (Point) fromJTS(asJTS().getInteriorPoint());
     }
 
     @Override

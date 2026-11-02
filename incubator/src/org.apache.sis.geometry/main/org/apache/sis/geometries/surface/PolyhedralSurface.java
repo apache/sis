@@ -27,6 +27,8 @@ import org.apache.sis.geometries.GeometryCollection;
 import org.apache.sis.geometries.GeometryType;
 import org.apache.sis.geometries.Surface;
 import org.apache.sis.geometries.SurfaceInterpolation;
+import org.apache.sis.geometries.Point;
+import org.apache.sis.geometries.internal.shared.Centroids;
 import org.apache.sis.geometries.internal.shared.ConcatenatedDataPoints;
 import org.apache.sis.geometries.internal.shared.DefaultPolyhedralSurface;
 import org.apache.sis.measure.Quantities;
@@ -146,6 +148,35 @@ public sealed interface PolyhedralSurface<T extends Polygon> extends /*GeometryC
             area = Geometries.add(area, getPatchN(i).getArea());
         }
         return area;
+    }
+
+    /**
+     * Returns the mean of the centroids of the patches weighted by their area.
+     *
+     * @return the centroid, or {@code null} if this surface has no patch.
+     *
+     * @see ISO 19107:2019 - 6.4.4.8
+     */
+    @Override
+    default Point getCentroid() {
+        return Centroids.patches(this);
+    }
+
+    /**
+     * Returns a point on the largest patch.
+     *
+     * @return a point on this surface, or {@code null} if this surface has no patch.
+     *
+     * @see ISO 19107:2019 - 6.4.4.19
+     */
+    @Override
+    default Point getRepresentativePoint() {
+        return Centroids.representative(this);
+    }
+
+    @Override
+    default Point getPointOnSurface() {
+        return getRepresentativePoint();
     }
 
     /**

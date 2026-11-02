@@ -22,12 +22,12 @@ import org.opengis.annotation.UML;
 import org.opengis.geometry.DirectPosition;
 import org.opengis.geometry.Envelope;
 import org.apache.sis.geometries.curve.ProductCurve;
+import org.apache.sis.geometries.internal.shared.Centroids;
 import org.apache.sis.geometries.internal.shared.ConcatenatedDataPoints;
 import org.apache.sis.geometries.internal.shared.DefaultGeometryCollection;
 import org.apache.sis.geometries.internal.shared.DefaultMultiPoint;
 import org.apache.sis.geometries.internal.shared.EmptyDataPoints;
 import org.apache.sis.geometries.mesh.MeshPrimitive;
-import org.apache.sis.geometries.mesh.MultiMeshPrimitive;
 import org.apache.sis.geometry.GeneralEnvelope;
 import org.apache.sis.measure.Quantities;
 import org.apache.sis.measure.Units;
@@ -195,6 +195,31 @@ public sealed interface GeometryCollection<T extends Geometry> extends Geometry
             dimension = Math.max(dimension, getGeometryN(i).getTopologicDimension());
         }
         return dimension;
+    }
+
+    /**
+     * Returns the mean of the centroids of the elements having the largest topological dimension,
+     * weighted by their number of points, length or area. Elements of lower dimensions are ignored.
+     *
+     * @return the centroid, or {@code null} if all elements are empty.
+     *
+     * @see ISO 19107:2019 - 6.4.4.8
+     */
+    @Override
+    default Point getCentroid() {
+        return Centroids.collection(this);
+    }
+
+    /**
+     * Returns the representative point of the first element having the largest topological dimension.
+     *
+     * @return a point of this collection, or {@code null} if all elements are empty.
+     *
+     * @see ISO 19107:2019 - 6.4.4.19
+     */
+    @Override
+    default Point getRepresentativePoint() {
+        return Centroids.representative(this);
     }
 
     /**

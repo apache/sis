@@ -17,6 +17,7 @@
 package org.apache.sis.geometries.internal.shared;
 
 import javax.measure.Quantity;
+import org.opengis.geometry.Envelope;
 import org.apache.sis.geometries.DataPoints;
 import org.apache.sis.geometries.Geometries;
 import org.apache.sis.geometries.GeometryFactory;
@@ -102,5 +103,14 @@ public non-sealed class DefaultBezier extends DefaultPolynomialSpline implements
             return GeometryFactory.DEFAULT.createLineString(points);
         }
         return evaluator().asLine(this, spacing, offset);
+    }
+
+    /**
+     * Returns the envelope of the data points and of the control points.
+     * A Bézier curve stays inside the convex hull of its control points.
+     */
+    @Override
+    public Envelope getEnvelope() {
+        return controlHullEnvelope(points, controlPoints, false);
     }
 }
