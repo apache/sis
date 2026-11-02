@@ -16,6 +16,8 @@
  */
 package org.apache.sis.geometries.internal.shared;
 
+import java.util.Arrays;
+import java.util.TreeSet;
 import org.apache.sis.geometries.DataPoints;
 import org.apache.sis.geometries.DataPointsType;
 import org.apache.sis.geometries.Point;
@@ -79,4 +81,19 @@ public final class Vertex implements Point {
         return parent.getType();
     }
 
+    /**
+     * Returns the index followed by the values of all attributes, sorted by name.
+     */
+    @Override
+    public String toString() {
+        final StringBuilder sb = new StringBuilder("V:");
+        sb.append(getIndex());
+        final TreeSet<String> properties = new TreeSet<>(getDataPointsType().getAttributeNames());
+        for (String name : properties) {
+            sb.append(' ');
+            sb.append(name);
+            sb.append(Arrays.toString(getAttribute(name).toArrayDouble()));
+        }
+        return sb.toString();
+    }
 }

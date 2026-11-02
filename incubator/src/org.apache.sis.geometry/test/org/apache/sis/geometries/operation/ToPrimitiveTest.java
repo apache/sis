@@ -544,4 +544,60 @@ public class ToPrimitiveTest {
         final MeshPrimitive primitive1 = (MeshPrimitive) result;
         assertEquals(MeshPrimitive.Type.POINTS, primitive1.getType());
     }
+
+    /**
+     * Creates two-dimensional data points with a color and a temperature attribute,
+     * as in the geometry builder samples. The attribute order shall not matter.
+     */
+    private static DataPoints attributedPoints(final double... coordinates) {
+        final int n = coordinates.length / 2;
+        final Map<String,Array> attributes = new LinkedHashMap<>();
+        attributes.put(DataPointsType.ATT_COLOR, NDArrays.of(4, new float[n * 4]));
+        attributes.put("TEMPERATURE", NDArrays.of(1, new double[n]));
+        attributes.put(DataPointsType.ATT_POSITION, NDArrays.of(CRS2D, coordinates));
+        return GeometryFactory.DEFAULT.createDataPoints(attributes);
+    }
+
+    /**
+     * Verifies that the mesh has the given number of vertices and keeps the attributes.
+     */
+    private static void assertAttributes(final MeshPrimitive mesh, final int count) {
+        assertEquals(count, mesh.getPositions().getLength());
+        assertEquals(count, mesh.getAttribute(DataPointsType.ATT_COLOR).getLength());
+        assertEquals(count, mesh.getAttribute("TEMPERATURE").getLength());
+    }
+
+    /**
+     * Tests conversion of points and line strings having attributes other than positions.
+     */
+    @Test
+    public void testAttributes() {
+        final GeometryFactory f = GeometryFactory.DEFAULT;
+        final GeometryProcessor processor = new GeometryProcessor();
+
+        Geometry result = processor.toPrimitive(f.createPoint(attributedPoints(1, 2)), null, null);
+        assertAttributes((MeshPrimitive) result, 1);
+
+        result = processor.toPrimitive(f.createMultiPoint(attributedPoints(0,0, 1,1, 2,2)), null, null);
+        assertAttributes((MeshPrimitive) result, 3);
+
+        result = processor.toPrimitive(f.createLineString(attributedPoints(0,0, 1,1, 2,0)), null, null);
+        assertAttributes((MeshPrimitive) result, 3);
+
+        //only lines of 2 points, a single primitive of lines
+        result = processor.toPrimitive(f.createMultiLineString(CRS2D,
+                f.createLineString(attributedPoints(0,0, 1,1)),
+                f.createLineString(attributedPoints(2,0, 3,1))), null, null);
+        assertAttributes((MeshPrimitive) result, 4);
+
+        //longer lines, one line strip per line
+        result = processor.toPrimitive(f.createMultiLineString(CRS2D,
+                f.createLineString(attributedPoints(0,0, 1,1, 2,0)),
+                f.createLineString(attributedPoints(3,0, 4,1, 5,0))), null, null);
+        final MultiMeshPrimitive<?> multi = assertInstanceOf(MultiMeshPrimitive.class, result);
+        assertEquals(2, multi.getNumGeometries());
+        for (int i = 0; i < 2; i++) {
+            assertAttributes((MeshPrimitive) multi.getGeometryN(i), 3);
+        }
+    }
 }

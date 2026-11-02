@@ -676,14 +676,9 @@ public sealed interface MeshPrimitive extends Geometry
 
         private void validate(String name, Array ta) {
 
-            final int dimension = ta.getDimension();
             final long length = ta.getLength();
-            final Cursor cursor = ta.cursor();
-            final Vector tuple = cursor.getSamples();
-
-            for (int i = 0; i <length; i++) {
-                cursor.moveTo(i);
-                if (!tuple.isFinite()) {
+            for (long i = 0; i < length; i++) {
+                if (!ta.get(i).isFinite()) {
                     throw new IllegalArgumentException("Found a NaN on attribute " + name +" at index "+ i);
                 }
             }
@@ -907,11 +902,13 @@ public sealed interface MeshPrimitive extends Geometry
 
             setIndex(NDArrays.of(newIndex, 1, index.getDataType()));
 
+            //all attributes change length, they must be replaced together
+            final Map<String,Array> rebuilt = new HashMap<>();
             for (String attName : attNames) {
                 final Array model = dataPoints.getAttribute(attName);
-                final Array array = NDArrays.of(atts.get(attName), model.getSampleSystem(), model.getDataType());
-                getDataPoints().setAttribute(attName, array);
+                rebuilt.put(attName, NDArrays.of(atts.get(attName), model.getSampleSystem(), model.getDataType()));
             }
+            dataPoints.setAttributes(rebuilt);
             positions = dataPoints.getAttribute(DataPointsType.ATT_POSITION);
         }
 
