@@ -34,6 +34,7 @@ import java.lang.reflect.GenericDeclaration;
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Modifier;
 import org.opengis.annotation.UML;
+import org.apache.sis.pending.jdk.JDK12;
 
 
 /**
@@ -115,7 +116,7 @@ public final class Classes {
                 do element = element.getComponentType();
                 while (element!=null && ++change != 0);
             } else if (element != Void.TYPE) {
-                do element = element.arrayType();
+                do element = JDK12.arrayType(element);
                 while (--change != 0);
             }
         }
