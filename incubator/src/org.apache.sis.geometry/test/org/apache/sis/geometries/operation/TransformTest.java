@@ -125,7 +125,7 @@ public class TransformTest extends AbstractD9IMTest {
         final MultiMeshPrimitive mp = new MultiMeshPrimitive(createPrimitive());
         final MultiMeshPrimitive result = (MultiMeshPrimitive) new GeometryProcessor().transform(mp, CRS_TARGET, TRANSFORM);
         assertEquals(1, result.getNumGeometries());
-        testPrimitive(result.getGeometryN(0));
+        testPrimitive((MeshPrimitive) result.getGeometryN(0));
     }
 
     /**

@@ -82,7 +82,6 @@ public sealed interface GeometryCollection<T extends Geometry> extends Geometry
         permits ProductCurve,
                 DefaultMultiPoint,
                 DefaultGeometryCollection,
-                MultiMeshPrimitive,
                 MeshPrimitive.Abs.Points,
                 MeshPrimitive.Abs.Lines
 {

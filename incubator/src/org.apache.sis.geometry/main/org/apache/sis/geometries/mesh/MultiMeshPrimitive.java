@@ -16,26 +16,13 @@
  */
 package org.apache.sis.geometries.mesh;
 
-import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collection;
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
-import java.util.Objects;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
-import org.opengis.referencing.operation.TransformException;
-import org.apache.sis.geometries.DataPoints;
 import org.apache.sis.geometries.Geometries;
-import org.apache.sis.geometries.Geometry;
-import org.apache.sis.geometries.GeometryCollection;
 import org.apache.sis.geometries.GeometryType;
-import org.apache.sis.geometries.internal.shared.AbstractGeometry;
-import org.apache.sis.geometries.internal.shared.ConcatenatedDataPoints;
-import org.apache.sis.geometries.internal.shared.EmptyDataPoints;
-import org.apache.sis.referencing.CRS;
-import org.apache.sis.util.ArgumentChecks;
+import org.apache.sis.geometries.internal.shared.DefaultGeometryCollection;
 
 
 /**
@@ -44,12 +31,7 @@ import org.apache.sis.util.ArgumentChecks;
  *
  * @author Johann Sorel (Geomatys)
  */
-public final class MultiMeshPrimitive<T extends MeshPrimitive> extends AbstractGeometry implements GeometryCollection<T> {
-
-    protected final List<T> primitives = new ArrayList<>();
-
-    private CoordinateReferenceSystem crs;
-    private Map<String, Object> userProperties;
+public final class MultiMeshPrimitive<T extends MeshPrimitive> extends DefaultGeometryCollection<T> {
 
     /**
      * Create a geometry with right hand 3D CRS.
@@ -59,8 +41,7 @@ public final class MultiMeshPrimitive<T extends MeshPrimitive> extends AbstractG
     }
 
     public MultiMeshPrimitive(CoordinateReferenceSystem crs) {
-        ArgumentChecks.ensureNonNull("crs", crs);
-        this.crs = crs;
+        super(GeometryType.GEOMETRY, crs, null);
     }
 
     public MultiMeshPrimitive(MeshPrimitive ... primitives) {
@@ -68,35 +49,8 @@ public final class MultiMeshPrimitive<T extends MeshPrimitive> extends AbstractG
         append(Arrays.asList(primitives));
     }
 
-    @Override
-    public GeometryType getElementType() {
-        return GeometryType.GEOMETRY;
-    }
-
-    @Override
-    public CoordinateReferenceSystem getCoordinateReferenceSystem() {
-        for (MeshPrimitive p : primitives) {
-            return p.getCoordinateReferenceSystem();
-        }
-        return crs;
-    }
-
-    @Override
-    public Geometry getBoundary() {
-        throw new UnsupportedOperationException("Not supported yet.");
-    }
-
-    @Override
-    public void setCoordinateReferenceSystem(CoordinateReferenceSystem crs) {
-        ArgumentChecks.ensureNonNull("crs", crs);
-        for (MeshPrimitive p : primitives) {
-            p.setCoordinateReferenceSystem(crs);
-        }
-        this.crs = crs;
-    }
-
     public boolean isEmpty() {
-        for (MeshPrimitive p : primitives) {
+        for (MeshPrimitive p : geometries) {
             if (!p.isEmpty()) {
                 return false;
             }
@@ -105,55 +59,16 @@ public final class MultiMeshPrimitive<T extends MeshPrimitive> extends AbstractG
     }
 
     public List<T> getComponents() {
-        return Collections.unmodifiableList(primitives);
-    }
-
-    @Override
-    public int getNumGeometries() {
-        return primitives.size();
-    }
-
-    @Override
-    public T getGeometryN(int n) {
-        return primitives.get(n);
+        return Collections.unmodifiableList(geometries);
     }
 
     /**
      * Check geometry definition.
      */
     public void validate() {
-        for (MeshPrimitive p : primitives) {
+        for (MeshPrimitive p : geometries) {
             p.validate();
         }
-    }
-
-    /**
-     * Add primitives.
-     *
-     * @param other Primitives to merge in.
-     */
-    public void append(Collection<? extends MeshPrimitive> other) {
-        for (MeshPrimitive p : other) {
-            if (!CRS.equivalent(crs, p.getCoordinateReferenceSystem())) {
-                throw new IllegalArgumentException("Primitives must have the same CRS as the MultiPrimitive.");
-            }
-        }
-        primitives.addAll((Collection<? extends T>) other);
-    }
-
-    /**
-     * Make a deep copy of this multi-primitive.
-     *
-     * Note : this method will clone all attributes.
-     *
-     * @return copied MultiPrimitive
-     */
-    public MultiMeshPrimitive deepCopy() throws TransformException {
-        final MultiMeshPrimitive copy = new MultiMeshPrimitive(getCoordinateReferenceSystem());
-        for (MeshPrimitive p : primitives) {
-            copy.primitives.add(p.deepCopy());
-        }
-        return copy;
     }
 
     /**
@@ -163,7 +78,7 @@ public final class MultiMeshPrimitive<T extends MeshPrimitive> extends AbstractG
      * triangles or it will cause visual glitches.
      */
     public void computeFaceNormals() {
-        for (MeshPrimitive p : primitives) {
+        for (MeshPrimitive p : geometries) {
             p.computeFaceNormals();
         }
     }
@@ -173,55 +88,9 @@ public final class MultiMeshPrimitive<T extends MeshPrimitive> extends AbstractG
      * where it is used.
      */
     public void computeSmoothNormals() {
-        for (MeshPrimitive p : primitives) {
+        for (MeshPrimitive p : geometries) {
             p.computeSmoothNormals();
         }
-    }
-
-    @Override
-    public synchronized Map<String, Object> userProperties() {
-        if (userProperties == null) {
-            userProperties = new HashMap<>();
-        }
-        return userProperties;
-    }
-
-    @Override
-    public int hashCode() {
-        int hash = 7;
-        hash = 23 * hash + Objects.hashCode(this.primitives);
-        return hash;
-    }
-
-    @Override
-    public boolean equals(Object obj) {
-        if (this == obj) {
-            return true;
-        }
-        if (obj == null) {
-            return false;
-        }
-        if (getClass() != obj.getClass()) {
-            return false;
-        }
-        final MultiMeshPrimitive other = (MultiMeshPrimitive) obj;
-        if (!Objects.equals(this.primitives, other.primitives)) {
-            return false;
-        }
-        return Objects.equals(this.getCoordinateReferenceSystem(), other.getCoordinateReferenceSystem());
-    }
-
-
-    /**
-     * Returns the positions of the primitives of this set, in the order this set holds them.
-     */
-    @Override
-    public DataPoints getDataPoints() {
-        final List<T> components = getComponents();
-        if (components.isEmpty()) {
-            return new EmptyDataPoints(getCoordinateReferenceSystem());
-        }
-        return ConcatenatedDataPoints.of(components.toArray(Geometry[]::new));
     }
 
 }
