@@ -31,10 +31,10 @@ public class VectorXusTest extends AbstractVectorTest{
     @Override
     protected Vector create(int dim) {
         switch (dim) {
-            case 1 : return new Vector1D.UShort();
-            case 2 : return new Vector2D.UShort();
-            case 3 : return new Vector3D.UShort();
-            case 4 : return new Vector4D.UShort();
+            case 1 : return new Vector1D.UShort((short)0);
+            case 2 : return new Vector2D.UShort((short)0,(short)0);
+            case 3 : return new Vector3D.UShort((short)0,(short)0,(short)0);
+            case 4 : return new Vector4D.UShort((short)0,(short)0,(short)0,(short)0);
             default : return new VectorND.UShort(dim);
         }
     }

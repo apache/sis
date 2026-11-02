@@ -28,10 +28,9 @@ import org.opengis.referencing.cs.CoordinateSystem;
 import org.opengis.referencing.cs.EllipsoidalCS;
 import org.opengis.referencing.cs.SphericalCS;
 import org.apache.sis.geometries.cs.Bearing;
-import org.apache.sis.geometries.internal.shared.ArrayDataPoints;
 import org.apache.sis.geometries.internal.shared.DefaultPoint;
 import org.apache.sis.geometries.internal.shared.IndexedPoint;
-import org.apache.sis.geometries.mesh.MeshPrimitive;
+import org.apache.sis.geometries.internal.shared.Vertex;
 import org.apache.sis.maths.DataType;
 import org.apache.sis.maths.NDRange;
 import org.apache.sis.maths.Vector;
@@ -69,8 +68,7 @@ import org.apache.sis.util.Utilities;
 public sealed interface Point extends Primitive
         permits DefaultPoint,
                 IndexedPoint,
-                ArrayDataPoints.Indexed,
-                MeshPrimitive.Vertex,
+                Vertex,
                 DataPoints.InterpolatedPoint
 {
 

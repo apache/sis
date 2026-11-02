@@ -23,6 +23,7 @@ import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import org.apache.sis.geometries.Geometries;
 import org.apache.sis.geometries.Point;
 import org.apache.sis.geometries.curve.LineString;
+import org.apache.sis.geometries.internal.shared.Vertex;
 import org.apache.sis.geometries.surface.TIN;
 import org.apache.sis.geometries.surface.Triangle;
 import org.apache.sis.maths.NDArrays;
@@ -575,7 +576,7 @@ public class PrimitiveVisitorTest {
             }
 
             @Override
-            protected void visit(MeshPrimitive.Vertex vertex) {
+            protected void visit(Vertex vertex) {
                 assertEquals(expected.remove(0), vertex.toString());
             }
         };

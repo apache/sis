@@ -28,9 +28,10 @@ import java.util.logging.Logger;
 import org.opengis.geometry.Envelope;
 import org.apache.sis.geometries.Geometries;
 import org.apache.sis.geometries.index.KdTree;
+import org.apache.sis.geometries.internal.shared.ArrayDataPoints;
 import org.apache.sis.geometries.internal.shared.Planar;
+import org.apache.sis.geometries.internal.shared.Vertex;
 import org.apache.sis.geometries.mesh.MeshPrimitive;
-import org.apache.sis.geometries.mesh.MeshPrimitive.Vertex;
 import org.apache.sis.geometries.operation.OperationException;
 import org.apache.sis.geometry.GeneralEnvelope;
 import org.apache.sis.maths.Array;
@@ -317,9 +318,9 @@ public final class Delaunay {
         indexToEdge = new OrientedEdge[Math.toIntExact(positionsPlusRoot.getLength())];
 
         //base triangle
-        final Vertex v0 = new Vertex(pointsPlusRoot, rootOffset);
-        final Vertex v1 = new Vertex(pointsPlusRoot, rootOffset+1);
-        final Vertex v2 = new Vertex(pointsPlusRoot, rootOffset+2);
+        final Vertex v0 = pointsPlusRoot.getVertex(rootOffset);
+        final Vertex v1 = pointsPlusRoot.getVertex(rootOffset+1);
+        final Vertex v2 = pointsPlusRoot.getVertex(rootOffset+2);
         final OrientedTriangle triangle = new OrientedTriangle(v0, v1, v2);
         triangles.add(triangle);
 
@@ -368,7 +369,7 @@ public final class Delaunay {
      */
     private void insertPoint(long index) throws OperationException, IllegalArgumentException {
         if (index < 0 || index >= rootOffset) throw new IllegalArgumentException("Index do not exist : " + index);
-        final Vertex vertex = new Vertex(pointsPlusRoot, index);
+        final Vertex vertex = pointsPlusRoot.getVertex(index);
         final Vector position = vertex.getPosition();
 
         //find nearest vertex and tst all triangles using this vertex
@@ -454,7 +455,7 @@ public final class Delaunay {
         if (endIndex < 0 || endIndex >= rootOffset) throw new IllegalArgumentException("Constraint segment index do not exist : " + endIndex);
 //        System.out.println("e " + startIndex +" " + endIndex);
 
-        final Vertex E = new Vertex(pointsPlusRoot, endIndex);
+        final Vertex E = pointsPlusRoot.getVertex(endIndex);
 
         //find the starting triangle
         /*
@@ -1016,7 +1017,7 @@ public final class Delaunay {
      * @throws OperationException if an algorithm exception occurs
      */
     private OrientedEdge searchTriangle(long startIndex, long endIndex) throws OperationException {
-        final Vertex end = new Vertex(pointsPlusRoot, endIndex);
+        final Vertex end = pointsPlusRoot.getVertex(endIndex);
         final Vector endPosition = end.getPosition();
 
         OrientedEdge edge = indexToEdge[Math.toIntExact(startIndex)];

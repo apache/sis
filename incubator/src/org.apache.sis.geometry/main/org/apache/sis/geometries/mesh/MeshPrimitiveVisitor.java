@@ -22,6 +22,8 @@ import org.apache.sis.geometries.Geometry;
 import org.apache.sis.geometries.GeometryFactory;
 import org.apache.sis.geometries.Point;
 import org.apache.sis.geometries.curve.LineString;
+import org.apache.sis.geometries.internal.shared.ArrayDataPoints;
+import org.apache.sis.geometries.internal.shared.Vertex;
 import org.apache.sis.geometries.surface.Triangle;
 import org.apache.sis.maths.Array;
 import org.apache.sis.maths.Cursor;
@@ -189,7 +191,7 @@ public abstract class MeshPrimitiveVisitor {
     }
 
     private Point readPoint(int idx0) {
-        return new MeshPrimitive.Vertex(primitive, idx0);
+        return primitive.getDataPoints().getPoint(idx0);
     }
 
     private Triangle readTriangle(int idx0, int idx1, int idx2) {
@@ -205,9 +207,9 @@ public abstract class MeshPrimitiveVisitor {
      */
     protected void visit(Triangle candidate) {
         final DataPoints points = candidate.getExteriorRing().getDataPoints();
-        visit((MeshPrimitive.Vertex) points.getPoint(0));
-        visit((MeshPrimitive.Vertex) points.getPoint(1));
-        visit((MeshPrimitive.Vertex) points.getPoint(2));
+        visit((Vertex) points.getPoint(0));
+        visit((Vertex) points.getPoint(1));
+        visit((Vertex) points.getPoint(2));
     }
 
     /**
@@ -215,24 +217,24 @@ public abstract class MeshPrimitiveVisitor {
      */
     protected void visit(LineString candidate) {
         final DataPoints points = candidate.getDataPoints();
-        visit((MeshPrimitive.Vertex) points.getPoint(0));
-        visit((MeshPrimitive.Vertex) points.getPoint(1));
+        visit((Vertex) points.getPoint(0));
+        visit((Vertex) points.getPoint(1));
     }
 
     /**
      * Override this method to process a point.
      */
     protected void visit(Point candidate) {
-        visit((MeshPrimitive.Vertex) candidate);
+        visit((Vertex) candidate);
     }
 
     /**
      * Called when visiting a mesh vertex.
      * @param vertex visited vertex.
      */
-    protected abstract void visit(MeshPrimitive.Vertex vertex);
+    protected abstract void visit(Vertex vertex);
 
-    public boolean isVisited(MeshPrimitive.Vertex vertex) {
+    public boolean isVisited(Vertex vertex) {
         return visited.contains(vertex.getIndex());
     }
 

@@ -31,10 +31,10 @@ public class VectorXbTest extends AbstractVectorTest{
     @Override
     protected Vector create(int dim) {
         switch (dim) {
-            case 1 : return new Vector1D.Byte();
-            case 2 : return new Vector2D.Byte();
-            case 3 : return new Vector3D.Byte();
-            case 4 : return new Vector4D.Byte();
+            case 1 : return new Vector1D.Byte((byte)0);
+            case 2 : return new Vector2D.Byte((byte)0, (byte)0);
+            case 3 : return new Vector3D.Byte((byte)0, (byte)0, (byte)0);
+            case 4 : return new Vector4D.Byte((byte)0, (byte)0, (byte)0, (byte)0);
             default : return new VectorND.Byte(dim);
         }
     }

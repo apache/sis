@@ -21,13 +21,11 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Objects;
 import java.util.Set;
-import java.util.TreeSet;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.opengis.geometry.Envelope;
@@ -39,8 +37,17 @@ import org.apache.sis.geometries.GeometryFactory;
 import org.apache.sis.geometries.GeometryType;
 import org.apache.sis.geometries.Point;
 import org.apache.sis.geometries.DataPointsType;
+import static org.apache.sis.geometries.DataPointsType.ATT_COLOR;
+import static org.apache.sis.geometries.DataPointsType.ATT_JOINTS;
+import static org.apache.sis.geometries.DataPointsType.ATT_NORMAL;
+import static org.apache.sis.geometries.DataPointsType.ATT_POSITION;
+import static org.apache.sis.geometries.DataPointsType.ATT_TANGENT;
+import static org.apache.sis.geometries.DataPointsType.ATT_TEXCOORD;
+import static org.apache.sis.geometries.DataPointsType.ATT_WEIGHTS;
 import org.apache.sis.geometries.GeometryCollection;
 import org.apache.sis.geometries.curve.LineString;
+import org.apache.sis.geometries.internal.shared.ArrayDataPoints;
+import org.apache.sis.geometries.internal.shared.Vertex;
 import org.apache.sis.geometries.surface.TIN;
 import org.apache.sis.geometries.surface.Triangle;
 import org.apache.sis.geometry.GeneralEnvelope;
@@ -55,7 +62,6 @@ import org.apache.sis.maths.Vector;
 import org.apache.sis.maths.Vector1D;
 import org.apache.sis.maths.Vector3D;
 import org.apache.sis.util.ArgumentChecks;
-import org.apache.sis.util.collection.Containers;
 
 
 /**
@@ -102,16 +108,22 @@ public sealed interface MeshPrimitive extends Geometry
         }
     }
 
-    public static MeshPrimitive createEmpty(Type type, DataPointsType attDef) {
-        Abs p = (Abs) create(type);
-        for (String name : attDef.getAttributeNames()) {
-            p.attributes.put(name, NDArrays.of(attDef.getAttributeSystem(name), attDef.getAttributeType(name), 0));
+    public static MeshPrimitive create(Type type, ArrayDataPoints dataPoints) {
+        switch (type) {
+            case POINTS: return new Points(dataPoints);
+            case LINES: return new Lines(dataPoints);
+            case LINE_LOOP: return new LineLoop(dataPoints);
+            case LINE_STRIP: return new LineStrip(dataPoints);
+            case TRIANGLES: return new Triangles(dataPoints);
+            case TRIANGLE_FAN: return new TriangleFan(dataPoints);
+            case TRIANGLE_STRIP: return new TriangleStrip(dataPoints);
+            default: throw new IllegalArgumentException("Unknown type " + type);
         }
-        p.positions = p.attributes.get(DataPointsType.ATT_POSITION);
-        ArgumentChecks.ensureNonNull(DataPointsType.ATT_POSITION, p.positions);
-        return p;
     }
 
+    public static MeshPrimitive createEmpty(Type type, DataPointsType attDef) {
+        return create(type, new ArrayDataPoints(attDef));
+    }
 
     /**
      * @return primitive (and positions) CRS.
@@ -243,7 +255,7 @@ public sealed interface MeshPrimitive extends Geometry
      * @param index vertex index.
      * @return Vertex
      */
-    Vertex getVertex(int index);
+    Vertex getVertex(long index);
 
     /**
      * Create a deep copy of this primitive.
@@ -277,7 +289,7 @@ public sealed interface MeshPrimitive extends Geometry
      */
     void removeDuplicatesByPosition();
 
-    public static abstract sealed class Abs implements MeshPrimitive, DataPointsType
+    public static abstract sealed class Abs implements MeshPrimitive
             permits Points,
                     Lines,
                     LineLoop,
@@ -290,7 +302,7 @@ public sealed interface MeshPrimitive extends Geometry
         /**
          * Checks Array change for position is in the same crs as the geometry.
          */
-        protected final LinkedHashMap<String,Array> attributes = new LinkedHashMap<>();
+        protected final ArrayDataPoints dataPoints;
         protected Array index;
         protected final Type type;
         //keep it as variable for fast access, used a lot
@@ -299,8 +311,12 @@ public sealed interface MeshPrimitive extends Geometry
         private Map<String, Object> userProperties;
 
         protected Abs(Type type) {
-            positions = NDArrays.of(SampleSystem.of(Geometries.RIGHT_HAND_3D), new double[0]);
-            attributes.put(DataPointsType.ATT_POSITION, positions);
+            this(type, new ArrayDataPoints(NDArrays.of(SampleSystem.of(Geometries.RIGHT_HAND_3D), new double[0])));
+        }
+
+        protected Abs(Type type, ArrayDataPoints dataPoints) {
+            this.dataPoints = dataPoints;
+            this.positions = dataPoints.getAttribute(ATT_POSITION);
             this.type = type;
         }
 
@@ -321,27 +337,13 @@ public sealed interface MeshPrimitive extends Geometry
         }
 
         @Override
+        public ArrayDataPoints getDataPoints() {
+            return dataPoints;
+        }
+
+        @Override
         public DataPointsType getDataPointsType() {
-            return this;
-        }
-
-        @Override
-        public List<String> getAttributeNames() {
-            return Containers.copyToImmutableList(attributes.keySet(), String.class);
-        }
-
-        @Override
-        public SampleSystem getAttributeSystem(String name) {
-            final Array ta = attributes.get(name);
-            if (ta == null) return null;
-            return ta.getSampleSystem();
-        }
-
-        @Override
-        public DataType getAttributeType(String name) {
-            final Array ta = attributes.get(name);
-            if (ta == null) return null;
-            return ta.getDataType();
+            return dataPoints.getType();
         }
 
         /**
@@ -351,7 +353,7 @@ public sealed interface MeshPrimitive extends Geometry
          */
         @Override
         public Envelope getEnvelope() {
-            final Array positions = getAttribute(ATT_POSITION);
+            final Array positions = getDataPoints().getAttribute(ATT_POSITION);
             if (positions.isEmpty()) {
                 final GeneralEnvelope env = new GeneralEnvelope(getCoordinateReferenceSystem());
                 env.setToNaN();
@@ -369,7 +371,7 @@ public sealed interface MeshPrimitive extends Geometry
             final List<Geometry> elements = new ArrayList<>();
             MeshPrimitiveVisitor visitor = new MeshPrimitiveVisitor(this) {
                 @Override
-                protected void visit(MeshPrimitive.Vertex vertex) {
+                protected void visit(Vertex vertex) {
                 }
 
                 @Override
@@ -422,7 +424,7 @@ public sealed interface MeshPrimitive extends Geometry
          */
         @Override
         public Array getAttribute(String name) {
-            return attributes.get(name);
+            return dataPoints.getAttribute(name);
         }
 
         /**
@@ -435,9 +437,9 @@ public sealed interface MeshPrimitive extends Geometry
                 //makes extract verifications
                 setPositions(array);
             } else if (array == null) {
-                attributes.remove(name);
+                dataPoints.setAttribute(name, null);
             } else {
-                attributes.put(name, array);
+                dataPoints.setAttribute(name, array);
             }
         }
 
@@ -490,23 +492,6 @@ public sealed interface MeshPrimitive extends Geometry
         }
 
         /**
-         * Returns the positions this primitive draws, in the order it draws them. When the
-         * primitive carries an index, the positions appear in the order that index names them,
-         * and a position the index names several times appears as many times.
-         */
-        @Override
-        public DataPoints getDataPoints() {
-            final int[] indices;
-            if (index == null) {
-                indices = new int[Math.toIntExact(getPositions().getLength())];
-                for (int i = 0; i < indices.length; i++) indices[i] = i;
-            } else {
-                indices = index.toArrayInt();
-            }
-            return new Sequence(this, indices);
-        }
-
-        /**
          * Change positions.
          * Caution : changing the positions will change the primitive CRS,
          *           the positions crs is used as primitive CRS.
@@ -517,7 +502,7 @@ public sealed interface MeshPrimitive extends Geometry
             ArgumentChecks.ensureNonNull(ATT_POSITION, array);
             ArgumentChecks.ensureNonNull("positions crs", array.getCoordinateReferenceSystem());
             this.positions = array;
-            attributes.put(ATT_POSITION, array);
+            getDataPoints().setAttribute(ATT_POSITION, array);
         }
 
         /**
@@ -525,12 +510,12 @@ public sealed interface MeshPrimitive extends Geometry
          */
         @Override
         public Array getNormals() {
-            return getAttribute(ATT_NORMAL);
+            return getDataPoints().getAttribute(ATT_NORMAL);
         }
 
         @Override
         public void setNormals(Array array) {
-            attributes.put(ATT_NORMAL, array);
+            getDataPoints().setAttribute(ATT_NORMAL, array);
         }
 
         /**
@@ -543,7 +528,7 @@ public sealed interface MeshPrimitive extends Geometry
 
         @Override
         public void setTangents(Array array) {
-            attributes.put(ATT_TANGENT, array);
+            getDataPoints().setAttribute(ATT_TANGENT, array);
         }
 
         /**
@@ -556,7 +541,7 @@ public sealed interface MeshPrimitive extends Geometry
 
         @Override
         public void setColors(int index, Array array) {
-            attributes.put(ATT_COLOR + "_" + index, array);
+            getDataPoints().setAttribute(ATT_COLOR + "_" + index, array);
         }
 
         /**
@@ -569,7 +554,7 @@ public sealed interface MeshPrimitive extends Geometry
 
         @Override
         public void setTexCoords(int index, Array array) {
-            attributes.put(ATT_TEXCOORD + "_" + index, array);
+            getDataPoints().setAttribute(ATT_TEXCOORD + "_" + index, array);
         }
 
         /**
@@ -582,7 +567,7 @@ public sealed interface MeshPrimitive extends Geometry
 
         @Override
         public void setJoints(int index, Array array) {
-            attributes.put(ATT_JOINTS + "_" + index, array);
+            getDataPoints().setAttribute(ATT_JOINTS + "_" + index, array);
         }
 
         /**
@@ -595,7 +580,7 @@ public sealed interface MeshPrimitive extends Geometry
 
         @Override
         public void setWeights(int index, Array array) {
-            attributes.put(ATT_WEIGHTS + "_" + index, array);
+            getDataPoints().setAttribute(ATT_WEIGHTS + "_" + index, array);
         }
 
         /**
@@ -609,11 +594,12 @@ public sealed interface MeshPrimitive extends Geometry
             }
 
             long size = -1;
-            for (Map.Entry<String,Array> entry : attributes.entrySet()) {
-                validate(entry.getKey(), entry.getValue());
+            for (String attName : getDataPoints().getAttributeNames()) {
+                Array array = getDataPoints().getAttribute(attName);
+                validate(attName, array);
                 if (size == -1) {
-                    size = entry.getValue().getLength();
-                } else if (size != entry.getValue().getLength()) {
+                    size = array.getLength();
+                } else if (size != array.getLength()) {
                     throw new IllegalArgumentException("Attributes have different tuple array lengths.");
                 }
             }
@@ -710,8 +696,8 @@ public sealed interface MeshPrimitive extends Geometry
          * @return Vertex
          */
         @Override
-        public Vertex getVertex(int index) {
-            return new Vertex(this, index);
+        public Vertex getVertex(long index) {
+            return dataPoints.getPoint(Math.toIntExact(index));
         }
 
         /**
@@ -725,15 +711,15 @@ public sealed interface MeshPrimitive extends Geometry
         public MeshPrimitive deepCopy() {
             final Abs copy = (Abs) create(type);
 
-            for (Map.Entry<String,Array> entry : attributes.entrySet()) {
-                copy.attributes.put(entry.getKey(), entry.getValue().copy());
+            for (String attName : getDataPoints().getAttributeNames()) {
+                copy.dataPoints.setAttribute(attName, dataPoints.getAttribute(attName).copy());
             }
 
             //copy index and ranges
             if (index != null) {
                 copy.setIndex(index.copy());
             }
-            copy.positions = copy.attributes.get(DataPointsType.ATT_POSITION);
+            copy.positions = copy.dataPoints.getAttribute(DataPointsType.ATT_POSITION);
             return copy;
         }
 
@@ -807,15 +793,15 @@ public sealed interface MeshPrimitive extends Geometry
 
             new MeshPrimitiveVisitor(this) {
                 @Override
-                protected void visit(MeshPrimitive.Vertex vertex) {
+                protected void visit(Vertex vertex) {
                 }
 
                 @Override
                 protected void visit(Triangle candidate) {
                     final DataPoints points = candidate.getExteriorRing().getDataPoints();
-                    long idx0 = ((MeshPrimitive.Vertex)points.getPoint(0)).getIndex();
-                    long idx1 = ((MeshPrimitive.Vertex)points.getPoint(1)).getIndex();
-                    long idx2 = ((MeshPrimitive.Vertex)points.getPoint(2)).getIndex();
+                    long idx0 = ((Vertex)points.getPoint(0)).getIndex();
+                    long idx1 = ((Vertex)points.getPoint(1)).getIndex();
+                    long idx2 = ((Vertex)points.getPoint(2)).getIndex();
                     if (idx0 == idx1 || idx0 == idx2 || idx1 == idx2) {
                         //flat triangle ignore it
                         return;
@@ -844,8 +830,8 @@ public sealed interface MeshPrimitive extends Geometry
                 @Override
                 protected void visit(LineString candidate) {
                     final DataPoints points = candidate.getDataPoints();
-                    long idx0 = ((MeshPrimitive.Vertex)points.getPoint(0)).getIndex();
-                    long idx1 = ((MeshPrimitive.Vertex)points.getPoint(1)).getIndex();
+                    long idx0 = ((Vertex)points.getPoint(0)).getIndex();
+                    long idx1 = ((Vertex)points.getPoint(1)).getIndex();
                     final Vector normal = new Vector3D.Float(0,0,1);
 
                     normals.set(idx0, normals.get(idx0).add(normal));
@@ -886,13 +872,13 @@ public sealed interface MeshPrimitive extends Geometry
         @Override
         public void removeDuplicatesByPosition() {
 
-            final Set<String> attNames = attributes.keySet();
+            final List<String> attNames = dataPoints.getAttributeNames();
             final Map<String,List<Vector<?>>> atts = new HashMap<>();
             final List<Entry<List<Vector<?>>,Array>> mapping = new ArrayList<>();
             for (String attName : attNames) {
                 final List<Vector<?>> lst = new ArrayList<>();
                 atts.put(attName, lst);
-                mapping.add(new AbstractMap.SimpleImmutableEntry<>(lst, attributes.get(attName)));
+                mapping.add(new AbstractMap.SimpleImmutableEntry<>(lst, dataPoints.getAttribute(attName)));
             }
             final List<Vector<?>> aNewAttribute = mapping.get(0).getKey();
 
@@ -921,21 +907,18 @@ public sealed interface MeshPrimitive extends Geometry
 
             setIndex(NDArrays.of(newIndex, 1, index.getDataType()));
 
-            final Map<String, Array> newAttributes = new HashMap<>();
             for (String attName : attNames) {
-                final Array model = attributes.get(attName);
+                final Array model = dataPoints.getAttribute(attName);
                 final Array array = NDArrays.of(atts.get(attName), model.getSampleSystem(), model.getDataType());
-                newAttributes.put(attName, array);
+                getDataPoints().setAttribute(attName, array);
             }
-            attributes.clear();
-            attributes.putAll(newAttributes);
-            positions = attributes.get(DataPointsType.ATT_POSITION);
+            positions = dataPoints.getAttribute(DataPointsType.ATT_POSITION);
         }
 
         @Override
         public int hashCode() {
             int hash = 7;
-            hash = 23 * hash + Objects.hashCode(this.attributes);
+            hash = 23 * hash + Objects.hashCode(this.dataPoints);
             hash = 23 * hash + Objects.hashCode(this.index);
             hash = 23 * hash + Objects.hashCode(this.type);
             return hash;
@@ -953,7 +936,7 @@ public sealed interface MeshPrimitive extends Geometry
                 return false;
             }
             final Abs other = (Abs) obj;
-            if (!Objects.equals(this.attributes, other.attributes)) {
+            if (!Objects.equals(this.dataPoints, other.dataPoints)) {
                 return false;
             }
             if (!Objects.equals(this.index, other.index)) {
@@ -971,91 +954,6 @@ public sealed interface MeshPrimitive extends Geometry
                 userProperties = new HashMap<>();
             }
             return userProperties;
-        }
-    }
-
-
-    /**
-     * A vertex is a indexed point in a geometry.
-     */
-    public static final class Vertex implements Point {
-
-        private final Abs parent;
-        private long index;
-
-        public Vertex(MeshPrimitive geometry, long index) {
-            this.parent = (Abs) geometry;
-            this.index = index;
-        }
-
-        @Override
-        public Vector getPosition() {
-            final Cursor cursor = parent.getPositions().cursor();
-            cursor.moveTo(index);
-            return cursor.getSamples();
-        }
-
-        @Override
-        public boolean isEmpty() {
-            return false;
-        }
-
-        /**
-         * @return index in the parent mesh.
-         */
-        public long getIndex() {
-            return index;
-        }
-
-        public void setIndex(long index) {
-            this.index = index;
-        }
-
-        @Override
-        public Vector getAttribute(String key) {
-            final Array tupleGrid = parent.attributes.get(key);
-            if (tupleGrid == null) return null;
-            final Cursor cursor = tupleGrid.cursor();
-            cursor.moveTo(index);
-            return cursor.getSamples();
-        }
-
-        @Override
-        public void setAttribute(String name, Vector tuple) {
-            final Array tupleGrid = parent.attributes.get(name);
-            if (tupleGrid == null) throw new IllegalArgumentException("Attribute " + name + " do not exist");
-            final Cursor cursor = tupleGrid.cursor();
-            cursor.moveTo(index);
-            cursor.setSamples(tuple);
-        }
-
-        @Override
-        public CoordinateReferenceSystem getCoordinateReferenceSystem() {
-            return parent.getCoordinateReferenceSystem();
-        }
-
-        @Override
-        public void setCoordinateReferenceSystem(CoordinateReferenceSystem crs) {
-            throw new UnsupportedOperationException("Not supported.");
-        }
-
-        @Override
-        public DataPointsType getDataPointsType() {
-            return parent.getDataPointsType();
-        }
-
-        @Override
-        public String toString() {
-            final StringBuilder sb = new StringBuilder("V:");
-            sb.append(getIndex());
-            final TreeSet<String> properties = new TreeSet<>(getDataPointsType().getAttributeNames());
-            for (String name : properties) {
-                sb.append(" ");
-                sb.append(name);
-                final Vector tuple = getAttribute(name);
-                sb.append(Arrays.toString(tuple.toArrayDouble()));
-            }
-            return sb.toString();
         }
     }
 
@@ -1086,7 +984,7 @@ public sealed interface MeshPrimitive extends Geometry
 
         @Override
         public Point getPoint(int index) {
-            return new Vertex(primitive, this.index[index]);
+            return primitive.dataPoints.getPoint(this.index[index]);
         }
 
         @Override
@@ -1125,6 +1023,10 @@ public sealed interface MeshPrimitive extends Geometry
             super(Type.POINTS);
         }
 
+        public Points(ArrayDataPoints dp) {
+            super(Type.POINTS, dp);
+        }
+
         @Override
         public GeometryType getGeometryType() {
             return GeometryType.COLLECTION;
@@ -1154,6 +1056,10 @@ public sealed interface MeshPrimitive extends Geometry
             super(Type.LINES);
         }
 
+        public Lines(ArrayDataPoints dp) {
+            super(Type.LINES, dp);
+        }
+
         @Override
         public GeometryType getElementType() {
             return GeometryType.LINESTRING;
@@ -1177,21 +1083,8 @@ public sealed interface MeshPrimitive extends Geometry
         public LineLoop() {
             super(Type.LINE_LOOP);
         }
-
-        @Override
-        public DataPoints getDataPoints() {
-            //select all points, duplicate first point as last
-            int[] indices;
-            if (index == null) {
-                indices = new int[Math.toIntExact(getPositions().getLength() + 1)];
-                for (int i = 0; i < indices.length; i++) indices[i] = i;
-                indices[indices.length - 1] = 0;
-            } else {
-                indices = index.toArrayInt();
-                indices = Arrays.copyOf(indices, indices.length + 1);
-                indices[indices.length - 1] = indices[0];
-            }
-            return new Sequence(this, indices);
+        public LineLoop(ArrayDataPoints dp) {
+            super(Type.LINE_LOOP, dp);
         }
     }
 
@@ -1200,11 +1093,18 @@ public sealed interface MeshPrimitive extends Geometry
             super(Type.LINE_STRIP);
         }
 
+        public LineStrip(ArrayDataPoints dp) {
+            super(Type.LINE_STRIP, dp);
+        }
     }
 
     public static final class Triangles extends Abs implements TIN {
         public Triangles() {
             super(Type.TRIANGLES);
+        }
+
+        public Triangles(ArrayDataPoints dp) {
+            super(Type.TRIANGLES, dp);
         }
 
         @Override
@@ -1233,6 +1133,10 @@ public sealed interface MeshPrimitive extends Geometry
             super(Type.TRIANGLE_FAN);
         }
 
+        public TriangleFan(ArrayDataPoints dp) {
+            super(Type.TRIANGLE_FAN, dp);
+        }
+
         @Override
         public int getNumPatches() {
             long nb = (index == null) ? getPositions().getLength() : this.index.getLength();
@@ -1259,6 +1163,10 @@ public sealed interface MeshPrimitive extends Geometry
     public static final class TriangleStrip extends Abs implements TIN {
         public TriangleStrip() {
             super(Type.TRIANGLE_STRIP);
+        }
+
+        public TriangleStrip(ArrayDataPoints dp) {
+            super(Type.TRIANGLE_STRIP, dp);
         }
 
         @Override

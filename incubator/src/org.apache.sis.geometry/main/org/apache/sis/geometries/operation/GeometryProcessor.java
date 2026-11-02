@@ -40,6 +40,8 @@ import org.apache.sis.geometries.Point;
 import org.apache.sis.geometries.Prism;
 import org.apache.sis.geometries.curve.LineString;
 import org.apache.sis.geometries.curve.LinearRing;
+import org.apache.sis.geometries.internal.shared.ArrayDataPoints;
+import org.apache.sis.geometries.internal.shared.Vertex;
 import org.apache.sis.geometries.mesh.MeshPrimitive;
 import org.apache.sis.geometries.mesh.MeshPrimitiveVisitor;
 import org.apache.sis.geometries.mesh.MultiMeshPrimitive;
@@ -594,7 +596,7 @@ public final class GeometryProcessor {
             }
 
             @Override
-            protected void visit(MeshPrimitive.Vertex vertex) {}
+            protected void visit(Vertex vertex) {}
         };
         pv.visit();
 

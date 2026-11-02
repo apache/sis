@@ -23,6 +23,8 @@ import org.locationtech.jts.geom.Coordinate;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import org.opengis.util.FactoryException;
 import org.apache.sis.geometries.DataPoints;
+import org.apache.sis.geometries.internal.shared.ArrayDataPoints;
+import org.apache.sis.geometries.internal.shared.Vertex;
 import org.apache.sis.geometries.mesh.MeshPrimitive;
 import org.apache.sis.geometries.mesh.MeshPrimitiveVisitor;
 import org.apache.sis.geometries.surface.Triangle;
@@ -97,7 +99,7 @@ public final class ISOLine {
             }
 
             @Override
-            protected void visit(MeshPrimitive.Vertex vertex) {
+            protected void visit(Vertex vertex) {
             }
         };
         visitor.visit();

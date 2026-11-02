@@ -26,8 +26,9 @@ import org.apache.sis.geometries.DataPointsType;
 import org.apache.sis.geometries.Geometries;
 import org.apache.sis.geometries.curve.LinearRing;
 import org.apache.sis.geometries.internal.shared.AbstractGeometry;
+import org.apache.sis.geometries.internal.shared.ArrayDataPoints;
+import org.apache.sis.geometries.internal.shared.Vertex;
 import org.apache.sis.geometries.mesh.MeshPrimitive;
-import org.apache.sis.geometries.mesh.MeshPrimitive.Vertex;
 import org.apache.sis.geometries.operation.OperationException;
 import org.apache.sis.geometries.surface.Triangle;
 import org.apache.sis.maths.Vector;
@@ -128,7 +129,7 @@ public final class OrientedTriangle extends AbstractGeometry implements Triangle
     /**
      * Returns the opposite vertex of given edge.
      */
-    MeshPrimitive.Vertex oppositePoint(OrientedEdge edge) {
+    Vertex oppositePoint(OrientedEdge edge) {
         assert (!obsolete);
         if (edge == ab) {
             return c;

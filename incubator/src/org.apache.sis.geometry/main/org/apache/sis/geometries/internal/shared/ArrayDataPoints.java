@@ -63,6 +63,14 @@ public final class ArrayDataPoints implements DataPoints, DataPointsType {
         }
     }
 
+    public ArrayDataPoints(DataPointsType attDef) {
+        for (String name : attDef.getAttributeNames()) {
+            attributes.put(name, NDArrays.of(attDef.getAttributeSystem(name), attDef.getAttributeType(name), 0));
+        }
+        positions = attributes.get(DataPointsType.ATT_POSITION);
+        ArgumentChecks.ensureNonNull(DataPointsType.ATT_POSITION, positions);
+    }
+
     @Override
     public CoordinateReferenceSystem getCoordinateReferenceSystem() {
         return positions.getCoordinateReferenceSystem();
@@ -89,8 +97,8 @@ public final class ArrayDataPoints implements DataPoints, DataPointsType {
     }
 
     @Override
-    public Point getPoint(int index) {
-        return new Indexed(this, index);
+    public Vertex getPoint(int index) {
+        return new Vertex(this, index);
     }
 
     @Override
@@ -207,69 +215,4 @@ public final class ArrayDataPoints implements DataPoints, DataPointsType {
         return DataPoints.equals(this, obj);
     }
 
-    /**
-     * An indexed point in the {@code DataPoints}
-     */
-    public static non-sealed class Indexed implements Point {
-
-        private final ArrayDataPoints parent;
-        private final int index;
-
-        public Indexed(ArrayDataPoints geometry, int index) {
-            this.parent = geometry;
-            this.index = index;
-        }
-
-        @Override
-        public boolean isEmpty() {
-            return false;
-        }
-
-        @Override
-        public Vector getPosition() {
-            final Cursor cursor = parent.positions.cursor();
-            cursor.moveTo(index);
-            return cursor.getSamples();
-        }
-
-        /**
-         * @return index in the parent mesh.
-         */
-        public int getIndex() {
-            return index;
-        }
-
-        @Override
-        public Vector getAttribute(String key) {
-            final Array tupleGrid = parent.attributes.get(key);
-            if (tupleGrid == null) return null;
-            final Cursor cursor = tupleGrid.cursor();
-            cursor.moveTo(index);
-            return cursor.getSamples();
-        }
-
-        @Override
-        public void setAttribute(String name, Vector tuple) {
-            final Array tupleGrid = parent.attributes.get(name);
-            if (tupleGrid == null) throw new IllegalArgumentException("Attribute " + name + " do not exist");
-            final Cursor cursor = tupleGrid.cursor();
-            cursor.moveTo(index);
-            cursor.setSamples(tuple);
-        }
-
-        @Override
-        public CoordinateReferenceSystem getCoordinateReferenceSystem() {
-            return parent.getCoordinateReferenceSystem();
-        }
-
-        @Override
-        public void setCoordinateReferenceSystem(CoordinateReferenceSystem crs) {
-            throw new UnsupportedOperationException("Not supported.");
-        }
-
-        @Override
-        public DataPointsType getDataPointsType() {
-            return parent.getType();
-        }
-    }
 }

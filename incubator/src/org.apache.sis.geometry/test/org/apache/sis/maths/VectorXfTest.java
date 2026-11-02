@@ -31,10 +31,10 @@ public class VectorXfTest extends AbstractVectorTest{
     @Override
     protected Vector create(int dim) {
         switch (dim) {
-            case 1 : return new Vector1D.Float();
-            case 2 : return new Vector2D.Float();
-            case 3 : return new Vector3D.Float();
-            case 4 : return new Vector4D.Float();
+            case 1 : return new Vector1D.Float(0);
+            case 2 : return new Vector2D.Float(0,0);
+            case 3 : return new Vector3D.Float(0,0,0);
+            case 4 : return new Vector4D.Float(0,0,0,0);
             default : return new VectorND.Float(dim);
         }
     }
