@@ -38,6 +38,7 @@ import com.esri.core.geometry.SpatialReference;
 import org.opengis.geometry.DirectPosition;
 import org.apache.sis.geometry.DirectPosition2D;
 import org.apache.sis.geometry.GeneralEnvelope;
+import org.apache.sis.geometry.wrapper.Dimensions;
 import org.apache.sis.geometry.wrapper.Geometries;
 import org.apache.sis.geometry.wrapper.GeometryWrapper;
 import org.apache.sis.filter.sqlmm.SQLMM;
@@ -81,6 +82,16 @@ final class Wrapper extends GeometryWrapper {
     @Override
     protected Object implementation() {
         return geometry;
+    }
+
+    /**
+     * Returns an identification of which dimensions are for the coordinates of this geometry.
+     *
+     * @return the coordinate dimensions (never {@code null}).
+     */
+    @Override
+    public Dimensions getCoordinateDimensions() {
+        return Dimensions.forZorM(geometry.hasZ(), geometry.hasM());
     }
 
     /**

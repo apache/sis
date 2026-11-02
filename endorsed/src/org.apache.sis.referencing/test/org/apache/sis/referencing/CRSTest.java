@@ -331,6 +331,8 @@ public final class CRSTest extends TestCaseWithLogs {
         assertSame(HardCodedCRS.WGS84,                 CRS.getHorizontalComponent(HardCodedCRS.WGS84));
         assertSame(HardCodedCRS.WGS84_LATITUDE_FIRST,  CRS.getHorizontalComponent(HardCodedCRS.WGS84_LATITUDE_FIRST));
         assertEqualsIgnoreMetadata(HardCodedCRS.WGS84, CRS.getHorizontalComponent(HardCodedCRS.WGS84_3D));
+        assertSame(HardCodedCRS.WGS84,                 CRS.getHorizontalComponent(HardCodedCRS.GEOID_3D));
+        assertSame(HardCodedCRS.WGS84,                 CRS.getHorizontalComponent(HardCodedCRS.GEOID_4D));
         loggings.assertNoUnexpectedLog();
     }
 
@@ -346,6 +348,8 @@ public final class CRSTest extends TestCaseWithLogs {
 
         assertSame(HardCodedCRS.ELLIPSOIDAL_HEIGHT,     CRS.getVerticalComponent(HardCodedCRS.ELLIPSOIDAL_HEIGHT, false));
         assertSame(HardCodedCRS.ELLIPSOIDAL_HEIGHT,     CRS.getVerticalComponent(HardCodedCRS.ELLIPSOIDAL_HEIGHT, true));
+        assertSame(HardCodedCRS.GRAVITY_RELATED_HEIGHT, CRS.getVerticalComponent(HardCodedCRS.GEOID_3D, false));
+        assertSame(HardCodedCRS.GRAVITY_RELATED_HEIGHT, CRS.getVerticalComponent(HardCodedCRS.GEOID_3D, true));
         assertSame(HardCodedCRS.GRAVITY_RELATED_HEIGHT, CRS.getVerticalComponent(HardCodedCRS.GEOID_4D, false));
         assertSame(HardCodedCRS.GRAVITY_RELATED_HEIGHT, CRS.getVerticalComponent(HardCodedCRS.GEOID_4D, true));
 
@@ -367,6 +371,24 @@ public final class CRSTest extends TestCaseWithLogs {
 
         assertSame(HardCodedCRS.TIME, CRS.getTemporalComponent(HardCodedCRS.TIME));
         assertSame(HardCodedCRS.TIME, CRS.getTemporalComponent(HardCodedCRS.GEOID_4D));
+        loggings.assertNoUnexpectedLog();
+    }
+
+    /**
+     * Tests {@link CRS#getGeospatialComponent(CoordinateReferenceSystem)}.
+     */
+    @Test
+    public void testGetGeospatialComponent() {
+        assertNull(CRS.getGeospatialComponent(HardCodedCRS.TIME));
+        assertNull(CRS.getGeospatialComponent(HardCodedCRS.ELLIPSOIDAL_HEIGHT));
+        assertNull(CRS.getGeospatialComponent(HardCodedCRS.GEOCENTRIC));
+
+        assertSame(HardCodedCRS.WGS84,                    CRS.getGeospatialComponent(HardCodedCRS.WGS84));
+        assertSame(HardCodedCRS.WGS84_LATITUDE_FIRST,     CRS.getGeospatialComponent(HardCodedCRS.WGS84_LATITUDE_FIRST));
+        assertSame(HardCodedCRS.WGS84_3D,                 CRS.getGeospatialComponent(HardCodedCRS.WGS84_3D));
+        assertSame(HardCodedCRS.WGS84_3D,                 CRS.getGeospatialComponent(HardCodedCRS.WGS84_4D));
+        assertSame(HardCodedCRS.GEOID_3D,                 CRS.getGeospatialComponent(HardCodedCRS.GEOID_3D));
+        assertEqualsIgnoreMetadata(HardCodedCRS.GEOID_3D, CRS.getGeospatialComponent(HardCodedCRS.GEOID_4D));
         loggings.assertNoUnexpectedLog();
     }
 
@@ -516,8 +538,10 @@ public final class CRSTest extends TestCaseWithLogs {
     @Test
     public void testReduceGeographic3D() throws FactoryException {
         final GeographicCRS crs = HardCodedCRS.WGS84_3D;
-        assertSame(CommonCRS.Vertical.ELLIPSOIDAL.crs(),   CRS.selectDimensions(crs, 2));
-        assertSame(CommonCRS.WGS84.normalizedGeographic(), CRS.selectDimensions(crs, 0, 1));
+        assertSame(CommonCRS.Vertical.ELLIPSOIDAL.crs(), CRS.selectDimensions(crs, 2));
+        final GeographicCRS horizontal = assertInstanceOf(GeographicCRS.class, CRS.selectDimensions(crs, 0, 1));
+        assertEqualsIgnoreMetadata(HardCodedCRS.WGS84, horizontal);
+        assertSame(crs.getDatum(), horizontal.getDatum());
         loggings.assertNoUnexpectedLog();
     }
 
@@ -531,7 +555,9 @@ public final class CRSTest extends TestCaseWithLogs {
     public void testReduceProjected3D() throws FactoryException {
         final ProjectedCRS crs = HardCodedConversions.mercator3D();
         assertSame(CommonCRS.Vertical.ELLIPSOIDAL.crs(), CRS.selectDimensions(crs, 2));
-        assertEqualsIgnoreMetadata(HardCodedConversions.mercator(), CRS.selectDimensions(crs, 0, 1));
+        final ProjectedCRS horizontal = assertInstanceOf(ProjectedCRS.class, CRS.selectDimensions(crs, 0, 1));
+        assertEqualsIgnoreMetadata(HardCodedConversions.mercator(), horizontal);
+        assertSame(crs.getDatum(), horizontal.getDatum());
         loggings.assertNoUnexpectedLog();
     }
 

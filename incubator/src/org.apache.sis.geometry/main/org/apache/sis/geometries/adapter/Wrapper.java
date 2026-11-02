@@ -48,6 +48,7 @@ import org.apache.sis.geometries.operation.GeometryProcessor;
 import org.apache.sis.geometries.surface.Polygon;
 import org.apache.sis.geometry.GeneralDirectPosition;
 import org.apache.sis.geometry.GeneralEnvelope;
+import org.apache.sis.geometry.wrapper.Dimensions;
 import org.apache.sis.geometry.wrapper.Geometries;
 import org.apache.sis.geometry.wrapper.GeometryType;
 import org.apache.sis.geometry.wrapper.GeometryWrapper;
@@ -175,21 +176,13 @@ public final class Wrapper extends GeometryWrapper {
     }
 
     /**
-     * Returns the dimension of the coordinates that define this geometry.
+     * Returns an identification of which dimensions are for the coordinates of this geometry.
+     *
+     * @todo Implement a more reliable mechanism.
      */
     @Override
-    public int getCoordinateDimension() {
-        return getCoordinatesDimension(geometry);
-    }
-
-    /**
-     * Gets the number of dimensions of geometry vertex (sequence of coordinate tuples), which can be 2 or 3.
-     *
-     * @param  geometry  the geometry for which to get <em>vertex</em> (not topological) dimension.
-     * @return vertex dimension of the given geometry.
-     */
-    private static int getCoordinatesDimension(final Geometry geometry) {
-        return geometry.getCoordinateReferenceSystem().getCoordinateSystem().getDimension();
+    public Dimensions getCoordinateDimensions() {
+        return Dimensions.forCRS(geometry.getCoordinateReferenceSystem());
     }
 
     /**

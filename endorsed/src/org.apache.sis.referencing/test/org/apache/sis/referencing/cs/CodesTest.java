@@ -17,6 +17,8 @@
 package org.apache.sis.referencing.cs;
 
 import java.util.Map;
+import java.util.Collections;
+import java.util.function.Supplier;
 import java.lang.reflect.Field;
 import javax.measure.Unit;
 import org.opengis.referencing.cs.AxisDirection;
@@ -32,10 +34,11 @@ import org.apache.sis.referencing.factory.TestFactorySource;
 
 
 /**
- * Compares the {@link Codes} elements with the EPSG geodetic database.
+ * Compares the {@link Codes} elements with the <abbr>EPSG</abbr> geodetic database.
  *
  * @author  Martin Desruisseaux (Geomatys)
  */
+@SuppressWarnings("exports")
 public final class CodesTest extends TestCase {
     /**
      * The unit of measurement of the vertical axis.
@@ -49,25 +52,37 @@ public final class CodesTest extends TestCase {
     }
 
     /**
-     * Compares the axis directions and units with EPSG definitions.
+     * Returns the {@link Codes#EPSG} field value.
+     */
+    @SuppressWarnings("unchecked")
+    private static Map<Codes, Codes> codes() throws ReflectiveOperationException {
+        final Field field = Codes.class.getDeclaredField("EPSG");
+        field.setAccessible(true);
+        return Collections.unmodifiableMap(((Map<Codes, Codes>) field.get(null)));
+    }
+
+    /**
+     * Compares the axis directions and units with <abbr>EPSG</abbr> definitions.
      *
      * @throws Exception if an error occurred while fetching the codes or querying the database.
      */
     @Test
-    @SuppressWarnings("unchecked")
     public void verify() throws Exception {
+        int count = 0;
         final CSAuthorityFactory factory = TestFactorySource.getSharedFactory();
-        final Field field = Codes.class.getDeclaredField("EPSG");
-        field.setAccessible(true);
-        for (final Codes c : ((Map<Codes,?>) field.get(null)).keySet()) {
-            final CoordinateSystem cs = factory.createCoordinateSystem(String.valueOf(c.epsg));
+        for (final Codes code : codes().keySet()) {
+            final Supplier<String> message = code::toString;
+            final CoordinateSystem cs = factory.createCoordinateSystem(String.valueOf(code.epsg));
             final Unit<?> unit = cs.getAxis(0).getUnit();
-            final AxisDirection[] directions = new AxisDirection[cs.getDimension()];
+            final var directions = new AxisDirection[cs.getDimension()];
             for (int i=0; i<directions.length; i++) {
-                assertEquals(i < 2 ? unit : VERTICAL_UNIT, cs.getAxis(i).getUnit());
+                assertEquals(i < 2 ? unit : VERTICAL_UNIT, cs.getAxis(i).getUnit(), message);
                 directions[i] = cs.getAxis(i).getDirection();
             }
-            assertEquals(c.epsg, Codes.lookup(unit, directions));
+            assertEquals(code.epsg, Codes.lookup(unit, directions), message);
+            assertTrue(code.getDimension() == directions.length);
+            count++;
         }
+        assertEquals(23, count);    // Expected number to be adjusted when `Codes` is updated.
     }
 }

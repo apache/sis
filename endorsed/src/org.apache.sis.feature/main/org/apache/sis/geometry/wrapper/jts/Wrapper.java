@@ -49,6 +49,7 @@ import org.apache.sis.referencing.CRS;
 import org.apache.sis.geometry.DirectPosition2D;
 import org.apache.sis.geometry.GeneralDirectPosition;
 import org.apache.sis.geometry.GeneralEnvelope;
+import org.apache.sis.geometry.wrapper.Dimensions;
 import org.apache.sis.geometry.wrapper.Geometries;
 import org.apache.sis.geometry.wrapper.GeometryType;
 import org.apache.sis.geometry.wrapper.GeometryWrapper;
@@ -141,17 +142,16 @@ final class Wrapper extends GeometryWrapper {
     }
 
     /**
-     * Returns the dimension of the coordinates that define this geometry.
+     * Returns an identification of which dimensions are for the coordinates of this geometry.
+     *
+     * @return the coordinate dimensions (never {@code null}).
      */
     @Override
-    public int getCoordinateDimension() {
-        int dimension = CRS.getDimensionOrZero(crs);
-        if (dimension == 0) {
-            final var walker = new GeometryWalker();
-            walker.scan(geometry);
-            dimension = walker.dimension();
-        }
-        return dimension;
+    public Dimensions getCoordinateDimensions() {
+        // Should be reasonably quick when the range of Z and M values is not requested.
+        final var walker = new GeometryWalker();
+        walker.scan(geometry);
+        return walker.dimensions();
     }
 
     /**
@@ -167,11 +167,11 @@ final class Wrapper extends GeometryWrapper {
         if (crs != null) {
             env = new GeneralEnvelope(crs);
             if (env.getDimension() >= Factory.TRIDIMENSIONAL) {
-                walker.wantZM();
+                walker.wantRangeOfZM();
             }
             walker.scan(geometry);
         } else {
-            walker.wantZM();
+            walker.wantRangeOfZM();
             walker.scan(geometry);
             env = new GeneralEnvelope(walker.dimension());
         }
@@ -372,7 +372,7 @@ add:    for (Geometry next = geometry;;) {
     }
 
     /**
-     * Applies a SQLMM operation on this geometry.
+     * Applies a <abbr>SQLMM</abbr> operation on this geometry.
      *
      * @param  operation  the SQLMM operation to apply.
      * @param  other      the other geometry, or {@code null} if the operation requires only one geometry.

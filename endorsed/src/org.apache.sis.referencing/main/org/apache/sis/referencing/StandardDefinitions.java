@@ -148,8 +148,8 @@ final class StandardDefinitions {
      * @param  world  {@code true} if the properties shall have an entry for the domain of validity.
      * @return the map of properties to give to constructors or factory methods.
      */
-    private static Map<String,Object> properties(final int code, final String name, final String alias, final boolean world) {
-        final var map = new HashMap<String,Object>(8);
+    private static Map<String, Object> properties(final int code, final String name, final String alias, final boolean world) {
+        final var map = new HashMap<String, Object>(8);
         if (code != 0) {
             map.put(IDENTIFIERS_KEY, new NamedIdentifier(AUTHORITY, Constants.EPSG, String.valueOf(code), VERSION, null));
         }
@@ -168,7 +168,7 @@ final class StandardDefinitions {
      * Adds to the given properties an additional identifier in the {@code "CRS"} namespace.
      * This method presumes that the only identifier that existed before this method call was the EPSG one.
      */
-    private static void addWMS(final Map<String,Object> properties, final String code) {
+    private static void addWMS(final Map<String, Object> properties, final String code) {
         properties.put(IDENTIFIERS_KEY, new NamedIdentifier[] {
             (NamedIdentifier) properties.get(IDENTIFIERS_KEY),
             new NamedIdentifier(Citations.WMS, Constants.OGC, code, null, null)
@@ -310,7 +310,7 @@ final class StandardDefinitions {
             case 7048: name  = "GRS 1980 Authalic Sphere"; semiMajorAxis = other = AUTHALIC_RADIUS; ivfDefinitive = false; break;
             default:   throw new AssertionError(code);
         }
-        final Map<String,Object> map = properties(code, name, alias, false);
+        final Map<String, Object> map = properties(code, name, alias, false);
         if (ivfDefinitive) {
             return DefaultEllipsoid.createFlattenedSphere(map, semiMajorAxis, other, unit);
         } else {
@@ -323,7 +323,7 @@ final class StandardDefinitions {
      * If another prime meridian is desired, the EPSG database shall be used.
      */
     static PrimeMeridian primeMeridian() {
-        final var properties = new HashMap<String,Object>(4);
+        final var properties = new HashMap<String, Object>(4);
         properties.put(NAME_KEY, new NamedIdentifier(AUTHORITY, "Greenwich"));          // Name is fixed by ISO 19111.
         properties.put(IDENTIFIERS_KEY, new NamedIdentifier(AUTHORITY, Constants.EPSG, GREENWICH, VERSION, null));
         return new DefaultPrimeMeridian(properties, 0, Units.DEGREE);
@@ -358,7 +358,7 @@ final class StandardDefinitions {
                        break;
             default:   throw new AssertionError(code);
         }
-        Map<String,Object> properties = properties(csCode, csName, null, false);
+        Map<String, Object> properties = properties(csCode, csName, null, false);
         final var cs = new DefaultVerticalCS(properties, createAxis(axis, true));
         properties = properties(code, name, alias, true);
         if (wms != null) {
@@ -446,10 +446,10 @@ final class StandardDefinitions {
             case CARTESIAN_2D:   name = "Cartesian 2D";                       axisCode =    3; break;
             case UPS_NORTH:      name = "Cartesian 2D for UPS north";         axisCode = 1067; break;
             case UPS_SOUTH:      name = "Cartesian 2D for UPS south";         axisCode = 1059; break;
-            default:   if (!mandatory) return null;
-                       throw new AssertionError(code);
+            default: if (!mandatory) return null;
+                     throw new AssertionError(code);
         }
-        final Map<String,?> properties = properties(code, name, null, false);
+        final Map<String, ?> properties = properties(code, name, null, false);
         CoordinateSystemAxis xAxis = null, yAxis = null, zAxis = null;
         switch (dim) {
             default: throw new AssertionError(dim);
@@ -575,7 +575,7 @@ final class StandardDefinitions {
             default:   if (!mandatory) return null;
                        throw new AssertionError(code);
         }
-        final Map<String,Object> properties = properties(code, name, null, false);
+        final Map<String, Object> properties = properties(code, name, null, false);
         properties.put(DefaultCoordinateSystemAxis.MINIMUM_VALUE_KEY, min);
         properties.put(DefaultCoordinateSystemAxis.MAXIMUM_VALUE_KEY, max);
         properties.put(DefaultCoordinateSystemAxis.RANGE_MEANING_KEY, rm);

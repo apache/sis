@@ -73,10 +73,12 @@ public final class JTS {
      * <ul>
      *   <li>Geometry {@linkplain Geometry#getUserData() user data} is an instance of {@code CoordinateReferenceSystem}.</li>
      *   <li>{@linkplain Geometry#getUserData() user data} is a (@link Map} with a value for the {@value #CRS_KEY} key.</li>
-     *   <li>Geometry SRID is strictly positive, in which case it is interpreted as an EPSG code.</li>
+     *   <li>Geometry <abbr>SRID</abbr> is strictly positive, in which case it is interpreted as an <abbr>EPSG</abbr> code.
+     *       The <abbr>CRS</abbr> built that way is often two-dimensional.</li>
      * </ul>
      *
      * If none of the above is valid, {@code null} is returned.
+     * The current implementation does not verify the number of dimensions.
      *
      * @param  source  the geometry from which to get the CRS, or {@code null}.
      * @return the coordinate reference system, or {@code null} if none.
@@ -114,11 +116,12 @@ public final class JTS {
 
     /**
      * Sets the Coordinate Reference System (CRS) in the specified geometry. This method overwrites any previous
-     * user data; it should be invoked only when the geometry is known to not store any other information.
+     * user data, do it should be invoked only when the geometry is known to not store any other information.
      * In current Apache SIS usage, this method is invoked only for newly created geometries.
      *
-     * <p>This method also sets the JTS SRID to EPSG code if such code can be found. For performance reasons
-     * this method does not perform a full scan of EPSG database if the CRS does not provide an EPSG code.</p>
+     * <p>This method also sets the <abbr>JTS</abbr> <abbr>SRID</abbr> to the <abbr>EPSG</abbr> code if found.
+     * For performance reasons, this method does not perform a full scan of EPSG database if the CRS does not
+     * provide an EPSG code.</p>
      *
      * @param  target  the geometry where to store coordinate reference system information.
      * @param  crs     the CRS to store, or {@code null}.

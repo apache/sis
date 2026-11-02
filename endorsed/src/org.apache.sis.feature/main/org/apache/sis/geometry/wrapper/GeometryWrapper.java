@@ -82,7 +82,7 @@ public abstract class GeometryWrapper extends AbstractGeometry implements Geomet
      * the value in geometry instances is sometime 0 or null. In such case, this {@code crs}
      * field may come from other sources such as characteristics of the {@code FeatureType}.
      *
-     * @see #getCoordinateDimension()
+     * @see #getCoordinateDimensions()
      * @see #getCoordinateReferenceSystem()
      * @see #setCoordinateReferenceSystem(CoordinateReferenceSystem)
      */
@@ -163,14 +163,24 @@ public abstract class GeometryWrapper extends AbstractGeometry implements Geomet
     }
 
     /**
+     * Returns an identification of which dimensions are for the coordinates of this geometry.
+     * The default value is {@link Dimensions#XY}.
+     *
+     * @return the coordinate dimensions (never {@code null}).
+     */
+    public Dimensions getCoordinateDimensions() {
+        return Dimensions.XY;
+    }
+
+    /**
      * Returns the dimension of the coordinates that define this geometry.
      * It must be the same as the dimension of the coordinate reference system for this geometry.
      *
      * @return the coordinate dimension.
      */
     @Override
-    public int getCoordinateDimension() {
-        return Geometries.BIDIMENSIONAL;
+    public final int getCoordinateDimension() {
+        return getCoordinateDimensions().count;
     }
 
     /**

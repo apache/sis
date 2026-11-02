@@ -307,7 +307,7 @@ public enum CommonCRS {
            (short) 0, (short) 0, (short) 0, (short) 0, (byte) 0, (byte) 0);                 // UPS and UTM info
 
     /**
-     * The enum for the default CRS.
+     * The enumeration value for the default <abbr>CRS</abbr>.
      *
      * @see #defaultGeographic()
      */
