@@ -648,13 +648,14 @@ public final class Geometries {
             index[i] = newIndex;
         }
 
-        //rebuild attributes arrays
+        //rebuild attributes arrays, all attributes change length, they must be replaced together
+        final Map<String,Array> rebuilt = new HashMap<>();
         for (String name : rebuild.keySet()) {
             final Array oldTa = primitive.getAttribute(name);
             final List<Vector<?>> newTa = rebuild.get(name);
-            final Array ta = NDArrays.of(newTa, oldTa.getSampleSystem(), oldTa.getDataType());
-            primitive.setAttribute(name, ta);
+            rebuilt.put(name, NDArrays.of(newTa, oldTa.getSampleSystem(), oldTa.getDataType()));
         }
+        primitive.setAttributes(rebuilt);
         //new index
         primitive.setIndex(NDArrays.ofUnsigned(primitive.getIndex().getSampleSystem(), index));
     }

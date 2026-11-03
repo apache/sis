@@ -25,10 +25,8 @@ import java.util.Map;
 import java.util.Objects;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import org.apache.sis.geometries.DataPoints;
-import org.apache.sis.geometries.Point;
 import org.apache.sis.geometries.DataPointsType;
 import org.apache.sis.maths.Array;
-import org.apache.sis.maths.Cursor;
 import org.apache.sis.maths.DataType;
 import org.apache.sis.maths.NDArrays;
 import org.apache.sis.maths.NDRange;
@@ -195,12 +193,14 @@ public final class ArrayDataPoints implements DataPoints, DataPointsType {
 
     @Override
     public SampleSystem getAttributeSystem(String name) {
-        return attributes.get(name).getSampleSystem();
+        final Array array = attributes.get(name);
+        return (array != null) ? array.getSampleSystem() : null;
     }
 
     @Override
     public DataType getAttributeType(String name) {
-        return attributes.get(name).getDataType();
+        final Array array = attributes.get(name);
+        return (array != null) ? array.getDataType() : null;
     }
 
     @Override
@@ -210,7 +210,8 @@ public final class ArrayDataPoints implements DataPoints, DataPointsType {
 
     @Override
     public Array getAttributeArray(String name) {
-        return attributes.get(name).copy();
+        final Array array = attributes.get(name);
+        return (array != null) ? array.copy() : null;
     }
 
     @Override

@@ -135,6 +135,13 @@ public abstract sealed class Vector4D<T extends Vector4D<T>> extends AbstractVec
         public final byte z;
         public final byte w;
 
+        public Byte() {
+            this.x = 0;
+            this.y = 0;
+            this.z = 0;
+            this.w = 0;
+        }
+
         public Byte(byte x, byte y, byte z, byte w) {
             this.x = x;
             this.y = y;
@@ -335,6 +342,13 @@ public abstract sealed class Vector4D<T extends Vector4D<T>> extends AbstractVec
         public final byte y;
         public final byte z;
         public final byte w;
+
+        public UByte() {
+            this.x = 0;
+            this.y = 0;
+            this.z = 0;
+            this.w = 0;
+        }
 
         public UByte(byte x, byte y, byte z, byte w) {
             this.x = x;
@@ -537,6 +551,13 @@ public abstract sealed class Vector4D<T extends Vector4D<T>> extends AbstractVec
         public final short z;
         public final short w;
 
+        public Short() {
+            this.x = 0;
+            this.y = 0;
+            this.z = 0;
+            this.w = 0;
+        }
+
         public Short(short x, short y, short z, short w) {
             this.x = x;
             this.y = y;
@@ -737,6 +758,13 @@ public abstract sealed class Vector4D<T extends Vector4D<T>> extends AbstractVec
         public final short y;
         public final short z;
         public final short w;
+
+        public UShort() {
+            this.x = 0;
+            this.y = 0;
+            this.z = 0;
+            this.w = 0;
+        }
 
         public UShort(short x, short y, short z, short w) {
             this.x = x;
@@ -954,6 +982,13 @@ public abstract sealed class Vector4D<T extends Vector4D<T>> extends AbstractVec
         public final int z;
         public final int w;
 
+        public Int() {
+            this.x = 0;
+            this.y = 0;
+            this.z = 0;
+            this.w = 0;
+        }
+
         public Int(int x, int y, int z, int w) {
             this.x = x;
             this.y = y;
@@ -1154,6 +1189,13 @@ public abstract sealed class Vector4D<T extends Vector4D<T>> extends AbstractVec
         public final int y;
         public final int z;
         public final int w;
+
+        public UInt() {
+            this.x = 0;
+            this.y = 0;
+            this.z = 0;
+            this.w = 0;
+        }
 
         public UInt(int x, int y, int z, int w) {
             this.x = x;
@@ -1366,6 +1408,13 @@ public abstract sealed class Vector4D<T extends Vector4D<T>> extends AbstractVec
         public final long z;
         public final long w;
 
+        public Long() {
+            this.x = 0;
+            this.y = 0;
+            this.z = 0;
+            this.w = 0;
+        }
+
         public Long(long x, long y, long z, long w) {
             this.x = x;
             this.y = y;
@@ -1566,6 +1615,13 @@ public abstract sealed class Vector4D<T extends Vector4D<T>> extends AbstractVec
         public final float y;
         public final float z;
         public final float w;
+
+        public Float() {
+            this.x = 0;
+            this.y = 0;
+            this.z = 0;
+            this.w = 0;
+        }
 
         public Float(float x, float y, float z, float w) {
             this.x = x;
@@ -1808,6 +1864,13 @@ public abstract sealed class Vector4D<T extends Vector4D<T>> extends AbstractVec
         public final double y;
         public final double z;
         public final double w;
+
+        public Double() {
+            this.x = 0;
+            this.y = 0;
+            this.z = 0;
+            this.w = 0;
+        }
 
         public Double(double x, double y, double z, double w) {
             this.x = x;
