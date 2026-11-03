@@ -47,7 +47,6 @@ import org.apache.sis.geometries.internal.shared.ArrayDataPoints;
 import org.apache.sis.geometries.internal.shared.Vertex;
 import org.apache.sis.geometries.mesh.MeshPrimitive;
 import org.apache.sis.geometries.mesh.MeshPrimitiveVisitor;
-import org.apache.sis.geometries.mesh.MultiMeshPrimitive;
 import org.apache.sis.geometries.solid.Polyhedron;
 import org.apache.sis.geometries.surface.Polygon;
 import org.apache.sis.geometries.surface.PolyhedralSurface;
@@ -506,8 +505,8 @@ public final class GeometryProcessor {
     public Geometry compute(Geometry geom, String attributeName, SampleSystem attributeSystem, DataType attributeType, Function<Point,Vector> valueGenerator) {
         if (geom instanceof MeshPrimitive mp) {
             return ComputeAttribute.compute(mp, attributeName, attributeSystem, attributeType, valueGenerator);
-        } else if (geom instanceof MultiMeshPrimitive<?> mp) {
-            return ComputeAttribute.compute(mp, attributeName, attributeSystem, attributeType, valueGenerator);
+        } else if (geom instanceof GeometryCollection<?> c) {
+            return ComputeAttribute.compute(c, attributeName, attributeSystem, attributeType, valueGenerator);
         }
         throw new UnsupportedOperationException();
     }
@@ -528,8 +527,9 @@ public final class GeometryProcessor {
      *  can be a Primitive or MultiPrimitive
      */
     public Geometry toPrimitive(Geometry geom, Quantity<?> spacing, Quantity<?> offset) {
-        if (geom instanceof MeshPrimitive || geom instanceof MultiMeshPrimitive) {
+        if (geom instanceof MeshPrimitive) {
             //Does nothing, geometry is already a Primitive.
+            //Collections of primitives are handled by the collection case below.
             return geom;
         } else if (geom instanceof Point cdt) {
             return ToPrimitive.toPrimitive(cdt);
@@ -578,9 +578,10 @@ public final class GeometryProcessor {
             return Transform.transform(cdt, crs, transform);
         } else if (geom instanceof Polygon cdt) {
             return Transform.transform(cdt, crs, transform);
-        } else if (geom instanceof MultiMeshPrimitive<?> cdt) {
-            return Transform.transform(cdt, crs, transform);
         } else if (geom instanceof MeshPrimitive cdt) {
+            return Transform.transform(cdt, crs, transform);
+        } else if (geom instanceof GeometryCollection<?> cdt) {
+            // Checked after mesh primitives because the points and lines primitives are also collections.
             return Transform.transform(cdt, crs, transform);
         }
 

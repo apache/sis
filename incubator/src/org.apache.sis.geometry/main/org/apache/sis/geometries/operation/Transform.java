@@ -24,12 +24,13 @@ import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import org.opengis.referencing.operation.MathTransform;
 import org.opengis.referencing.operation.TransformException;
 import org.apache.sis.geometries.DataPoints;
+import org.apache.sis.geometries.Geometry;
+import org.apache.sis.geometries.GeometryCollection;
 import org.apache.sis.geometries.GeometryFactory;
 import org.apache.sis.geometries.DataPointsType;
 import org.apache.sis.geometries.curve.LinearRing;
 import org.apache.sis.geometries.internal.shared.ArrayDataPoints;
 import org.apache.sis.geometries.mesh.MeshPrimitive;
-import org.apache.sis.geometries.mesh.MultiMeshPrimitive;
 import org.apache.sis.geometries.surface.Polygon;
 import org.apache.sis.geometries.surface.Triangle;
 import org.apache.sis.maths.Array;
@@ -103,14 +104,19 @@ public final class Transform {
         return GeometryFactory.DEFAULT.createPolygon(exterior, interiors);
     }
 
-    public static MultiMeshPrimitive<?> transform(MultiMeshPrimitive<?> mp, CoordinateReferenceSystem crs, MathTransform transform) throws OperationException {
-        final MultiMeshPrimitive<?> copy = new MultiMeshPrimitive<>(crs);
-        final List<MeshPrimitive> primitives = new ArrayList<>();
-        for (MeshPrimitive p : mp.getComponents()) {
-            primitives.add(transform(p, crs, transform));
+    /**
+     * Transform each element of the collection.
+     * The elements are transformed by {@link GeometryProcessor#transform(Geometry, CoordinateReferenceSystem, MathTransform)}.
+     *
+     * @return a new collection with the same element type.
+     */
+    public static GeometryCollection<Geometry> transform(GeometryCollection<?> collection, CoordinateReferenceSystem crs, MathTransform transform) throws OperationException {
+        final GeometryProcessor processor = new GeometryProcessor();
+        final Geometry[] elements = new Geometry[collection.getNumGeometries()];
+        for (int i = 0; i < elements.length; i++) {
+            elements[i] = processor.transform(collection.getGeometryN(i), crs, transform);
         }
-        copy.append(primitives);
-        return copy;
+        return GeometryFactory.DEFAULT.createGeometryCollection(collection.getElementType(), crs, elements);
     }
 
     /**

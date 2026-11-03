@@ -413,14 +413,14 @@ public sealed interface GeometryCollection<T extends Geometry> extends Geometry,
                 if (index >= count) {
                     throw new NoSuchElementException();
                 }
-                return getGeometryN(index);
+                return getGeometryN(index++);
             }
 
             @Override
             public void forEachRemaining(final Consumer<? super T> action) {
                 Objects.requireNonNull(action);
                 while (index < count) {
-                    action.accept(getGeometryN(index));
+                    action.accept(getGeometryN(index++));
                 }
             }
         };

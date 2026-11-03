@@ -16,8 +16,16 @@
  */
 package org.apache.sis.geometries;
 
+import java.util.ArrayList;
+import java.util.Iterator;
+import java.util.List;
+import java.util.NoSuchElementException;
+
 // Test dependencies
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertSame;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 
@@ -56,6 +64,32 @@ public class GeometryCollectionTest extends GeometryTest {
     @Test
     @Disabled("Not implemented yet.")
     public void testGetNumGeometries() {
+    }
+
+    /**
+     * Tests that the iterator and the stream return each element once, in order.
+     */
+    @Test
+    public void testIterator() {
+        final Geometry point = GeometryFactory.DEFAULT.createPoint(CRS_2D, 1, 2);
+        final Geometry line  = GeometryFactory.DEFAULT.createLineString(
+                GeometryFactory.DEFAULT.createDataPoints(CRS_2D, 0,0, 10,0));
+        final GeometryCollection<Geometry> collection = GeometryFactory.DEFAULT.createGeometryCollection(CRS_2D, point, line);
+        final List<Geometry> iterated = new ArrayList<>();
+        for (Geometry g : collection) {
+            iterated.add(g);
+        }
+        assertEquals(List.of(point, line), iterated);
+
+        final List<Geometry> remaining = new ArrayList<>();
+        final Iterator<Geometry> it = collection.iterator();
+        assertSame(point, it.next());
+        it.forEachRemaining(remaining::add);
+        assertEquals(List.of(line), remaining);
+        assertFalse(it.hasNext());
+        assertThrows(NoSuchElementException.class, it::next);
+
+        assertEquals(List.of(point, line), collection.stream().toList());
     }
 
     @Test

@@ -17,7 +17,6 @@
 package org.apache.sis.geometries.operation;
 
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
@@ -27,13 +26,13 @@ import javax.measure.Quantity;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import org.apache.sis.geometries.DataPoints;
 import org.apache.sis.geometries.Geometry;
+import org.apache.sis.geometries.GeometryFactory;
 import org.apache.sis.geometries.GeometryCollection;
 import org.apache.sis.geometries.Point;
 import org.apache.sis.geometries.DataPointsType;
 import org.apache.sis.geometries.curve.LineString;
 import org.apache.sis.geometries.internal.shared.ArrayDataPoints;
 import org.apache.sis.geometries.mesh.MeshPrimitive;
-import org.apache.sis.geometries.mesh.MultiMeshPrimitive;
 import org.apache.sis.geometries.operation.triangulate.EarClipping;
 import org.apache.sis.geometries.solid.Polyhedron;
 import org.apache.sis.geometries.surface.Polygon;
@@ -223,16 +222,11 @@ public final class ToPrimitive {
             }
             return primitive;
         } else {
-            final MultiMeshPrimitive<MeshPrimitive> mp = new MultiMeshPrimitive(geometry.getCoordinateReferenceSystem());
+            final List<MeshPrimitive> primitives = new ArrayList<>(numGeometries);
             for (int i = 0; i < numGeometries; i++) {
-                final Geometry p = toPrimitive(geometry.getGeometryN(i).asLine(spacing, offset));
-                if (p instanceof org.apache.sis.geometries.mesh.MultiMeshPrimitive<?> subm) {
-                    mp.append(subm.getComponents());
-                } else if (p instanceof org.apache.sis.geometries.mesh.MeshPrimitive cd){
-                    mp.append(Collections.singletonList(cd));
-                }
+                addPrimitives(primitives, toPrimitive(geometry.getGeometryN(i).asLine(spacing, offset)));
             }
-            return mp;
+            return GeometryFactory.DEFAULT.createGeometryCollection(geometry.getCoordinateReferenceSystem(), primitives.toArray(MeshPrimitive[]::new));
         }
     }
 
@@ -242,19 +236,30 @@ public final class ToPrimitive {
      * @param spacing maximal distance along a curve between two points of its line strip, or zero or {@code null}.
      * @param offset  maximal distance between a curve and its line strip, or zero or {@code null}.
      */
-    public static MultiMeshPrimitive toPrimitive(GeometryCollection geometry, Quantity<?> spacing, Quantity<?> offset)
+    public static GeometryCollection<MeshPrimitive> toPrimitive(GeometryCollection<?> geometry, Quantity<?> spacing, Quantity<?> offset)
             throws OperationException
     {
-        final MultiMeshPrimitive<MeshPrimitive> mp = new MultiMeshPrimitive(geometry.getCoordinateReferenceSystem());
+        final GeometryProcessor processor = new GeometryProcessor();
+        final List<MeshPrimitive> primitives = new ArrayList<>();
         for (int i = 0, n = geometry.getNumGeometries(); i < n; i++) {
-            final Geometry p = new GeometryProcessor().toPrimitive(geometry.getGeometryN(i), spacing, offset);
-            if (p instanceof org.apache.sis.geometries.mesh.MultiMeshPrimitive<?> subm) {
-                mp.append(subm.getComponents());
-            } else if (p instanceof org.apache.sis.geometries.mesh.MeshPrimitive cd){
-                mp.append(Collections.singletonList(cd));
+            addPrimitives(primitives, processor.toPrimitive(geometry.getGeometryN(i), spacing, offset));
+        }
+        return GeometryFactory.DEFAULT.createGeometryCollection(geometry.getCoordinateReferenceSystem(), primitives.toArray(MeshPrimitive[]::new));
+    }
+
+    /**
+     * Adds the given primitive, or the primitives of the given collection, to the list.
+     * Collections of collections are flattened.
+     */
+    private static void addPrimitives(List<MeshPrimitive> primitives, Geometry geometry) {
+        // Checked first because the points and lines primitives are also collections.
+        if (geometry instanceof MeshPrimitive p) {
+            primitives.add(p);
+        } else if (geometry instanceof GeometryCollection<?> c) {
+            for (Geometry element : c) {
+                addPrimitives(primitives, element);
             }
         }
-        return mp;
     }
 
 }

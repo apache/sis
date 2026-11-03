@@ -37,7 +37,6 @@ import org.apache.sis.geometries.internal.shared.DefaultNurbSurface;
 import org.apache.sis.geometries.internal.shared.Vertex;
 import org.apache.sis.geometries.mesh.MeshPrimitive;
 import org.apache.sis.geometries.mesh.MeshPrimitiveVisitor;
-import org.apache.sis.geometries.mesh.MultiMeshPrimitive;
 import org.apache.sis.geometries.surface.PreparedTIN;
 import org.apache.sis.geometries.surface.Triangle;
 import org.apache.sis.maths.Array;
@@ -71,8 +70,8 @@ public final class Intersection {
      * Inherit attributes from TIN.
      * The POSITION attribute is ignored.
      */
-    private static void copyAttributes(PreparedTIN tin, MultiMeshPrimitive<?> primitives) {
-        for (MeshPrimitive primitive : primitives.getComponents()) {
+    private static void copyAttributes(PreparedTIN tin, GeometryCollection<? extends MeshPrimitive> primitives) {
+        for (MeshPrimitive primitive : primitives) {
             copyAttributes(tin, primitive);
         }
     }

@@ -19,6 +19,7 @@ package org.apache.sis.geometries.mesh;
 import java.util.HashSet;
 import org.apache.sis.geometries.DataPoints;
 import org.apache.sis.geometries.Geometry;
+import org.apache.sis.geometries.GeometryCollection;
 import org.apache.sis.geometries.GeometryFactory;
 import org.apache.sis.geometries.Point;
 import org.apache.sis.geometries.curve.LineString;
@@ -39,7 +40,7 @@ import org.apache.sis.util.ArgumentChecks;
 public abstract class MeshPrimitiveVisitor {
 
     private final HashSet visited = new HashSet();
-    private MultiMeshPrimitive<?> geometry;
+    private GeometryCollection<? extends MeshPrimitive> geometry;
     private MeshPrimitive primitive;
 
 
@@ -51,11 +52,11 @@ public abstract class MeshPrimitiveVisitor {
      */
     public MeshPrimitiveVisitor(Geometry geometry) {
         if (geometry instanceof MeshPrimitive p) {
-            reset(new MultiMeshPrimitive(p));
-        } else if (geometry instanceof MultiMeshPrimitive mp) {
-            reset(mp);
+            reset(GeometryFactory.DEFAULT.createGeometryCollection(p));
+        } else if (geometry instanceof GeometryCollection<?> c && c.stream().allMatch(MeshPrimitive.class::isInstance)) {
+            reset((GeometryCollection<? extends MeshPrimitive>) c);
         } else {
-            throw new IllegalArgumentException("Geometry is not a primitive");
+            throw new IllegalArgumentException("Geometry is not a primitive or a collection of primitives");
         }
     }
 
@@ -64,7 +65,7 @@ public abstract class MeshPrimitiveVisitor {
      *
      * @param geometry not null
      */
-    public void reset(MultiMeshPrimitive geometry) {
+    public void reset(GeometryCollection<? extends MeshPrimitive> geometry) {
         ArgumentChecks.ensureNonNull("geometry", geometry);
         this.geometry = geometry;
         visited.clear();
@@ -74,7 +75,7 @@ public abstract class MeshPrimitiveVisitor {
      * Loop on all primitives in the geometry.
      */
     public void visit() {
-        for (MeshPrimitive p : geometry.getComponents()) {
+        for (MeshPrimitive p : geometry) {
             visit(p);
         }
     }

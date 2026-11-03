@@ -222,15 +222,18 @@ public final class JTSAdapter {
     private static class JTSDataPoints implements DataPoints {
 
         private final CoordinateSequence jts;
-        private final CoordinateReferenceSystem crs;
         private final int dim;
-        private final DataPointsType type;
+        private CoordinateReferenceSystem crs;
+        private DataPointsType type;
 
         private JTSDataPoints(CoordinateSequence jts, CoordinateReferenceSystem crs) {
             this.jts = jts;
-            this.crs = crs;
             this.dim = jts.getDimension();
+            setCRS(crs);
+        }
 
+        private void setCRS(CoordinateReferenceSystem crs) {
+            this.crs = crs;
             final DataPointsType.Template at = new DataPointsType.Template();
             at.addOrReplaceAttribute(DataPointsType.ATT_POSITION, SampleSystem.of(crs), DataType.DOUBLE);
             type = at;
@@ -241,9 +244,18 @@ public final class JTSAdapter {
             return crs;
         }
 
+        /**
+         * Relabels the positions with the given CRS, the JTS coordinates are not modified.
+         *
+         * @throws IllegalArgumentException if the CRS dimension differs from the current one.
+         */
         @Override
         public void setCoordinateReferenceSystem(CoordinateReferenceSystem cs) throws IllegalArgumentException {
-            throw new UnsupportedOperationException("Not supported.");
+            final int dimension = crs.getCoordinateSystem().getDimension();
+            if (cs.getCoordinateSystem().getDimension() != dimension) {
+                throw new IllegalArgumentException("Coordinate reference system must have " + dimension + " dimensions.");
+            }
+            setCRS(cs);
         }
 
         @Override
@@ -263,8 +275,9 @@ public final class JTSAdapter {
 
         @Override
         public Vector getPosition(int index) {
+            // The JTS sequence may have more ordinates than the CRS, for example an unused z.
             final double[] v = new double[crs.getCoordinateSystem().getDimension()];
-            for (int i = 0; i < dim; i++) {
+            for (int i = 0, n = Math.min(dim, v.length); i < n; i++) {
                 v[i] = jts.getOrdinate(index, i);
             }
             return Vectors.create(v, DataType.DOUBLE);
@@ -272,7 +285,7 @@ public final class JTSAdapter {
 
         @Override
         public void setPosition(int index, Vector value) {
-            for (int i = 0; i < dim; i++) {
+            for (int i = 0, n = Math.min(dim, value.getDimension()); i < n; i++) {
                 jts.setOrdinate(index, i, value.get(i));
             }
         }

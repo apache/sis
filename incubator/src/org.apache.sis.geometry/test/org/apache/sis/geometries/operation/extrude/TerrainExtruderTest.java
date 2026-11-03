@@ -25,10 +25,10 @@ import java.util.Set;
 import java.util.function.DoubleBinaryOperator;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import org.apache.sis.geometries.Geometries;
+import org.apache.sis.geometries.GeometryCollection;
 import org.apache.sis.geometries.GeometryFactory;
 import org.apache.sis.geometries.curve.LinearRing;
 import org.apache.sis.geometries.mesh.MeshPrimitive;
-import org.apache.sis.geometries.mesh.MultiMeshPrimitive;
 import org.apache.sis.geometries.operation.extrude.TerrainExtruder.HeightReference;
 import org.apache.sis.geometries.surface.Polygon;
 import org.apache.sis.maths.Maths;
@@ -118,7 +118,7 @@ public class TerrainExtruderTest {
         final TerrainExtruder extruder = new TerrainExtruder(terrain());
         extruder.setSeparateParts(true);
         extruder.appendFlatConstraint(polygon(FOOTPRINT), 20, 23, HeightReference.ABSOLUTE, true);
-        final MultiMeshPrimitive<MeshPrimitive.Triangles> result = extruder.getResult();
+        final GeometryCollection<MeshPrimitive.Triangles> result = extruder.getResult();
         assertEquals(3, result.getNumGeometries());
         final Mesh ground = new Mesh(result.getGeometryN(0));
         final Mesh roof   = new Mesh(result.getGeometryN(1));
@@ -322,7 +322,7 @@ public class TerrainExtruderTest {
         final double[] positions;
         final int[] index;
 
-        Mesh(final MultiMeshPrimitive<MeshPrimitive.Triangles> result) {
+        Mesh(final GeometryCollection<MeshPrimitive.Triangles> result) {
             this(single(result));
         }
 
@@ -331,7 +331,7 @@ public class TerrainExtruderTest {
             index = mesh.getIndex().toArrayInt();
         }
 
-        private static MeshPrimitive.Triangles single(final MultiMeshPrimitive<MeshPrimitive.Triangles> result) {
+        private static MeshPrimitive.Triangles single(final GeometryCollection<MeshPrimitive.Triangles> result) {
             assertEquals(1, result.getNumGeometries(), "Parts are not separated by default.");
             return result.getGeometryN(0);
         }

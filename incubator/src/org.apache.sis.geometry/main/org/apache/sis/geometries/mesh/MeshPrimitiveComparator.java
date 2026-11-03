@@ -23,6 +23,7 @@ import java.util.List;
 import java.util.Objects;
 import org.apache.sis.geometries.DataPoints;
 import org.apache.sis.geometries.Geometry;
+import org.apache.sis.geometries.GeometryCollection;
 import org.apache.sis.geometries.Point;
 import org.apache.sis.geometries.curve.LineString;
 import org.apache.sis.geometries.internal.shared.ArrayDataPoints;
@@ -157,10 +158,10 @@ public final class MeshPrimitiveComparator {
     }
 
     /**
-     * Compare two multi-primitive.
+     * Compare two collections of primitives.
      * @throws IllegalArgumentException if they are not equal
      */
-    public void compare(MultiMeshPrimitive expected, MultiMeshPrimitive candidate) throws IllegalArgumentException {
+    public void compare(GeometryCollection<? extends MeshPrimitive> expected, GeometryCollection<? extends MeshPrimitive> candidate) throws IllegalArgumentException {
 
         if (compareCrs) {
             if (!CRS.equivalent(expected.getCoordinateReferenceSystem(), candidate.getCoordinateReferenceSystem())) {
@@ -168,8 +169,8 @@ public final class MeshPrimitiveComparator {
             }
         }
 
-        final List<? extends MeshPrimitive> expectedPrimitives = expected.getComponents();
-        final List<? extends MeshPrimitive> candidatePrimitives = candidate.getComponents();
+        final List<? extends MeshPrimitive> expectedPrimitives = expected.stream().toList();
+        final List<? extends MeshPrimitive> candidatePrimitives = candidate.stream().toList();
 
         int size = expectedPrimitives.size();
         if (expectedPrimitives.size() != candidatePrimitives.size()) {

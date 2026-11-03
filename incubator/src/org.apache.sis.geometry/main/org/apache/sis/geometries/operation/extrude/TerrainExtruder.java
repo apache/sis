@@ -30,6 +30,7 @@ import org.locationtech.jts.geom.Envelope;
 import org.locationtech.jts.index.quadtree.Quadtree;
 import org.apache.sis.geometries.DataPointsType;
 import org.apache.sis.geometries.GeometryCollection;
+import org.apache.sis.geometries.GeometryFactory;
 import org.apache.sis.geometries.curve.LineString;
 import org.apache.sis.geometries.internal.shared.Planar;
 import org.apache.sis.geometries.internal.shared.Planar.DoubleList;
@@ -37,7 +38,6 @@ import org.apache.sis.geometries.internal.shared.Planar.IntList;
 import org.apache.sis.geometries.internal.shared.Planar.XY;
 import org.apache.sis.geometries.mesh.MeshPrimitive;
 import org.apache.sis.geometries.mesh.MeshPrimitiveIndexes;
-import org.apache.sis.geometries.mesh.MultiMeshPrimitive;
 import org.apache.sis.geometries.operation.Intersection;
 import org.apache.sis.geometries.operation.OperationException;
 import org.apache.sis.geometries.operation.ProcessorUtils;
@@ -268,7 +268,7 @@ public final class TerrainExtruder {
      *
      * @return new meshes, with positions only
      */
-    public MultiMeshPrimitive<MeshPrimitive.Triangles> getResult() {
+    public GeometryCollection<MeshPrimitive.Triangles> getResult() {
         final IntList terrainFaces = new IntList(), roofFaces = new IntList(), wallFaces = new IntList();
         for (int i = 0; i < nbTriangle; i++) {
             if (triangles[i*3] >= 0) {
@@ -302,19 +302,20 @@ public final class TerrainExtruder {
                 }
             }
         }
-        final MultiMeshPrimitive<MeshPrimitive.Triangles> result = new MultiMeshPrimitive<>(terrain.getCoordinateReferenceSystem());
+        final List<MeshPrimitive.Triangles> parts = new ArrayList<>(3);
         if (separateParts) {
             for (IntList faces : List.of(terrainFaces, roofFaces, wallFaces)) {
                 final MeshPrimitive.Triangles part = toPrimitive(faces);
-                if (part != null) result.append(List.of(part));
+                if (part != null) parts.add(part);
             }
         } else {
             terrainFaces.add(roofFaces.toArray());
             terrainFaces.add(wallFaces.toArray());
             final MeshPrimitive.Triangles part = toPrimitive(terrainFaces);
-            if (part != null) result.append(List.of(part));
+            if (part != null) parts.add(part);
         }
-        return result;
+        return GeometryFactory.DEFAULT.createGeometryCollection(terrain.getCoordinateReferenceSystem(),
+                parts.toArray(MeshPrimitive.Triangles[]::new));
     }
 
     /**

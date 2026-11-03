@@ -21,8 +21,9 @@ import org.opengis.referencing.operation.MathTransform;
 import org.opengis.referencing.operation.TransformException;
 import org.opengis.util.FactoryException;
 import org.apache.sis.geometries.Geometry;
+import org.apache.sis.geometries.GeometryCollection;
+import org.apache.sis.geometries.GeometryFactory;
 import org.apache.sis.geometries.mesh.MeshPrimitive;
-import org.apache.sis.geometries.mesh.MultiMeshPrimitive;
 import org.apache.sis.maths.NDArrays;
 import org.apache.sis.referencing.CRS;
 import org.apache.sis.referencing.CommonCRS;
@@ -122,8 +123,8 @@ public class TransformTest extends AbstractD9IMTest {
 
     @Test
     public void MultiPrimitive() throws FactoryException, TransformException {
-        final MultiMeshPrimitive mp = new MultiMeshPrimitive(createPrimitive());
-        final MultiMeshPrimitive result = (MultiMeshPrimitive) new GeometryProcessor().transform(mp, CRS_TARGET, TRANSFORM);
+        final GeometryCollection<MeshPrimitive> mp = GeometryFactory.DEFAULT.createGeometryCollection(createPrimitive());
+        final GeometryCollection<?> result = (GeometryCollection<?>) new GeometryProcessor().transform(mp, CRS_TARGET, TRANSFORM);
         assertEquals(1, result.getNumGeometries());
         testPrimitive((MeshPrimitive) result.getGeometryN(0));
     }
