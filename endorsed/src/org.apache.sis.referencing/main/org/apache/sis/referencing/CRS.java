@@ -35,11 +35,9 @@ import org.opengis.geometry.Envelope;
 import org.opengis.geometry.Geometry;
 import org.opengis.referencing.NoSuchAuthorityCodeException;
 import org.opengis.referencing.IdentifiedObject;
-import org.opengis.referencing.cs.CartesianCS;
-import org.opengis.referencing.cs.EllipsoidalCS;
 import org.opengis.referencing.cs.AxisDirection;
+import org.opengis.referencing.cs.EllipsoidalCS;
 import org.opengis.referencing.cs.CoordinateSystem;
-import org.opengis.referencing.cs.CoordinateSystemAxis;
 import org.opengis.referencing.crs.SingleCRS;
 import org.opengis.referencing.crs.CompoundCRS;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
@@ -52,7 +50,6 @@ import org.opengis.referencing.crs.VerticalCRS;
 import org.opengis.referencing.crs.EngineeringCRS;
 import org.opengis.referencing.datum.Datum;
 import org.opengis.referencing.datum.GeodeticDatum;
-import org.opengis.referencing.operation.Conversion;
 import org.opengis.referencing.operation.OperationNotFoundException;
 import org.opengis.referencing.operation.CoordinateOperation;
 import org.opengis.referencing.operation.TransformException;
@@ -75,20 +72,12 @@ import org.apache.sis.referencing.internal.shared.AxisDirections;
 import org.apache.sis.referencing.internal.shared.EllipsoidalHeightCombiner;
 import org.apache.sis.referencing.internal.shared.ReferencingUtilities;
 import org.apache.sis.referencing.internal.shared.DefinitionVerifier;
-import org.apache.sis.referencing.cs.AxisFilter;
-import org.apache.sis.referencing.cs.CoordinateSystems;
-import org.apache.sis.referencing.cs.DefaultVerticalCS;
-import org.apache.sis.referencing.crs.DefaultGeographicCRS;
-import org.apache.sis.referencing.crs.DefaultProjectedCRS;
-import org.apache.sis.referencing.crs.DefaultVerticalCRS;
 import org.apache.sis.referencing.crs.DefaultCompoundCRS;
-import org.apache.sis.referencing.crs.DefaultEngineeringCRS;
 import org.apache.sis.referencing.datum.DatumOrEnsemble;
 import org.apache.sis.referencing.datum.DefaultPrimeMeridian;
 import org.apache.sis.referencing.operation.AbstractCoordinateOperation;
 import org.apache.sis.referencing.operation.CoordinateOperationContext;
 import org.apache.sis.referencing.operation.DefaultCoordinateOperationFactory;
-import org.apache.sis.referencing.operation.DefiningConversion;
 import org.apache.sis.referencing.factory.GeodeticObjectFactory;
 import org.apache.sis.referencing.factory.UnavailableFactoryException;
 import org.apache.sis.metadata.iso.extent.DefaultGeographicBoundingBox;
@@ -99,6 +88,7 @@ import org.apache.sis.util.LenientComparable;
 import org.apache.sis.util.OptionalCandidate;
 import org.apache.sis.util.Utilities;
 import org.apache.sis.util.Classes;
+import org.apache.sis.util.collection.BackingStoreException;
 import org.apache.sis.util.internal.shared.Constants;
 import org.apache.sis.util.resources.Errors;
 import org.apache.sis.util.logging.Logging;
@@ -111,7 +101,6 @@ import org.opengis.referencing.crs.GeneralDerivedCRS;
 import org.apache.sis.referencing.crs.AbstractCRS;
 import org.apache.sis.referencing.datum.DefaultGeodeticDatum;
 import org.apache.sis.referencing.datum.DefaultVerticalDatum;
-import static org.apache.sis.pending.geoapi.referencing.MissingMethods.getDatumEnsemble;
 
 
 /**
@@ -1135,7 +1124,7 @@ public final class CRS {
     /**
      * Returns the geodetic reference frame used by the given coordinate reference system.
      * If the given <abbr>CRS</abbr> is a {@link GeodeticCRS}, then this method returns the <abbr>CRS</abbr>'s datum.
-     * If the given <abbr>CRS</abbr> is a {@link DerivedCRS} and if its base <abbr>CRS</abbr> is a {@link GeodeticCRS},
+     * If the given <abbr>CRS</abbr> is a {@link GeneralDerivedCRS} and if its base <abbr>CRS</abbr> is a {@link GeodeticCRS},
      * then this method returns the base <abbr>CRS</abbr>'s datum.
      * Otherwise, if the given <abbr>CRS</abbr> is a {@link CompoundCRS},
      * then this method performs the above checks on each component.
@@ -1151,12 +1140,6 @@ public final class CRS {
      * @since 1.6
      */
     public static Optional<GeodeticDatum> getGeodeticReferenceFrame(CoordinateReferenceSystem crs) {
-        if (crs instanceof GeneralDerivedCRS) {
-            crs = ((GeneralDerivedCRS) crs).getBaseCRS();
-        }
-        if (crs instanceof GeodeticCRS) {
-            return Optional.ofNullable(DatumOrEnsemble.asDatum((GeodeticCRS) crs));
-        }
         if (crs instanceof CompoundCRS) {
             for (CoordinateReferenceSystem component : ((CompoundCRS) crs).getComponents()) {
                 final Optional<GeodeticDatum> datum = getGeodeticReferenceFrame(component);
@@ -1164,6 +1147,19 @@ public final class CRS {
                     return datum;
                 }
             }
+        }
+        for (;;) {
+            // Need to be tested before the base CRS because a derived CRS can also be geodetic.
+            if (crs instanceof GeodeticCRS) {
+                return Optional.ofNullable(DatumOrEnsemble.asDatum((GeodeticCRS) crs));
+            }
+            if (crs instanceof GeneralDerivedCRS) {
+                // Paranoic check for avoiding never-ending loop.
+                if (crs != (crs = ((GeneralDerivedCRS) crs).getBaseCRS())) {
+                    continue;
+                }
+            }
+            break;
         }
         return Optional.empty();
     }
@@ -1234,7 +1230,7 @@ public final class CRS {
             final CoordinateReferenceSystem crs = components[0];
             if (crs != null) return crs;
         }
-        return new EllipsoidalHeightCombiner().createCompoundCRS(components);
+        return new EllipsoidalHeightCombiner(null).createCompoundCRS(components);
     }
 
     /**
@@ -1273,7 +1269,7 @@ public final class CRS {
          * Since this criterion matches <abbr>CRS</abbr> with the same datum,
          * it indirectly requires the matched <abbr>CRS</abbr>s to be of the same type ignoring specializations
          * (<i>e.g.</i>, the difference between {@link GeographicCRS} and geocentric <abbr>CRS</abbr> is ignored).
-         * Furthermore, a {@link DerivedCRS} is considered equivalent to its base <abbr>CRS</abbr>.</p>
+         * Furthermore, a {@link GeneralDerivedCRS} is considered equivalent to its base <abbr>CRS</abbr>.</p>
          *
          * @see SingleCRS#getDatum()
          */
@@ -1354,7 +1350,7 @@ public final class CRS {
          *
          * @param  components  value of {@code getSingleComponents(crs)}.
          * @param  search      the elements to search in the {@code components} list.
-         * @param  overwrite   whether to overwrite the {@code search} array for matching elements only once.
+         * @param  overwrite   whether to overwrite the {@code search} array for matching each element only once.
          * @return mask with indexes of dimensions where a {@code search} element is leniently found.
          */
         final BitSet locateDimensions(final List<SingleCRS> components, final SingleCRS[] search, final boolean overwrite) {
@@ -1779,24 +1775,18 @@ public final class CRS {
              * or a vertical component. Extracting the vertical component is illegal according ISO 19111,
              * but sometime useful as temporary information.
              */
-            GeodeticCRS baseCRS = null;
-            if (crs instanceof GeodeticCRS) {
-                baseCRS = (GeodeticCRS) crs;
-            } else if (crs instanceof ProjectedCRS) {
-                baseCRS = ((ProjectedCRS) crs).getBaseCRS();
-            }
             RuntimeException cause = null;
-            if (baseCRS != null) {
-                int i = lower;
+            if (horizontalCode(crs) != 0) {
                 int dimension = 0;              // Number of dimensions.
                 boolean isVertical = false;     // Whether the requested dimension is the vertical one.
+                int i = lower;
                 do {
                     dimension++;
                     isVertical |= AxisDirections.isVertical(crs.getCoordinateSystem().getAxis(i).getDirection());
                     i = mask.nextSetBit(i + 1);
                 } while (i >= 0 && i < limit);
                 if (dimension == (isVertical ? 1 : BIDIMENSIONAL)) try {
-                    components.add(new EllipsoidalHeightSeparator(baseCRS, isVertical).separate((SingleCRS) crs));
+                    components.add(new EllipsoidalHeightSeparator(isVertical).separate((SingleCRS) crs));
                     return false;
                 } catch (IllegalArgumentException | ClassCastException e) {
                     cause = e;
@@ -1832,12 +1822,13 @@ public final class CRS {
 
     /**
      * Returns {@code true} if the given CRS is horizontal. The current implementation considers a
-     * CRS as horizontal if it is two-dimensional and comply with one of the following conditions:
+     * CRS as horizontal if it is two-dimensional and complies with one of the following conditions:
      *
      * <ul>
      *   <li>is an instance of {@link GeographicCRS} (or an equivalent {@link GeodeticCRS}), or</li>
      *   <li>is an instance of {@link ProjectedCRS}, or</li>
-     *   <li>is an instance of {@link EngineeringCRS} (following <abbr>WKT</abbr> 2 definition of {@literal <horizontal crs>}).</li>
+     *   <li>is an instance of {@link EngineeringCRS} with axis directions such as North, South, East or West
+     *       (derived from <abbr>WKT</abbr> 2 definition of {@literal <horizontal crs>}).</li>
      * </ul>
      *
      * In case of doubt, this method conservatively returns {@code false}.
@@ -1859,29 +1850,36 @@ public final class CRS {
     }
 
     /**
-     * If the given CRS would qualify as horizontal except for its number of dimensions, returns that number.
-     * Otherwise returns 0. The number of dimensions can only be 2 or 3.
+     * If the given <abbr>CRS</abbr> qualifies as horizontal except for its number of dimensions, returns that number.
+     * Otherwise returns 0. The number of dimensions can only be 2 or 3 and the third dimension can only be vertical.
      */
     private static int horizontalCode(final CoordinateReferenceSystem crs) {
-        /*
-         * In order to determine if the CRS is geographic, checking the CoordinateSystem type is more reliable
-         * then checking if the CRS implements the GeographicCRS interface.  This is because the GeographicCRS
-         * type did not existed in ISO 19111:2007, so a CRS could be standard-compliant without implementing
-         * the GeographicCRS interface.
-         */
         boolean isEngineering = false;
         final boolean isGeodetic = (crs instanceof GeodeticCRS);
         if (isGeodetic || crs instanceof ProjectedCRS || (isEngineering = (crs instanceof EngineeringCRS))) {
+            /*
+             * In order to determine if a geodetic CRS is geographic, checking the CoordinateSystem type is more
+             * reliable then checking if the CRS implements the GeographicCRS interface, because `GeographicCRS`
+             * type did not existed in ISO 19111:2007. A CRS can be standard-compliant without implementing the
+             * `GeographicCRS` interface.
+             */
             final CoordinateSystem cs = crs.getCoordinateSystem();
             final int dim = cs.getDimension();
-            if ((dim & ~1) == BIDIMENSIONAL && (!isGeodetic || (cs instanceof EllipsoidalCS))) {
+            if (dim >= BIDIMENSIONAL && dim <= TRIDIMENSIONAL && (!isGeodetic || (cs instanceof EllipsoidalCS))) {
                 if (isEngineering) {
-                    int n = 0;
+                    int count = 0;
                     for (int i=0; i<dim; i++) {
-                        if (AxisDirections.isCompass(cs.getAxis(i).getDirection())) n++;
+                        final AxisDirection direction = cs.getAxis(i).getDirection();
+                        if (AxisDirections.isCompass(direction)) {
+                            count++;
+                        } else if (!AxisDirections.isVertical(direction)) {
+                            return 0;
+                        }
                     }
                     // If we don't have exactly 2 east, north, etc. directions, consider as non-horizontal.
-                    if (n != BIDIMENSIONAL) return 0;
+                    if (count != BIDIMENSIONAL) {
+                        return 0;
+                    }
                 }
                 return dim;
             }
@@ -1916,14 +1914,14 @@ public final class CRS {
     }
 
     /**
-     * Returns the first horizontal coordinate reference system found in the given CRS, or {@code null} if there is
-     * none. If the given CRS is already horizontal according {@link #isHorizontalCRS(CoordinateReferenceSystem)},
-     * then this method returns it as-is. Otherwise if the given CRS is compound, then this method searches for the
-     * first horizontal component in the {@linkplain #getSingleComponents(CoordinateReferenceSystem)
-     * list of single components}.
+     * Returns the first horizontal component found in the given <abbr>CRS</abbr>, or {@code null} if none.
+     * If the given <abbr>CRS</abbr> is already horizontal according
+     * {@link #isHorizontalCRS(CoordinateReferenceSystem)}, then this method returns it as-is.
+     * Otherwise if the given CRS is compound, this method searches for the first horizontal component
+     * in the {@linkplain #getSingleComponents(CoordinateReferenceSystem) list of single components}.
      *
-     * <p>In the special case where a three-dimensional geographic or projected CRS is found, this method
-     * will create a two-dimensional geographic or projected CRS without the vertical axis.</p>
+     * <p>In the special case where a three-dimensional geographic or projected <abbr>CRS</abbr> is found,
+     * this method creates a two-dimensional geographic or projected CRS without the vertical axis.</p>
      *
      * @param  crs  the coordinate reference system, or {@code null}.
      * @return the first horizontal CRS, or {@code null} if none.
@@ -1938,53 +1936,20 @@ public final class CRS {
             /*
              * If the CRS is already two-dimensional and horizontal, return as-is.
              * We don't need to check if crs is an instance of SingleCRS since all
-             * CRS accepted by horizontalCode(…) are SingleCRS.
+             * CRS accepted by `horizontalCode(…)` are `SingleCRS`.
              */
             case BIDIMENSIONAL: {
                 return (SingleCRS) crs;
             }
             case TRIDIMENSIONAL: {
-                /*
-                 * The CRS would be horizontal if we can remove the vertical axis. CoordinateSystems.replaceAxes(…)
-                 * will do this task for us. We can verify if the operation has been successful by checking that
-                 * the number of dimensions has been reduced by 1 (from 3 to 2).
-                 */
-                final CoordinateSystem cs = CoordinateSystems.replaceAxes(crs.getCoordinateSystem(), new AxisFilter() {
-                    @Override public boolean accept(final CoordinateSystemAxis axis) {
-                        return !AxisDirections.isVertical(axis.getDirection());
+                try {
+                    final SingleCRS candidate = new EllipsoidalHeightSeparator(false).separate((SingleCRS) crs);
+                    if (getDimensionOrZero(candidate) == BIDIMENSIONAL) {
+                        return candidate;
                     }
-                });
-                if (cs.getDimension() != BIDIMENSIONAL) break;
-                /*
-                 * Most of the time, the CRS to rebuild will be geodetic. In such case we known that the
-                 * coordinate system is ellipsoidal because (i.e. the CRS is geographic) because it was
-                 * a condition verified by horizontalCode(…). A ClassCastException would be a bug.
-                 */
-                final Map<String, ?> properties = ReferencingUtilities.getPropertiesForModifiedCRS(crs);
-                if (crs instanceof GeodeticCRS) {
-                    final var source = (GeodeticCRS) crs;
-                    return new DefaultGeographicCRS(properties, source.getDatum(), getDatumEnsemble(source), (EllipsoidalCS) cs);
+                } catch (FactoryException e) {
+                    throw new BackingStoreException(e);
                 }
-                /*
-                 * In Apache SIS implementation, the Conversion contains the source and target CRS together with
-                 * a MathTransform.   We need to recreate the same conversion, but without CRS and MathTransform
-                 * for letting SIS create or associate new ones, which will be two-dimensional now.
-                 */
-                if (crs instanceof ProjectedCRS) {
-                    final var proj = (ProjectedCRS) crs;
-                    final var base = (GeographicCRS) getHorizontalComponent(proj.getBaseCRS());
-                    Conversion fromBase = proj.getConversionFromBase();
-                    fromBase = new DefiningConversion(
-                            IdentifiedObjects.getProperties(fromBase),
-                            fromBase.getMethod(), null,
-                            fromBase.getParameterValues());
-                    return new DefaultProjectedCRS(properties, base, fromBase, (CartesianCS) cs);
-                }
-                /*
-                 * If the CRS is neither geographic or projected, then it is engineering.
-                 */
-                final var source = (EngineeringCRS) crs;
-                return new DefaultEngineeringCRS(properties, source.getDatum(), getDatumEnsemble(source), cs);
             }
         }
         if (crs instanceof CompoundCRS) {
@@ -1999,12 +1964,12 @@ public final class CRS {
     }
 
     /**
-     * Returns the first vertical coordinate reference system found in the given CRS, or {@code null} if there is none.
+     * Returns the first vertical component found in the given <abbr>CRS</abbr>, or {@code null} if none.
      * If the given CRS is already an instance of {@code VerticalCRS}, then this method returns it as-is.
      * Otherwise if the given CRS is compound, then this method searches for the first vertical component
      * in the {@linkplain #getSingleComponents(CoordinateReferenceSystem) list of single components}.
      *
-     * <h4>Height in a three-dimensional geographic CRS</h4>
+     * <h4>Height in a three-dimensional geographic <abbr>CRS</abbr></h4>
      * In ISO 19111 model, ellipsoidal heights are indissociable from geographic CRS because such heights
      * without their (<var>latitude</var>, <var>longitude</var>) locations make little sense. Consequently
      * a standard-conformant library should return {@code null} when asked for the {@code VerticalCRS}
@@ -2036,10 +2001,10 @@ public final class CRS {
             return (VerticalCRS) crs;
         }
         if (crs instanceof CompoundCRS) {
-            final CompoundCRS cp = (CompoundCRS) crs;
+            final var compound = (CompoundCRS) crs;
             boolean a = false;
             do { // Executed at most twice.
-                for (final CoordinateReferenceSystem c : cp.getComponents()) {
+                for (final CoordinateReferenceSystem c : compound.getComponents()) {
                     final VerticalCRS candidate = getVerticalComponent(c, a);
                     if (candidate != null) {
                         return candidate;
@@ -2048,23 +2013,17 @@ public final class CRS {
             } while ((a = !a) == allowCreateEllipsoidal);
         }
         if (allowCreateEllipsoidal && horizontalCode(crs) == TRIDIMENSIONAL) {
-            final CoordinateSystem cs = crs.getCoordinateSystem();
-            final int i = AxisDirections.indexOfColinear(cs, AxisDirection.UP);
-            if (i >= 0) {
-                final CoordinateSystemAxis axis = cs.getAxis(i);
-                VerticalCRS c = CommonCRS.Vertical.ELLIPSOIDAL.crs();
-                if (!c.getCoordinateSystem().getAxis(0).equals(axis)) {
-                    final Map<String,?> properties = IdentifiedObjects.getProperties(c);
-                    c = new DefaultVerticalCRS(properties, c.getDatum(), getDatumEnsemble(c), new DefaultVerticalCS(properties, axis));
-                }
-                return c;
+            try {
+                return (VerticalCRS) new EllipsoidalHeightSeparator(true).separate((SingleCRS) crs);
+            } catch (FactoryException e) {
+                throw new BackingStoreException(e);
             }
         }
         return null;
     }
 
     /**
-     * Returns the first temporal coordinate reference system found in the given CRS, or {@code null} if there is none.
+     * Returns the first temporal component found in the given <abbr>CRS</abbr>, or {@code null} if none.
      * If the given CRS is already an instance of {@code TemporalCRS}, then this method returns it as-is.
      * Otherwise if the given CRS is compound, then this method searches for the first temporal component
      * in the {@linkplain #getSingleComponents(CoordinateReferenceSystem) list of single components}.
@@ -2080,8 +2039,8 @@ public final class CRS {
             return (TemporalCRS) crs;
         }
         if (crs instanceof CompoundCRS) {
-            final CompoundCRS cp = (CompoundCRS) crs;
-            for (final CoordinateReferenceSystem c : cp.getComponents()) {
+            final var compound = (CompoundCRS) crs;
+            for (final CoordinateReferenceSystem c : compound.getComponents()) {
                 final TemporalCRS candidate = getTemporalComponent(c);
                 if (candidate != null) {
                     return candidate;
@@ -2089,6 +2048,52 @@ public final class CRS {
             }
         }
         return null;
+    }
+
+    /**
+     * Returns the first geospatial component found in the given <abbr>CRS</abbr>, or {@code null} if none.
+     * In this method, a geospatial component is defined as a two- or three-dimensional <abbr>CRS</abbr>
+     * which {@linkplain #hasHorizontalComponent(CoordinateReferenceSystem) has an horizontal component},
+     * optionally combined with a vertical axis (height or depth) as the third dimension.
+     *
+     * @param  crs  the coordinate reference system, or {@code null}.
+     * @return the first geospatial CRS, or {@code null} if none.
+     *
+     * @since 1.8
+     */
+    @OptionalCandidate
+    public static CoordinateReferenceSystem getGeospatialComponent(final CoordinateReferenceSystem crs) {
+        if (horizontalCode(crs) != 0) {
+            return crs;
+        }
+        CoordinateReferenceSystem candidate = null;
+        if (crs instanceof CompoundCRS) {
+            final var compound = (CompoundCRS) crs;
+            VerticalCRS vertical = null;
+            boolean other = false;
+            for (final CoordinateReferenceSystem c : compound.getComponents()) {
+                if (candidate == null && (candidate = getGeospatialComponent(c)) != null) {
+                    other |= (candidate != c);
+                } else if (vertical == null && (vertical = getVerticalComponent(c, false)) != null) {
+                    other |= (vertical != c);
+                } else {
+                    other = true;
+                }
+            }
+            if (!other) {
+                return compound;    // All components are geospatial.
+            } else if (candidate != null && vertical != null) try {
+                /*
+                 * May happen if the compound CRS is (x, y, z, t) and we need to keep only (x, y, z).
+                 * But should rarely happen in practice, because SIS prefers nested compound CRS such
+                 * as ((x, y, z), t), which can be separated without building new CRS.
+                 */
+                return compound(candidate, vertical);
+            } catch (FactoryException ex) {
+                throw new BackingStoreException(ex);
+            }
+        }
+        return candidate;
     }
 
     /**

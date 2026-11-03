@@ -17,6 +17,8 @@
 package org.apache.sis.filter.sqlmm;
 
 import java.util.List;
+import org.opengis.util.FactoryException;
+import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import org.opengis.referencing.operation.TransformException;
 import org.apache.sis.filter.Optimization;
 import org.apache.sis.geometry.wrapper.Geometries;
@@ -28,7 +30,7 @@ import org.apache.sis.pending.geoapi.filter.Literal;
 
 
 /**
- * SQLMM spatial functions taking two geometry operands.
+ * <abbr>SQLMM</abbr> spatial functions taking two geometry operands.
  *
  * @author  Johann Sorel (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
@@ -76,14 +78,21 @@ class TwoGeometries<R> extends SpatialFunction<R> {
         if (unwrap(geometry2) instanceof Literal<?,?>) {
             final GeometryWrapper literal = geometry2.apply(null);
             if (literal != null) try {
-                final GeometryWrapper transformed = literal.transform(optimization.findExpectedCRS(unwrap(geometry1)).orElse(null));
-                if (transformed != literal) {
+                final CoordinateReferenceSystem crs = optimization.findExpectedCRS(unwrap(geometry1)).orElse(null);
+                final GeometryWrapper transformed = literal.transform(crs, true);
+                if (transformed != literal && transformed.isFinite2D()) {
+                    /*
+                     * While infinite bounds are okay when computing intersections between Apache SIS envelopes,
+                     * they may be problematic for more complex geometries or for operations computing distances.
+                     * Skipping the optimization in such cases (above condition) is conservative: transforms will
+                     * be applied at evaluation time, maybe by delegating to a storage engine such as PostGIS.
+                     */
                     @SuppressWarnings({"unchecked","rawtypes"})
                     final Expression<R,?>[] effective = getParameters().toArray(Expression[]::new);
                     effective[1] = Optimization.literal(transformed);
                     return recreate(effective);
                 }
-            } catch (IllegalArgumentException | TransformException e) {
+            } catch (IllegalArgumentException | FactoryException | TransformException e) {
                 optimization.warning(e, false);
             }
         }
@@ -134,7 +143,7 @@ class TwoGeometries<R> extends SpatialFunction<R> {
 
 
     /**
-     * SQLMM spatial functions taking a single geometry operand with one argument.
+     * <abbr>SQLMM</abbr> spatial functions taking a single geometry operand with one argument.
      *
      * @param  <R>  the type of resources (e.g. {@code Feature}) used as inputs.
      */

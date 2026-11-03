@@ -676,8 +676,8 @@ public abstract class AbstractEnvelope extends FormattableObject implements Enve
 
     /**
      * Determines whether or not this envelope contains only finite values.
-     * More specifically this method returns {@code false} if at least one
-     * coordinate value is NaN or infinity, and {@code true} otherwise.
+     * This method returns {@code false} if at least one coordinate value
+     * is <abbr>NaN</abbr> or infinity, and {@code true} otherwise.
      * Note that a finite envelope may be {@linkplain #isEmpty() empty}.
      *
      * @return {@code true} if this envelope contains only finite coordinate values.
@@ -1179,6 +1179,8 @@ public abstract class AbstractEnvelope extends FormattableObject implements Enve
 
     /**
      * Returns a hash value for this envelope.
+     *
+     * @return a hash value for this envelope.
      */
     @Override
     public int hashCode() {

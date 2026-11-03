@@ -112,7 +112,7 @@ public final class ReferencingUtilities {
     public static Unit<?> getUnit(final CoordinateSystem cs) {
         Unit<?> unit = null;
         if (cs != null) {
-            for (int i=cs.getDimension(); --i>=0;) {
+            for (int i = cs.getDimension(); --i >= 0;) {
                 final CoordinateSystemAxis axis = cs.getAxis(i);
                 if (axis != null) {                                         // Paranoiac check.
                     final Unit<?> candidate = axis.getUnit();
@@ -201,10 +201,7 @@ public final class ReferencingUtilities {
      * @see org.apache.sis.referencing.internal.VerticalDatumTypes#ELLIPSOIDAL
      */
     public static boolean isEllipsoidalHeight(final VerticalDatum datum) {
-        if (datum != null) {
-            return VerticalDatumTypes.ellipsoidal(datum.getVerticalDatumType());
-        }
-        return false;
+        return (datum != null) && VerticalDatumTypes.ellipsoidal(datum.getVerticalDatumType());
     }
 
     /**
@@ -301,7 +298,7 @@ public final class ReferencingUtilities {
      * @return the identified object properties.
      */
     public static Map<String,?> getPropertiesWithoutIdentifiers(final IdentifiedObject object, final Map<String,?> overwrite) {
-        final Map<String,?> properties = IdentifiedObjects.getProperties(object, IdentifiedObject.IDENTIFIERS_KEY);
+        final Map<String, ?> properties = IdentifiedObjects.getProperties(object, IdentifiedObject.IDENTIFIERS_KEY);
         final ReferenceIdentifier name = object.getName();
         final boolean keepName = name.getCodeSpace() == null && name.getAuthority() == null;
         if (keepName && overwrite == null) {
@@ -341,8 +338,8 @@ public final class ReferencingUtilities {
      *
      * @see IdentifiedObjects#getProperties(IdentifiedObject, String...)
      */
-    public static Map<String,?> getPropertiesForModifiedCRS(final IdentifiedObject object) {
-        final Map<String,?> properties = IdentifiedObjects.getProperties(object, IdentifiedObject.IDENTIFIERS_KEY);
+    public static Map<String, ?> getPropertiesForModifiedCRS(final IdentifiedObject object) {
+        final Map<String, ?> properties = IdentifiedObjects.getProperties(object, IdentifiedObject.IDENTIFIERS_KEY);
         final Identifier id = (Identifier) properties.get(IdentifiedObject.NAME_KEY);
         if (id != null) {
             String name = id.getCode();
@@ -393,7 +390,7 @@ public final class ReferencingUtilities {
             if (spec == Specification.ISO_19111) {
                 final String name = uml.identifier();
                 final int length = name.length();
-                final StringBuilder buffer = new StringBuilder(length).append(name, name.indexOf('_') + 1, length);
+                final var buffer = new StringBuilder(length).append(name, name.indexOf('_') + 1, length);
                 if (buffer.length() != 0) {
                     buffer.setCharAt(0, Character.toLowerCase(buffer.charAt(0)));
                     return buffer;

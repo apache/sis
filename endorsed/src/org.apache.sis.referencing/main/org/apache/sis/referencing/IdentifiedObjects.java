@@ -617,7 +617,8 @@ public final class IdentifiedObjects {
      * Looks up an <abbr>EPSG</abbr> code, such as {@code 4326}, of the specified object.
      * This method searches in <abbr>EPSG</abbr> factories known to <abbr>SIS</abbr> for
      * an object {@linkplain org.apache.sis.util.ComparisonMode#APPROXIMATE approximately equals}
-     * to the specified object. If such an object is found, then its EPSG identifier is returned.
+     * to the given object. If such an object is found and has an <abbr>EPSG</abbr> identifier,
+     * that identifier is returned.
      * Otherwise or if there is ambiguity, this method returns {@code null}.
      *
      * <p><strong>Note that this method checks the identifier validity.</strong>

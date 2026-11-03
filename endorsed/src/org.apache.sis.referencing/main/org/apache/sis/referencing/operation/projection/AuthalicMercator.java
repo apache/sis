@@ -23,7 +23,6 @@ import org.opengis.referencing.operation.Matrix;
 import org.opengis.referencing.operation.TransformException;
 import org.apache.sis.referencing.operation.matrix.Matrix2;
 import org.apache.sis.referencing.operation.transform.DomainDefinition;
-import org.apache.sis.geometry.Envelope2D;
 import static org.apache.sis.math.MathFunctions.atanh;
 
 
@@ -59,9 +58,7 @@ final class AuthalicMercator extends AuthalicConversion {
      */
     @Override
     public Optional<Envelope> getDomain(final DomainDefinition criteria) {
-        return Optional.of(new Envelope2D(null,
-                 -LARGE_LONGITUDE_LIMIT,  -POLAR_AREA_LIMIT,
-                2*LARGE_LONGITUDE_LIMIT, 2*POLAR_AREA_LIMIT));
+        return Optional.of(domain(criteria.canApproachAsymptotes()));
     }
 
     /**

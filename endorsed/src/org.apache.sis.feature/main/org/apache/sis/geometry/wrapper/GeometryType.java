@@ -28,7 +28,7 @@ import org.apache.sis.util.internal.shared.Constants;
 
 /**
  * Implementation-neutral description of the type of geometry.
- * The name of each enumeration value is the name in WKT format.
+ * The name of each enumeration value is the name in <abbr>WKT</abbr> format.
  * The ordinal value is the binary code, ignoring thousands.
  *
  * @author  Martin Desruisseaux (Geomatys)
@@ -297,6 +297,8 @@ public enum GeometryType {
     /**
      * Returns the type of geometry collection if this type is for a component.
      * If this enumeration value is not a component type, returns {@code null}.
+     *
+     * @return geometry collection type, or {@code null} if this type is not a component.
      */
     public final GeometryType collection() {
         return isCollection ? null : related;
@@ -307,6 +309,8 @@ public enum GeometryType {
      * Example of collection types are {@link #MULTIPOINT}, {@link #MULTILINESTRING},
      * {@link #MULTIPOLYGON} or {@link #GEOMETRYCOLLECTION}.
      * If this enumeration value is not a collection type, returns {@code null}.
+     *
+     * @return collection component type, or {@code null} if this type is not a collection.
      */
     public final GeometryType component() {
         return isCollection ? related : null;

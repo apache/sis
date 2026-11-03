@@ -18,8 +18,10 @@ package org.apache.sis.referencing.internal.shared;
 
 import java.util.Map;
 import java.util.HashMap;
+import java.util.logging.Logger;
 import org.opengis.util.FactoryException;
 import org.opengis.metadata.extent.Extent;
+import org.opengis.referencing.NoSuchAuthorityCodeException;
 import org.opengis.referencing.crs.CRSFactory;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import org.opengis.referencing.crs.GeodeticCRS;
@@ -35,10 +37,17 @@ import org.opengis.referencing.datum.VerticalDatum;
 import org.opengis.referencing.operation.Conversion;
 import org.opengis.referencing.operation.CoordinateOperationFactory;
 import org.apache.sis.referencing.IdentifiedObjects;
+import org.apache.sis.referencing.cs.CoordinateSystems;
 import org.apache.sis.referencing.datum.DatumOrEnsemble;
+import org.apache.sis.metadata.iso.citation.Citations;
 import org.apache.sis.metadata.iso.extent.Extents;
+import org.apache.sis.system.Loggers;
 import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.ArraysExt;
+import org.apache.sis.util.Classes;
+import org.apache.sis.util.logging.Logging;
+import org.apache.sis.util.resources.Errors;
+import org.apache.sis.util.internal.shared.Constants;
 
 
 /**
@@ -56,19 +65,12 @@ public final class EllipsoidalHeightCombiner {
     private final ReferencingFactoryContainer factories;
 
     /**
-     * Creates a new combiner with no initial factory.
-     */
-    public EllipsoidalHeightCombiner() {
-        factories = new ReferencingFactoryContainer();
-    }
-
-    /**
      * Creates a new instance initialized to the factories of the given container.
      *
-     * @param  c  the container from which to fetch the factories.
+     * @param  c  the container from which to fetch the factories, or {@code null} for the default factories.
      */
     public EllipsoidalHeightCombiner(final ReferencingFactoryContainer c) {
-        factories = c;
+        factories = (c != null) ? c : new ReferencingFactoryContainer();
     }
 
     /**
@@ -105,7 +107,7 @@ public final class EllipsoidalHeightCombiner {
      * @return the coordinate reference system for the given properties.
      * @throws FactoryException if the object creation failed.
      */
-    public final CoordinateReferenceSystem createCompoundCRS(final Map<String,?> properties,
+    public final CoordinateReferenceSystem createCompoundCRS(final Map<String, ?> properties,
             CoordinateReferenceSystem... components) throws FactoryException
     {
         for (int i=0; i<components.length; i++) {
@@ -127,30 +129,41 @@ public final class EllipsoidalHeightCombiner {
                         axisPosition = 1;
                     }
                     /*
-                     * At this point we have the horizontal and vertical components. The horizontal component
-                     * begins at 'axisPosition', which is almost always zero. Create the three-dimensional CRS.
-                     * If the result is the CRS to be returned directly by this method (components.length == 2),
-                     * use the properties given in argument. Otherwise we need to use other properties; current
-                     * implementation recycles the properties of the existing two-dimensional CRS.
+                     * At this point, we have the horizontal and vertical components. The horizontal component
+                     * begins at `axisPosition`, which is almost always zero but following code accepts also 1.
+                     * Try to get a 3D coordinate system from the EPSG database if possible because it provides
+                     * better metadata (in particular a more appropriate CS name).
                      */
-                    final CoordinateSystemAxis[] axes = new CoordinateSystemAxis[3];
+                    final var axes = new CoordinateSystemAxis[3];
                     axes[axisPosition++   ] = cs2D.getAxis(0);
                     axes[axisPosition++   ] = cs2D.getAxis(1);
                     axes[axisPosition %= 3] = vertical.getCoordinateSystem().getAxis(0);
-                    final Map<String,?> csProps  = IdentifiedObjects.getProperties(cs2D, CoordinateSystem.IDENTIFIERS_KEY);
-                    final Map<String,?> crsProps = (components.length == 2) ? properties
-                                                 : IdentifiedObjects.getProperties(crs, CoordinateReferenceSystem.IDENTIFIERS_KEY);
+                    final String epsgCode = getEpsgCode(cs2D, axes);
+                    /*
+                     * If the 3D CRS created in this block will be the CRS to return, the `properties` given in
+                     * argument to this method are used directly. Otherwise we need to derive something else.
+                     * Current implementation reuses the properties of the two-dimensional CRS.
+                     */
+                    final Map<String, ?> crsProps = (components.length == 2)
+                            ? properties : ReferencingUtilities.getPropertiesForModifiedCRS(crs);
                     if (crs instanceof GeodeticCRS) {
                         final var geod = (GeodeticCRS) crs;
-                        final EllipsoidalCS cs3D;
-                        cs3D = factories.getCSFactory() .createEllipsoidalCS(csProps, axes[0], axes[1], axes[2]);
-                        crs  = factories.getCRSFactory().createGeographicCRS(crsProps, DatumOrEnsemble.asDatum(geod), cs3D);
-                    } else {
-                        final ProjectedCRS proj = (ProjectedCRS) crs;
+                        EllipsoidalCS cs3D = null;
+                        if (epsgCode != null) try {
+                            cs3D = factories.getCSAuthorityFactory().createEllipsoidalCS(epsgCode);
+                        } catch (NoSuchAuthorityCodeException e) {
+                            warning(e);
+                        }
+                        if (cs3D == null) {
+                            cs3D = factories.getCSFactory().createEllipsoidalCS(
+                                    ReferencingUtilities.getPropertiesForModifiedCRS(cs2D), axes[0], axes[1], axes[2]);
+                        }
+                        crs = factories.getCRSFactory().createGeographicCRS(crsProps, DatumOrEnsemble.asDatum(geod), cs3D);
+                    } else if (crs instanceof ProjectedCRS) {
+                        final var proj = (ProjectedCRS) crs;
                         GeographicCRS base = proj.getBaseCRS();
                         if (base.getCoordinateSystem().getDimension() == 2) {
-                            base = (GeographicCRS) createCompoundCRS(
-                                    IdentifiedObjects.getProperties(base, GeographicCRS.IDENTIFIERS_KEY), base, vertical);
+                            base = (GeographicCRS) createCompoundCRS(ReferencingUtilities.getPropertiesForModifiedCRS(base), base, vertical);
                         }
                         /*
                          * In Apache SIS implementation, the Conversion contains the source and target CRS together with
@@ -162,9 +175,20 @@ public final class EllipsoidalHeightCombiner {
                                     IdentifiedObjects.getProperties(fromBase),
                                     fromBase.getMethod(), fromBase.getParameterValues());
 
-                        final CartesianCS cs3D;
-                        cs3D = factories.getCSFactory() .createCartesianCS(csProps, axes[0], axes[1], axes[2]);
+                        CartesianCS cs3D = null;
+                        if (epsgCode != null) try {
+                            cs3D = factories.getCSAuthorityFactory().createCartesianCS(epsgCode);
+                        } catch (NoSuchAuthorityCodeException e) {
+                            warning(e);
+                        }
+                        if (cs3D == null) {
+                            cs3D = factories.getCSFactory().createCartesianCS(
+                                    ReferencingUtilities.getPropertiesForModifiedCRS(cs2D), axes[0], axes[1], axes[2]);
+                        }
                         crs  = factories.getCRSFactory().createProjectedCRS(crsProps, base, fromBase, cs3D);
+                    } else {
+                        throw new FactoryException(Errors.format(
+                                Errors.Keys.UnsupportedType_1, Classes.getStandardClass(crs, CoordinateReferenceSystem.class)));
                     }
                     /*
                      * Remove the VerticalCRS and store the three-dimensional GeographicCRS in place of the previous
@@ -207,14 +231,41 @@ public final class EllipsoidalHeightCombiner {
     }
 
     /**
+     * Returns the authority code for a variant of the given coordinate system with the given axes.
+     * For consistency, we search for an authority code only if the given <abbr>CS</abbr> was itself
+     * defined by an <abbr>EPSG</abbr>.
+     *
+     * @param  base  the coordinate system for which to get a variant.
+     * @param  axes  the axes of the desired coordinate system.
+     * @return a variant of the given coordinate system with the given axes.
+     */
+    private static String getEpsgCode(final CoordinateSystem base, final CoordinateSystemAxis[] axes) {
+        if (IdentifiedObjects.getIdentifier(base, Citations.EPSG) != null) {
+            final Integer epsgCode = CoordinateSystems.getEpsgCode(base.getClass(), axes);
+            if (epsgCode != null) {
+                return Constants.EPSG + ':' + epsgCode;
+            }
+        }
+        return null;
+    }
+
+    /**
+     * Logs a warnings for a non-fatal exception occurring while creating a coordinate system.
+     */
+    private static void warning(final NoSuchAuthorityCodeException e) {
+        Logging.recoverableException(Logger.getLogger(Loggers.CRS_FACTORY),
+                EllipsoidalHeightCombiner.class, "createCompoundCRS", e);
+    }
+
+    /**
      * Suggests properties for a compound CRS made of the given elements.
      * This method builds a default CRS name and domain of validity.
      *
      * @param  components  the components for which to get a default set of properties.
      * @return suggested properties in a modifiable map. Callers can modify the returned map.
      */
-    static Map<String,Object> properties(final CoordinateReferenceSystem... components) {
-        final StringBuilder name = new StringBuilder(40);
+    static Map<String, Object> properties(final CoordinateReferenceSystem[] components) {
+        final var name = new StringBuilder(40);
         Extent domain = null;
         for (int i=0; i<components.length; i++) {
             final CoordinateReferenceSystem crs = components[i];
@@ -223,7 +274,7 @@ public final class EllipsoidalHeightCombiner {
             name.append(crs.getName().getCode());
             domain = Extents.intersection(domain, crs.getDomainOfValidity());
         }
-        final var properties = new HashMap<String,Object>(4);
+        final var properties = new HashMap<String, Object>(4);
         properties.put(CoordinateReferenceSystem.NAME_KEY, name.toString());
         properties.put(CoordinateReferenceSystem.DOMAIN_OF_VALIDITY_KEY, domain);
         return properties;

@@ -23,22 +23,23 @@ import org.locationtech.jts.geom.LineString;
 import org.locationtech.jts.geom.Point;
 import org.locationtech.jts.geom.Polygon;
 import org.apache.sis.geometry.GeneralEnvelope;
+import org.apache.sis.geometry.wrapper.Dimensions;
 import org.apache.sis.util.resources.Errors;
 
 
 /**
  * Walks through the component of a geometry for finding the number of dimensions
- * and the range of <abbr>z</abbr> and <abbr>m</abbr> values.
+ * and the range of <var>z</var> and <var>M</var> values.
  *
  * @author  Johann Sorel (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
  */
 final class GeometryWalker {
     /**
-     * Whether to search for ranges of <var>z</var> and <var>M</var> values.
-     * If {@code false}, this method will check only for the number of dimensions.
+     * Whether to iterate over the coordinate sequences for the ranges of <var>z</var> and <var>M</var> values.
+     * If {@code false}, this method will check only for the number of dimensions and their types.
      */
-    private boolean wantZM;
+    private boolean wantRangeOfZM;
 
     /**
      * Whether the coordinate sequence declares to have <var>z</var> or <var>M</var> values.
@@ -65,7 +66,7 @@ final class GeometryWalker {
     /**
      * Creates a new walker.
      * By default, the walker does <em>not</em> search for ranges of <var>z</var> and <var>M</var> values.
-     * If this search is desired, the {@link #wantZM()} method must be invoked after construction.
+     * If this search is desired, the {@link #wantRangeOfZM()} method must be invoked after construction.
      */
     GeometryWalker() {
     }
@@ -73,8 +74,8 @@ final class GeometryWalker {
     /**
      * Requests the search of ranges of <var>z</var> and <var>M</var> values.
      */
-    final void wantZM() {
-        wantZM = true;
+    final void wantRangeOfZM() {
+        wantRangeOfZM = true;
         minZ = minM = Double.POSITIVE_INFINITY;
         maxZ = maxM = Double.NEGATIVE_INFINITY;
     }
@@ -89,12 +90,22 @@ final class GeometryWalker {
     }
 
     /**
+     * Returns an identification of which dimensions are for the coordinate values.
+     *
+     * @return the coordinate dimensions (never {@code null}).
+     * @throws IllegalArgumentException if the number of dimensions if less than 2 or more than 3.
+     */
+    final Dimensions dimensions() {
+        return Dimensions.forCount(dimension(), hasM);
+    }
+
+    /**
      * Sets the <var>z</var> and <var>M</var> coordinates in the given envelope.
      *
      * @param  env  the envelope where to set the coordinates.
      */
     final void setZM(final GeneralEnvelope env) {
-        if (wantZM) {
+        if (wantRangeOfZM) {
             final int limit = env.getDimension();
             int target = Factory.BIDIMENSIONAL;
             if (target < limit) {
@@ -130,7 +141,7 @@ final class GeometryWalker {
         } else if (geometry instanceof Polygon) {
             final var polygon = (Polygon) geometry;
             scan(polygon.getExteriorRing());
-            if (wantZM) {
+            if (wantRangeOfZM) {
                 final int n = polygon.getNumInteriorRing();
                 for (int i=0; i<n; i++) {
                     scan(polygon.getInteriorRingN(i));
@@ -161,7 +172,7 @@ final class GeometryWalker {
      */
     private void addDimensionAndRanges(final CoordinateSequence cs) {
         dimension = Math.max(dimension, cs.getDimension());
-        if (wantZM) {
+        if (wantRangeOfZM) {
             final int n = cs.size();
             if (cs.hasZ()) {
                 hasZ = true;
@@ -179,6 +190,10 @@ final class GeometryWalker {
                     if (m > maxM) maxM = m;
                 }
             }
+        } else {
+            // Some implementations may iterate over coordinates. So invoke only if necessary.
+            if (!hasZ) hasZ = cs.hasZ();
+            if (!hasM) hasM = cs.hasM();
         }
     }
 }

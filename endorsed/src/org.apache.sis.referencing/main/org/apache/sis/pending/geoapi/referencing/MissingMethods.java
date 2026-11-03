@@ -55,7 +55,7 @@ public final class MissingMethods {
     /**
      * Returns the datum ensemble of an arbitrary CRS.
      *
-     * @param  datum  the CRS from which to get a datum ensemble, or {@code null} if none.
+     * @param  crs  the CRS from which to get a datum ensemble, or {@code null} if none.
      * @return the datum ensemble, or {@code null} if none.
      */
     public static DefaultDatumEnsemble<?> getDatumEnsemble(final CoordinateReferenceSystem crs) {
@@ -66,7 +66,7 @@ public final class MissingMethods {
     /**
      * Returns the datum ensemble of an arbitrary geodetic CRS.
      *
-     * @param  datum  the CRS from which to get a datum ensemble, or {@code null} if none.
+     * @param  crs  the CRS from which to get a datum ensemble, or {@code null} if none.
      * @return the datum ensemble, or {@code null} if none.
      */
     public static DefaultDatumEnsemble<GeodeticDatum> getDatumEnsemble(final GeodeticCRS crs) {
@@ -77,7 +77,7 @@ public final class MissingMethods {
     /**
      * Returns the datum ensemble of an arbitrary vertical CRS.
      *
-     * @param  datum  the CRS from which to get a datum ensemble, or {@code null} if none.
+     * @param  crs  the CRS from which to get a datum ensemble, or {@code null} if none.
      * @return the datum ensemble, or {@code null} if none.
      */
     public static DefaultDatumEnsemble<VerticalDatum> getDatumEnsemble(final VerticalCRS crs) {
@@ -87,7 +87,7 @@ public final class MissingMethods {
     /**
      * Returns the datum ensemble of an arbitrary temporal CRS.
      *
-     * @param  datum  the CRS from which to get a datum ensemble, or {@code null} if none.
+     * @param  crs  the CRS from which to get a datum ensemble, or {@code null} if none.
      * @return the datum ensemble, or {@code null} if none.
      */
     public static DefaultDatumEnsemble<TemporalDatum> getDatumEnsemble(final TemporalCRS crs) {
@@ -97,7 +97,7 @@ public final class MissingMethods {
     /**
      * Returns the datum ensemble of an arbitrary engineering CRS.
      *
-     * @param  datum  the CRS from which to get a datum ensemble, or {@code null} if none.
+     * @param  crs  the CRS from which to get a datum ensemble, or {@code null} if none.
      * @return the datum ensemble, or {@code null} if none.
      */
     public static DefaultDatumEnsemble<EngineeringDatum> getDatumEnsemble(final EngineeringCRS crs) {

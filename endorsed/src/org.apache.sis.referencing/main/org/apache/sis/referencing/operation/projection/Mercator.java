@@ -29,7 +29,6 @@ import org.opengis.referencing.operation.Matrix;
 import org.opengis.referencing.operation.MathTransform;
 import org.opengis.referencing.operation.OperationMethod;
 import org.opengis.referencing.operation.TransformException;
-import org.apache.sis.geometry.Envelope2D;
 import org.apache.sis.referencing.operation.provider.Mercator1SP;
 import org.apache.sis.referencing.operation.provider.Mercator2SP;
 import org.apache.sis.referencing.operation.provider.MercatorSpherical;
@@ -366,8 +365,8 @@ subst:  if (variant.spherical || eccentricity == 0) {
 
     /**
      * Returns the domain of input coordinates. For a Mercator projection other than Miller variant,
-     * the limit is arbitrarily set to 84° of latitude North and South. This is consistent with the
-     * "World Mercator" domain of validity defined by EPSG:3395, which is 80°S to 84°N.
+     * the limit exclude polar regions by default. This is consistent with the <q>World Mercator</q>
+     * domain of validity defined by <abbr>EPSG</abbr>:3395, which is 80°S to 84°N.
      *
      * <p>The range of longitude values is set to an arbitrary range larger than −180° … +180°,
      * because the Mercator projection is mathematically capable to handle coordinates beyond that range
@@ -376,8 +375,7 @@ subst:  if (variant.spherical || eccentricity == 0) {
      */
     @Override
     public Optional<Envelope> getDomain(final DomainDefinition criteria) {
-        final double limit = (variant == Variant.MILLER) ? -PI/2 : -POLAR_AREA_LIMIT;
-        return Optional.of(new Envelope2D(null, -LARGE_LONGITUDE_LIMIT, limit, 2*LARGE_LONGITUDE_LIMIT, -2*limit));
+        return Optional.of(domain(variant == Variant.MILLER || criteria.canApproachAsymptotes()));
     }
 
     /**

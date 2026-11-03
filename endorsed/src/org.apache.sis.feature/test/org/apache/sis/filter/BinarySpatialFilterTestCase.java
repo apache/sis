@@ -54,6 +54,7 @@ import org.apache.sis.pending.geoapi.filter.DistanceOperatorName;
  *
  * @param  <G> root class of geometry implementation.
  */
+@SuppressWarnings("exports")
 public abstract class BinarySpatialFilterTestCase<G> extends TestCase {
     /**
      * The factory to use for testing purpose.

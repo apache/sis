@@ -20,6 +20,7 @@ import org.opengis.util.FactoryException;
 import org.opengis.referencing.cs.VerticalCS;
 import org.opengis.referencing.cs.CartesianCS;
 import org.opengis.referencing.cs.EllipsoidalCS;
+import org.opengis.referencing.cs.AxisDirection;
 import org.opengis.referencing.cs.CoordinateSystem;
 import org.opengis.referencing.cs.CoordinateSystemAxis;
 import org.opengis.referencing.crs.CRSFactory;
@@ -27,6 +28,7 @@ import org.opengis.referencing.crs.SingleCRS;
 import org.opengis.referencing.crs.VerticalCRS;
 import org.opengis.referencing.crs.ProjectedCRS;
 import org.opengis.referencing.crs.GeodeticCRS;
+import org.opengis.referencing.crs.EngineeringCRS;
 import org.opengis.referencing.datum.GeodeticDatum;
 import org.opengis.referencing.operation.Conversion;
 import org.apache.sis.referencing.internal.shared.AxisDirections;
@@ -48,7 +50,7 @@ import static org.apache.sis.pending.geoapi.referencing.MissingMethods.getDatumE
 
 
 /**
- * Helper class for separating the ellipsoidal height from the horizontal part of a CRS.
+ * Helper class for separating the ellipsoidal height from the horizontal part of a <abbr>CRS</abbr>.
  * This is the converse of {@link org.apache.sis.referencing.internal.shared.EllipsoidalHeightCombiner}.
  *
  * @author  Martin Desruisseaux (Geomatys)
@@ -57,35 +59,16 @@ import static org.apache.sis.pending.geoapi.referencing.MissingMethods.getDatumE
  */
 final class EllipsoidalHeightSeparator implements AxisFilter {
     /**
-     * The value of {@link SingleCRS#getDatum()}.
-     */
-    private final GeodeticDatum datum;
-
-    /**
-     * The datum ensemble of the <abbr>CRS</abbr> to separate, or {@code null} if none.
-     */
-    private final DefaultDatumEnsemble<GeodeticDatum> ensemble;
-
-    /**
-     * Workaround for GeoAPI 3.0 (to be removed with GeoAPI 3.1).
-     */
-    private final GeodeticDatum pseudo;
-
-    /**
      * Whether to extract the vertical component ({@code true}) or the horizontal component ({@code false}).
      */
     private final boolean vertical;
 
     /**
-     * Creates a new separator for a CRS having the given base.
+     * Creates a new separator.
      *
-     * @param  baseCRS   the CRS to separate, or the base CRS of the projected CRS to separate.
      * @param  vertical  whether to extract the vertical component ({@code true}) or the horizontal component ({@code false}).
      */
-    EllipsoidalHeightSeparator(final GeodeticCRS baseCRS, final boolean vertical) {
-        this.datum    = baseCRS.getDatum();
-        this.ensemble = getDatumEnsemble(baseCRS);
-        this.pseudo   = DatumOrEnsemble.asDatum(baseCRS);
+    EllipsoidalHeightSeparator(final boolean vertical) {
         this.vertical = vertical;
     }
 
@@ -94,7 +77,8 @@ final class EllipsoidalHeightSeparator implements AxisFilter {
      */
     @Override
     public boolean accept(final CoordinateSystemAxis axis) {
-        return AxisDirections.isVertical(axis.getDirection()) == vertical;
+        final AxisDirection direction = axis.getDirection();
+        return vertical ? AxisDirections.isVertical(direction) : AxisDirections.isCompass(direction);
     }
 
     /**
@@ -115,7 +99,11 @@ final class EllipsoidalHeightSeparator implements AxisFilter {
      * @throws ClassCastException if a coordinate system is not of the expected type.
      */
     SingleCRS separate(final SingleCRS crs) throws FactoryException {
-        final CoordinateSystem cs = CoordinateSystems.replaceAxes(crs.getCoordinateSystem(), this);
+        final CoordinateSystem sourceCS = crs.getCoordinateSystem();
+        final CoordinateSystem cs = CoordinateSystems.replaceAxes(sourceCS, this);
+        if (cs == sourceCS) {
+            return crs;
+        }
         if (vertical) {
             VerticalCRS component = CommonCRS.Vertical.ELLIPSOIDAL.crs();
             if (!Utilities.equalsIgnoreMetadata(component.getCoordinateSystem(), cs)) {
@@ -134,26 +122,33 @@ final class EllipsoidalHeightSeparator implements AxisFilter {
                 throw new IllegalArgumentException(Errors.format(
                         Errors.Keys.UnsupportedCoordinateSystem_1, IdentifiedObjects.getName(cs, null)));
             }
-            final CommonCRS ref = CommonCRS.WGS84;
-            if (Utilities.equalsIgnoreMetadata(ref.geographic().getCoordinateSystem(), cs)) {
-                final CommonCRS c = CommonCRS.forDatum(datum, ensemble);
-                if (c != null) return c.geographic();
-            } else if (Utilities.equalsIgnoreMetadata(ref.normalizedGeographic().getCoordinateSystem(), cs)) {
-                final CommonCRS c = CommonCRS.forDatum(datum, ensemble);
-                if (c != null) return c.normalizedGeographic();
+            final var source = (GeodeticCRS) crs;
+            final GeodeticDatum datum = source.getDatum();
+            final DefaultDatumEnsemble<GeodeticDatum> ensemble = getDatumEnsemble(source);
+            final CommonCRS predefined = CommonCRS.forDatum(datum, ensemble);
+            if (predefined != null && predefined.datum(true).equals(DatumOrEnsemble.asDatum(source))) {
+                // We require an equal datum because a datum change in this operation would be confusing.
+                boolean normalized = false;
+                do {
+                    GeographicCRS candidate = normalized ? predefined.normalizedGeographic() : predefined.geographic();
+                    if (Utilities.equalsIgnoreMetadata(candidate.getCoordinateSystem(), cs)) {
+                        return candidate;
+                    }
+                } while ((normalized = !normalized) == true);
             }
-            return factory().createGeographicCRS(getPropertiesForModifiedCRS(crs), pseudo, (EllipsoidalCS) cs);
+            return factory().createGeographicCRS(getPropertiesForModifiedCRS(source), DatumOrEnsemble.asDatum(source), (EllipsoidalCS) cs);
         }
         /*
          * In the projected CRS case, in addition of reducing the number of dimensions in the CartesianCS,
          * we also need to reduce the number of dimensions in the base CRS and in the conversion.
          */
         if (crs instanceof ProjectedCRS) {
-            GeographicCRS baseCRS = ((ProjectedCRS) crs).getBaseCRS();
+            final var source = (ProjectedCRS) crs;
+            GeographicCRS baseCRS = source.getBaseCRS();
             if (CRS.getDimensionOrZero(baseCRS) != CRS.BIDIMENSIONAL) {
                 baseCRS = (GeographicCRS) separate(baseCRS);
             }
-            Conversion projection = ((ProjectedCRS) crs).getConversionFromBase();
+            Conversion projection = source.getConversionFromBase();
             /*
              * The conversion object of the given CRS has a base (source) CRS and a target CRS that are not
              * the ones of the new `ProjectedCRS` to create. In addition it has a `MathTransform` expecting
@@ -166,7 +161,15 @@ final class EllipsoidalHeightSeparator implements AxisFilter {
                     getPropertiesForModifiedCRS(projection),
                     projection.getMethod(), null,
                     projection.getParameterValues());
-            return factory().createProjectedCRS(getPropertiesForModifiedCRS(crs), baseCRS, projection, (CartesianCS) cs);
+            return factory().createProjectedCRS(getPropertiesForModifiedCRS(source), baseCRS, projection, (CartesianCS) cs);
+        }
+        /*
+         * Horizontal engineering CRS requested. The axis directions have already been verified by `accept(…)`.
+         */
+        if (crs instanceof EngineeringCRS) {
+            final var source = (EngineeringCRS) crs;
+            return factory().createEngineeringCRS(
+                    getPropertiesForModifiedCRS(source), DatumOrEnsemble.asDatum(source), cs);
         }
         throw new IllegalArgumentException(Errors.format(Errors.Keys.UnsupportedType_1, crs.getClass()));
     }

@@ -134,7 +134,7 @@ public class ReferencingFactoryContainer implements Localized {
      * The default properties, or an empty map if none. This map shall not be modified since its
      * reference may be shared without cloning. This field will be cleared when no longer needed.
      */
-    private Map<String,?> defaultProperties;
+    private Map<String, ?> defaultProperties;
 
     /**
      * Creates a new instance for the default factories.
@@ -150,7 +150,7 @@ public class ReferencingFactoryContainer implements Localized {
      *
      * @param  properties  the factories.
      */
-    public ReferencingFactoryContainer(final Map<String,?> properties) {
+    public ReferencingFactoryContainer(final Map<String, ?> properties) {
         nameFactory      = (NameFactory)                properties.get(NAME_FACTORY);
         datumFactory     = (DatumFactory)               properties.get(DATUM_FACTORY);
         csFactory        = (CSFactory)                  properties.get(CS_FACTORY);
@@ -170,7 +170,7 @@ public class ReferencingFactoryContainer implements Localized {
      * @param  operationFactory   the factory to use for creating (defining) conversions.
      * @param  mtFactory          the factory to use for creating transform objects.
      */
-    public ReferencingFactoryContainer(final Map<String,?>              defaultProperties,
+    public ReferencingFactoryContainer(final Map<String, ?>             defaultProperties,
                                        final CRSFactory                 crsFactory,
                                        final CSFactory                  csFactory,
                                        final DatumFactory               datumFactory,
