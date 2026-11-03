@@ -99,7 +99,8 @@ public non-sealed class DefaultCurvePolygon extends AbstractGeometry implements 
 
     @Override
     public Quantity<?> getArea() {
-        throw new UnsupportedOperationException("Not supported yet.");
+        //measured on a polygon approximating the rings
+        return Centroids.linearize(this).getArea();
     }
 
 }

@@ -63,6 +63,14 @@ public final class ArrayDataPoints implements DataPoints, DataPointsType {
         }
     }
 
+    public ArrayDataPoints(DataPointsType attDef) {
+        for (String name : attDef.getAttributeNames()) {
+            attributes.put(name, NDArrays.of(attDef.getAttributeSystem(name), attDef.getAttributeType(name), 0));
+        }
+        positions = attributes.get(DataPointsType.ATT_POSITION);
+        ArgumentChecks.ensureNonNull(DataPointsType.ATT_POSITION, positions);
+    }
+
     @Override
     public CoordinateReferenceSystem getCoordinateReferenceSystem() {
         return positions.getCoordinateReferenceSystem();
@@ -89,8 +97,8 @@ public final class ArrayDataPoints implements DataPoints, DataPointsType {
     }
 
     @Override
-    public Point getPoint(int index) {
-        return new Indexed(this, index);
+    public Vertex getPoint(int index) {
+        return new Vertex(this, index);
     }
 
     @Override
@@ -107,19 +115,65 @@ public final class ArrayDataPoints implements DataPoints, DataPointsType {
         return attributes.get(name);
     }
 
+    /**
+     * Replaces all attributes at once.
+     * Used when all attributes are rebuilt with a new length, which {@link #setAttribute(String, Array)}
+     * cannot do one attribute at a time.
+     *
+     * @param attributes the new attributes, which must contain the positions.
+     * @throws IllegalArgumentException if positions are missing or the arrays have different lengths.
+     */
+    public void setAttributes(Map<String, Array> attributes) {
+        final Array newPositions = attributes.get(DataPointsType.ATT_POSITION);
+        ArgumentChecks.ensureNonNull("positions", newPositions);
+        ArgumentChecks.ensureNonNull("positions crs", newPositions.getCoordinateReferenceSystem());
+        final long size = newPositions.getLength();
+        for (Map.Entry<String,Array> entry : attributes.entrySet()) {
+            if (entry.getValue().getLength() != size) {
+                throw new IllegalArgumentException("Array must have the same length as the positions : " + entry.getKey());
+            }
+        }
+        this.attributes.clear();
+        this.attributes.putAll(attributes);
+        this.positions = newPositions;
+    }
+
+    /**
+     * Sets or removes an attribute.
+     *
+     * <p>Once positions are defined, all attributes must have the same length as the positions.
+     * While positions are empty, attributes of any length are accepted, so that the attributes
+     * of new data points can be set in any order. Setting positions of a different length then
+     * requires all non-empty attributes to have that length, the empty ones are removed.</p>
+     *
+     * @param name attribute name
+     * @param array attribute values, or {@code null} to remove the attribute
+     * @throws IllegalArgumentException if the array length does not match the other attributes.
+     */
     public void setAttribute(String name, Array array) {
         if (array == null) {
             if (DataPointsType.ATT_POSITION.equals(name)) {
                 throw new IllegalArgumentException("Positions attribute cannot be removed");
             }
             attributes.remove(name);
-        } else if (array.getLength() != size()) {
-            throw new IllegalArgumentException("Array must have the same length");
         } else if (DataPointsType.ATT_POSITION.equals(name)) {
+            final long length = array.getLength();
+            if (length != positions.getLength()) {
+                for (Map.Entry<String,Array> entry : attributes.entrySet()) {
+                    final long l = entry.getValue().getLength();
+                    if (l != 0 && l != length && !DataPointsType.ATT_POSITION.equals(entry.getKey())) {
+                        throw new IllegalArgumentException("Array must have the same length as attribute " + entry.getKey());
+                    }
+                }
+                //empty attributes do not match the new positions anymore
+                attributes.values().removeIf((Array a) -> a.getLength() == 0);
+            }
             this.positions = array;
             attributes.put(name, array);
-        } else {
+        } else if (array.getLength() == size() || size() == 0) {
             attributes.put(name, array);
+        } else {
+            throw new IllegalArgumentException("Array must have the same length");
         }
     }
 
@@ -207,69 +261,4 @@ public final class ArrayDataPoints implements DataPoints, DataPointsType {
         return DataPoints.equals(this, obj);
     }
 
-    /**
-     * An indexed point in the {@code DataPoints}
-     */
-    public static non-sealed class Indexed implements Point {
-
-        private final ArrayDataPoints parent;
-        private final int index;
-
-        public Indexed(ArrayDataPoints geometry, int index) {
-            this.parent = geometry;
-            this.index = index;
-        }
-
-        @Override
-        public boolean isEmpty() {
-            return false;
-        }
-
-        @Override
-        public Vector getPosition() {
-            final Cursor cursor = parent.positions.cursor();
-            cursor.moveTo(index);
-            return cursor.samples();
-        }
-
-        /**
-         * @return index in the parent mesh.
-         */
-        public int getIndex() {
-            return index;
-        }
-
-        @Override
-        public Vector getAttribute(String key) {
-            final Array tupleGrid = parent.attributes.get(key);
-            if (tupleGrid == null) return null;
-            final Cursor cursor = tupleGrid.cursor();
-            cursor.moveTo(index);
-            return cursor.samples();
-        }
-
-        @Override
-        public void setAttribute(String name, Vector tuple) {
-            final Array tupleGrid = parent.attributes.get(name);
-            if (tupleGrid == null) throw new IllegalArgumentException("Attribute " + name + " do not exist");
-            final Cursor cursor = tupleGrid.cursor();
-            cursor.moveTo(index);
-            cursor.set(tuple);
-        }
-
-        @Override
-        public CoordinateReferenceSystem getCoordinateReferenceSystem() {
-            return parent.getCoordinateReferenceSystem();
-        }
-
-        @Override
-        public void setCoordinateReferenceSystem(CoordinateReferenceSystem crs) {
-            throw new UnsupportedOperationException("Not supported.");
-        }
-
-        @Override
-        public DataPointsType getDataPointsType() {
-            return parent.getType();
-        }
-    }
 }

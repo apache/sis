@@ -17,6 +17,8 @@
 package org.apache.sis.maths;
 
 import java.util.function.Function;
+import org.opengis.geometry.DirectPosition;
+import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import org.opengis.referencing.operation.MathTransform;
 import org.opengis.referencing.operation.TransformException;
 
@@ -54,7 +56,7 @@ import org.opengis.referencing.operation.TransformException;
  *
  * @author Johann Sorel (Geomatys)
  */
-public interface Vector<T extends Vector<T>> {
+public sealed interface Vector<T extends Vector<T>> permits AbstractVector {
 
     /*
      * Factory methods creating vectors directly. The vector class is selected by the dimension and by
@@ -362,6 +364,16 @@ public interface Vector<T extends Vector<T>> {
         return Vectors.create(values, dataType);
     }
 
+    /**
+     * Copy Direct position coordinates to a Vector.
+     */
+    static Vector<?> of(DirectPosition pos) {
+        if (pos instanceof VectorAsDirectPosition vdp) {
+            return vdp.tuple;
+        } else {
+            return of(DataType.DOUBLE, pos.getCoordinates());
+        }
+    }
 
     /**
      * @return sample system size.
@@ -498,17 +510,6 @@ public interface Vector<T extends Vector<T>> {
     }
 
     /**
-     * Create a copy of this tuple.
-     * Immutable implementations return this tuple, a new tuple is created only
-     * for views on values which may change, such as array cursor samples.
-     *
-     * @return tuple copy, or this tuple if it is immutable.
-     */
-    default T copy() {
-        return (T) Vectors.create(toArrayDouble(), getDataType());
-    }
-
-    /**
      * Create a copy of this tuple, with values stored in the given data type.
      * The copy has the same sample system as this tuple.
      *
@@ -528,13 +529,13 @@ public interface Vector<T extends Vector<T>> {
      * @return new vector
      * @throws IndexOutOfBoundsException if index is not valid
      */
-    default Vector<?> with(int indice, double value) throws IndexOutOfBoundsException {
+    default T with(int indice, double value) throws IndexOutOfBoundsException {
         if (indice < 0 || indice >= getDimension()) {
             throw new IndexOutOfBoundsException("Invalid index " + indice);
         }
         final double[] array = toArrayDouble();
         array[indice] = value;
-        return Vectors.create(array, getDataType());
+        return (T) Vectors.create(array, getDataType());
     }
 
     /**
@@ -656,7 +657,7 @@ public interface Vector<T extends Vector<T>> {
      * @return cross product result
      * @throws IllegalArgumentException if a vector size is not 3
      */
-    default Vector<?> cross(Vector<?> other) {
+    default Vector3D.Double cross(Vector<?> other) {
         if (getDimension() != 3 || other.getDimension() != 3) {
             throw new IllegalArgumentException("vector and other size must be 3.");
         }
@@ -678,7 +679,7 @@ public interface Vector<T extends Vector<T>> {
      * @return cross product result
      * @throws IllegalArgumentException if a vector size is not 3
      */
-    default Vector<?> crossAccurate(Vector<?> other) {
+    default Vector3D.Double crossAccurate(Vector<?> other) {
         if (getDimension() != 3 || other.getDimension() != 3) {
             throw new IllegalArgumentException("vector and other size must be 3.");
         }
@@ -804,23 +805,23 @@ public interface Vector<T extends Vector<T>> {
      * @param b coefficient of the other vector
      * @return new vector
      */
-    private Vector<?> combination(double a, Vector<?> other, double b) {
+    private T combination(double a, Vector<?> other, double b) {
         final double[] values = new double[getDimension()];
         for (int i = 0; i < values.length; i++) {
             values[i] = a * get(i) + b * other.get(i);
         }
-        return Vectors.create(values, getDataType());
+        return (T) Vectors.create(values, getDataType());
     }
 
     /**
      * Same as {@link #combination(double, Vector, double)} but computed with compensated arithmetic.
      */
-    private Vector<?> combinationAccurate(double a, Vector<?> other, double b) {
+    private T combinationAccurate(double a, Vector<?> other, double b) {
         final double[] values = new double[getDimension()];
         for (int i = 0; i < values.length; i++) {
             values[i] = LinearCombination.of(a, get(i), b, other.get(i));
         }
-        return Vectors.create(values, getDataType());
+        return (T) Vectors.create(values, getDataType());
     }
 
     /**
@@ -828,7 +829,7 @@ public interface Vector<T extends Vector<T>> {
      *
      * @return new vector
      */
-    default Vector<?> normalize() {
+    default T normalize() {
         return scale(1.0 / length());
     }
 
@@ -839,13 +840,13 @@ public interface Vector<T extends Vector<T>> {
      * @param other
      * @return new vector
      */
-    default Vector<?> add(Vector<?> other) {
+    default T add(Vector<?> other) {
         AbstractVector.ensureDimension(other, getDimension());
         final double[] values = new double[getDimension()];
         for (int i = 0; i < values.length; i++) {
             values[i] = get(i) + other.get(i);
         }
-        return Vectors.create(values, getDataType());
+        return (T) Vectors.create(values, getDataType());
     }
 
     /**
@@ -855,13 +856,13 @@ public interface Vector<T extends Vector<T>> {
      * @param other
      * @return new vector
      */
-    default Vector<?> subtract(Vector<?> other) {
+    default T subtract(Vector<?> other) {
         AbstractVector.ensureDimension(other, getDimension());
         final double[] values = new double[getDimension()];
         for (int i = 0; i < values.length; i++) {
             values[i] = get(i) - other.get(i);
         }
-        return Vectors.create(values, getDataType());
+        return (T) Vectors.create(values, getDataType());
     }
 
     /**
@@ -871,13 +872,13 @@ public interface Vector<T extends Vector<T>> {
      * @param other
      * @return new vector
      */
-    default Vector<?> multiply(Vector<?> other) {
+    default T multiply(Vector<?> other) {
         AbstractVector.ensureDimension(other, getDimension());
         final double[] values = new double[getDimension()];
         for (int i = 0; i < values.length; i++) {
             values[i] = get(i) * other.get(i);
         }
-        return Vectors.create(values, getDataType());
+        return (T) Vectors.create(values, getDataType());
     }
 
     /**
@@ -887,13 +888,13 @@ public interface Vector<T extends Vector<T>> {
      * @param other
      * @return new vector
      */
-    default Vector<?> divide(Vector<?> other) {
+    default T divide(Vector<?> other) {
         AbstractVector.ensureDimension(other, getDimension());
         final double[] values = new double[getDimension()];
         for (int i = 0; i < values.length; i++) {
             values[i] = get(i) / other.get(i);
         }
-        return Vectors.create(values, getDataType());
+        return (T) Vectors.create(values, getDataType());
     }
 
     /**
@@ -901,7 +902,7 @@ public interface Vector<T extends Vector<T>> {
      *
      * @return new vector
      */
-    default Vector<?> negate() {
+    default T negate() {
         return scale(-1);
     }
 
@@ -912,12 +913,12 @@ public interface Vector<T extends Vector<T>> {
      * @param scale scaling factor
      * @return new vector
      */
-    default Vector<?> scale(double scale) {
+    default T scale(double scale) {
         final double[] values = new double[getDimension()];
         for (int i = 0; i < values.length; i++) {
             values[i] = get(i) * scale;
         }
-        return Vectors.create(values, getDataType());
+        return (T) Vectors.create(values, getDataType());
     }
 
     /**
@@ -928,7 +929,7 @@ public interface Vector<T extends Vector<T>> {
      * @param unit unit vector, of length 1
      * @return new vector
      */
-    default Vector<?> perpendicular(Vector<?> unit) {
+    default T perpendicular(Vector<?> unit) {
         AbstractVector.ensureDimension(unit, getDimension());
         return combination(1, unit, -dot(unit));
     }
@@ -941,7 +942,7 @@ public interface Vector<T extends Vector<T>> {
      * @param other target of the vector, of the same dimension
      * @return new vector
      */
-    default Vector<?> vectorTo(Vector<?> other) {
+    default T vectorTo(Vector<?> other) {
         AbstractVector.ensureDimension(other, getDimension());
         return combination(-1, other, 1);
     }
@@ -955,14 +956,14 @@ public interface Vector<T extends Vector<T>> {
      * @param ratio interpolation factor, zero for this vector and one for the other vector
      * @return new vector
      */
-    default Vector<?> lerp(Vector<?> other, double ratio) {
+    default T lerp(Vector<?> other, double ratio) {
         AbstractVector.ensureDimension(other, getDimension());
         final double[] values = new double[getDimension()];
         for (int i = 0; i < values.length; i++) {
             final double v = get(i);
             values[i] = (ratio == 1) ? other.get(i) : v + ratio * (other.get(i) - v);
         }
-        return Vectors.create(values, getDataType());
+        return (T) Vectors.create(values, getDataType());
     }
 
     /**
@@ -974,7 +975,7 @@ public interface Vector<T extends Vector<T>> {
      * @param ratio interpolation factor, zero for this vector and one for the other vector
      * @return new vector
      */
-    default Vector<?> lerpAccurate(Vector<?> other, double ratio) {
+    default T lerpAccurate(Vector<?> other, double ratio) {
         AbstractVector.ensureDimension(other, getDimension());
         return combinationAccurate(1 - ratio, other, ratio);
     }
@@ -1003,7 +1004,7 @@ public interface Vector<T extends Vector<T>> {
      * @throws IllegalArgumentException if both vectors point in opposite directions, in
      *         which case they define no unique arc to interpolate along
      */
-    default Vector<?> slerp(Vector<?> other, double ratio) {
+    default T slerp(Vector<?> other, double ratio) {
         return AbstractVector.slerp(this, other, ratio, (a, b) -> combination(a, other, b));
     }
 
@@ -1016,10 +1017,10 @@ public interface Vector<T extends Vector<T>> {
      * @return new vector
      * @throws TransformException
      */
-    default Vector<?> transform(MathTransform trs) throws TransformException {
+    default T transform(MathTransform trs) throws TransformException {
         final double[] values = new double[trs.getTargetDimensions()];
         trs.transform(toArrayDouble(), 0, values, 0, 1);
-        return Vectors.create(values, getDataType());
+        return (T) Vectors.create(values, getDataType());
     }
 
     /**
@@ -1030,8 +1031,8 @@ public interface Vector<T extends Vector<T>> {
      * @param trs not null
      * @return new vector
      */
-    default Vector<?> transform(Transform trs) {
-        return Vectors.create(trs.transform(toArrayDouble(), new double[trs.getOutputDimensions()]), getDataType());
+    default T transform(Transform trs) {
+        return (T) Vectors.create(trs.transform(toArrayDouble(), new double[trs.getOutputDimensions()]), getDataType());
     }
 
     /**
@@ -1045,6 +1046,16 @@ public interface Vector<T extends Vector<T>> {
      */
     default <R> R transform(Function<? super T, ? extends R> fn) {
         return fn.apply((T) this);
+    }
+
+    /**
+     * Create a direct position view of the given tuple, in the given reference system.
+     *
+     * @param crs reference system of the position, may be null
+     * @return direct position view of the tuple.
+     */
+    default DirectPosition asDirectPostion(CoordinateReferenceSystem crs) {
+        return new VectorAsDirectPosition(this, crs);
     }
 
 }

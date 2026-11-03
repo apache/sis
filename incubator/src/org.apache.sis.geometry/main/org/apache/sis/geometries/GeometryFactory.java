@@ -75,6 +75,7 @@ import org.apache.sis.geometries.internal.shared.DefaultEmpty;
 import org.apache.sis.geometries.internal.shared.DefaultGeodesic;
 import org.apache.sis.geometries.internal.shared.DefaultGeometryCollection;
 import org.apache.sis.geometries.internal.shared.DefaultLineString;
+import org.apache.sis.geometries.internal.shared.DefaultOffsetLineString;
 import org.apache.sis.geometries.internal.shared.DefaultLinearRing;
 import org.apache.sis.geometries.internal.shared.DefaultMultiPoint;
 import org.apache.sis.geometries.internal.shared.DefaultNurbCurve;
@@ -502,6 +503,9 @@ public final class GeometryFactory {
      *                       or {@code null} if the spatial dimension is 2.
      */
     public OffsetCurve createOffsetCurve(Curve baseCurve, Quantity<?> distance, Bearing refDirection) {
+        if (baseCurve instanceof LineString ls && refDirection == null) {
+            return new DefaultOffsetLineString(ls, distance);
+        }
         return new DefaultOffsetCurve(baseCurve, distance, refDirection);
     }
 

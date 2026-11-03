@@ -31,6 +31,7 @@ import org.locationtech.jts.geom.Polygon;
 import org.opengis.referencing.operation.TransformException;
 import org.apache.sis.util.Classes;
 import org.apache.sis.util.resources.Errors;
+import org.apache.sis.referencing.operation.transform.GeometryTransformException;
 
 
 /**
@@ -79,7 +80,7 @@ public abstract class GeometryTransform {
         if (geom instanceof Polygon)            return transform((Polygon)            geom);
         if (geom instanceof MultiPolygon)       return transform((MultiPolygon)       geom);
         if (geom instanceof GeometryCollection) return transform((GeometryCollection) geom);
-        throw new IllegalArgumentException(Errors.format(Errors.Keys.UnsupportedType_1, Classes.getClass(geom)));
+        throw new GeometryTransformException(Errors.format(Errors.Keys.UnsupportedType_1, Classes.getClass(geom)));
     }
 
     /**
@@ -204,6 +205,8 @@ public abstract class GeometryTransform {
 
     /**
      * Transforms the given sequence of coordinate tuples, producing a new sequence of tuples.
+     * Note that the {@link CoordinateSequence} interface has a {@code setOrdinate(…)} method,
+     * so it may be necessary to copy the coordinate values even for an identity transform.
      *
      * @param  sequence   sequence of coordinate tuples to transform.
      * @param  minPoints  minimum number of points to preserve.

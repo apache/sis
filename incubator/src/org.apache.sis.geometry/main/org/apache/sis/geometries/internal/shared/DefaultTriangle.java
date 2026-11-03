@@ -17,7 +17,9 @@
 package org.apache.sis.geometries.internal.shared;
 
 import java.util.Objects;
+import javax.measure.Quantity;
 import org.apache.sis.geometries.DataPoints;
+import org.apache.sis.geometries.Point;
 import org.apache.sis.geometries.curve.LinearRing;
 import org.apache.sis.geometries.surface.Triangle;
 
@@ -51,6 +53,30 @@ public non-sealed class DefaultTriangle extends DefaultPolygon implements Triang
     @Override
     public LinearRing getExteriorRing() {
         return (LinearRing) exterior;
+    }
+
+    /*
+     * The following methods use the triangle computations instead of the polygon ones inherited from DefaultPolygon.
+     */
+
+    @Override
+    public Quantity<?> getArea() {
+        return Triangle.super.getArea();
+    }
+
+    @Override
+    public Point getCentroid() {
+        return Triangle.super.getCentroid();
+    }
+
+    @Override
+    public Point getPointOnSurface() {
+        return Triangle.super.getPointOnSurface();
+    }
+
+    @Override
+    public Point getRepresentativePoint() {
+        return Triangle.super.getRepresentativePoint();
     }
 
     @Override

@@ -43,14 +43,13 @@ import org.locationtech.jts.simplify.TopologyPreservingSimplifier;
 import org.opengis.util.FactoryException;
 import org.opengis.geometry.DirectPosition;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
-import org.opengis.referencing.operation.CoordinateOperation;
 import org.opengis.referencing.operation.TransformException;
 import org.opengis.referencing.operation.MathTransform;
 import org.apache.sis.referencing.CRS;
-import org.apache.sis.referencing.operation.transform.TransformFactoryException;
 import org.apache.sis.geometry.DirectPosition2D;
 import org.apache.sis.geometry.GeneralDirectPosition;
 import org.apache.sis.geometry.GeneralEnvelope;
+import org.apache.sis.geometry.wrapper.Dimensions;
 import org.apache.sis.geometry.wrapper.Geometries;
 import org.apache.sis.geometry.wrapper.GeometryType;
 import org.apache.sis.geometry.wrapper.GeometryWrapper;
@@ -143,17 +142,16 @@ final class Wrapper extends GeometryWrapper {
     }
 
     /**
-     * Returns the dimension of the coordinates that define this geometry.
+     * Returns an identification of which dimensions are for the coordinates of this geometry.
+     *
+     * @return the coordinate dimensions (never {@code null}).
      */
     @Override
-    public int getCoordinateDimension() {
-        int dimension = CRS.getDimensionOrZero(crs);
-        if (dimension == 0) {
-            final var walker = new GeometryWalker();
-            walker.scan(geometry);
-            dimension = walker.dimension();
-        }
-        return dimension;
+    public Dimensions getCoordinateDimensions() {
+        // Should be reasonably quick when the range of Z and M values is not requested.
+        final var walker = new GeometryWalker();
+        walker.scan(geometry);
+        return walker.dimensions();
     }
 
     /**
@@ -169,11 +167,11 @@ final class Wrapper extends GeometryWrapper {
         if (crs != null) {
             env = new GeneralEnvelope(crs);
             if (env.getDimension() >= Factory.TRIDIMENSIONAL) {
-                walker.wantZM();
+                walker.wantRangeOfZM();
             }
             walker.scan(geometry);
         } else {
-            walker.wantZM();
+            walker.wantRangeOfZM();
             walker.scan(geometry);
             env = new GeneralEnvelope(walker.dimension());
         }
@@ -248,6 +246,23 @@ final class Wrapper extends GeometryWrapper {
             coordinates[i++] = p.y;
         }
         return coordinates;
+    }
+
+    /**
+     * Returns whether the coordinates in the two first dimensions are finite.
+     * The <abbr>Z</abbr> and <abbr>M</abbr> coordinates are ignored.
+     * For performance reasons, this method checks only the envelope.
+     *
+     * @return whether the two-dimensional coordinates are non-NaN and finite.
+     */
+    @Override
+    public boolean isFinite2D() {
+        final Envelope bounds = geometry.getEnvelopeInternal();
+        return !bounds.isNull()
+                && Double.isFinite(bounds.getMinX())
+                && Double.isFinite(bounds.getMinY())
+                && Double.isFinite(bounds.getMaxX())
+                && Double.isFinite(bounds.getMaxY());
     }
 
     /**
@@ -357,7 +372,7 @@ add:    for (Geometry next = geometry;;) {
     }
 
     /**
-     * Applies a SQLMM operation on this geometry.
+     * Applies a <abbr>SQLMM</abbr> operation on this geometry.
      *
      * @param  operation  the SQLMM operation to apply.
      * @param  other      the other geometry, or {@code null} if the operation requires only one geometry.
@@ -702,54 +717,25 @@ add:    for (Geometry next = geometry;;) {
     }
 
     /**
-     * Transforms this geometry using the given coordinate operation.
-     * If the operation is {@code null}, then the geometry is returned unchanged.
-     * If the geometry uses a different CRS than the source CRS of the given operation
-     * and {@code validate} is {@code true},
-     * then a new operation to the target CRS will be automatically computed.
-     *
-     * @param  operation  the coordinate operation to apply, or {@code null}.
-     * @param  validate   whether to validate the operation source CRS.
-     * @throws FactoryException if transformation to the target CRS cannot be found.
-     * @throws TransformException if the geometry cannot be transformed.
-     */
-    @Override
-    public GeometryWrapper transform(final CoordinateOperation operation, final boolean validate)
-            throws FactoryException, TransformException
-    {
-        return rewrap(JTS.transform(geometry, operation, validate));
-    }
-
-    /**
-     * Transforms this geometry to the specified Coordinate Reference System (CRS).
-     * If the given CRS is null or is the same CRS as current one, the geometry is returned unchanged.
-     * If the geometry has no Coordinate Reference System, then the geometry is returned unchanged.
-     *
-     * @param  targetCRS  the target coordinate reference system, or {@code null}.
-     * @return the transformed geometry (may be the same geometry instance), or {@code null}.
-     * @throws TransformException if this geometry cannot be transformed.
-     */
-    @Override
-    public GeometryWrapper transform(final CoordinateReferenceSystem targetCRS) throws TransformException {
-        try {
-            return rewrap(JTS.transform(geometry, targetCRS));
-        } catch (FactoryException e) {
-            throw new TransformFactoryException(e);
-        }
-    }
-
-    /**
      * Transforms this geometry using the given transform.
-     * If the transform is {@code null}, then the geometry is returned unchanged.
-     * Otherwise, a new geometry is returned without CRS.
+     * If the transform is {@code null} or identity, this wrapper is returned unchanged (same <abbr>CRS</abbr>).
+     * Otherwise, a new geometry is returned without <abbr>CRS</abbr>.
      *
      * @param  transform  the math transform to apply, or {@code null}.
-     * @return the transformed geometry (may be the same geometry instance, but never {@code null}).
+     * @param  targetCRS  <abbr>CRS</abbr> to set on the returned geometry, or {@code null} if none.
+     * @return the transformed geometry (may be the same geometry wrapper instance, but never {@code null}).
+     * @throws FactoryException if a problem happened while mapping a <abbr>CRS</abbr> from/to a <abbr>SRID</abbr>.
      * @throws TransformException if the geometry cannot be transformed.
      */
     @Override
-    public GeometryWrapper transform(final MathTransform transform) throws FactoryException, TransformException {
-        return rewrap(JTS.transform(geometry, transform));
+    protected GeometryWrapper transform(final MathTransform transform, final CoordinateReferenceSystem targetCRS)
+            throws FactoryException, TransformException
+    {
+        final Wrapper result = rewrap(JTS.transform(geometry, transform));
+        if (targetCRS != null && result != this) {
+            result.setCoordinateReferenceSystem(targetCRS);
+        }
+        return result;
     }
 
     /**

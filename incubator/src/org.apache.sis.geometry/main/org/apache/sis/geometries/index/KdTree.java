@@ -22,7 +22,6 @@ import java.util.Arrays;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map.Entry;
-import org.apache.sis.maths.DataType;
 import org.apache.sis.maths.Vector;
 
 
@@ -64,7 +63,7 @@ public final class KdTree<T> {
      * @param value to insert in the tree, not null
      */
     public void insert(Vector position, T value) {
-        insertInternal(new TuplePoint2D<>(position), value);
+        insertInternal(position, value);
     }
 
     /**
@@ -73,20 +72,7 @@ public final class KdTree<T> {
      * @param value to insert in the tree, not null
      */
     public void insert(double x, double y, T value) {
-        insertInternal(new TuplePoint2D<>(x, y), value);
-    }
-
-    /**
-     * Insert the given tuple in the tree, but do not copy it's values.
-     * This allows to reduce memory usage but will reduce performances.
-     * The tuple values MUST remain unchanged while the tree is being used
-     * otherwise the tree will be broken.
-     *
-     * @param position only X/Y ordinates will be used by the tree, not null
-     * @param value to insert in the tree, not null
-     */
-    public void insertNoCopy(Vector position, T value) {
-        insertInternal(position, value);
+        insertInternal(Vector.of(x, y), value);
     }
 
     private void insertInternal(Vector p, T payload) {
@@ -202,7 +188,7 @@ public final class KdTree<T> {
         if (root == null) {
             return null;
         }
-        return nearest((Vector)new TuplePoint2D(p.x, p.y));
+        return nearest(Vector.of(p.x, p.y));
     }
 
     /**
@@ -230,7 +216,7 @@ public final class KdTree<T> {
         if (root == null) {
             return null;
         }
-        return nearestDistinct((Vector)new TuplePoint2D(p.x, p.y));
+        return nearestDistinct(Vector.of(p.x, p.y));
     }
 
     /**
@@ -334,52 +320,52 @@ public final class KdTree<T> {
         }
     }
 
-    private static class TuplePoint2D<T> extends Point2D.Double implements Vector{
-
-        public TuplePoint2D(Vector position) {
-            this.x = position.get(0);
-            this.y = position.get(1);
-        }
-
-        public TuplePoint2D(double x, double y) {
-            super(x, y);
-        }
-
-        @Override
-        public double getX() {
-            return x;
-        }
-
-        @Override
-        public double getY() {
-            return y;
-        }
-
-        @Override
-        public String toString() {
-            return x + "/" + y;
-        }
-
-        @Override
-        public int getDimension() {
-            return 2;
-        }
-
-        @Override
-        public DataType getDataType() {
-            return DataType.DOUBLE;
-        }
-
-        @Override
-        public double get(int indice) throws IndexOutOfBoundsException {
-            return indice == 0 ? x : y;
-        }
-
-        public void set(int indice, double value) throws IndexOutOfBoundsException {
-            if (indice == 0) x = value;
-            else y = value;
-        }
-    }
+//    private static class TuplePoint2D<T> extends Point2D.Double{
+//
+//        public TuplePoint2D(Vector position) {
+//            this.x = position.get(0);
+//            this.y = position.get(1);
+//        }
+//
+//        public TuplePoint2D(double x, double y) {
+//            super(x, y);
+//        }
+//
+//        @Override
+//        public double getX() {
+//            return x;
+//        }
+//
+//        @Override
+//        public double getY() {
+//            return y;
+//        }
+//
+//        @Override
+//        public String toString() {
+//            return x + "/" + y;
+//        }
+//
+//        @Override
+//        public int getDimension() {
+//            return 2;
+//        }
+//
+//        @Override
+//        public DataType getDataType() {
+//            return DataType.DOUBLE;
+//        }
+//
+//        @Override
+//        public double get(int indice) throws IndexOutOfBoundsException {
+//            return indice == 0 ? x : y;
+//        }
+//
+//        public void set(int indice, double value) throws IndexOutOfBoundsException {
+//            if (indice == 0) x = value;
+//            else y = value;
+//        }
+//    }
 
     private static class Node<T> implements Entry<Vector, T>{
         // the point

@@ -21,28 +21,19 @@ package org.apache.sis.maths;
  *
  * @author Johann Sorel (Geomatys)
  */
-public abstract class VectorND<T extends VectorND<T>> extends AbstractVector<T> {
+public abstract sealed class VectorND<T extends VectorND<T>> extends AbstractVector<T>
+        permits VectorND.Byte,
+                VectorND.UByte,
+                VectorND.Short,
+                VectorND.UShort,
+                VectorND.Int,
+                VectorND.UInt,
+                VectorND.Long,
+                VectorND.Float,
+                VectorND.Double{
 
     public VectorND() {
     }
-
-    @Override
-    public abstract T with(int indice, double value) throws IndexOutOfBoundsException;
-
-    @Override
-    public abstract T add(Vector<?> other);
-
-    @Override
-    public abstract T subtract(Vector<?> other);
-
-    @Override
-    public abstract T multiply(Vector<?> other);
-
-    @Override
-    public abstract T divide(Vector<?> other);
-
-    @Override
-    public abstract T scale(double scale);
 
     /**
      * Create a new vector, linear combination of this vector and the other vector : a*this + b*other.
@@ -82,9 +73,6 @@ public abstract class VectorND<T extends VectorND<T>> extends AbstractVector<T> 
     }
 
     @Override
-    public abstract T lerp(Vector<?> other, double ratio);
-
-    @Override
     public T lerpAccurate(Vector<?> other, double ratio) {
         ensureDimension(other, getDimension());
         return combineAccurate(1 - ratio, other, ratio);
@@ -101,7 +89,7 @@ public abstract class VectorND<T extends VectorND<T>> extends AbstractVector<T> 
         return combine(-1, other, 1);
     }
 
-    public static class Byte extends VectorND<Byte> {
+    public static final class Byte extends VectorND<Byte> {
 
         private final byte[] values;
 
@@ -266,14 +254,9 @@ public abstract class VectorND<T extends VectorND<T>> extends AbstractVector<T> 
             return new Byte(array, true);
         }
 
-        @Override
-        public Byte copy() {
-            return this;
-        }
-
     }
 
-    public static class UByte extends VectorND<UByte> {
+    public static final class UByte extends VectorND<UByte> {
 
         private final byte[] values;
 
@@ -438,14 +421,9 @@ public abstract class VectorND<T extends VectorND<T>> extends AbstractVector<T> 
             return new UByte(array, true);
         }
 
-        @Override
-        public UByte copy() {
-            return this;
-        }
-
     }
 
-    public static class Short extends VectorND<Short> {
+    public static final class Short extends VectorND<Short> {
 
         private final short[] values;
 
@@ -610,14 +588,9 @@ public abstract class VectorND<T extends VectorND<T>> extends AbstractVector<T> 
             return new Short(array, true);
         }
 
-        @Override
-        public Short copy() {
-            return this;
-        }
-
     }
 
-    public static class UShort extends VectorND<UShort> {
+    public static final class UShort extends VectorND<UShort> {
 
         private final short[] values;
 
@@ -782,14 +755,9 @@ public abstract class VectorND<T extends VectorND<T>> extends AbstractVector<T> 
             return new UShort(array, true);
         }
 
-        @Override
-        public UShort copy() {
-            return this;
-        }
-
     }
 
-    public static class Int extends VectorND<Int> {
+    public static final class Int extends VectorND<Int> {
 
         private final int[] values;
 
@@ -954,14 +922,9 @@ public abstract class VectorND<T extends VectorND<T>> extends AbstractVector<T> 
             return new Int(array, true);
         }
 
-        @Override
-        public Int copy() {
-            return this;
-        }
-
     }
 
-    public static class UInt extends VectorND<UInt> {
+    public static final class UInt extends VectorND<UInt> {
 
         private final int[] values;
 
@@ -1126,14 +1089,9 @@ public abstract class VectorND<T extends VectorND<T>> extends AbstractVector<T> 
             return new UInt(array, true);
         }
 
-        @Override
-        public UInt copy() {
-            return this;
-        }
-
     }
 
-    public static class Long extends VectorND<Long> {
+    public static final class Long extends VectorND<Long> {
 
         private final long[] values;
 
@@ -1298,14 +1256,9 @@ public abstract class VectorND<T extends VectorND<T>> extends AbstractVector<T> 
             return new Long(array, true);
         }
 
-        @Override
-        public Long copy() {
-            return this;
-        }
-
     }
 
-    public static class Float extends VectorND<Float> {
+    public static final class Float extends VectorND<Float> {
 
         private final float[] values;
 
@@ -1510,14 +1463,9 @@ public abstract class VectorND<T extends VectorND<T>> extends AbstractVector<T> 
             return new Float(array, true);
         }
 
-        @Override
-        public Float copy() {
-            return this;
-        }
-
     }
 
-    public static class Double extends VectorND<Double> {
+    public static final class Double extends VectorND<Double> {
 
         private final double[] values;
 
@@ -1726,11 +1674,6 @@ public abstract class VectorND<T extends VectorND<T>> extends AbstractVector<T> 
                 array[i] = (ratio == 1) ? other.get(i) : v + ratio * (other.get(i) - v);
             }
             return new Double(array, true);
-        }
-
-        @Override
-        public Double copy() {
-            return this;
         }
 
     }

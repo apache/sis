@@ -104,7 +104,7 @@ public class NDRangeTest {
 
     @Test
     public void testInvalid() {
-        assertThrows(MismatchedDimensionException.class, () -> new NDRange(vector(1, 2, 3), Vectors.createDouble(2)));
+        assertThrows(MismatchedDimensionException.class, () -> new NDRange(vector(1, 2, 3), Vector.of(0.0,0.0)));
         assertThrows(IllegalArgumentException.class, () -> new NDRange(vector(5, 2, 3), vector(4, 6, 3)));
         assertThrows(MismatchedDimensionException.class, () -> new NDRange(CommonCRS.WGS84.geographic(),
                 vector(1, 2, 3), vector(4, 6, 3)));
@@ -132,9 +132,9 @@ public class NDRangeTest {
         range.add(vector(Double.NaN, 8, 5));
         assertArrayEquals(new double[] {4, 8, 10}, range.getUpper().toArrayDouble());
         // The same with a direct position.
-        range.add(Vectors.asDirectPostion(vector(-1, 2, 3)));
+        range.add(vector(-1, 2, 3).asDirectPostion(null));
         assertEquals(-1, range.getMinimum(0));
-        assertThrows(MismatchedDimensionException.class, () -> range.add(Vectors.createDouble(2)));
+        assertThrows(MismatchedDimensionException.class, () -> range.add(Vector.of(0.0, 0.0)));
     }
 
     /**
@@ -177,8 +177,8 @@ public class NDRangeTest {
         assertFalse(range.contains(vector(0, 3, 3)));
         assertFalse(range.contains(vector(2, 3, 4)));
         assertFalse(range.contains(vector(Double.NaN, 3, 3)));
-        assertTrue (range.contains(Vectors.asDirectPostion(vector(4, 2, 3))));
-        assertThrows(MismatchedDimensionException.class, () -> range.contains(Vectors.createDouble(2)));
+        assertTrue (range.contains(vector(4, 2, 3).asDirectPostion(null)));
+        assertThrows(MismatchedDimensionException.class, () -> range.contains(Vector.of(0.0, 0.0)));
     }
 
     /**

@@ -643,7 +643,7 @@ public final class DiscreteGlobalGridCoverageProcessor {
                 //remove any extra slice information
                 coverage = ad.getSource();
             }
-
+            
             final DiscreteGlobalGridReferenceSystem dggrs = dggGrid.getReferenceSystem();
             final DiscreteGlobalGridHierarchy dggh = dggrs.getGridSystem().getHierarchy();
             final List<SampleDimension> sampleDimensions = coverage.getSampleDimensions();

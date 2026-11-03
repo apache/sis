@@ -375,16 +375,14 @@ public class TransverseMercator extends NormalizedProjection {
      * Returns the domain of input coordinates.
      * The limits defined by this method are arbitrary and may change in any future implementation.
      * Current implementation sets a limit at 40° of longitude on each side of the central meridian
-     * (this limit is mentioned in EPSG guidance notes)
-     * and a limit at 84° of latitude (same as {@link Mercator} projection).
+     * (this limit is given in <abbr>EPSG</abbr> guidance notes) and a range of latitude values which
+     * exclude polar regions by default.
      */
     @Override
     public Optional<Envelope> getDomain(final DomainDefinition criteria) {
-        final Envelope2D domain = new Envelope2D();
+        final Envelope2D domain = domain(criteria.canApproachAsymptotes());
         domain.x = -PI/2 * (40d/90);
-        domain.y = -POLAR_AREA_LIMIT;
-        domain.width  = -2 * domain.x;
-        domain.height = -2 * domain.y;
+        domain.width = -2 * domain.x;
         return Optional.of(domain);
     }
 

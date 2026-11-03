@@ -30,10 +30,8 @@ import org.opengis.filter.DistanceOperatorName;
 import org.opengis.filter.SpatialOperatorName;
 import org.opengis.geometry.DirectPosition;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
-import org.opengis.referencing.operation.CoordinateOperation;
 import org.opengis.referencing.operation.MathTransform;
 import org.opengis.referencing.operation.TransformException;
-import org.opengis.util.FactoryException;
 import org.apache.sis.filter.sqlmm.SQLMM;
 import org.apache.sis.geometries.Curve;
 import org.apache.sis.geometries.DE9IM;
@@ -50,19 +48,16 @@ import org.apache.sis.geometries.operation.GeometryProcessor;
 import org.apache.sis.geometries.surface.Polygon;
 import org.apache.sis.geometry.GeneralDirectPosition;
 import org.apache.sis.geometry.GeneralEnvelope;
+import org.apache.sis.geometry.wrapper.Dimensions;
 import org.apache.sis.geometry.wrapper.Geometries;
 import org.apache.sis.geometry.wrapper.GeometryType;
 import org.apache.sis.geometry.wrapper.GeometryWrapper;
 import org.apache.sis.maths.Array;
 import org.apache.sis.maths.NDArrays;
 import org.apache.sis.maths.SampleSystem;
-import org.apache.sis.maths.Vectors;
 import org.apache.sis.maths.Vector;
 import org.apache.sis.measure.Quantities;
 import org.apache.sis.measure.Units;
-import org.apache.sis.referencing.CRS;
-import org.apache.sis.referencing.operation.transform.MathTransforms;
-import org.apache.sis.referencing.operation.transform.TransformFactoryException;
 import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.Debug;
 import org.apache.sis.util.UnconvertibleObjectException;
@@ -181,21 +176,13 @@ public final class Wrapper extends GeometryWrapper {
     }
 
     /**
-     * Returns the dimension of the coordinates that define this geometry.
+     * Returns an identification of which dimensions are for the coordinates of this geometry.
+     *
+     * @todo Implement a more reliable mechanism.
      */
     @Override
-    public int getCoordinateDimension() {
-        return getCoordinatesDimension(geometry);
-    }
-
-    /**
-     * Gets the number of dimensions of geometry vertex (sequence of coordinate tuples), which can be 2 or 3.
-     *
-     * @param  geometry  the geometry for which to get <em>vertex</em> (not topological) dimension.
-     * @return vertex dimension of the given geometry.
-     */
-    private static int getCoordinatesDimension(final Geometry geometry) {
-        return geometry.getCoordinateReferenceSystem().getCoordinateSystem().getDimension();
+    public Dimensions getCoordinateDimensions() {
+        return Dimensions.forCRS(geometry.getCoordinateReferenceSystem());
     }
 
     /**
@@ -216,7 +203,7 @@ public final class Wrapper extends GeometryWrapper {
             // The centroid of an empty geometry is the empty geometry, which is no position.
             return null;
         }
-        return new GeneralDirectPosition(Vectors.asDirectPostion(centroid.getPosition(), centroid.getCoordinateReferenceSystem()));
+        return new GeneralDirectPosition(centroid.getPosition().asDirectPostion(centroid.getCoordinateReferenceSystem()));
     }
 
     /**
@@ -636,65 +623,22 @@ add:    for (Geometry next = geometry;;) {
     }
 
     /**
-     * Transforms this geometry using the given coordinate operation.
-     * If the operation is {@code null}, then the geometry is returned unchanged.
-     * If the geometry uses a different CRS than the source CRS of the given operation
-     * and {@code validate} is {@code true},
-     * then a new operation to the target CRS will be automatically computed.
-     *
-     * @param  operation  the coordinate operation to apply, or {@code null}.
-     * @param  validate   whether to validate the operation source CRS.
-     * @throws FactoryException if transformation to the target CRS cannot be found.
-     * @throws TransformException if the geometry cannot be transformed.
-     */
-    @Override
-    public GeometryWrapper transform(final CoordinateOperation operation, final boolean validate)
-            throws FactoryException, TransformException {
-        if (operation == null) {
-            return this;
-        }
-        MathTransform mt = operation.getMathTransform();
-        if (validate && crs != null) {
-            final CoordinateOperation step = CRS.findOperation(crs, operation.getSourceCRS(), null);
-            mt = MathTransforms.concatenate(step.getMathTransform(), mt);
-        }
-        return new Wrapper(new GeometryProcessor().transform(geometry, operation.getTargetCRS(), mt));
-    }
-
-    /**
-     * Transforms this geometry to the specified Coordinate Reference System (CRS).
-     * If the given CRS is null or is the same CRS as current one, the geometry is returned unchanged.
-     *
-     * @param  targetCRS  the target coordinate reference system, or {@code null}.
-     * @return the transformed geometry (may be the same geometry instance), or {@code null}.
-     * @throws TransformException if this geometry cannot be transformed.
-     */
-    @Override
-    public GeometryWrapper transform(final CoordinateReferenceSystem targetCRS) throws TransformException {
-        if (targetCRS == null || targetCRS == crs || crs == null) {
-            return this;
-        }
-        try {
-            return transform(CRS.findOperation(crs, targetCRS, null), false);
-        } catch (FactoryException e) {
-            throw new TransformFactoryException(e);
-        }
-    }
-
-    /**
      * Transforms this geometry using the given transform.
      * If the transform is {@code null}, then the geometry is returned unchanged.
      *
-     * @param  transform  the math transform to apply, or {@code null}.
+     * @param  transform  the math transform to apply.
+     * @param  targetCRS  <abbr>CRS</abbr> to set on the returned geometry, or {@code null} if none.
      * @return the transformed geometry (may be the same geometry instance, but never {@code null}).
      * @throws TransformException if the geometry cannot be transformed.
      */
     @Override
-    public GeometryWrapper transform(final MathTransform transform) throws FactoryException, TransformException {
-        if (transform == null || transform.isIdentity()) {
+    protected GeometryWrapper transform(final MathTransform transform, final CoordinateReferenceSystem targetCRS)
+            throws TransformException
+    {
+        if (transform.isIdentity()) {
             return this;
         }
-        return new Wrapper(this, new GeometryProcessor().transform(geometry, null, transform));
+        return new Wrapper(this, new GeometryProcessor().transform(geometry, targetCRS, transform));
     }
 
     /**

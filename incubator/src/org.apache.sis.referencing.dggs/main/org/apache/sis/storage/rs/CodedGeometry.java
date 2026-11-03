@@ -329,6 +329,23 @@ public class CodedGeometry {
         return Optional.empty();
     }
 
+    /**
+     * Returns an object that can be used for creating a new coded geometry derived from this geometry.
+     * {@code derive()} does not change the state of this {@code CodedGeometry} but instead creates
+     * new instances as needed. Example:
+     *
+     * {@snippet lang="java" :
+     *     CodedGeometry subgrid = geometry.derive().subgrid(areaOfInterest).build();
+     *     }
+     *
+     * @return an object for deriving a coded geometry from {@code this}.
+     *
+     * @see GridGeometry#derive()
+     */
+    public CodedDerivation derive() {
+        return new CodedDerivation(this);
+    }
+
     public Optional<GridGeometry> isRegularGrid() {
         if (gridToRS instanceof CodeTransforms.Grid g) {
             return Optional.of(g.getGrid());

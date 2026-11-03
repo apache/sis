@@ -22,6 +22,8 @@ import org.apache.sis.geometries.Geometry;
 import org.apache.sis.geometries.GeometryFactory;
 import org.apache.sis.geometries.Point;
 import org.apache.sis.geometries.curve.LineString;
+import org.apache.sis.geometries.internal.shared.ArrayDataPoints;
+import org.apache.sis.geometries.internal.shared.Vertex;
 import org.apache.sis.geometries.surface.Triangle;
 import org.apache.sis.maths.Array;
 import org.apache.sis.maths.Cursor;
@@ -105,16 +107,16 @@ public abstract class MeshPrimitiveVisitor {
             case POINTS:
                 for (i = 0; i < cnt; i++) {
                     cursor.moveTo(i + offset + 0);
-                    idx0 = (int) cursor.samples().get(0);
+                    idx0 = (int) cursor.getSamples().get(0);
                     visit(readPoint(idx0));
                     visited.add(idx0);
                 }   break;
             case LINES:
                 for (i = 0; i < cnt; i+=2) {
                     cursor.moveTo(i + offset + 0);
-                    idx0 = (int) cursor.samples().get(0);
+                    idx0 = (int) cursor.getSamples().get(0);
                     cursor.moveTo(i + offset + 1);
-                    idx1 = (int) cursor.samples().get(0);
+                    idx1 = (int) cursor.getSamples().get(0);
                     visit(readLine(idx0, idx1));
                     visited.add(idx0);
                     visited.add(idx1);
@@ -122,9 +124,9 @@ public abstract class MeshPrimitiveVisitor {
             case LINE_STRIP:
                 for (i = 1; i < cnt; i++) {
                     cursor.moveTo(i-1);
-                    idx0 = (int) cursor.samples().get(0);
+                    idx0 = (int) cursor.getSamples().get(0);
                     cursor.moveTo(i);
-                    idx1 = (int) cursor.samples().get(0);
+                    idx1 = (int) cursor.getSamples().get(0);
                     visit(readLine(idx0, idx1));
                     visited.add(idx0);
                     visited.add(idx1);
@@ -132,13 +134,13 @@ public abstract class MeshPrimitiveVisitor {
             case TRIANGLES:
                 for (n = offset + cnt; offset < n;) {
                     cursor.moveTo(offset);
-                    idx0 = (int) cursor.samples().get(0);
+                    idx0 = (int) cursor.getSamples().get(0);
                     offset++;
                     cursor.moveTo(offset);
-                    idx1 = (int) cursor.samples().get(0);
+                    idx1 = (int) cursor.getSamples().get(0);
                     offset++;
                     cursor.moveTo(offset);
-                    idx2 = (int) cursor.samples().get(0);
+                    idx2 = (int) cursor.getSamples().get(0);
                     offset++;
                     visit(readTriangle(idx0, idx1, idx2));
                     visited.add(idx0);
@@ -147,12 +149,12 @@ public abstract class MeshPrimitiveVisitor {
                 }   break;
             case TRIANGLE_FAN:
                 cursor.moveTo(offset+0);
-                idx0 = (int) cursor.samples().get(0);
+                idx0 = (int) cursor.getSamples().get(0);
                 for (i = 1, n = cnt-1; i < n; i++) {
                     cursor.moveTo(offset + i);
-                    idx1 = (int) cursor.samples().get(0);
+                    idx1 = (int) cursor.getSamples().get(0);
                     cursor.moveTo(offset + i + 1);
-                    idx2 = (int) cursor.samples().get(0);
+                    idx2 = (int) cursor.getSamples().get(0);
                     visit(readTriangle(idx0, idx1, idx2));
                     visited.add(idx0);
                     visited.add(idx1);
@@ -160,12 +162,12 @@ public abstract class MeshPrimitiveVisitor {
                 }   break;
             case TRIANGLE_STRIP:
                 cursor.moveTo(0);
-                idx0 = (int) cursor.samples().get(0);
+                idx0 = (int) cursor.getSamples().get(0);
                 cursor.moveTo(1);
-                idx1 = (int) cursor.samples().get(0);
+                idx1 = (int) cursor.getSamples().get(0);
                 for (i = 2, n = cnt; i < n; i++) {
                     cursor.moveTo(i);
-                    idx2 = (int) cursor.samples().get(0);
+                    idx2 = (int) cursor.getSamples().get(0);
                     //in triangle strip we must take care to reverse index
                     //at every new point, otherwise we would have reverse winding
                     //for each triangle
@@ -189,7 +191,7 @@ public abstract class MeshPrimitiveVisitor {
     }
 
     private Point readPoint(int idx0) {
-        return new MeshPrimitive.Vertex(primitive, idx0);
+        return primitive.getDataPoints().getPoint(idx0);
     }
 
     private Triangle readTriangle(int idx0, int idx1, int idx2) {
@@ -205,9 +207,9 @@ public abstract class MeshPrimitiveVisitor {
      */
     protected void visit(Triangle candidate) {
         final DataPoints points = candidate.getExteriorRing().getDataPoints();
-        visit((MeshPrimitive.Vertex) points.getPoint(0));
-        visit((MeshPrimitive.Vertex) points.getPoint(1));
-        visit((MeshPrimitive.Vertex) points.getPoint(2));
+        visit((Vertex) points.getPoint(0));
+        visit((Vertex) points.getPoint(1));
+        visit((Vertex) points.getPoint(2));
     }
 
     /**
@@ -215,24 +217,24 @@ public abstract class MeshPrimitiveVisitor {
      */
     protected void visit(LineString candidate) {
         final DataPoints points = candidate.getDataPoints();
-        visit((MeshPrimitive.Vertex) points.getPoint(0));
-        visit((MeshPrimitive.Vertex) points.getPoint(1));
+        visit((Vertex) points.getPoint(0));
+        visit((Vertex) points.getPoint(1));
     }
 
     /**
      * Override this method to process a point.
      */
     protected void visit(Point candidate) {
-        visit((MeshPrimitive.Vertex) candidate);
+        visit((Vertex) candidate);
     }
 
     /**
      * Called when visiting a mesh vertex.
      * @param vertex visited vertex.
      */
-    protected abstract void visit(MeshPrimitive.Vertex vertex);
+    protected abstract void visit(Vertex vertex);
 
-    public boolean isVisited(MeshPrimitive.Vertex vertex) {
+    public boolean isVisited(Vertex vertex) {
         return visited.contains(vertex.getIndex());
     }
 

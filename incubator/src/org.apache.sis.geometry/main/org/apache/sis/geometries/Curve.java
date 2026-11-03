@@ -35,6 +35,7 @@ import org.apache.sis.geometries.curve.ProductCurve;
 import org.apache.sis.geometries.curve.Ray;
 import org.apache.sis.geometries.curve.Rhumb;
 import org.apache.sis.geometries.curve.Spiral;
+import org.apache.sis.geometries.internal.shared.Centroids;
 import org.apache.sis.geometries.internal.shared.DefaultReversedCurve;
 import org.apache.sis.maths.Array;
 import org.apache.sis.maths.Vector;
@@ -175,6 +176,21 @@ public sealed interface Curve extends Orientable
             return null;
         }
         return subCurve(Quantities.create(50, Units.PERCENT));
+    }
+
+    /**
+     * Returns the centroid of this curve, computed on a fine linear approximation of this curve.
+     *
+     * @return the centroid of this curve, or {@code null} if this curve is empty.
+     *
+     * @see ISO 19107:2019 - 6.4.4.8
+     */
+    @Override
+    default Point getCentroid() {
+        if (isEmpty()) {
+            return null;
+        }
+        return Centroids.polyline(Centroids.linearize(this).getDataPoints());
     }
 
     /**
@@ -711,8 +727,8 @@ public sealed interface Curve extends Orientable
      * @see derived from ISO 19107:2019 - 6.4.18.22
      */
     default Point subCurve(Quantity<?> dist) {
-        //TODO
-        throw new UnsupportedOperationException();
+        //measured on a fine linear approximation, curves may override with an exact computation
+        return Centroids.linearize(this).subCurve(dist);
     }
 
     /**

@@ -26,6 +26,7 @@ import org.apache.sis.geometries.CurveInterpolation;
 import org.apache.sis.geometries.DataPoints;
 import org.apache.sis.geometries.GeometryCollection;
 import org.apache.sis.geometries.GeometryType;
+import org.apache.sis.geometries.Point;
 import org.apache.sis.geometries.cs.Projection;
 import org.apache.sis.geometries.internal.shared.DefaultProductCurve;
 import org.apache.sis.measure.Range;
@@ -155,6 +156,23 @@ public sealed interface ProductCurve extends Curve, GeometryCollection<Curve>
     @Override
     default boolean isClosed() {
         return Curve.super.isClosed();
+    }
+
+    /**
+     * Returns the centroid of this curve in the complete reference system,
+     * not the mean of its projections.
+     */
+    @Override
+    default Point getCentroid() {
+        return Curve.super.getCentroid();
+    }
+
+    /**
+     * Returns the point at the middle of this curve in the complete reference system.
+     */
+    @Override
+    default Point getRepresentativePoint() {
+        return Curve.super.getRepresentativePoint();
     }
 
     /**

@@ -16,13 +16,17 @@
  */
 package org.apache.sis.geometries.internal.shared;
 
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.List;
+import java.util.Objects;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import org.apache.sis.geometries.Geometry;
 import org.apache.sis.geometries.GeometryCollection;
 import org.apache.sis.geometries.GeometryFactory;
 import org.apache.sis.geometries.GeometryType;
-import org.apache.sis.geometries.Point;
 import org.apache.sis.geometries.Geometries;
+import org.apache.sis.referencing.CRS;
 import org.apache.sis.util.ArgumentChecks;
 
 
@@ -33,7 +37,7 @@ import org.apache.sis.util.ArgumentChecks;
 public non-sealed class DefaultGeometryCollection<T extends Geometry> extends AbstractGeometry implements GeometryCollection<T> {
 
     private final GeometryType elementType;
-    private final T[] geometries;
+    protected final List<T> geometries = new ArrayList<>();
 
     /**
      * The coordinate reference system to report when this collection is empty.
@@ -52,7 +56,7 @@ public non-sealed class DefaultGeometryCollection<T extends Geometry> extends Ab
      */
     public DefaultGeometryCollection(GeometryType elementType, CoordinateReferenceSystem fallbackCRS, T[] geometries) {
         this.elementType = elementType;
-        this.geometries  = geometries;
+        if (geometries != null) this.geometries.addAll(List.of(geometries));
         this.fallbackCRS = (fallbackCRS != null) ? fallbackCRS : Geometries.getUndefinedCRS(2);
     }
 
@@ -63,7 +67,7 @@ public non-sealed class DefaultGeometryCollection<T extends Geometry> extends Ab
 
     @Override
     public CoordinateReferenceSystem getCoordinateReferenceSystem() {
-        return (geometries.length != 0) ? geometries[0].getCoordinateReferenceSystem() : fallbackCRS;
+        return (!geometries.isEmpty()) ? geometries.get(0).getCoordinateReferenceSystem() : fallbackCRS;
     }
 
     @Override
@@ -77,32 +81,12 @@ public non-sealed class DefaultGeometryCollection<T extends Geometry> extends Ab
 
     @Override
     public int getNumGeometries() {
-        return geometries.length;
+        return geometries.size();
     }
 
     @Override
     public T getGeometryN(int n) {
-        return geometries[n];
-    }
-
-    @Override
-    public Point getCentroid() {
-        if (isEmpty()) {
-            // The centroid of the empty set is undefined.
-            return null;
-        }
-        //TODO : fallback on JTS until implemented
-        return (Point) fromJTS(asJTS().getCentroid());
-    }
-
-    @Override
-    public Point getRepresentativePoint() {
-        if (isEmpty()) {
-            // The empty set has no interior position.
-            return null;
-        }
-        //TODO : fallback on JTS until implemented
-        return (Point) fromJTS(asJTS().getInteriorPoint());
+        return geometries.get(n);
     }
 
     @Override
@@ -127,4 +111,40 @@ public non-sealed class DefaultGeometryCollection<T extends Geometry> extends Ab
         return asJTS().isValid();
     }
 
+    /**
+     * Add primitives.
+     *
+     * @param other Primitives to merge in.
+     */
+    public void append(Collection<? extends Geometry> other) {
+        for (Geometry p : other) {
+            if (!CRS.equivalent(fallbackCRS, p.getCoordinateReferenceSystem())) {
+                throw new IllegalArgumentException("Primitives must have the same CRS as the MultiPrimitive.");
+            }
+        }
+        geometries.addAll((Collection) other);
+    }
+
+    @Override
+    public int hashCode() {
+        return 23 * Objects.hashCode(this.geometries);
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (this == obj) {
+            return true;
+        }
+        if (obj == null) {
+            return false;
+        }
+        if (getClass() != obj.getClass()) {
+            return false;
+        }
+        final DefaultGeometryCollection other = (DefaultGeometryCollection) obj;
+        if (!Objects.equals(this.geometries, other.geometries)) {
+            return false;
+        }
+        return Objects.equals(this.getCoordinateReferenceSystem(), other.getCoordinateReferenceSystem());
+    }
 }

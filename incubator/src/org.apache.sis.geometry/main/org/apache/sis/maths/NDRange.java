@@ -103,8 +103,8 @@ public final class NDRange implements Envelope {
                         + upper.get(i) + " in dimension " + i + '.');
             }
         }
-        this.lower = lower.copy();
-        this.upper = upper.copy();
+        this.lower = lower;
+        this.upper = upper;
     }
 
     /**
@@ -229,7 +229,7 @@ public final class NDRange implements Envelope {
      * @return the lower bound in each dimension.
      */
     public Vector<?> getLower() {
-        return lower.copy();
+        return lower;
     }
 
     /**
@@ -238,7 +238,7 @@ public final class NDRange implements Envelope {
      * @return the upper bound in each dimension.
      */
     public Vector<?> getUpper() {
-        return upper.copy();
+        return upper;
     }
 
     /**
@@ -246,7 +246,7 @@ public final class NDRange implements Envelope {
      */
     @Override
     public DirectPosition getLowerCorner() {
-        return Vectors.asDirectPostion(lower.copy(), getCoordinateReferenceSystem());
+        return lower.asDirectPostion(getCoordinateReferenceSystem());
     }
 
     /**
@@ -254,7 +254,7 @@ public final class NDRange implements Envelope {
      */
     @Override
     public DirectPosition getUpperCorner() {
-        return Vectors.asDirectPostion(upper.copy(), getCoordinateReferenceSystem());
+        return upper.asDirectPostion(getCoordinateReferenceSystem());
     }
 
     @Override

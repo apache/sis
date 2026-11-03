@@ -21,7 +21,16 @@ package org.apache.sis.maths;
  *
  * @author Johann Sorel (Geomatys)
  */
-public abstract class Vector4D<T extends Vector4D<T>> extends AbstractVector<T> {
+public abstract sealed class Vector4D<T extends Vector4D<T>> extends AbstractVector<T>
+        permits Vector4D.Byte,
+                Vector4D.UByte,
+                Vector4D.Short,
+                Vector4D.UShort,
+                Vector4D.Int,
+                Vector4D.UInt,
+                Vector4D.Long,
+                Vector4D.Float,
+                Vector4D.Double{
 
     public Vector4D() {
     }
@@ -30,24 +39,6 @@ public abstract class Vector4D<T extends Vector4D<T>> extends AbstractVector<T> 
     public final int getDimension() {
         return 4;
     }
-
-    @Override
-    public abstract T with(int indice, double value) throws IndexOutOfBoundsException;
-
-    @Override
-    public abstract T add(Vector<?> other);
-
-    @Override
-    public abstract T subtract(Vector<?> other);
-
-    @Override
-    public abstract T multiply(Vector<?> other);
-
-    @Override
-    public abstract T divide(Vector<?> other);
-
-    @Override
-    public abstract T scale(double scale);
 
     /**
      * Create a new vector, linear combination of this vector and the other vector : a*this + b*other.
@@ -85,9 +76,6 @@ public abstract class Vector4D<T extends Vector4D<T>> extends AbstractVector<T> 
         ensureDimension(unit, 4);
         return combine(1, unit, -dot(unit));
     }
-
-    @Override
-    public abstract T lerp(Vector<?> other, double ratio);
 
     @Override
     public T lerpAccurate(Vector<?> other, double ratio) {
@@ -140,19 +128,12 @@ public abstract class Vector4D<T extends Vector4D<T>> extends AbstractVector<T> 
         return d0*d0 + d1*d1 + d2*d2 + d3*d3;
     }
 
-    public static class Byte extends Vector4D<Byte> {
+    public static final class Byte extends Vector4D<Byte> {
 
         public final byte x;
         public final byte y;
         public final byte z;
         public final byte w;
-
-        public Byte() {
-            this.x = 0;
-            this.y = 0;
-            this.z = 0;
-            this.w = 0;
-        }
 
         public Byte(byte x, byte y, byte z, byte w) {
             this.x = x;
@@ -332,11 +313,6 @@ public abstract class Vector4D<T extends Vector4D<T>> extends AbstractVector<T> 
         }
 
         @Override
-        public Byte copy() {
-            return this;
-        }
-
-        @Override
         public boolean isFinite() {
             return true;
         }
@@ -353,19 +329,12 @@ public abstract class Vector4D<T extends Vector4D<T>> extends AbstractVector<T> 
 
     }
 
-    public static class UByte extends Vector4D<UByte> {
+    public static final class UByte extends Vector4D<UByte> {
 
         public final byte x;
         public final byte y;
         public final byte z;
         public final byte w;
-
-        public UByte() {
-            this.x = 0;
-            this.y = 0;
-            this.z = 0;
-            this.w = 0;
-        }
 
         public UByte(byte x, byte y, byte z, byte w) {
             this.x = x;
@@ -545,11 +514,6 @@ public abstract class Vector4D<T extends Vector4D<T>> extends AbstractVector<T> 
         }
 
         @Override
-        public UByte copy() {
-            return this;
-        }
-
-        @Override
         public boolean isFinite() {
             return true;
         }
@@ -566,19 +530,12 @@ public abstract class Vector4D<T extends Vector4D<T>> extends AbstractVector<T> 
 
     }
 
-    public static class Short extends Vector4D<Short> {
+    public static final class Short extends Vector4D<Short> {
 
         public final short x;
         public final short y;
         public final short z;
         public final short w;
-
-        public Short() {
-            this.x = 0;
-            this.y = 0;
-            this.z = 0;
-            this.w = 0;
-        }
 
         public Short(short x, short y, short z, short w) {
             this.x = x;
@@ -758,11 +715,6 @@ public abstract class Vector4D<T extends Vector4D<T>> extends AbstractVector<T> 
         }
 
         @Override
-        public Short copy() {
-            return this;
-        }
-
-        @Override
         public boolean isFinite() {
             return true;
         }
@@ -779,19 +731,12 @@ public abstract class Vector4D<T extends Vector4D<T>> extends AbstractVector<T> 
 
     }
 
-    public static class UShort extends Vector4D<UShort> {
+    public static final class UShort extends Vector4D<UShort> {
 
         public final short x;
         public final short y;
         public final short z;
         public final short w;
-
-        public UShort() {
-            this.x = 0;
-            this.y = 0;
-            this.z = 0;
-            this.w = 0;
-        }
 
         public UShort(short x, short y, short z, short w) {
             this.x = x;
@@ -986,11 +931,6 @@ public abstract class Vector4D<T extends Vector4D<T>> extends AbstractVector<T> 
         }
 
         @Override
-        public UShort copy() {
-            return this;
-        }
-
-        @Override
         public boolean isFinite() {
             return true;
         }
@@ -1007,19 +947,12 @@ public abstract class Vector4D<T extends Vector4D<T>> extends AbstractVector<T> 
 
     }
 
-    public static class Int extends Vector4D<Int> {
+    public static final class Int extends Vector4D<Int> {
 
         public final int x;
         public final int y;
         public final int z;
         public final int w;
-
-        public Int() {
-            this.x = 0;
-            this.y = 0;
-            this.z = 0;
-            this.w = 0;
-        }
 
         public Int(int x, int y, int z, int w) {
             this.x = x;
@@ -1199,11 +1132,6 @@ public abstract class Vector4D<T extends Vector4D<T>> extends AbstractVector<T> 
         }
 
         @Override
-        public Int copy() {
-            return this;
-        }
-
-        @Override
         public boolean isFinite() {
             return true;
         }
@@ -1220,19 +1148,12 @@ public abstract class Vector4D<T extends Vector4D<T>> extends AbstractVector<T> 
 
     }
 
-    public static class UInt extends Vector4D<UInt> {
+    public static final class UInt extends Vector4D<UInt> {
 
         public final int x;
         public final int y;
         public final int z;
         public final int w;
-
-        public UInt() {
-            this.x = 0;
-            this.y = 0;
-            this.z = 0;
-            this.w = 0;
-        }
 
         public UInt(int x, int y, int z, int w) {
             this.x = x;
@@ -1422,11 +1343,6 @@ public abstract class Vector4D<T extends Vector4D<T>> extends AbstractVector<T> 
         }
 
         @Override
-        public UInt copy() {
-            return this;
-        }
-
-        @Override
         public boolean isFinite() {
             return true;
         }
@@ -1443,19 +1359,12 @@ public abstract class Vector4D<T extends Vector4D<T>> extends AbstractVector<T> 
 
     }
 
-    public static class Long extends Vector4D<Long> {
+    public static final class Long extends Vector4D<Long> {
 
         public final long x;
         public final long y;
         public final long z;
         public final long w;
-
-        public Long() {
-            this.x = 0;
-            this.y = 0;
-            this.z = 0;
-            this.w = 0;
-        }
 
         public Long(long x, long y, long z, long w) {
             this.x = x;
@@ -1635,11 +1544,6 @@ public abstract class Vector4D<T extends Vector4D<T>> extends AbstractVector<T> 
         }
 
         @Override
-        public Long copy() {
-            return this;
-        }
-
-        @Override
         public boolean isFinite() {
             return true;
         }
@@ -1656,19 +1560,12 @@ public abstract class Vector4D<T extends Vector4D<T>> extends AbstractVector<T> 
 
     }
 
-    public static class Float extends Vector4D<Float> {
+    public static final class Float extends Vector4D<Float> {
 
         public final float x;
         public final float y;
         public final float z;
         public final float w;
-
-        public Float() {
-            this.x = 0;
-            this.y = 0;
-            this.z = 0;
-            this.w = 0;
-        }
 
         public Float(float x, float y, float z, float w) {
             this.x = x;
@@ -1877,11 +1774,6 @@ public abstract class Vector4D<T extends Vector4D<T>> extends AbstractVector<T> 
         }
 
         @Override
-        public Float copy() {
-            return this;
-        }
-
-        @Override
         public boolean isFinite() {
             return java.lang.Float.isFinite(x) && java.lang.Float.isFinite(y) && java.lang.Float.isFinite(z) && java.lang.Float.isFinite(w);
         }
@@ -1910,19 +1802,12 @@ public abstract class Vector4D<T extends Vector4D<T>> extends AbstractVector<T> 
 
     }
 
-    public static class Double extends Vector4D<Double> {
+    public static final class Double extends Vector4D<Double> {
 
         public final double x;
         public final double y;
         public final double z;
         public final double w;
-
-        public Double() {
-            this.x = 0;
-            this.y = 0;
-            this.z = 0;
-            this.w = 0;
-        }
 
         public Double(double x, double y, double z, double w) {
             this.x = x;
@@ -2136,11 +2021,6 @@ public abstract class Vector4D<T extends Vector4D<T>> extends AbstractVector<T> 
                     y + ratio * (other.get(1) - y),
                     z + ratio * (other.get(2) - z),
                     w + ratio * (other.get(3) - w));
-        }
-
-        @Override
-        public Double copy() {
-            return this;
         }
 
         @Override

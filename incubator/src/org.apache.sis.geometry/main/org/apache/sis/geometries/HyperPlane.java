@@ -101,7 +101,7 @@ public final class HyperPlane extends AbstractGeometry{
     }
 
     public void setNormal(Vector<?> normal) {
-        this.normal = normal.copy();
+        this.normal = normal;
     }
 
     /**

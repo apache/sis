@@ -31,10 +31,10 @@ public class VectorXdTest extends AbstractVectorTest{
     @Override
     protected Vector create(int dim) {
         switch (dim) {
-            case 1 : return new Vector1D.Double();
-            case 2 : return new Vector2D.Double();
-            case 3 : return new Vector3D.Double();
-            case 4 : return new Vector4D.Double();
+            case 1 : return new Vector1D.Double(0);
+            case 2 : return new Vector2D.Double(0,0);
+            case 3 : return new Vector3D.Double(0,0,0);
+            case 4 : return new Vector4D.Double(0,0,0,0);
             default : return new VectorND.Double(dim);
         }
     }

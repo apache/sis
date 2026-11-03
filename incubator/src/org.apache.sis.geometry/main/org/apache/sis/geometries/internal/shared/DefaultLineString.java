@@ -19,7 +19,6 @@ package org.apache.sis.geometries.internal.shared;
 import javax.measure.Quantity;
 import org.apache.sis.geometries.DataPoints;
 import org.apache.sis.geometries.Geometries;
-import org.apache.sis.geometries.Point;
 import org.apache.sis.geometries.curve.LineString;
 import org.apache.sis.measure.Quantities;
 
@@ -50,16 +49,6 @@ public non-sealed class DefaultLineString extends AbstractGeometry implements Li
     public Quantity<?> getLength() {
         //TODO : fallback on JTS until implemented
         return Quantities.create(asJTS().getLength(), Geometries.getLinearUnit(this));
-    }
-
-    @Override
-    public Point getCentroid() {
-        if (isEmpty()) {
-            // The centroid of the empty set is undefined.
-            return null;
-        }
-        //TODO : fallback on JTS until implemented
-        return (Point) fromJTS(asJTS().getCentroid());
     }
 
     @Override

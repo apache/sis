@@ -25,7 +25,8 @@ import org.apache.sis.geometries.DataPoints;
 import org.apache.sis.geometries.Geometry;
 import org.apache.sis.geometries.Point;
 import org.apache.sis.geometries.curve.LineString;
-import org.apache.sis.geometries.mesh.MeshPrimitive.Vertex;
+import org.apache.sis.geometries.internal.shared.ArrayDataPoints;
+import org.apache.sis.geometries.internal.shared.Vertex;
 import org.apache.sis.geometries.surface.Triangle;
 import org.apache.sis.maths.Array;
 import org.apache.sis.maths.Vector;
@@ -190,7 +191,7 @@ public final class MeshPrimitiveComparator {
         if (expected instanceof Point && candidate instanceof Point) {
             final Point e1 = (Point) expected;
             final Point e2 = (Point) candidate;
-            return compareVertex((MeshPrimitive.Vertex) e1, (MeshPrimitive.Vertex) e2);
+            return compareVertex((Vertex) e1, (Vertex) e2);
 
         } else if (expected instanceof LineString && candidate instanceof LineString) {
             final LineString e1 = (LineString) expected;
@@ -225,7 +226,7 @@ public final class MeshPrimitiveComparator {
      * Compare two mesh vertex attributes.
      * @return true if vertex are equal.
      */
-    private boolean compareVertex(MeshPrimitive.Vertex expected, MeshPrimitive.Vertex candidate) {
+    private boolean compareVertex(Vertex expected, Vertex candidate) {
 
         Collection<String> toTest = comparedAttributes;
         if (toTest.isEmpty()) {
@@ -279,7 +280,7 @@ public final class MeshPrimitiveComparator {
         final List<Geometry> elements = new ArrayList<>();
         final MeshPrimitiveVisitor visitor = new MeshPrimitiveVisitor(p) {
             @Override
-            protected void visit(MeshPrimitive.Vertex vertex) {
+            protected void visit(Vertex vertex) {
             }
 
             @Override

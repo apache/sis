@@ -75,7 +75,7 @@ public interface Array extends NDArray {
     default Vector<?> get(long index) {
         final Cursor cursor = cursor();
         cursor.moveTo(index);
-        return cursor.samples().copy();
+        return cursor.getSamples();
     }
 
     /**
@@ -85,7 +85,7 @@ public interface Array extends NDArray {
     default void set(Vector<?> buffer) {
         Cursor cursor = cursor();
         while (cursor.next()) {
-            cursor.set(buffer);
+            cursor.setSamples(buffer);
         }
     }
 
@@ -133,7 +133,7 @@ public interface Array extends NDArray {
         final Cursor cursor = array.cursor();
         for (long i = 0; i < nb; i++) {
             cursor.moveTo(offset + i);
-            set(index + i, cursor.samples());
+            set(index + i, cursor.getSamples());
         }
     }
 
@@ -202,7 +202,7 @@ public interface Array extends NDArray {
         long k = offset;
         for (int i = 0; i < nbTuple; i++, k++) {
             cursor.moveTo(k);
-            cursor.samples().toArrayByte(array, i*dimension);
+            cursor.getSamples().toArrayByte(array, i*dimension);
         }
         return array;
     }
@@ -220,7 +220,7 @@ public interface Array extends NDArray {
         long k = offset;
         for (int i = 0; i < nbTuple; i++, k++) {
             cursor.moveTo(k);
-            cursor.samples().toArrayShort(array, i*dimension);
+            cursor.getSamples().toArrayShort(array, i*dimension);
         }
         return array;
     }
@@ -238,7 +238,7 @@ public interface Array extends NDArray {
         long k = offset;
         for (int i = 0; i < nbTuple; i++, k++) {
             cursor.moveTo(k);
-            cursor.samples().toArrayInt(array, i*dimension);
+            cursor.getSamples().toArrayInt(array, i*dimension);
         }
         return array;
     }
@@ -256,7 +256,7 @@ public interface Array extends NDArray {
         long k = offset;
         for (int i = 0; i < nbTuple; i++, k++) {
             cursor.moveTo(k);
-            cursor.samples().toArrayFloat(array, i*dimension);
+            cursor.getSamples().toArrayFloat(array, i*dimension);
         }
         return array;
     }
@@ -274,7 +274,7 @@ public interface Array extends NDArray {
         long k = offset;
         for (int i = 0; i < nbTuple; i++, k++) {
             cursor.moveTo(k);
-            cursor.samples().toArrayDouble(array, i*dimension);
+            cursor.getSamples().toArrayDouble(array, i*dimension);
         }
         return array;
     }
@@ -291,7 +291,6 @@ public interface Array extends NDArray {
      */
     default Vector<?>[] toArray(long offset, long nbTuple) {
         return stream(false).skip(offset).limit(nbTuple)
-                .map((Vector<?> t) -> t.copy())
                 .toArray(Vector<?>[]::new);
     }
 
@@ -305,10 +304,10 @@ public interface Array extends NDArray {
         final double[] buffer = new double[getDimension()];
         final Cursor cursor = cursor();
         while (cursor.next()) {
-            cursor.samples().toArrayDouble(buffer, 0);
+            cursor.getSamples().toArrayDouble(buffer, 0);
             trs.transform(buffer, 0, buffer, 0, 1);
             for (int i = 0; i < buffer.length; i++) {
-                cursor.set(i, buffer[i]);
+                cursor.setSample(i, buffer[i]);
             }
         }
     }

@@ -186,11 +186,11 @@ public final class JTSAdapter {
             final Cursor cursor = positions.cursor();
             int i = 0;
             while (cursor.next()) {
-                cursor.set(0, cs.getOrdinate(i, 0));
-                cursor.set(1, cs.getOrdinate(i, 1));
+                cursor.setSample(0, cs.getOrdinate(i, 0));
+                cursor.setSample(1, cs.getOrdinate(i, 1));
                 if (dimension > 2) {
                     //JTS only goes up to 3 dimensions
-                    cursor.set(2, cs.getOrdinate(i, 2));
+                    cursor.setSample(2, cs.getOrdinate(i, 2));
                 }
                 i++;
             }

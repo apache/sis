@@ -34,17 +34,22 @@ final class CursorUnmodifiable implements Cursor {
     }
 
     @Override
-    public Vector<?> samples() {
-        return parent.samples();
+    public Vector<?> getSamples() {
+        return parent.getSamples();
     }
 
     @Override
-    public void set(int sampleIndex, double value) {
+    public double getSample(int sampleIndex) {
+        return parent.getSample(sampleIndex);
+    }
+
+    @Override
+    public void setSample(int sampleIndex, double value) {
         throw new UnsupportedOperationException("This implementation is unmodifiable");
     }
 
     @Override
-    public void set(Vector<?> values) {
+    public void setSamples(Vector<?> values) {
         throw new UnsupportedOperationException("This implementation is unmodifiable");
     }
 

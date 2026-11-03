@@ -24,13 +24,14 @@ import org.opengis.referencing.cs.AxisDirection;
 import org.opengis.referencing.cs.CoordinateSystem;
 import org.apache.sis.measure.Units;
 import org.apache.sis.util.ArraysExt;
+import org.apache.sis.util.internal.shared.Constants;
 import static org.apache.sis.util.internal.shared.Constants.EPSG_METRE;
 import static org.apache.sis.util.internal.shared.Constants.EPSG_AXIS_DEGREES;
 
 
 /**
  * Map units of measurement and axis directions to {@link CoordinateSystem} objects defined in the EPSG database.
- * Current version uses hard-coded mapping.
+ * Current version uses hard-coded mapping. The mapping correctness is verified by {@code CodesTest}.
  *
  * @author  Rémi Maréchal (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
@@ -38,20 +39,23 @@ import static org.apache.sis.util.internal.shared.Constants.EPSG_AXIS_DEGREES;
 final class Codes {
     /**
      * Axis directions as a maximum of 4 directions packed in a single integer.
-     * Each byte is an {@link AxisDirection#ordinal()} value.
+     * Each byte is an {@link AxisDirection#ordinal()} value + 1 with 0 meaning no axis in that dimension.
+     * First axis is in the lowest byte.
      *
+     * @see #getDimension()
      * @see #pack(AxisDirection[])
      */
-    final int directions;
+    private final int directions;
 
     /**
-     * EPSG code of the target unit of measurement.
+     * <abbr>EPSG</abbr> code of the target unit of measurement.
      * Applies only to the two first axes. The third axis, if any, is assumed in metres.
      */
-    final short unit;
+    private final short unit;
 
     /**
-     * EPSG code of the coordinate reference system.
+     * <abbr>EPSG</abbr> code of the coordinate reference system.
+     * Interpreted as an unsigned integer.
      */
     final short epsg;
 
@@ -65,6 +69,13 @@ final class Codes {
     }
 
     /**
+     * Returns the number of dimensions of the coordinate system represented by this code.
+     */
+    final int getDimension() {
+        return 4 - (Integer.numberOfLeadingZeros(directions) >>> 3);
+    }
+
+    /**
      * Packs the given axis directions in a single integer.
      *
      * @return the packed directions, or empty if the given directions cannot be packed.
@@ -75,10 +86,10 @@ final class Codes {
         if (i <= Integer.BYTES) {
             while (--i >= 0) {
                 final int ordinal = directions[i].ordinal();
-                if (ordinal < 0 || ordinal > Byte.MAX_VALUE) {
+                if (ordinal < 0 || ordinal > Byte.MAX_VALUE - 1) {
                     return OptionalInt.empty();
                 }
-                packed = (packed << Byte.SIZE) | ordinal;
+                packed = (packed << Byte.SIZE) | (ordinal + 1);
             }
         }
         return OptionalInt.of(packed);
@@ -89,8 +100,9 @@ final class Codes {
      *
      * @param  unit  the unit of the two first axis. The third axis, if any, is assumed in metres.
      * @param  directions  axis directions to look for.
+     * @return the <abbr>EPSG</abbr> code, or 0 if none.
      */
-    static short lookup(final Unit<?> unit, final AxisDirection[] directions) {
+    static int lookup(final Unit<?> unit, final AxisDirection[] directions) {
         final Integer uc = Units.getEpsgCode(unit, true);
         if (uc != null) {
             final OptionalInt p = pack(directions);
@@ -98,7 +110,7 @@ final class Codes {
                 Codes m = new Codes(p.getAsInt(), uc.shortValue(), (short) 0);
                 m = EPSG.get(m);
                 if (m != null) {
-                    return m.epsg;
+                    return Short.toUnsignedInt(m.epsg);
                 }
             }
         }
@@ -128,12 +140,21 @@ final class Codes {
     }
 
     /**
-     * All hard-coded EPSG codes known to this class.
+     * Returns a string representation for debugging purposes.
      */
-    private static final Map<Codes,Codes> EPSG = new HashMap<>(31);
+    @Override
+    public String toString() {
+        return Constants.EPSG + ':' + Short.toUnsignedInt(epsg) + " (" + getDimension() + "D)";
+    }
+
+    /**
+     * All hard-coded <abbr>EPSG</abbr> codes known to this class.
+     * The mapping correctness is verified by {@code CodesTest}.
+     */
+    private static final Map<Codes, Codes> EPSG = new HashMap<>(31);
     static {
         final var directions = new AxisDirection[] {AxisDirection.EAST, AxisDirection.NORTH};
-        final int addVertical = AxisDirection.UP.ordinal() << (2 * Byte.SIZE);
+        final int addVertical = (AxisDirection.UP.ordinal() + 1) << (2 * Byte.SIZE);
         OptionalInt packed = pack(directions);
         short unit = EPSG_METRE;
 loop:   for (int i=0; ; i++) {
@@ -171,18 +192,14 @@ loop:   for (int i=0; ; i++) {
             }
             final int p = packed.getAsInt();
             Codes m = new Codes(p, unit, epsg);
-            if (EPSG.put(m, m) != null) {
-                throw new AssertionError(m.epsg);
-            }
+            EPSG.put(m, m);
             /*
              * Add three-dimensional cases. The vertical axis is in metres
              * (this is encoded in CodesTest.VERTICAL_UNIT constant).
              */
             if (to3D != 0) {
                 m = new Codes(p | addVertical, unit, to3D);
-                if (EPSG.put(m, m) != null) {
-                    throw new AssertionError(m.epsg);
-                }
+                EPSG.put(m, m);
             }
         }
     }

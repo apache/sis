@@ -163,7 +163,11 @@ public final class EllipsoidalHeightCombinerTest extends TestCase {
      */
     @Test
     public void testProperties() {
-        final Map<String,?> properties = EllipsoidalHeightCombiner.properties(HardCodedCRS.WGS84, HardCodedCRS.GRAVITY_RELATED_HEIGHT, HardCodedCRS.TIME);
+        final Map<String, ?> properties = EllipsoidalHeightCombiner.properties(new SingleCRS[] {
+            HardCodedCRS.WGS84,
+            HardCodedCRS.GRAVITY_RELATED_HEIGHT,
+            HardCodedCRS.TIME
+        });
         assertEquals("WGS 84 + MSL height + Time", properties.remove("name"));
         assertEquals(Extents.WORLD, properties.remove("domainOfValidity"));
         assertTrue(properties.isEmpty());

@@ -97,7 +97,8 @@ public final class AddDimCodedResource extends AbstractResource implements Coded
 
     @Override
     public CodedCoverage read(CodedGeometry geometry, int... range) throws DataStoreException {
-        final CodedCoverage coverage = source.read(geometry, range);
+        //ensure the query intersects the added dimension, the source ignores it
+        final CodedCoverage coverage = source.read(CodedResources.align(this, geometry), range);
         return new AddDimCodedCoverage(coverage, slice);
     }
 

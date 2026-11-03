@@ -89,14 +89,14 @@ public class VectorTest {
         final Vector3D.Double v = Vector.of(1e8, 1.0, 1e8);
         assertEquals(1.0, u.dotAccurate(v), 0.0);
         assertEquals(1.0, Vector.of(1e8, 1.0, -1e8, 0.0, 0.0).dotAccurate(Vector.of(1e8, 1.0, 1e8, 0.0, 0.0)), 0.0);
-        assertEquals(1.0, Vectors.unmodifiable(u).dotAccurate(v), 0.0);
+        assertEquals(1.0, u.dotAccurate(v), 0.0);
         assertEquals(0.0, u.dot(v), 0.0, "plain arithmetic loses all digits");
 
         //cross product of nearly parallel vectors
         final Vector3D.Double a = Vector.of(0.0, 101394113.74178699, 101394113.80164877);
         final Vector3D.Double b = Vector.of(0.0, 101394123.88119836, 101394123.94106016);
         assertEquals(0.9039268278985468, a.crossAccurate(b).x, 1e-15);
-        assertEquals(0.9039268278985468, Vectors.unmodifiable(a).crossAccurate(b).get(0), 1e-15);
+        assertEquals(0.9039268278985468, a.crossAccurate(b).get(0), 1e-15);
         assertEquals(0.0, a.cross(b).x, 0.0, "plain arithmetic loses all digits");
     }
 
@@ -115,7 +115,7 @@ public class VectorTest {
         assertEquals(p, p.lerpAccurate(p, 0.3));
 
         //same with the default implementation and with VectorND
-        assertEquals(q, Vectors.unmodifiable(p).lerp(q, 1));
+        assertEquals(q, p.lerp(q, 1));
         final Vector<?> nd = Vector.of(0.1, -7.3, 1e-3, 4.0, 5.0);
         assertEquals(nd, nd.lerp(nd, 0.3));
         assertArrayEquals(new double[] {0.5, 0.5, 0.5, 4.5, 5.0},

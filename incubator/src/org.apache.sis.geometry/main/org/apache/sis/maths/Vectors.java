@@ -41,74 +41,74 @@ public final class Vectors {
         switch (dataType) {
             case BYTE :
                 return switch (size) {
-                    case 1 -> new Vector1D.Byte();
-                    case 2 -> new Vector2D.Byte();
-                    case 3 -> new Vector3D.Byte();
-                    case 4 -> new Vector4D.Byte();
+                    case 1 -> new Vector1D.Byte((byte)0);
+                    case 2 -> new Vector2D.Byte((byte)0,(byte)0);
+                    case 3 -> new Vector3D.Byte((byte)0,(byte)0,(byte)0);
+                    case 4 -> new Vector4D.Byte((byte)0,(byte)0,(byte)0,(byte)0);
                     default -> new VectorND.Byte(size);
                 };
             case UBYTE :
                 return switch (size) {
-                    case 1 -> new Vector1D.UByte();
-                    case 2 -> new Vector2D.UByte();
-                    case 3 -> new Vector3D.UByte();
-                    case 4 -> new Vector4D.UByte();
+                    case 1 -> new Vector1D.UByte((byte)0);
+                    case 2 -> new Vector2D.UByte((byte)0,(byte)0);
+                    case 3 -> new Vector3D.UByte((byte)0,(byte)0,(byte)0);
+                    case 4 -> new Vector4D.UByte((byte)0,(byte)0,(byte)0,(byte)0);
                     default -> new VectorND.UByte(size);
                 };
             case SHORT :
                 return switch (size) {
-                    case 1 -> new Vector1D.Short();
-                    case 2 -> new Vector2D.Short();
-                    case 3 -> new Vector3D.Short();
-                    case 4 -> new Vector4D.Short();
+                    case 1 -> new Vector1D.Short((short)0);
+                    case 2 -> new Vector2D.Short((short)0,(short)0);
+                    case 3 -> new Vector3D.Short((short)0,(short)0,(short)0);
+                    case 4 -> new Vector4D.Short((short)0,(short)0,(short)0,(short)0);
                     default -> new VectorND.Short(size);
                 };
             case USHORT :
                 return switch (size) {
-                    case 1 -> new Vector1D.UShort();
-                    case 2 -> new Vector2D.UShort();
-                    case 3 -> new Vector3D.UShort();
-                    case 4 -> new Vector4D.UShort();
+                    case 1 -> new Vector1D.UShort((short)0);
+                    case 2 -> new Vector2D.UShort((short)0,(short)0);
+                    case 3 -> new Vector3D.UShort((short)0,(short)0,(short)0);
+                    case 4 -> new Vector4D.UShort((short)0,(short)0,(short)0,(short)0);
                     default -> new VectorND.UShort(size);
                 };
             case INT :
                 return switch (size) {
-                    case 1 -> new Vector1D.Int();
-                    case 2 -> new Vector2D.Int();
-                    case 3 -> new Vector3D.Int();
-                    case 4 -> new Vector4D.Int();
+                    case 1 -> new Vector1D.Int(0);
+                    case 2 -> new Vector2D.Int(0,0);
+                    case 3 -> new Vector3D.Int(0,0,0);
+                    case 4 -> new Vector4D.Int(0,0,0,0);
                     default -> new VectorND.Int(size);
                 };
             case UINT :
                 return switch (size) {
-                    case 1 -> new Vector1D.UInt();
-                    case 2 -> new Vector2D.UInt();
-                    case 3 -> new Vector3D.UInt();
-                    case 4 -> new Vector4D.UInt();
+                    case 1 -> new Vector1D.UInt(0);
+                    case 2 -> new Vector2D.UInt(0,0);
+                    case 3 -> new Vector3D.UInt(0,0,0);
+                    case 4 -> new Vector4D.UInt(0,0,0,0);
                     default -> new VectorND.UInt(size);
                 };
             case LONG :
                 return switch (size) {
-                    case 1 -> new Vector1D.Long();
-                    case 2 -> new Vector2D.Long();
-                    case 3 -> new Vector3D.Long();
-                    case 4 -> new Vector4D.Long();
+                    case 1 -> new Vector1D.Long(0);
+                    case 2 -> new Vector2D.Long(0,0);
+                    case 3 -> new Vector3D.Long(0,0,0);
+                    case 4 -> new Vector4D.Long(0,0,0,0);
                     default -> new VectorND.Long(size);
                 };
             case FLOAT :
                 return switch (size) {
-                    case 1 -> new Vector1D.Float();
-                    case 2 -> new Vector2D.Float();
-                    case 3 -> new Vector3D.Float();
-                    case 4 -> new Vector4D.Float();
+                    case 1 -> new Vector1D.Float(0);
+                    case 2 -> new Vector2D.Float(0,0);
+                    case 3 -> new Vector3D.Float(0,0,0);
+                    case 4 -> new Vector4D.Float(0,0,0,0);
                     default -> new VectorND.Float(size);
                 };
             case DOUBLE :
                 return switch (size) {
-                    case 1 -> new Vector1D.Double();
-                    case 2 -> new Vector2D.Double();
-                    case 3 -> new Vector3D.Double();
-                    case 4 -> new Vector4D.Double();
+                    case 1 -> new Vector1D.Double(0);
+                    case 2 -> new Vector2D.Double(0,0);
+                    case 3 -> new Vector3D.Double(0,0,0);
+                    case 4 -> new Vector4D.Double(0,0,0,0);
                     default -> new VectorND.Double(size);
                 };
             default :
@@ -391,143 +391,6 @@ public final class Vectors {
                 return VectorND.Double.wrap(Arrays.copyOfRange(a, off, off + dim));
             }
         }
-    }
-
-    public static Vector<?> createByte(int dimension) {
-        return create(dimension, DataType.BYTE);
-    }
-
-    public static Vector<?> createUByte(int dimension) {
-        return create(dimension, DataType.UBYTE);
-    }
-
-    public static Vector<?> createShort(int dimension) {
-        return create(dimension, DataType.SHORT);
-    }
-
-    public static Vector<?> createUShort(int dimension) {
-        return create(dimension, DataType.USHORT);
-    }
-
-    public static Vector<?> createInt(int dimension) {
-        return create(dimension, DataType.INT);
-    }
-
-    public static Vector<?> createUInt(int dimension) {
-        return create(dimension, DataType.UINT);
-    }
-
-    public static Vector<?> createLong(int dimension) {
-        return create(dimension, DataType.LONG);
-    }
-
-    public static Vector<?> createFloat(int dimension) {
-        return create(dimension, DataType.FLOAT);
-    }
-
-    public static Vector<?> createDouble(int dimension) {
-        return create(dimension, DataType.DOUBLE);
-    }
-
-    public static Vector<?> castOrCopy(DirectPosition pos) {
-        if (pos instanceof Vector) {
-            return (Vector) pos;
-        } else {
-            return create(pos.getCoordinates(), DataType.DOUBLE);
-        }
-    }
-
-    public static Vector<?> castOrWrap(DirectPosition pos) {
-        if (pos instanceof Vector) {
-            return (Vector) pos;
-        } else {
-            return new WrapDirectPostion(pos);
-        }
-    }
-
-    public static DirectPosition asDirectPostion(Vector<?> tuple) {
-        return new AsDirectPosition(tuple, null);
-    }
-
-    /**
-     * Create a direct position view of the given tuple, in the given reference system.
-     *
-     * @param tuple not null
-     * @param crs reference system of the position, may be null
-     * @return direct position view of the tuple.
-     */
-    public static DirectPosition asDirectPostion(Vector<?> tuple, CoordinateReferenceSystem crs) {
-        return new AsDirectPosition(tuple, crs);
-    }
-    /**
-     * Create an unmodifiable view of the given tuple.
-     *
-     * @param tuple not null
-     * @return unmodifiable view of the tuple.
-     */
-    public static Vector<?> unmodifiable(Vector<?> tuple) {
-        return new VectorUnmodifiable(tuple);
-    }
-
-    private static class WrapDirectPostion extends AbstractVector<WrapDirectPostion> implements Vector<WrapDirectPostion> {
-
-        private final DirectPosition pos;
-
-        public WrapDirectPostion(DirectPosition pos) {
-            this.pos = pos;
-        }
-
-        @Override
-        public DataType getDataType() {
-            return (pos instanceof Vector) ? ((Vector) pos).getDataType() : DataType.DOUBLE;
-        }
-
-        @Override
-        public double get(int indice) {
-            return pos.getCoordinate(indice);
-        }
-
-        @Override
-        public int getDimension() {
-            return pos.getDimension();
-        }
-    }
-
-    private static class AsDirectPosition implements DirectPosition {
-
-        private final Vector<?> tuple;
-        private final CoordinateReferenceSystem crs;
-
-        public AsDirectPosition(Vector<?> tuple, CoordinateReferenceSystem crs) {
-            this.tuple = tuple;
-            this.crs = crs;
-        }
-
-        @Override
-        public CoordinateReferenceSystem getCoordinateReferenceSystem() {
-            return crs;
-        }
-
-        @Override
-        public int getDimension() {
-            return tuple.getDimension();
-        }
-
-        @Override
-        public double[] getCoordinates() {
-            return tuple.toArrayDouble();
-        }
-
-        @Override
-        public double getCoordinate(int i) {
-            return tuple.get(i);
-        }
-
-        @Override
-        public void setCoordinate(int i, double d) {
-            throw new UnsupportedOperationException("Vectors are immutable");
-        }
-
     }
 
     /**

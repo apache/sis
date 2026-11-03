@@ -90,7 +90,7 @@ public final class DefaultConicArc implements ConicArc {
         this.p = p;
         this.r = new double[p.length];
         final int dimension = p[0].getDimension();
-        origin = Vectors.createDouble(dimension);
+        origin = Vectors.create(dimension, DataType.DOUBLE);
         for (final Vector<?> q : p) {
             origin = origin.add(q);
         }

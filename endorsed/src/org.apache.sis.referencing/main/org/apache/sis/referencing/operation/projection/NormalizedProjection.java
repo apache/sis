@@ -37,6 +37,9 @@ import org.opengis.util.FactoryException;
 import org.apache.sis.util.Debug;
 import org.apache.sis.util.CharSequences;
 import org.apache.sis.util.ComparisonMode;
+import org.apache.sis.util.internal.shared.Constants;
+import org.apache.sis.util.internal.shared.Numerics;
+import org.apache.sis.geometry.Envelope2D;
 import org.apache.sis.parameter.Parameters;
 import org.apache.sis.parameter.ParameterBuilder;
 import org.apache.sis.metadata.iso.citation.Citations;
@@ -50,8 +53,6 @@ import org.apache.sis.referencing.operation.transform.TransformJoiner;
 import org.apache.sis.referencing.operation.provider.MapProjection;
 import org.apache.sis.referencing.internal.shared.Formulas;
 import org.apache.sis.system.Modules;
-import org.apache.sis.util.internal.shared.Constants;
-import org.apache.sis.util.internal.shared.Numerics;
 
 // Specific to the geoapi-3.1 and geoapi-4.0 branches:
 import org.opengis.metadata.Identifier;
@@ -163,22 +164,6 @@ public abstract class NormalizedProjection extends AbstractMathTransform2D imple
      * in case someone uses SIS for some planet with higher eccentricity.
      */
     static final int MAXIMUM_ITERATIONS = Formulas.MAXIMUM_ITERATIONS;
-
-    /**
-     * Arbitrary latitude threshold (in radians) for considering that a point is in the polar area.
-     * This is used for implementations of the {@link #getDomain(DomainDefinition)} method.
-     */
-    static final double POLAR_AREA_LIMIT = PI/2 * (84d/90);
-
-    /**
-     * An arbitrarily large longitude value (in radians) for map projections capable to have infinite
-     * extent in the east-west direction. This is the case of {@link Mercator} projection for example.
-     * Longitudes have no real world meaning outside −180° … +180° range (unless wraparound is applied),
-     * but we nevertheless accept large values without wraparound because they make envelope projection easier.
-     * This is used for implementations of the {@link #getDomain(DomainDefinition)} method,
-     * which use arbitrary limits anyway.
-     */
-    static final double LARGE_LONGITUDE_LIMIT = 100*PI;
 
     /**
      * The internal parameter descriptors. Keys are implementation classes.  Values are parameter descriptor groups
@@ -680,6 +665,25 @@ public abstract class NormalizedProjection extends AbstractMathTransform2D imple
                 context.getMatrix(ContextualParameters.MatrixRole.NORMALIZATION), false);
     }
 
+    /**
+     * Returns an arbitrary world-wide domain of validity (in radians) for Mercator-like projections.
+     * These projections can have an infinite extent in the east-west direction and generally exclude polar regions.
+     * Longitudes have no real world meaning outside the [−180° … +180°] range (unless wraparounds are applied),
+     * but we nevertheless accept out of bounds values because they facilitate calculations on projected envelopes.
+     * This is used for {@link #getDomain(DomainDefinition)} implementations, which return arbitrary limits anyway.
+     *
+     * <p>The current implementation sets a longitude range of ±200° (i.e. the world plus a margin)
+     * and a latitude range from 84°S to 84°N by default.
+     * These limits are arbitrary and may change in any future versions.</p>
+     *
+     * @param  includePoles  whether to extent to range of latitude values to ±90°.
+     * @return proposed value to return in {@link #getDomain(DomainDefinition)} implementations.
+     */
+    static Envelope2D domain(final boolean includePoles) {
+        final double limit = includePoles ? -PI/2 : -PI/2 * (84d/90);
+        return new Envelope2D(null, -100*PI, limit, 2*100*PI, -2*limit);
+    }
+
     /*
      * TODO: consider adding a sqrt1ms(x) method for sqrt(1 - x*x), which could be implemented as sqrt(fma(x, -x, 1)).
      * The use of Math.fma(…) in this context would be valuable especially when x is close to 1 (to be verified).
@@ -916,7 +920,7 @@ public abstract class NormalizedProjection extends AbstractMathTransform2D imple
         if (!super.equals(object, mode)) {
             return false;
         }
-        final NormalizedProjection that = (NormalizedProjection) object;
+        final var that = (NormalizedProjection) object;
         switch (mode) {
             case STRICT:
             case BY_CONTRACT: {

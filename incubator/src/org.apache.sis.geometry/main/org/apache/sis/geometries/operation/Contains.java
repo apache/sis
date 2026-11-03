@@ -64,13 +64,13 @@ public final class Contains {
         final double px = point.get(u), py = point.get(v);
         final Cursor cursor = ring.cursor();
         cursor.moveTo(0);
-        Vector<?> current = cursor.samples();
+        Vector<?> current = cursor.getSamples();
         double x = current.get(u), y = current.get(v);
         int windingNumber = 0;
         for (long i = 1; i < n; i++){
             final double previousX = x, previousY = y;
             cursor.moveTo(i);
-            current = cursor.samples();
+            current = cursor.getSamples();
             x = current.get(u);
             y = current.get(v);
 

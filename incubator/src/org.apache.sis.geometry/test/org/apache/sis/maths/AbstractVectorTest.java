@@ -283,9 +283,6 @@ public abstract class AbstractVectorTest {
         //test equals itself
         assertEquals(tuple, tuple);
 
-        //test equals a copy
-        assertEquals(tuple, tuple.copy());
-
         //test a equals a newly created tuple
         assertFalse(zero.equals(tuple));
         assertEquals(tuple, vector(zero, sequence(dim, 1)));
@@ -363,9 +360,6 @@ public abstract class AbstractVectorTest {
             //test get
             assertEquals(value, vector.get(i), 0.0);
 
-            //test copy
-            assertEquals(value, vector.copy().get(i), 0.0);
-
             //test array
             assertEquals(value, vector.toArrayDouble()[i], 0.0);
         }
@@ -399,7 +393,7 @@ public abstract class AbstractVectorTest {
         final Vector<?> second = Vectors.create(values, DataType.DOUBLE);
         final double expected = Vectors.dot(vector.toArrayDouble(), second.toArrayDouble());
         assertEquals(expected, vector.dot(second), TOLERANCE);
-        assertThrows(IllegalArgumentException.class, () -> vector.dot(Vectors.createDouble(vector.getDimension() + 1)));
+        assertThrows(IllegalArgumentException.class, () -> vector.dot(Vector.of(new double[vector.getDimension() + 1])));
     }
 
     /**
@@ -423,7 +417,7 @@ public abstract class AbstractVectorTest {
         assertEquals(Vectors.lengthSquare(diff), vector.distanceSquare(second), TOLERANCE);
         assertEquals(Vectors.length(diff), vector.distance(second), TOLERANCE);
         assertEquals(0, vector.distance(vector), TOLERANCE);
-        assertThrows(IllegalArgumentException.class, () -> vector.distance(Vectors.createDouble(vector.getDimension() + 1)));
+        assertThrows(IllegalArgumentException.class, () -> vector.distance(Vector.of(new double[vector.getDimension() + 1])));
     }
 
     /**
@@ -504,7 +498,7 @@ public abstract class AbstractVectorTest {
         final Vector<?> vector = vector(tuple, v);
         final Vector<?> second = Vectors.create(s, DataType.DOUBLE);
         final Vector<?> unit = Vectors.create(u, DataType.DOUBLE);
-        final Vector<?> original = vector.copy();
+        final Vector<?> original = vector;
 
         final double[] perpendicular = v.clone();
         perpendicular[0] = 0;
@@ -531,19 +525,6 @@ public abstract class AbstractVectorTest {
             }
         }
 
-        /*
-         * Same operations through the default implementations of Vector.
-         * The result is a new vector of the same data type.
-         */
-        final Vector<?> unmodifiable = Vectors.unmodifiable(vector);
-        Vector<?> result = unmodifiable.add(second);
-        assertEquals(vector.getClass(), result.getClass());
-        assertArrayEquals(Vectors.add(v, s), result.toArrayDouble(), TOLERANCE);
-        result = unmodifiable.lerp(second, 0.5);
-        assertArrayEquals(Vectors.lerp(v, s, 0.5, null), result.toArrayDouble(), TOLERANCE);
-        result = unmodifiable.transform(MathTransforms.scale(factors));
-        assertArrayEquals(Vectors.scale(v, 3), result.toArrayDouble(), TOLERANCE);
-        assertEquals(original, vector, "Vector must not be modified");
     }
 
     private static void assertNewVector(Vector<?> vector, Vector<?> original, Vector<?> result, double[] expected, double tolerance) {

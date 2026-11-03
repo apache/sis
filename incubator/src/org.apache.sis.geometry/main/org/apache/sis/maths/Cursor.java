@@ -33,7 +33,9 @@ public interface Cursor {
      *
      * @return view on the current tuple values
      */
-    Vector<?> samples();
+    Vector<?> getSamples();
+
+    double getSample(int sampleIndex);
 
     /**
      * Write a sample value of the current tuple in the array.
@@ -42,16 +44,16 @@ public interface Cursor {
      * @param value sample value
      * @throws IndexOutOfBoundsException if index is not valid
      */
-    void set(int sampleIndex, double value);
+    void setSample(int sampleIndex, double value);
 
     /**
      * Write all sample values of the current tuple in the array.
      *
      * @param values values to write, of the tuple dimension
      */
-    default void set(Vector<?> values) {
+    default void setSamples(Vector<?> values) {
         for (int i = 0, n = values.getDimension(); i < n; i++) {
-            set(i, values.get(i));
+            setSample(i, values.get(i));
         }
     }
 

@@ -112,7 +112,7 @@ public final class ArrayDiscreteGlobalGridCoverage extends IndexedDiscreteGlobal
         @Override
         public void setSample(int band, double value) {
             cursors[band].moveTo(position);
-            cursors[band].set(0, value);
+            cursors[band].setSample(0, value);
         }
 
         @Override
@@ -155,7 +155,7 @@ public final class ArrayDiscreteGlobalGridCoverage extends IndexedDiscreteGlobal
         @Override
         public double getSampleDouble(int band) {
             cursors[band].moveTo(position);
-            return cursors[band].samples().get(0);
+            return cursors[band].getSamples().get(0);
         }
 
         @Override

@@ -31,6 +31,7 @@ import org.apache.sis.geometries.operation.GeometryProcessor;
 import org.apache.sis.geometry.GeneralEnvelope;
 import org.apache.sis.measure.NumberRange;
 import org.apache.sis.referencing.CRS;
+import org.apache.sis.referencing.CommonCRS;
 import org.apache.sis.referencing.dggs.DiscreteGlobalGrid;
 import org.apache.sis.referencing.dggs.DiscreteGlobalGridHierarchy;
 import org.apache.sis.referencing.dggs.DiscreteGlobalGridReferenceSystem;
@@ -39,6 +40,7 @@ import org.apache.sis.referencing.operation.transform.TransformFactoryException;
 import org.apache.sis.storage.rs.CodeTransform;
 import org.apache.sis.storage.rs.CodedGeometry;
 import org.apache.sis.storage.rs.internal.shared.CodeTransforms;
+import org.apache.sis.storage.rs.internal.shared.s2.S2;
 import org.apache.sis.util.Utilities;
 
 
@@ -245,9 +247,10 @@ public class DiscreteGlobalGridGeometry extends CodedGeometry {
             candidates = List.of(bases);
         }
 
+        if (candidates == null) return null;
         GeneralEnvelope all = null;
-        for (Object zone : candidates) {
-            try {
+        try {
+            for (Object zone : candidates) {
                 final Zone zo = coder.decode(zone);
                 final Envelope env = zo.getEnvelope();
                 if (env != null) {
@@ -257,9 +260,16 @@ public class DiscreteGlobalGridGeometry extends CodedGeometry {
                         all.add(env);
                     }
                 }
-            } catch (TransformException ex) {
-                geoExtent = null;
             }
+        } catch (TransformException ex) {
+            return null;
+        }
+        if (all != null) {
+            //zone envelopes are in CRS:84
+            if (all.getCoordinateReferenceSystem() == null) {
+                all.setCoordinateReferenceSystem(CommonCRS.WGS84.normalizedGeographic());
+            }
+            geoExtent = S2.toGeographicExtent(S2.toS2Polygon(all));
         }
         return geoExtent;
     }

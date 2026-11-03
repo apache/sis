@@ -77,10 +77,10 @@ public final class WTriangle extends AbstractGeometry implements Triangle {
         @Override
         public Vector getPosition(int index) {
             switch (index) {
-                case 0 : return p0.copy();
-                case 1 : return p1.copy();
-                case 2 : return p2.copy();
-                case 3 : return p0.copy();
+                case 0 : return p0;
+                case 1 : return p1;
+                case 2 : return p2;
+                case 3 : return p0;
                 default : throw new ArrayIndexOutOfBoundsException();
             }
         }

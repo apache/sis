@@ -29,6 +29,7 @@ import org.apache.sis.geometries.Point;
 import org.apache.sis.geometries.DataPointsType;
 import org.apache.sis.geometries.Geometries;
 import org.apache.sis.geometries.GeometryFactory;
+import org.apache.sis.geometries.internal.shared.Centroids;
 import org.apache.sis.geometries.internal.shared.CurveLinearizer;
 import org.apache.sis.geometries.internal.shared.Curves;
 import org.apache.sis.geometries.internal.shared.DefaultLineString;
@@ -119,6 +120,17 @@ public sealed interface LineString extends Curve
     @Override
     default Point subCurve(Quantity<?> dist) {
         return Curves.alongPolyline(getDataPoints(), dist, Geometries.getLinearUnit(this));
+    }
+
+    /**
+     * Returns the mean of the segment middles weighted by the segment lengths,
+     * or the mean of the points if this line string has no length.
+     *
+     * @return the centroid, or {@code null} if this line string is empty.
+     */
+    @Override
+    default Point getCentroid() {
+        return Centroids.polyline(getDataPoints());
     }
 
     /**

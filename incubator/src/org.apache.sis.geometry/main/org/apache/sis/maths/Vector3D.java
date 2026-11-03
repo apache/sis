@@ -21,7 +21,16 @@ package org.apache.sis.maths;
  *
  * @author Johann Sorel (Geomatys)
  */
-public abstract class Vector3D<T extends Vector3D<T>> extends AbstractVector<T> {
+public abstract sealed class Vector3D<T extends Vector3D<T>> extends AbstractVector<T>
+        permits Vector3D.Byte,
+                Vector3D.UByte,
+                Vector3D.Short,
+                Vector3D.UShort,
+                Vector3D.Int,
+                Vector3D.UInt,
+                Vector3D.Long,
+                Vector3D.Float,
+                Vector3D.Double{
 
     public Vector3D() {
     }
@@ -44,7 +53,7 @@ public abstract class Vector3D<T extends Vector3D<T>> extends AbstractVector<T> 
      * @param angleRad angle in radians
      * @return new vector
      */
-    public T _rotateX(Vector<?> ref, double angleRad) {
+    public T rotateX(Vector<?> ref, double angleRad) {
         ensureDimension(ref, 3);
         final double sin = Math.sin(angleRad);
         final double cos = Math.cos(angleRad);
@@ -66,7 +75,7 @@ public abstract class Vector3D<T extends Vector3D<T>> extends AbstractVector<T> 
      * @param angleRad angle in radians
      * @return new vector
      */
-    public T _rotateY(Vector<?> ref, double angleRad) {
+    public T rotateY(Vector<?> ref, double angleRad) {
         ensureDimension(ref, 3);
         final double sin = Math.sin(angleRad);
         final double cos = Math.cos(angleRad);
@@ -88,7 +97,7 @@ public abstract class Vector3D<T extends Vector3D<T>> extends AbstractVector<T> 
      * @param angleRad angle in radians
      * @return new vector
      */
-    public T _rotateZ(Vector<?> ref, double angleRad) {
+    public T rotateZ(Vector<?> ref, double angleRad) {
         ensureDimension(ref, 3);
         final double sin = Math.sin(angleRad);
         final double cos = Math.cos(angleRad);
@@ -129,29 +138,10 @@ public abstract class Vector3D<T extends Vector3D<T>> extends AbstractVector<T> 
         return new double[]{latRad, lonRad};
     }
 
-
     @Override
     public final int getDimension() {
         return 3;
     }
-
-    @Override
-    public abstract T with(int indice, double value) throws IndexOutOfBoundsException;
-
-    @Override
-    public abstract T add(Vector<?> other);
-
-    @Override
-    public abstract T subtract(Vector<?> other);
-
-    @Override
-    public abstract T multiply(Vector<?> other);
-
-    @Override
-    public abstract T divide(Vector<?> other);
-
-    @Override
-    public abstract T scale(double scale);
 
     /**
      * Create a new vector, linear combination of this vector and the other vector : a*this + b*other.
@@ -189,9 +179,6 @@ public abstract class Vector3D<T extends Vector3D<T>> extends AbstractVector<T> 
         ensureDimension(unit, 3);
         return combine(1, unit, -dot(unit));
     }
-
-    @Override
-    public abstract T lerp(Vector<?> other, double ratio);
 
     @Override
     public T lerpAccurate(Vector<?> other, double ratio) {
@@ -263,17 +250,11 @@ public abstract class Vector3D<T extends Vector3D<T>> extends AbstractVector<T> 
                 LinearCombination.of(x, oy, -y, ox));
     }
 
-    public static class Byte extends Vector3D<Byte> {
+    public static final class Byte extends Vector3D<Byte> {
 
         public final byte x;
         public final byte y;
         public final byte z;
-
-        public Byte() {
-            this.x = 0;
-            this.y = 0;
-            this.z = 0;
-        }
 
         public Byte(byte x, byte y, byte z) {
             this.x = x;
@@ -441,11 +422,6 @@ public abstract class Vector3D<T extends Vector3D<T>> extends AbstractVector<T> 
         }
 
         @Override
-        public Byte copy() {
-            return this;
-        }
-
-        @Override
         public boolean isFinite() {
             return true;
         }
@@ -462,17 +438,11 @@ public abstract class Vector3D<T extends Vector3D<T>> extends AbstractVector<T> 
 
     }
 
-    public static class UByte extends Vector3D<UByte> {
+    public static final class UByte extends Vector3D<UByte> {
 
         public final byte x;
         public final byte y;
         public final byte z;
-
-        public UByte() {
-            this.x = 0;
-            this.y = 0;
-            this.z = 0;
-        }
 
         public UByte(byte x, byte y, byte z) {
             this.x = x;
@@ -640,11 +610,6 @@ public abstract class Vector3D<T extends Vector3D<T>> extends AbstractVector<T> 
         }
 
         @Override
-        public UByte copy() {
-            return this;
-        }
-
-        @Override
         public boolean isFinite() {
             return true;
         }
@@ -661,17 +626,11 @@ public abstract class Vector3D<T extends Vector3D<T>> extends AbstractVector<T> 
 
     }
 
-    public static class Short extends Vector3D<Short> {
+    public static final class Short extends Vector3D<Short> {
 
         public final short x;
         public final short y;
         public final short z;
-
-        public Short() {
-            this.x = 0;
-            this.y = 0;
-            this.z = 0;
-        }
 
         public Short(short x, short y, short z) {
             this.x = x;
@@ -839,11 +798,6 @@ public abstract class Vector3D<T extends Vector3D<T>> extends AbstractVector<T> 
         }
 
         @Override
-        public Short copy() {
-            return this;
-        }
-
-        @Override
         public boolean isFinite() {
             return true;
         }
@@ -860,17 +814,11 @@ public abstract class Vector3D<T extends Vector3D<T>> extends AbstractVector<T> 
 
     }
 
-    public static class UShort extends Vector3D<UShort> {
+    public static final class UShort extends Vector3D<UShort> {
 
         public final short x;
         public final short y;
         public final short z;
-
-        public UShort() {
-            this.x = 0;
-            this.y = 0;
-            this.z = 0;
-        }
 
         public UShort(short x, short y, short z) {
             this.x = x;
@@ -1050,11 +998,6 @@ public abstract class Vector3D<T extends Vector3D<T>> extends AbstractVector<T> 
         }
 
         @Override
-        public UShort copy() {
-            return this;
-        }
-
-        @Override
         public boolean isFinite() {
             return true;
         }
@@ -1071,17 +1014,11 @@ public abstract class Vector3D<T extends Vector3D<T>> extends AbstractVector<T> 
 
     }
 
-    public static class Int extends Vector3D<Int> {
+    public static final class Int extends Vector3D<Int> {
 
         public final int x;
         public final int y;
         public final int z;
-
-        public Int() {
-            this.x = 0;
-            this.y = 0;
-            this.z = 0;
-        }
 
         public Int(int x, int y, int z) {
             this.x = x;
@@ -1249,11 +1186,6 @@ public abstract class Vector3D<T extends Vector3D<T>> extends AbstractVector<T> 
         }
 
         @Override
-        public Int copy() {
-            return this;
-        }
-
-        @Override
         public boolean isFinite() {
             return true;
         }
@@ -1270,17 +1202,11 @@ public abstract class Vector3D<T extends Vector3D<T>> extends AbstractVector<T> 
 
     }
 
-    public static class UInt extends Vector3D<UInt> {
+    public static final class UInt extends Vector3D<UInt> {
 
         public final int x;
         public final int y;
         public final int z;
-
-        public UInt() {
-            this.x = 0;
-            this.y = 0;
-            this.z = 0;
-        }
 
         public UInt(int x, int y, int z) {
             this.x = x;
@@ -1456,11 +1382,6 @@ public abstract class Vector3D<T extends Vector3D<T>> extends AbstractVector<T> 
         }
 
         @Override
-        public UInt copy() {
-            return this;
-        }
-
-        @Override
         public boolean isFinite() {
             return true;
         }
@@ -1477,17 +1398,11 @@ public abstract class Vector3D<T extends Vector3D<T>> extends AbstractVector<T> 
 
     }
 
-    public static class Long extends Vector3D<Long> {
+    public static final class Long extends Vector3D<Long> {
 
         public final long x;
         public final long y;
         public final long z;
-
-        public Long() {
-            this.x = 0;
-            this.y = 0;
-            this.z = 0;
-        }
 
         public Long(long x, long y, long z) {
             this.x = x;
@@ -1655,11 +1570,6 @@ public abstract class Vector3D<T extends Vector3D<T>> extends AbstractVector<T> 
         }
 
         @Override
-        public Long copy() {
-            return this;
-        }
-
-        @Override
         public boolean isFinite() {
             return true;
         }
@@ -1676,17 +1586,11 @@ public abstract class Vector3D<T extends Vector3D<T>> extends AbstractVector<T> 
 
     }
 
-    public static class Float extends Vector3D<Float> {
+    public static final class Float extends Vector3D<Float> {
 
         public final float x;
         public final float y;
         public final float z;
-
-        public Float() {
-            this.x = 0;
-            this.y = 0;
-            this.z = 0;
-        }
 
         public Float(float x, float y, float z) {
             this.x = x;
@@ -1882,11 +1786,6 @@ public abstract class Vector3D<T extends Vector3D<T>> extends AbstractVector<T> 
         }
 
         @Override
-        public Float copy() {
-            return this;
-        }
-
-        @Override
         public boolean isFinite() {
             return java.lang.Float.isFinite(x) && java.lang.Float.isFinite(y) && java.lang.Float.isFinite(z);
         }
@@ -1914,17 +1813,11 @@ public abstract class Vector3D<T extends Vector3D<T>> extends AbstractVector<T> 
 
     }
 
-    public static class Double extends Vector3D<Double> {
+    public static final class Double extends Vector3D<Double> {
 
         public final double x;
         public final double y;
         public final double z;
-
-        public Double() {
-            this.x = 0;
-            this.y = 0;
-            this.z = 0;
-        }
 
         public Double(double x, double y, double z) {
             this.x = x;
@@ -2154,11 +2047,6 @@ public abstract class Vector3D<T extends Vector3D<T>> extends AbstractVector<T> 
                     x + ratio * (other.get(0) - x),
                     y + ratio * (other.get(1) - y),
                     z + ratio * (other.get(2) - z));
-        }
-
-        @Override
-        public Double copy() {
-            return this;
         }
 
         @Override

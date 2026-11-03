@@ -19,9 +19,11 @@ package org.apache.sis.storage.sql.feature;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.sql.ResultSet;
+import org.opengis.util.FactoryException;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import org.apache.sis.geometry.wrapper.GeometryWrapper;
 import org.apache.sis.geometry.wrapper.Geometries;
+import org.apache.sis.geometry.wrapper.Dimensions;
 import org.apache.sis.storage.DataStoreContentException;
 import org.apache.sis.util.resources.Errors;
 
@@ -178,8 +180,45 @@ final class GeometryGetter<G, V extends G> extends ValueGetter<V> {
             crs = stmts.fetchCRS(geom.getSRID().orElse(gpkgSrid));
         }
         if (crs != null) {
-            geom.setCoordinateReferenceSystem(crs);
+            /*
+            * The CRS built from the SRID may be two-dimensional while the geometry may have z or M coordinates.
+            * For example, a GeoPackage `srs_id` references a horizontal CRS even if the `gpkg_geometry_columns`
+            * declares that z values are mandatory. The adjustement below can add or remove CRS dimensions.
+            * The vertical (z) dimension, if unspecified, defaults to ellipsoidal height (3D CS) in metres.
+            * The measure (M) dimension has no default. If missing, caller may have a dimension mismatch.
+             */
+            final Dimensions dimensions = geom.getCoordinateDimensions();
+            Adjusted adjusted = lastAdjusted;
+            if (adjusted == null || (adjusted.source != crs || adjusted.dimensions != dimensions)) {
+                lastAdjusted = adjusted = new Adjusted(dimensions, crs);
+            }
+            geom.setCoordinateReferenceSystem(adjusted.target);
         }
         return valueType.cast(geometryFactory.getGeometry(geom));
+    }
+
+    /**
+     * The last <abbr>CRS</abbr> computed by an adjustment of the number of dimensions, or {@code null} if none.
+     */
+    private volatile Adjusted lastAdjusted;
+
+    /**
+     * The last <abbr>CRS</abbr> computed by an adjustment of the number of dimensions.
+     * Cached because all geometries of a column usually have the same <abbr>SRID</abbr> and number of dimensions.
+     * Instances are immutable for allowing the use of this cache by concurrent threads.
+     */
+    private static final class Adjusted {
+        /** The dimensions used for computing the target <abbr>CRS</abbr>. */
+        final Dimensions dimensions;
+
+        /** The <abbr>CRS</abbr> before and after adjustment for the number of dimensions. */
+        final CoordinateReferenceSystem source, target;
+
+        /** Creates a new cache entry. */
+        Adjusted(final Dimensions dimensions, final CoordinateReferenceSystem source) throws FactoryException {
+            this.dimensions = dimensions;
+            this.source     = source;
+            this.target     = dimensions.adjust(source, null, null, null);
+        }
     }
 }

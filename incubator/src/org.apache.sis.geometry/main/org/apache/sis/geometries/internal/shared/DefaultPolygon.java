@@ -110,24 +110,28 @@ public non-sealed class DefaultPolygon extends AbstractGeometry implements Polyg
         return Quantities.create(asJTS().getLength(), Geometries.getLinearUnit(this));
     }
 
+    /**
+     * Returns the centroid of the triangulation of this polygon, with interpolated attributes.
+     */
     @Override
     public Point getCentroid() {
         if (isEmpty()) {
             // The centroid of the empty set is undefined.
             return null;
         }
-        //TODO : fallback on JTS until implemented
-        return (Point) fromJTS(asJTS().getCentroid());
+        return Centroids.polygon(this);
     }
 
+    /**
+     * Returns the centroid of the largest triangle of the triangulation of this polygon, with interpolated attributes.
+     */
     @Override
     public Point getPointOnSurface() {
         if (isEmpty()) {
             // The empty set has no interior position.
             return null;
         }
-        //TODO : fallback on JTS until implemented
-        return (Point) fromJTS(asJTS().getInteriorPoint());
+        return Centroids.pointOnPolygon(this);
     }
 
     /**

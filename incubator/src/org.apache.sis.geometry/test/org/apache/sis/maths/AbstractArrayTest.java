@@ -300,7 +300,7 @@ public abstract class AbstractArrayTest {
             }
             final Vector tuple = Vectors.create(values, DataType.DOUBLE);
 
-            assertEquals(tuple, cursor.samples());
+            assertEquals(tuple, cursor.getSamples());
         }
         assertFalse(cursor.next());
 

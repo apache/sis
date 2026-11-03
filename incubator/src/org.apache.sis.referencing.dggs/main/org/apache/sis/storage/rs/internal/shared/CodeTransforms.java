@@ -64,7 +64,7 @@ public final class CodeTransforms {
         if (trss.length == 1) return trss[0];
         SubTransform rgt = new Compound((SubTransform)trss[0], (SubTransform)trss[1]);
         for (int i = 2; i < trss.length; i++) {
-            rgt = new Compound(rgt, (SubTransform) trss[2]);
+            rgt = new Compound(rgt, (SubTransform) trss[i]);
         }
         return rgt;
     }
@@ -221,7 +221,8 @@ public final class CodeTransforms {
             final double[] gp = new double[dimension];
             for(int i = 0; i < dimension; i++) gp[i] = (double) location[offset+i];
             crsToGrid.transform(gp, 0, gp, 0, 1);
-            for(int i = 0; i < dimension; i++) gridPosition[offset+i] = (int) gp[i];
+            //transform is cell center based, round to the nearest cell
+            for(int i = 0; i < dimension; i++) gridPosition[offset+i] = (int) Math.round(gp[i]);
         }
 
         @Override

@@ -30,9 +30,11 @@ import org.apache.sis.geometries.Point;
 import org.apache.sis.geometries.DataPointsType;
 import org.apache.sis.geometries.GeometryCollection;
 import org.apache.sis.geometries.curve.LineString;
+import org.apache.sis.geometries.internal.shared.ArrayDataPoints;
 import org.apache.sis.geometries.internal.shared.DefaultDataPoints;
 import org.apache.sis.geometries.internal.shared.DefaultNurbCurve;
 import org.apache.sis.geometries.internal.shared.DefaultNurbSurface;
+import org.apache.sis.geometries.internal.shared.Vertex;
 import org.apache.sis.geometries.mesh.MeshPrimitive;
 import org.apache.sis.geometries.mesh.MeshPrimitiveVisitor;
 import org.apache.sis.geometries.mesh.MultiMeshPrimitive;
@@ -106,7 +108,7 @@ public final class Intersection {
         final PreparedTIN.Evaluator evaluator = tin.evaluator();
         new MeshPrimitiveVisitor(primitive) {
             @Override
-            protected void visit(MeshPrimitive.Vertex vertex) {
+            protected void visit(Vertex vertex) {
                 if (isVisited(vertex)) return;
                 final Optional<Point> opt = evaluator.evaluate(vertex.getCoordinateReferenceSystem(), vertex.getPosition());
                 if (opt.isEmpty()) return;
@@ -139,7 +141,7 @@ public final class Intersection {
         final Cursor cursor = positions.cursor();
         final List<Integer> values = new ArrayList<>();
         while (cursor.next()) {
-            final Vector<?> position = cursor.samples();
+            final Vector<?> position = cursor.getSamples();
             if (evaluator.evaluate(position).isPresent()) {
                 values.add(Math.toIntExact(cursor.coordinate()));
             }

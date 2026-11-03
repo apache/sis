@@ -76,26 +76,6 @@ public non-sealed class DefaultMultiPoint extends AbstractGeometry implements Ge
     }
 
     @Override
-    public Point getCentroid() {
-        if (isEmpty()) {
-            // The centroid of the empty set is undefined.
-            return null;
-        }
-        //TODO : fallback on JTS until implemented
-        return (Point) fromJTS(asJTS().getCentroid());
-    }
-
-    @Override
-    public Point getRepresentativePoint() {
-        if (isEmpty()) {
-            // The empty set has no interior position.
-            return null;
-        }
-        //TODO : fallback on JTS until implemented
-        return (Point) fromJTS(asJTS().getInteriorPoint());
-    }
-
-    @Override
     public Geometry getBoundary() {
         if (isEmpty()) {
             // The boundary of the empty set is empty.

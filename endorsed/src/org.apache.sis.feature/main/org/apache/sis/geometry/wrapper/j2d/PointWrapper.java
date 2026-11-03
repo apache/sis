@@ -71,6 +71,16 @@ final class PointWrapper extends GeometryWrapper {
     }
 
     /**
+     * Returns whether the coordinates of this geometry are finite.
+     *
+     * @return whether the coordinates are non-NaN and finite.
+     */
+    @Override
+    public boolean isFinite2D() {
+        return Double.isFinite(point.getX()) && Double.isFinite(point.getY());
+    }
+
+    /**
      * Returns an empty envelope centered on this point.
      */
     @Override

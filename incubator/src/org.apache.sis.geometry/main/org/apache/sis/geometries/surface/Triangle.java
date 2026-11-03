@@ -145,6 +145,42 @@ public sealed interface Triangle extends Polygon
     }
 
     /**
+     * Returns the point at equal weights of the three corners. Each attribute, the position included,
+     * is interpolated between the corners as declared by its
+     * {@linkplain DataPointsType#getAttributeInterpolation(String) attribute interpolation}.
+     *
+     * @return the centroid of this triangle, or {@code null} if this triangle is empty.
+     *
+     * @see ISO 19107:2019 - 6.4.4.8
+     */
+    @Override
+    default Point getCentroid() {
+        if (isEmpty()) {
+            return null;
+        }
+        final double third = 1.0 / 3;
+        return getExteriorRing().getDataPoints().getInterpolatedPoint(new int[] {0, 1, 2}, new double[] {third, third, third});
+    }
+
+    /**
+     * Returns the {@linkplain #getCentroid() centroid}, which is always inside a triangle.
+     *
+     * @see ISO 19107:2019 - 6.4.4.19
+     */
+    @Override
+    default Point getRepresentativePoint() {
+        return getCentroid();
+    }
+
+    /**
+     * Returns the {@linkplain #getCentroid() centroid}, which is always inside a triangle.
+     */
+    @Override
+    default Point getPointOnSurface() {
+        return getCentroid();
+    }
+
+    /**
      * Compute point distance to triangle.
      * @param pt point to evaluate
      * @return point distance to triangle

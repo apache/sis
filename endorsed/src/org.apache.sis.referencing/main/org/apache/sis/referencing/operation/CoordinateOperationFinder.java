@@ -1109,7 +1109,7 @@ public class CoordinateOperationFinder extends CoordinateOperationRegistry {
     private CoordinateReferenceSystem createCompoundCRS(final CoordinateReferenceSystem template,
             final CoordinateReferenceSystem[] components) throws FactoryException
     {
-        EllipsoidalHeightCombiner c = new EllipsoidalHeightCombiner(factorySIS.crsFactory, factorySIS.csFactory, factory);
+        final var c = new EllipsoidalHeightCombiner(factorySIS.crsFactory, factorySIS.csFactory, factory);
         CoordinateReferenceSystem crs = c.createCompoundCRS(derivedFrom(template), components);
         return toAuthorityDefinition(CoordinateReferenceSystem.class, crs);
     }

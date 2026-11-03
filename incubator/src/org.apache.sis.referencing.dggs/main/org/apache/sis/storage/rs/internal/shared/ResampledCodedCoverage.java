@@ -84,10 +84,15 @@ public final class ResampledCodedCoverage extends AbstractCodedCoverage {
             return base.getSampleDimensions().size();
         }
 
+        /**
+         * Returns the linear position of given grid position, or -1 if outside the extent.
+         */
         private long toLinearPosition(int[] pos) {
             long p = 0;
             for (int i = 0; i < dimension; i++) {
-                p += pos[i] * dimStep[i];
+                final long k = pos[i] - dimOffsets[i];
+                if (k < 0 || k >= dimSize[i]) return -1;
+                p += k * dimStep[i];
             }
             return p;
         }

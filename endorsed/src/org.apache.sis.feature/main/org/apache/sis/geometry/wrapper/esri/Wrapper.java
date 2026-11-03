@@ -38,6 +38,7 @@ import com.esri.core.geometry.SpatialReference;
 import org.opengis.geometry.DirectPosition;
 import org.apache.sis.geometry.DirectPosition2D;
 import org.apache.sis.geometry.GeneralEnvelope;
+import org.apache.sis.geometry.wrapper.Dimensions;
 import org.apache.sis.geometry.wrapper.Geometries;
 import org.apache.sis.geometry.wrapper.GeometryWrapper;
 import org.apache.sis.filter.sqlmm.SQLMM;
@@ -48,7 +49,7 @@ import org.opengis.filter.SpatialOperatorName;
 
 
 /**
- * The wrapper of ERSI geometries.
+ * The wrapper of <abbr>ERSI</abbr> geometries.
  *
  * @author  Johann Sorel (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
@@ -84,7 +85,17 @@ final class Wrapper extends GeometryWrapper {
     }
 
     /**
-     * Returns the ESRI envelope as an Apache SIS implementation.
+     * Returns an identification of which dimensions are for the coordinates of this geometry.
+     *
+     * @return the coordinate dimensions (never {@code null}).
+     */
+    @Override
+    public Dimensions getCoordinateDimensions() {
+        return Dimensions.forZorM(geometry.hasZ(), geometry.hasM());
+    }
+
+    /**
+     * Returns the <abbr>ESRI</abbr> envelope as an Apache <abbr>SIS</abbr> implementation.
      *
      * @return the envelope.
      */

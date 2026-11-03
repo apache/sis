@@ -53,7 +53,7 @@ public class To3DTest {
     @Test
     public void testPoint() {
         final Point point = GeometryFactory.DEFAULT.createPoint(CRS2D, 10.0, 5.0);
-        final Geometry result = new GeometryProcessor().to3D(point, CRS2DZ, (Cursor c) -> c.set(2, 15));
+        final Geometry result = new GeometryProcessor().to3D(point, CRS2DZ, (Cursor c) -> c.setSample(2, 15));
         assertInstanceOf(Point.class, result);
         assertEquals(CRS2DZ, result.getCoordinateReferenceSystem());
         assertArrayEquals(new double[] {10.0, 5.0, 15.0}, ((Point) result).getPosition().toArrayDouble(), 0.0);
@@ -70,7 +70,7 @@ public class To3DTest {
                 6.0, 7.0
         ));
 
-        Geometry result = new GeometryProcessor().to3D(primitive, CRS3D, (Cursor c) -> c.set(2, 15));
+        Geometry result = new GeometryProcessor().to3D(primitive, CRS3D, (Cursor c) -> c.setSample(2, 15));
         assertTrue(result instanceof MeshPrimitive);
         assertEquals(CRS3D, result.getCoordinateReferenceSystem());
         MeshPrimitive p = (MeshPrimitive) result;

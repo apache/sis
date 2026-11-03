@@ -29,6 +29,8 @@ import org.locationtech.jts.geom.impl.PackedCoordinateSequence;
 import org.locationtech.jts.geom.impl.PackedCoordinateSequenceFactory;
 import org.opengis.util.FactoryException;
 import org.apache.sis.geometries.DataPoints;
+import org.apache.sis.geometries.internal.shared.ArrayDataPoints;
+import org.apache.sis.geometries.internal.shared.Vertex;
 import org.apache.sis.geometries.mesh.MeshPrimitive;
 import org.apache.sis.geometries.mesh.MeshPrimitiveVisitor;
 import static org.apache.sis.geometries.operation.spatialanalysis2d.ISOLine.interpolateToArray;
@@ -114,7 +116,7 @@ public final class ISOBand {
             }
 
             @Override
-            protected void visit(MeshPrimitive.Vertex vertex) {
+            protected void visit(Vertex vertex) {
             }
         };
         visitor.visit();

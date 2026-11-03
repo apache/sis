@@ -94,7 +94,7 @@ public class Vector3DTest {
         final double[] latitudes = {-Math.PI / 3, -Math.PI / 6, 0, Math.PI / 6, Math.PI / 3};
         final double[] longitudes = {-3 * Math.PI / 4, -Math.PI / 3, 0, Math.PI / 3, 3 * Math.PI / 4};
 
-        Vector3D.Double v = new Vector3D.Double();
+        Vector3D.Double v;
         for (double lat : latitudes) {
             for (double lon : longitudes) {
                 v = Vector3D.fromLatLon(lat, lon);

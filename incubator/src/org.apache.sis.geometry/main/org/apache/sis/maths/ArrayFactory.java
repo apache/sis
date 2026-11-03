@@ -256,14 +256,14 @@ public interface ArrayFactory {
                         int idx = 0;
                         final Cursor cursor = target.cursor();
                         while (cursor.next()) {
-                            cursor.set((Vector) java.lang.reflect.Array.get(values, idx++));
+                            cursor.setSamples((Vector) java.lang.reflect.Array.get(values, idx++));
                         }
                     } else {
                         int idx = 0;
                         final Cursor cursor = target.cursor();
                         while (cursor.next()) {
                             for (int i = 0; i < nbDim; i++) {
-                                cursor.set(i, java.lang.reflect.Array.getDouble(values, idx));
+                                cursor.setSample(i, java.lang.reflect.Array.getDouble(values, idx));
                                 idx++;
                             }
                         }
@@ -275,10 +275,10 @@ public interface ArrayFactory {
                         cursor.next();
                         final Object o = ite.next();
                         if (o instanceof Vector<?> t) {
-                            cursor.set(t);
+                            cursor.setSamples(t);
                         } else if (o != null && o.getClass().isArray()) {
                             for (int i = 0; i < nbDim; i++) {
-                                cursor.set(i, java.lang.reflect.Array.getDouble(o, i));
+                                cursor.setSample(i, java.lang.reflect.Array.getDouble(o, i));
                             }
                         } else {
                             throw new IllegalArgumentException("Values iterable is not made of Tuple or primitive array");

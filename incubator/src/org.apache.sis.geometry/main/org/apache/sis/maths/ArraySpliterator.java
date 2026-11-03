@@ -57,7 +57,7 @@ final class ArraySpliterator implements Spliterator<Vector<?>>{
         if (cursor == null) cursor = array.cursor();
         cursor.moveTo(rangeStart);
         rangeStart++;
-        action.accept(cursor.samples());
+        action.accept(cursor.getSamples());
         return true;
     }
 

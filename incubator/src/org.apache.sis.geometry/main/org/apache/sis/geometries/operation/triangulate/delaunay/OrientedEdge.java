@@ -24,8 +24,9 @@ import org.apache.sis.geometries.DataPointsType;
 import org.apache.sis.geometries.Geometries;
 import org.apache.sis.geometries.curve.LineString;
 import org.apache.sis.geometries.internal.shared.AbstractGeometry;
+import org.apache.sis.geometries.internal.shared.ArrayDataPoints;
+import org.apache.sis.geometries.internal.shared.Vertex;
 import org.apache.sis.geometries.mesh.MeshPrimitive;
-import org.apache.sis.geometries.mesh.MeshPrimitive.Vertex;
 import org.apache.sis.maths.Maths;
 import org.apache.sis.maths.Vector;
 
@@ -67,7 +68,7 @@ public final class OrientedEdge extends AbstractGeometry implements LineString, 
      * @param start starting vertex
      * @param end ending vertex
      */
-    public OrientedEdge(MeshPrimitive.Vertex start, MeshPrimitive.Vertex end) {
+    public OrientedEdge(Vertex start, Vertex end) {
         this.structure = new Structure(start, end);
     }
 
@@ -80,7 +81,7 @@ public final class OrientedEdge extends AbstractGeometry implements LineString, 
      * @param end ending vertex
      * @param triangle parent triangle
      */
-    public OrientedEdge(MeshPrimitive.Vertex start, MeshPrimitive.Vertex end, OrientedTriangle triangle) {
+    public OrientedEdge(Vertex start, Vertex end, OrientedTriangle triangle) {
         this.structure = new Structure(start, end);
         this.triangle = triangle;
     }
@@ -128,7 +129,7 @@ public final class OrientedEdge extends AbstractGeometry implements LineString, 
     /**
      * @return true if point is on the edge
      */
-    public boolean isOnEdge(MeshPrimitive.Vertex pt) {
+    public boolean isOnEdge(Vertex pt) {
         assert (!structure.obsolete);
         return Maths.isOnLine(structure.start.getPosition(), structure.end.getPosition(), pt.getPosition());
     }
@@ -138,7 +139,7 @@ public final class OrientedEdge extends AbstractGeometry implements LineString, 
      *          equal 0 if point is on the line
      *          inferior than 0 if point is on the right side
      */
-    public double getSide(MeshPrimitive.Vertex pt) {
+    public double getSide(Vertex pt) {
         return Maths.lineSide(
                 getStart().getPosition(),
                 getEnd().getPosition(),
@@ -171,7 +172,7 @@ public final class OrientedEdge extends AbstractGeometry implements LineString, 
     /**
      * @return true if one of the two edge vertices is the same as given vertex.
      */
-    public boolean hasPoint(MeshPrimitive.Vertex pt) {
+    public boolean hasPoint(Vertex pt) {
         assert (!structure.obsolete);
         return structure.start.getIndex() == pt.getIndex() || structure.end.getIndex() == pt.getIndex();
     }
@@ -248,8 +249,8 @@ public final class OrientedEdge extends AbstractGeometry implements LineString, 
     @Override
     public Vector getPosition(int index) {
         switch (index) {
-            case 0 : return (reversed ? structure.end : structure.start).getPosition().copy();
-            case 1 : return (reversed ? structure.start : structure.end).getPosition().copy();
+            case 0 : return (reversed ? structure.end : structure.start).getPosition();
+            case 1 : return (reversed ? structure.start : structure.end).getPosition();
             default : throw new ArrayIndexOutOfBoundsException();
         }
     }
@@ -286,10 +287,10 @@ public final class OrientedEdge extends AbstractGeometry implements LineString, 
     private static class Structure {
 
         private boolean obsolete = false;
-        final MeshPrimitive.Vertex start;
-        final MeshPrimitive.Vertex end;
+        final Vertex start;
+        final Vertex end;
 
-        public Structure(MeshPrimitive.Vertex start, MeshPrimitive.Vertex end) {
+        public Structure(Vertex start, Vertex end) {
             this.start = start;
             this.end = end;
         }

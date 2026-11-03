@@ -20,7 +20,6 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
 import org.opengis.coordinate.MismatchedDimensionException;
-import org.opengis.geometry.DirectPosition;
 import org.opengis.geometry.Envelope;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import org.apache.sis.geometries.internal.shared.IndexedPoint;
@@ -64,7 +63,7 @@ public final class BBox extends GeneralEnvelope implements Geometry {
      * @param upper upper corner
      */
     public BBox(Vector<?> lower, Vector<?> upper) {
-        super(asPosition(lower), asPosition(upper));
+        super(lower.asDirectPostion(null), upper.asDirectPostion(null));
         ensureCRS();
     }
 
@@ -93,20 +92,13 @@ public final class BBox extends GeneralEnvelope implements Geometry {
     }
 
     /**
-     * Returns a view of the given vector as a direct position.
-     */
-    private static DirectPosition asPosition(final Vector<?> vector) {
-        return Vectors.asDirectPostion(vector);
-    }
-
-    /**
      * Adds a position given as a vector to this box.
      *
      * @param  position  the position to add.
      * @throws MismatchedDimensionException if the vector does not have the dimension of this box.
      */
     public void add(final Vector<?> position) throws MismatchedDimensionException {
-        add(asPosition(position));
+        add(position.asDirectPostion(null));
     }
 
     /**

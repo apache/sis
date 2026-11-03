@@ -134,10 +134,15 @@ public final class ArrayCodedCoverage extends AbstractCodedCoverage{
             }
         }
 
+        /**
+         * Returns the linear position of given grid position, or -1 if outside the extent.
+         */
         private long toLinearPosition(int[] pos) {
             long p = 0;
             for (int i = 0; i < dimension; i++) {
-                p += pos[i] * dimStep[i];
+                final long k = pos[i] - dimOffsets[i];
+                if (k < 0 || k >= dimSize[i]) return -1;
+                p += k * dimStep[i];
             }
             return p;
         }
@@ -145,7 +150,7 @@ public final class ArrayCodedCoverage extends AbstractCodedCoverage{
         @Override
         public void setSample(int band, double value) {
             cursors[band].moveTo(Math.toIntExact(linearPosition));
-            cursors[band].set(0, value);
+            cursors[band].setSample(0, value);
         }
 
         @Override
@@ -187,7 +192,7 @@ public final class ArrayCodedCoverage extends AbstractCodedCoverage{
         @Override
         public double getSampleDouble(int band) {
             cursors[band].moveTo(Math.toIntExact(linearPosition));
-            return cursors[band].samples().get(0);
+            return cursors[band].getSamples().get(0);
         }
 
         @Override

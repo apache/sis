@@ -25,6 +25,8 @@ import org.apache.sis.geometries.DataPoints;
 import org.apache.sis.geometries.GeometryType;
 import org.apache.sis.geometries.Surface;
 import org.apache.sis.geometries.DataPointsType;
+import org.apache.sis.geometries.Point;
+import org.apache.sis.geometries.internal.shared.Centroids;
 import org.apache.sis.geometries.internal.shared.ConcatenatedDataPoints;
 import org.apache.sis.geometries.internal.shared.DefaultCurvePolygon;
 
@@ -157,6 +159,35 @@ public sealed interface CurvePolygon extends Surface
      *
      * @see ISO 19107:2019 - 8.1.2.3
      */
+    /**
+     * Returns the centroid of a polygon approximating this surface with linear rings.
+     *
+     * @return the centroid, or {@code null} if this surface is empty.
+     *
+     * @see ISO 19107:2019 - 6.4.4.8
+     */
+    @Override
+    default Point getCentroid() {
+        return isEmpty() ? null : Centroids.linearize(this).getCentroid();
+    }
+
+    /**
+     * Returns a point inside a polygon approximating this surface with linear rings.
+     *
+     * @return a point on this surface, or {@code null} if this surface is empty.
+     *
+     * @see ISO 19107:2019 - 6.4.4.19
+     */
+    @Override
+    default Point getRepresentativePoint() {
+        return isEmpty() ? null : Centroids.linearize(this).getRepresentativePoint();
+    }
+
+    @Override
+    default Point getPointOnSurface() {
+        return getRepresentativePoint();
+    }
+
     @UML(identifier="spanningSurface", specification=ISO_19107)
     default GriddedSurface getSpanningSurface() {
         //TODO

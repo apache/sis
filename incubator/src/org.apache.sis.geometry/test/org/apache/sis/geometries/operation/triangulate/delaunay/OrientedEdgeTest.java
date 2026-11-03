@@ -17,9 +17,9 @@
 package org.apache.sis.geometries.operation.triangulate.delaunay;
 
 import java.util.Iterator;
+import org.apache.sis.geometries.internal.shared.Vertex;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import org.apache.sis.geometries.mesh.MeshPrimitive;
-import org.apache.sis.geometries.mesh.MeshPrimitive.Vertex;
 import org.apache.sis.maths.NDArrays;
 import org.apache.sis.maths.Array;
 import org.apache.sis.referencing.CommonCRS;

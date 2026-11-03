@@ -35,11 +35,16 @@ import org.apache.sis.geometries.DataPointsType;
 import org.apache.sis.geometries.Geometries;
 import org.apache.sis.geometries.Geometry;
 import org.apache.sis.geometries.GeometryCollection;
+import org.apache.sis.geometries.GeometryFactory;
 import org.apache.sis.geometries.GeometryType;
 import org.apache.sis.geometries.Point;
 import org.apache.sis.geometries.Prism;
 import org.apache.sis.geometries.curve.LineString;
 import org.apache.sis.geometries.curve.LinearRing;
+import org.apache.sis.geometries.curve.OffsetCurve;
+import org.apache.sis.geometries.cs.Bearing;
+import org.apache.sis.geometries.internal.shared.ArrayDataPoints;
+import org.apache.sis.geometries.internal.shared.Vertex;
 import org.apache.sis.geometries.mesh.MeshPrimitive;
 import org.apache.sis.geometries.mesh.MeshPrimitiveVisitor;
 import org.apache.sis.geometries.mesh.MultiMeshPrimitive;
@@ -88,6 +93,42 @@ public final class GeometryProcessor {
 
         //TODO : fallback on JTS until implemented, this loss the attributes !
         return fromJTS(jts(geom).buffer(radius.getValue().doubleValue()), geom);
+    }
+
+    /**
+     * Returns a line string parallel to the given line string, at the given perpendicular distance.
+     * Each segment is translated along its normal and consecutive segments are joined
+     * at the intersection of their supporting lines.
+     * The result has the same number of points, closed line strings stay closed.
+     * Only the first two coordinates of each position are modified.
+     *
+     * @param geom a line string or a collection of line strings.
+     * @param distance offset distance in CRS units, positive for the left side and negative
+     *        for the right side relative to the line string direction, as in {@link OffsetCurve}.
+     * @return offset geometry of the same type.
+     * @throws OperationException if the offset curve cannot be computed.
+     *
+     * @see GeometryFactory#createOffsetCurve(Curve, Quantity, Bearing)
+     */
+    public Geometry offsetCurve(Geometry geom, double distance) throws OperationException {
+        if (distance == 0 || geom.isEmpty()) {
+            return geom;
+        }
+        if (geom instanceof LineString cdt) {
+            return GeometryFactory.DEFAULT.createOffsetCurve(cdt, Quantities.create(distance, Units.UNITY), null).asLine(null, null);
+        } else if (geom instanceof GeometryCollection<?> cdt) {
+            final int nb = cdt.getNumGeometries();
+            final Geometry[] children = new Geometry[nb];
+            for (int i = 0; i < nb; i++) {
+                final Geometry child = cdt.getGeometryN(i);
+                if (!(child instanceof LineString)) {
+                    throw new OperationException("Only collections of line strings can be offset, found " + child.getGeometryType());
+                }
+                children[i] = offsetCurve(child, distance);
+            }
+            return GeometryFactory.DEFAULT.createGeometryCollection(cdt.getElementType(), cdt.getCoordinateReferenceSystem(), children);
+        }
+        throw new UnsupportedOperationException();
     }
 
     /**
@@ -594,7 +635,7 @@ public final class GeometryProcessor {
             }
 
             @Override
-            protected void visit(MeshPrimitive.Vertex vertex) {}
+            protected void visit(Vertex vertex) {}
         };
         pv.visit();
 

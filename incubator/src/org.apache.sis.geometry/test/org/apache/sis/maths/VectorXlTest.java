@@ -31,10 +31,10 @@ public class VectorXlTest extends AbstractVectorTest{
     @Override
     protected Vector create(int dim) {
         switch (dim) {
-            case 1 : return new Vector1D.Long();
-            case 2 : return new Vector2D.Long();
-            case 3 : return new Vector3D.Long();
-            case 4 : return new Vector4D.Long();
+            case 1 : return new Vector1D.Long(0);
+            case 2 : return new Vector2D.Long(0,0);
+            case 3 : return new Vector3D.Long(0,0,0);
+            case 4 : return new Vector4D.Long(0,0,0,0);
             default : return new VectorND.Long(dim);
         }
     }
