@@ -16,6 +16,6 @@
  */
 
 /**
- * Place-holder for future web services.
+ * Tasks to execute at initialization and undeploy time.
  */
 package org.apache.sis.services;

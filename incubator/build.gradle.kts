@@ -65,6 +65,7 @@ dependencies {
     implementation(group = "org.antlr",                  name = "antlr4-maven-plugin", version = "4.13.2")
     implementation(group = "org.xerial",                 name = "sqlite-jdbc",         version = "3.45.1.0")
     compileOnly   (group = "jakarta.servlet",            name = "jakarta.servlet-api", version = "6.1.0")
+    compileOnly   (group = "javax.servlet",              name = "javax.servlet-api",   version = "4.0.1")
     compileOnly   (group = "org.osgi",                   name = "osgi.core",           version = "8.0.0")
     antlr         (group = "org.antlr",                  name = "antlr4",              version = "4.13.2")
 }

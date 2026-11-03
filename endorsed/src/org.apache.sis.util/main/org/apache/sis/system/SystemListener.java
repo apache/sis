@@ -106,7 +106,7 @@ public abstract class SystemListener implements EventListener {
             final SystemListener[] list = listeners;
             if (list != null) {
                 int count = 0;
-                final SystemListener[] modified = new SystemListener[list.length];
+                final var modified = new SystemListener[list.length];
                 for (final SystemListener listener : list) {
                     if (!name.equals(listener.module)) {
                         modified[count++] = listener;

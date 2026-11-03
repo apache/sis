@@ -82,7 +82,7 @@ public final class Shutdown extends Thread {
     }
 
     /**
-     * Invoked if the Apache SIS library is executed from an environment that provide its own shutdown hook.
+     * Invoked if the Apache SIS library is executed from an environment that provides its own shutdown hook.
      * Example of such environments are OSGi and servlet containers. In such case, the shutdown hook will not
      * be registered to the JVM {@link Runtime}.
      *
@@ -152,6 +152,7 @@ public final class Shutdown extends Thread {
      * @throws Exception if an error occurred during unregistration of the supervisor MBean
      *         or during a resource disposal.
      */
+    @SuppressWarnings("UseSpecificCatch")
     public static void stop(final Class<?> caller) throws Exception {
         synchronized (resources) {
             container = "Shutdown";

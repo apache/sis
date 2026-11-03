@@ -16,12 +16,26 @@
  */
 
 /**
- * Place-holder for future web services.
+ * Support the use of Apache <abbr>SIS</abbr> in web containers.
+ * Web applications having <abbr>SIS</abbr> in their dependencies can add this module
+ * if they need to undeploy <abbr>SIS</abbr> cleanly while keeping the rest of the container running.
+ * This module is compatible with:
+ *
+ * <ul>
+ *   <li>JavaEE Servlet 4.0 ({@code javax.servlet} packages)</li>
+ *   <li>Jakarta Servlet 6.1 ({@code jakarta.servlet} packages)</li>
+ *   <li>OGSGi 8.0 ({@code org.osgi} packages)</li>
+ * </ul>
  */
 module org.apache.sis.webapp {
-    requires transitive org.apache.sis.storage;
+    requires transitive org.apache.sis.util;
     requires static jakarta.servlet;
+    requires static javax.servlet.api;
     requires static osgi.core;
 
-    exports org.apache.sis.services;
+    provides jakarta.servlet.ServletContainerInitializer
+            with org.apache.sis.services.ServletListener;
+
+    provides javax.servlet.ServletContainerInitializer
+            with org.apache.sis.services.ServletListenerLegacy;
 }
