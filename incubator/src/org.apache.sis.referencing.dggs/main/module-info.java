@@ -34,6 +34,7 @@ module org.apache.sis.referencing.dggs {
     exports org.apache.sis.storage.coverage;
     exports org.apache.sis.storage.dggs;
     exports org.apache.sis.storage.rs;
+    opens org.apache.sis.geometry.wrapper.s2 to org.apache.sis.feature;
 
     uses org.apache.sis.referencing.dggs.DiscreteGlobalGridReferenceSystemFactory;
     provides org.apache.sis.referencing.dggs.DiscreteGlobalGridReferenceSystemFactory

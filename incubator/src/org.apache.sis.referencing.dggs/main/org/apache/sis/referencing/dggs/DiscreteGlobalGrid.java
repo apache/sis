@@ -27,7 +27,7 @@ import org.opengis.referencing.operation.TransformException;
 import org.apache.sis.geometry.DirectPosition2D;
 import org.apache.sis.geometry.Envelopes;
 import org.apache.sis.referencing.CommonCRS;
-import org.apache.sis.storage.rs.internal.shared.s2.S2;
+import org.apache.sis.geometry.wrapper.s2.S2;
 
 
 /**

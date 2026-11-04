@@ -64,8 +64,8 @@ import org.apache.sis.storage.dggs.internal.shared.MemoryDiscreteGlobalGridResou
 import org.apache.sis.storage.rs.CodedCoverage;
 import org.apache.sis.storage.rs.CodedResource;
 import org.apache.sis.storage.rs.internal.shared.CodedCoverageAsFeatureSet;
-import org.apache.sis.storage.rs.internal.shared.s2.Factory;
-import org.apache.sis.storage.rs.internal.shared.s2.S2;
+import org.apache.sis.geometry.wrapper.s2.Factory;
+import org.apache.sis.geometry.wrapper.s2.S2;
 
 
 /**

@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.sis.geometries.adapter;
+package org.apache.sis.geometry.wrapper.sis;
 
 import java.nio.ByteBuffer;
 import java.nio.DoubleBuffer;
@@ -31,6 +31,8 @@ import org.apache.sis.geometries.GeometryCollection;
 import org.apache.sis.geometries.GeometryFactory;
 import org.apache.sis.geometries.Point;
 import org.apache.sis.geometries.Surface;
+import org.apache.sis.geometries.adapter.WellKnownBinary;
+import org.apache.sis.geometries.adapter.WellKnownText;
 import org.apache.sis.geometries.curve.Circle;
 import org.apache.sis.geometries.curve.CircularString;
 import org.apache.sis.geometries.curve.Clothoid;
@@ -65,9 +67,9 @@ import org.apache.sis.util.resources.Errors;
  *
  * @author Johann Sorel (Geomatys)
  */
-public final class SIS extends org.apache.sis.geometry.wrapper.Geometries<Geometry> {
+public final class Factory extends org.apache.sis.geometry.wrapper.Geometries<Geometry> {
 
-    public static SIS INSTANCE = new SIS();
+    public static Factory INSTANCE = new Factory();
 
     /**
      * The geometry classes tested by {@link #getGeometryType(Class)}, in the order they are tested.
@@ -126,7 +128,7 @@ public final class SIS extends org.apache.sis.geometry.wrapper.Geometries<Geomet
         GeometryType.GEOMETRY
     };
 
-    private SIS(){
+    private Factory(){
         super(GeometryLibrary.SIS, Geometry.class, Point.class);
     }
 

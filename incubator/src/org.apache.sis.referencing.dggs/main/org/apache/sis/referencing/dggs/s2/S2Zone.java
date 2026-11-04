@@ -33,7 +33,7 @@ import org.apache.sis.referencing.CommonCRS;
 import org.apache.sis.referencing.dggs.RefinementLevel;
 import org.apache.sis.referencing.dggs.Zone;
 import org.apache.sis.referencing.dggs.internal.shared.AbstractZone;
-import org.apache.sis.storage.rs.internal.shared.s2.S2;
+import org.apache.sis.geometry.wrapper.s2.S2;
 
 
 /**

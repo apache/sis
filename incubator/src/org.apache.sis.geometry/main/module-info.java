@@ -51,6 +51,8 @@ module org.apache.sis.geometry {
     exports org.apache.sis.geometries.internal.shared to
             org.apache.sis.referencing.dggs;
 
+    opens org.apache.sis.geometry.wrapper.sis to org.apache.sis.feature;
+
     /*
      * Allow JAXB to use reflection for marshalling and
      * unmarshalling Apache SIS objects in XML documents.
