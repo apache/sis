@@ -41,7 +41,7 @@
  * @author  Cullen Rombach (Image Matters)
  * @author  Alexis Gaillard (Geomatys)
  * @version 1.7
- * @since   0.3
+ * @since SIS 0.3
  */
 @XmlSchema(location="https://schemas.isotc211.org/19157/-2/mdq/1.0/mdq.xsd",
            elementFormDefault=XmlNsForm.QUALIFIED, namespace=Namespaces.MDQ,

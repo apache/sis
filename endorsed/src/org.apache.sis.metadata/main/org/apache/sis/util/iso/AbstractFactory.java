@@ -30,7 +30,7 @@ import org.apache.sis.util.collection.BackingStoreException;
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.5
- * @since   0.3
+ * @since SIS 0.3
  */
 public abstract class AbstractFactory implements Factory {
     /**
@@ -66,7 +66,7 @@ public abstract class AbstractFactory implements Factory {
      *
      * @return a string representation of this factory.
      *
-     * @since 1.5
+     * @since SIS 1.5
      */
     @Override
     public String toString() {

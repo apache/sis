@@ -26,6 +26,6 @@
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.0
- * @since   1.0
+ * @since SIS 1.0
  */
 package org.apache.sis.profile.japan;

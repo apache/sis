@@ -80,7 +80,7 @@ import org.apache.sis.util.internal.shared.TreeTableForGUI;
  * @author  Siddhesh Rane (GSoC)
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.7
- * @since   1.1
+ * @since SIS 1.1
  */
 @DefaultProperty("content")
 public class MetadataTree extends TreeTableView<TreeTable.Node> {

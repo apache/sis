@@ -92,7 +92,7 @@ import org.apache.sis.util.collection.WeakHashSet;
  * @see org.apache.sis.util.collection.RangeSet
  * @see <a href="https://en.wikipedia.org/wiki/Interval_%28mathematics%29">Wikipedia: Interval</a>
  *
- * @since 0.3
+ * @since SIS 0.3
  */
 public class NumberRange<E extends Number & Comparable<? super E>> extends Range<E> {
     /**
@@ -155,7 +155,7 @@ public class NumberRange<E extends Number & Comparable<? super E>> extends Range
      * @param  value   the value, or {@code null} for creating an unbounded range.
      * @return a range containing the given value as its inclusive minimum and maximum.
      *
-     * @since 1.0
+     * @since SIS 1.0
      */
     public static <N extends Number & Comparable<? super N>> NumberRange<N> create(final Class<N> type, final N value) {
         NumberRange<N> range = new NumberRange<>(type, value, true, value, true);
@@ -359,7 +359,7 @@ public class NumberRange<E extends Number & Comparable<? super E>> extends Range
      * @return the new range, or {@code null} if both {@code minValue} and {@code maxValue} are {@code null}.
      * @throws Illegal­Argument­Exception if the given numbers are not primitive wrappers for numeric types.
      *
-     * @since 1.2
+     * @since SIS 1.2
      */
     @SuppressWarnings({"rawtypes","unchecked"})
     public static NumberRange<?> createBestFit(final boolean asFloat,
@@ -428,7 +428,7 @@ public class NumberRange<E extends Number & Comparable<? super E>> extends Range
      *
      * @see #create(int, boolean, int, boolean)
      *
-     * @since 0.5
+     * @since SIS 0.5
      */
     public static NumberRange<Integer> createLeftBounded(final int minValue, final boolean isMinIncluded) {
         // Use POOL.unique(…) directly because we do not need the check for Range.isEmpty() here.
@@ -643,7 +643,7 @@ public class NumberRange<E extends Number & Comparable<? super E>> extends Range
      *
      * @return (<var>minimum</var> + <var>maximum</var>) / 2 computed using inclusive values.
      *
-     * @since 1.1
+     * @since SIS 1.1
      */
     public double getMedian() {
         return medianOrSpan(true);
@@ -665,7 +665,7 @@ public class NumberRange<E extends Number & Comparable<? super E>> extends Range
      *
      * @return (<var>maximum</var> − <var>minimum</var>) computed using inclusive values.
      *
-     * @since 1.1
+     * @since SIS 1.1
      */
     public double getSpan() {
         return medianOrSpan(false);
@@ -868,7 +868,7 @@ public class NumberRange<E extends Number & Comparable<? super E>> extends Range
      * @return the converted range, or {@code this} if the result is the same as this range.
      * @throws TransformException if an error occurred during the conversion.
      *
-     * @since 1.3
+     * @since SIS 1.3
      */
     public NumberRange<?> transform(final MathTransform1D converter) throws TransformException {
         final double lower = getMinDouble();

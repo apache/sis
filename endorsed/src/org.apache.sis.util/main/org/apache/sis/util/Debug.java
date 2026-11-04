@@ -36,7 +36,7 @@ import java.lang.annotation.RetentionPolicy;
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.0
- * @since   0.3
+ * @since SIS 0.3
  */
 @Documented
 @Target({ElementType.TYPE, ElementType.METHOD, ElementType.FIELD})

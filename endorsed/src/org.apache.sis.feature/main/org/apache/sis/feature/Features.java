@@ -40,7 +40,7 @@ import org.apache.sis.pending.jdk.JDK16;
  * @author  Johann Sorel (Geomatys)
  * @author  Alexis Manin (Geomatys)
  * @version 1.6
- * @since   0.5
+ * @since SIS 0.5
  */
 public final class Features {
     /**
@@ -128,7 +128,7 @@ public final class Features {
      * @param  type  the data type to express as an attribute type, or {@code null}.
      * @return the attribute type, or empty if this method cannot find any.
      *
-     * @since 1.1
+     * @since SIS 1.1
      */
     @SuppressWarnings("unchecked")
     public static Optional<DefaultAttributeType<?>> toAttribute(AbstractIdentifiedType type) {
@@ -150,7 +150,7 @@ public final class Features {
      * @param  type  the data type to express as an attribute type, or {@code null}.
      * @return the association role, or empty if this method cannot find any.
      *
-     * @since 1.4
+     * @since SIS 1.4
      */
     public static Optional<DefaultAssociationRole> toAssociation(AbstractIdentifiedType type) {
         return toIdentifiedType(type, DefaultAssociationRole.class);
@@ -196,7 +196,7 @@ public final class Features {
      *
      * @see DefaultFeatureType#isAssignableFrom(DefaultFeatureType)
      *
-     * @since 1.0
+     * @since SIS 1.0
      */
     @OptionalCandidate
     public static DefaultFeatureType findCommonParent(final Iterable<? extends DefaultFeatureType> types) {
@@ -215,7 +215,7 @@ public final class Features {
      * @param  feature  the feature type from which to get the name of all properties.
      * @return name of all properties of the specified feature type.
      *
-     * @since 1.6
+     * @since SIS 1.6
      */
     public static List<String> getPropertyNames(final DefaultFeatureType feature) {
         return JDK16.toList(feature.getProperties(true).stream().map((p) -> p.getName().toString()));
@@ -240,7 +240,7 @@ public final class Features {
      * @param  property  the property for which to get the name of value type.
      * @return the name of value type, or {@code null} if none.
      *
-     * @since 0.8
+     * @since SIS 0.8
      */
     @OptionalCandidate
     public static GenericName getValueTypeName(final AbstractIdentifiedType property) {
@@ -269,7 +269,7 @@ public final class Features {
      *
      * @see FeatureOperations#link(Map, PropertyType)
      *
-     * @since 1.1
+     * @since SIS 1.1
      */
     public static Optional<String> getLinkTarget(final AbstractIdentifiedType property) {
         if (property instanceof LinkOperation) {
@@ -289,7 +289,7 @@ public final class Features {
      *
      * @see FeatureOperations#compound(Map, String, String, String, AbstractIdentifiedType...)
      *
-     * @since 1.5
+     * @since SIS 1.5
      */
     public static List<String> getLinkTargets(final AbstractIdentifiedType property) {
         return getLinkTarget(property).map(List::of).orElseGet(() -> {
@@ -316,7 +316,7 @@ public final class Features {
      * @param  feature  the feature to validate, or {@code null}.
      * @throws IllegalArgumentException if the given feature is non-null and does not pass validation.
      *
-     * @since 0.7
+     * @since SIS 0.7
      */
     public static void validate(final AbstractFeature feature) throws IllegalArgumentException {
         if (feature != null) {

@@ -62,7 +62,7 @@ import org.apache.sis.util.resources.Errors;
  * @author  Johann Sorel (Geomatys)
  * @author  Alexis Manin (Geomatys)
  * @version 1.7
- * @since   0.3
+ * @since SIS 0.3
  */
 public abstract class DataStoreProvider {
     /**
@@ -131,7 +131,7 @@ public abstract class DataStoreProvider {
      *
      * @see #getFormat()
      *
-     * @since 0.8
+     * @since SIS 0.8
      */
     public abstract String getShortName();
 
@@ -163,7 +163,7 @@ public abstract class DataStoreProvider {
      * @see #getShortName()
      * @see DefaultFormat
      *
-     * @since 0.8
+     * @since SIS 0.8
      */
     public Format getFormat() {
         return new SimpleFormat(getShortName());
@@ -174,7 +174,7 @@ public abstract class DataStoreProvider {
      *
      * @return the range of supported versions, or {@code null} if unspecified.
      *
-     * @since 0.8
+     * @since SIS 0.8
      */
     public Range<Version> getSupportedVersions() {
         return null;
@@ -210,7 +210,7 @@ public abstract class DataStoreProvider {
      * @see #open(ParameterValueGroup)
      * @see DataStore#getOpenParameters()
      *
-     * @since 0.8
+     * @since SIS 0.8
      */
     public abstract ParameterDescriptorGroup getOpenParameters();
 
@@ -313,7 +313,7 @@ public abstract class DataStoreProvider {
      * @see #probeContent(StorageConnector)
      * @see StorageConnector#getStorageAs(Class)
      *
-     * @since 1.2
+     * @since SIS 1.2
      */
     protected <S> ProbeResult probeContent(final StorageConnector connector,
             final Class<S> type, final Prober<? super S> prober) throws DataStoreException
@@ -488,7 +488,7 @@ public abstract class DataStoreProvider {
      *
      * @see #probeContent(StorageConnector, Class, Prober)
      *
-     * @since 1.2
+     * @since SIS 1.2
      */
     @FunctionalInterface
     protected interface Prober<S> {
@@ -610,7 +610,7 @@ public abstract class DataStoreProvider {
      * @see #CREATE
      * @see #getOpenParameters()
      *
-     * @since 0.8
+     * @since SIS 0.8
      */
     public DataStore open(final ParameterValueGroup parameters) throws DataStoreException {
         // IllegalOpenParameterException thrown if `parameters` is null.
@@ -630,7 +630,7 @@ public abstract class DataStoreProvider {
      *
      * @see org.apache.sis.storage.event.StoreListeners#getLogger()
      *
-     * @since 1.0
+     * @since SIS 1.0
      */
     public Logger getLogger() {
         return Logging.getLogger(getClass());

@@ -24,7 +24,7 @@ import org.opengis.referencing.operation.TransformException;
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @version 0.8
- * @since   0.8
+ * @since SIS 0.8
  */
 public class GazetteerException extends TransformException {
     /**

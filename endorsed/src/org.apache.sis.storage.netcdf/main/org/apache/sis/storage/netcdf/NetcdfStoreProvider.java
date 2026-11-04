@@ -71,7 +71,7 @@ import org.apache.sis.util.internal.shared.Constants;
  *
  * @see NetcdfStore
  *
- * @since 0.3
+ * @since SIS 0.3
  */
 @StoreMetadata(formatName    = Constants.NETCDF,
                fileSuffixes  = "nc",
@@ -165,7 +165,7 @@ public class NetcdfStoreProvider extends DataStoreProvider {
      *
      * @return description of available parameters for opening a netCDF file.
      *
-     * @since 0.8
+     * @since SIS 0.8
      */
     @Override
     public ParameterDescriptorGroup getOpenParameters() {

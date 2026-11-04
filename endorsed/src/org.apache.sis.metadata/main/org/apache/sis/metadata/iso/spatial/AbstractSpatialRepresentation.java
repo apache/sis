@@ -47,7 +47,7 @@ import org.opengis.metadata.quality.Scope;
  * @author  Touraïvane (IRD)
  * @author  Cédric Briançon (Geomatys)
  * @version 1.4
- * @since   0.3
+ * @since SIS 0.3
  */
 @XmlType(name = "AbstractMD_SpatialRepresentation_Type")
 @XmlRootElement(name = "AbstractMD_SpatialRepresentation")
@@ -94,7 +94,7 @@ public class AbstractSpatialRepresentation extends ISOMetadata implements Spatia
      *
      * @return level and extent of the spatial representation, or {@code null} if none.
      *
-     * @since 1.3
+     * @since SIS 1.3
      */
     @XmlElement(name = "scope")
     @XmlJavaTypeAdapter(MD_Scope.Since2014.class)
@@ -107,7 +107,7 @@ public class AbstractSpatialRepresentation extends ISOMetadata implements Spatia
      *
      * @param  newValue  the new type of resource.
      *
-     * @since 1.3
+     * @since SIS 1.3
      */
     public void setScope(final Scope newValue) {
         checkWritePermission(scope);

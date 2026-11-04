@@ -68,7 +68,7 @@ import org.apache.sis.referencing.operation.matrix.Matrix2;
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.2
- * @since   1.2
+ * @since SIS 1.2
  */
 public class PoleRotation extends AbstractMathTransform2D implements Serializable {
     /**

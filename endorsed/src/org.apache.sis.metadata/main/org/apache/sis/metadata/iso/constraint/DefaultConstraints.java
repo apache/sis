@@ -60,7 +60,7 @@ import org.apache.sis.metadata.iso.citation.DefaultResponsibility;
  * @author  Rémi Maréchal (Geomatys)
  * @author  Cullen Rombach (Image Matters)
  * @version 1.4
- * @since   0.3
+ * @since SIS 0.3
  */
 @XmlType(name = "MD_Constraints_Type", propOrder = {
     "useLimitations",
@@ -222,7 +222,7 @@ public class DefaultConstraints extends ISOMetadata implements Constraints {
      *
      * @return spatial and / or temporal extents.
      *
-     * @since 0.5
+     * @since SIS 0.5
      */
     @XmlElement(name = "constraintApplicationScope")
     @XmlJavaTypeAdapter(MD_Scope.Since2014.class)
@@ -236,7 +236,7 @@ public class DefaultConstraints extends ISOMetadata implements Constraints {
      *
      * @param  newValue  the new spatial and / or temporal extents.
      *
-     * @since 0.5
+     * @since SIS 0.5
      */
     public void setConstraintApplicationScope(final Scope newValue) {
         checkWritePermission(constraintApplicationScope);
@@ -248,7 +248,7 @@ public class DefaultConstraints extends ISOMetadata implements Constraints {
      *
      * @return the graphics / symbols indicating the constraint.
      *
-     * @since 0.5
+     * @since SIS 0.5
      */
     // @XmlElement at the end of this class.
     @UML(identifier="graphic", obligation=OPTIONAL, specification=ISO_19115)
@@ -261,7 +261,7 @@ public class DefaultConstraints extends ISOMetadata implements Constraints {
      *
      * @param  newValues  the new graphics / symbols indicating the constraint.
      *
-     * @since 0.5
+     * @since SIS 0.5
      */
     public void setGraphics(final Collection<? extends BrowseGraphic> newValues) {
         graphics = writeCollection(newValues, graphics, BrowseGraphic.class);
@@ -273,7 +273,7 @@ public class DefaultConstraints extends ISOMetadata implements Constraints {
      *
      * @return citations for the limitation of constraint.
      *
-     * @since 0.5
+     * @since SIS 0.5
      */
     // @XmlElement at the end of this class.
     @UML(identifier="reference", obligation=OPTIONAL, specification=ISO_19115)
@@ -286,7 +286,7 @@ public class DefaultConstraints extends ISOMetadata implements Constraints {
      *
      * @param  newValues  the new citation for the limitation of constraint.
      *
-     * @since 0.5
+     * @since SIS 0.5
      */
     public void setReferences(Collection<? extends Citation> newValues) {
         references = writeCollection(newValues, references, Citation.class);
@@ -302,7 +302,7 @@ public class DefaultConstraints extends ISOMetadata implements Constraints {
      *
      * @return information concerning the parties to whom the resource can or cannot be released, or {@code null} if none.
      *
-     * @since 0.5
+     * @since SIS 0.5
      */
     @XmlElement(name = "releasability")
     @XmlJavaTypeAdapter(MD_Releasability.Since2014.class)
@@ -321,7 +321,7 @@ public class DefaultConstraints extends ISOMetadata implements Constraints {
      *
      * @param  newValue  the new information concerning the parties to whom the resource can or cannot be released.
      *
-     * @since 0.5
+     * @since SIS 0.5
      */
     public void setReleasability(final DefaultReleasability newValue) {
         checkWritePermission(releasability);
@@ -338,7 +338,7 @@ public class DefaultConstraints extends ISOMetadata implements Constraints {
      *
      * @return parties responsible for the resource constraints.
      *
-     * @since 0.5
+     * @since SIS 0.5
      */
     // @XmlElement at the end of this class.
     @UML(identifier="responsibleParty", obligation=OPTIONAL, specification=ISO_19115)
@@ -356,7 +356,7 @@ public class DefaultConstraints extends ISOMetadata implements Constraints {
      *
      * @param  newValues  the new parties responsible for the resource constraints.
      *
-     * @since 0.5
+     * @since SIS 0.5
      */
     public void setResponsibleParties(final Collection<? extends DefaultResponsibility> newValues) {
         responsibleParties = writeCollection(newValues, responsibleParties, DefaultResponsibility.class);

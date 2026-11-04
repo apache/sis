@@ -149,7 +149,7 @@ import org.apache.sis.coverage.CannotEvaluateException;
  * @author  Johann Sorel (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.7
- * @since   1.1
+ * @since SIS 1.1
  */
 public class Canvas extends Observable implements Localized {
     /**
@@ -418,7 +418,7 @@ public class Canvas extends Observable implements Localized {
      * This method can be invoked for discarding the content currently shown by the canvas,
      * while keeping this {@code Canvas} instance for showing new content later.
      *
-     * @since 1.7
+     * @since SIS 1.7
      */
     protected void clear() {
         objectiveCRS           = null;

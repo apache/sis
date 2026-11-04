@@ -101,7 +101,7 @@ import org.apache.sis.util.ArgumentChecks;
  * @see DefaultFeatureType
  * @see AbstractAttribute
  *
- * @since 0.5
+ * @since SIS 0.5
  */
 public class DefaultAttributeType<V> extends FieldType {
     /**

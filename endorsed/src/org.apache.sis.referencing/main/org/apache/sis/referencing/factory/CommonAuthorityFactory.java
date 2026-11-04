@@ -210,7 +210,7 @@ import org.apache.sis.measure.Units;
  *
  * @see CommonCRS
  *
- * @since 0.7
+ * @since SIS 0.7
  */
 public class CommonAuthorityFactory extends GeodeticAuthorityFactory implements CRSAuthorityFactory {
     /**
@@ -415,7 +415,7 @@ public class CommonAuthorityFactory extends GeodeticAuthorityFactory implements 
      * @throws NoSuchAuthorityCodeException if the specified {@code code} was not found.
      * @throws FactoryException if an error occurred while fetching the description.
      *
-     * @since 1.5
+     * @since SIS 1.5
      */
     @Override
     public Optional<InternationalString> getDescriptionText(final Class<? extends IdentifiedObject> type, final String code)

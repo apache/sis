@@ -21,7 +21,7 @@
  * @author  Johann Sorel (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.4
- * @since   0.8
+ * @since SIS 0.8
  */
 module org.apache.sis.storage.xml {
     requires jakarta.xml.bind;

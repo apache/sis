@@ -77,7 +77,7 @@ import org.apache.sis.util.collection.CheckedContainer;
  *
  * @param  <E>  the type of elements stored in this tree.
  *
- * @since 1.1
+ * @since SIS 1.1
  */
 public class PointTree<E> extends AbstractSet<E> implements CheckedContainer<E> {
     /*
@@ -279,7 +279,7 @@ public class PointTree<E> extends AbstractSet<E> implements CheckedContainer<E> 
      * Indicates that this collection is modifiable (at least by default).
      *
      * @return {@link Mutability#MODIFIABLE} by default.
-     * @since 1.6
+     * @since SIS 1.6
      */
     @Override
     public Mutability getMutability() {

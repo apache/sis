@@ -33,7 +33,7 @@ import java.io.IOException;
  * @see Tile#getStatus()
  * @see TileMatrix#getTileStatus(long...)
  *
- * @since 1.2
+ * @since SIS 1.2
  */
 public enum TileStatus {
     /**

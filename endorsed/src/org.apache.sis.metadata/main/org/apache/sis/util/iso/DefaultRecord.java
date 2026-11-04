@@ -59,7 +59,7 @@ import org.apache.sis.util.internal.shared.AbstractMapEntry;
  * @author  Martin Desruisseaux (Geomatys)
  * @author  Cullen Rombach (Image Matters)
  * @version 1.6
- * @since   0.5
+ * @since SIS 0.5
  */
 public class DefaultRecord implements Record, Serializable {
     /**
@@ -103,7 +103,7 @@ public class DefaultRecord implements Record, Serializable {
      *
      * @param  record  the record to copy (cannot be null).
      *
-     * @since 0.8
+     * @since SIS 0.8
      */
     @SuppressWarnings("SuspiciousSystemArraycopy")
     public DefaultRecord(final Record record) {
@@ -146,7 +146,7 @@ public class DefaultRecord implements Record, Serializable {
      * @return A SIS implementation containing the fields of the given object
      *         (may be the given object itself), or {@code null} if the argument was {@code null}.
      *
-     * @since 0.8
+     * @since SIS 0.8
      */
     public static DefaultRecord castOrCopy(final Record other) {
         if (other == null || other instanceof DefaultRecord) {
@@ -190,7 +190,7 @@ public class DefaultRecord implements Record, Serializable {
      *
      * @return the dictionary of all (<var>name</var>, <var>value</var>) pairs in this record.
      *
-     * @since 1.1
+     * @since SIS 1.1
      */
     public Map<MemberName, Object> getFields() {
         if (values == null) {                         // Should never be null, except temporarily at XML unmarshalling time.

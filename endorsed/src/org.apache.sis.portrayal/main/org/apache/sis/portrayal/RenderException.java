@@ -22,7 +22,7 @@ package org.apache.sis.portrayal;
  *
  * @author  Johann Sorel (Geomatys)
  * @version 1.1
- * @since   1.1
+ * @since SIS 1.1
  */
 public class RenderException extends Exception {
     /**

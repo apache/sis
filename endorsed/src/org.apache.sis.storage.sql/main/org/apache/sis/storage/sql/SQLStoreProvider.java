@@ -52,7 +52,7 @@ import static org.apache.sis.storage.sql.feature.Database.WILDCARD;
  * @author  Johann Sorel (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.5
- * @since   1.0
+ * @since SIS 1.0
  */
 @StoreMetadata(formatName    = SQLStoreProvider.NAME,
                capabilities  = Capability.READ,
@@ -87,7 +87,7 @@ public class SQLStoreProvider extends DataStoreProvider {
      * Description of the {@value #LOCATION} parameter.
      * This parameter is mandatory.
      *
-     * @since 1.1
+     * @since SIS 1.1
      */
     public static final ParameterDescriptor<DataSource> SOURCE_PARAM;
 
@@ -95,7 +95,7 @@ public class SQLStoreProvider extends DataStoreProvider {
      * Description of the parameter providing the list of tables or views to include as resources in the
      * {@link SimpleFeatureStore}. At least one of {@code TABLES_PARAM} or {@link #QUERIES_PARAM} must be provided.
      *
-     * @since 1.1
+     * @since SIS 1.1
      */
     public static final ParameterDescriptor<GenericName[]> TABLES_PARAM;
 
@@ -105,7 +105,7 @@ public class SQLStoreProvider extends DataStoreProvider {
      * Values are SQL statements (as {@link String} instances) to execute when the associated resource is requested.
      * At least one of {@link #TABLES_PARAM} or {@code QUERIES_PARAM} must be provided.
      *
-     * @since 1.1
+     * @since SIS 1.1
      */
     public static final ParameterDescriptor<Map<?,?>> QUERIES_PARAM;
 

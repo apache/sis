@@ -36,7 +36,7 @@ import java.nio.DoubleBuffer;
  * @author  Martin Desruisseaux (Geomatys)
  * @author  Johann Sorel (Geomatys)
  * @version 1.2
- * @since   1.1
+ * @since SIS 1.1
  */
 public abstract class Interpolation {
     /**

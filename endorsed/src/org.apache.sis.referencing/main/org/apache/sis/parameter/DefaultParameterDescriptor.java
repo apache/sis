@@ -76,7 +76,7 @@ import org.apache.sis.referencing.IdentifiedObjects;
  * @see DefaultParameterValue
  * @see DefaultParameterDescriptorGroup
  *
- * @since 0.4
+ * @since SIS 0.4
  */
 @XmlType(name = "OperationParameterType")
 @XmlRootElement(name = "OperationParameter")
@@ -321,7 +321,7 @@ public class DefaultParameterDescriptor<T> extends AbstractParameterDescriptor i
      * This is the base type required by {@code equals(…)} methods for returning a potentially {@code true} value.
      *
      * @return {@code ParameterDescriptor.class} or a user-defined sub-interface.
-     * @since 1.7
+     * @since SIS 1.7
      */
     @Override
     public Type getStandardType() {
@@ -344,7 +344,7 @@ public class DefaultParameterDescriptor<T> extends AbstractParameterDescriptor i
      *
      * @return the type name of value component(s) in this parameter.
      *
-     * @since 1.3
+     * @since SIS 1.3
      */
     public TypeName getValueType() {
         return QualityParameter.getValueType(valueClass);

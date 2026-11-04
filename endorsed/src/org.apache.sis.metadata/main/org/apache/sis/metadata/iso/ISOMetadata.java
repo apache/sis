@@ -58,7 +58,7 @@ import static org.apache.sis.metadata.internal.shared.ImplementationHelper.value
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.5
- * @since   0.3
+ * @since SIS 0.3
  */
 @XmlTransient
 public class ISOMetadata extends ModifiableMetadata implements IdentifiedObject, Serializable {
@@ -191,7 +191,7 @@ public class ISOMetadata extends ModifiableMetadata implements IdentifiedObject,
      * @return an identifier from ISO 19115-3 conceptual model (excluding XML identifiers),
      *         or {@code null} if none.
      *
-     * @since 1.0
+     * @since SIS 1.0
      */
     protected Identifier getIdentifier() {
         return NonMarshalledAuthority.getMarshallable(identifiers);
@@ -206,7 +206,7 @@ public class ISOMetadata extends ModifiableMetadata implements IdentifiedObject,
      *
      * @param  newValue  the new identifier value, or {@code null} for removing the identifier.
      *
-     * @since 1.0
+     * @since SIS 1.0
      */
     protected void setIdentifier(final Identifier newValue) {
         checkWritePermission(valueIfDefined(identifiers));

@@ -68,7 +68,7 @@ import org.apache.sis.util.resources.Vocabulary;
  * @author  Smaniotto Enzo (GSoC)
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.7
- * @since   1.1
+ * @since SIS 1.1
  */
 public class DataViewer extends Application {
     /**

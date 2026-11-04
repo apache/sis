@@ -88,7 +88,7 @@ import static org.opengis.annotation.Specification.ISO_19115;
  * @author  Rémi Maréchal (Geomatys)
  * @author  Cullen Rombach (Image Matters)
  * @version 1.4
- * @since   0.3
+ * @since SIS 0.3
  */
 @TitleProperty(name = "description")
 @XmlType(name = "LI_Source_Type", propOrder = {
@@ -261,7 +261,7 @@ public class DefaultSource extends ISOMetadata implements Source {
      *
      * @return spatial resolution expressed as a scale factor, an angle or a level of detail, or {@code null} if none.
      *
-     * @since 0.5
+     * @since SIS 0.5
      */
     @XmlElement(name = "sourceSpatialResolution")
     @XmlJavaTypeAdapter(MD_Resolution.Since2014.class)
@@ -275,7 +275,7 @@ public class DefaultSource extends ISOMetadata implements Source {
      *
      * @param  newValue  the new spatial resolution.
      *
-     * @since 0.5
+     * @since SIS 0.5
      */
     public void setSourceSpatialResolution(final Resolution newValue) {
         checkWritePermission(sourceSpatialResolution);
@@ -383,7 +383,7 @@ public class DefaultSource extends ISOMetadata implements Source {
      *
      * @return references to metadata for the source.
      *
-     * @since 0.5
+     * @since SIS 0.5
      */
     // @XmlElement at the end of this class.
     @UML(identifier="sourceMetadata", obligation=OPTIONAL, specification=ISO_19115)
@@ -396,7 +396,7 @@ public class DefaultSource extends ISOMetadata implements Source {
      *
      * @param  newValues  the new references.
      *
-     * @since 0.5
+     * @since SIS 0.5
      */
     public void setSourceMetadata(final Collection<? extends Citation> newValues) {
         sourceMetadata = writeCollection(newValues, sourceMetadata, Citation.class);
@@ -408,7 +408,7 @@ public class DefaultSource extends ISOMetadata implements Source {
      *
      * @return type and / or extent of the source, or {@code null} if none.
      *
-     * @since 0.5
+     * @since SIS 0.5
      */
     @XmlElement(name = "scope")
     @XmlJavaTypeAdapter(MD_Scope.Since2014.class)
@@ -422,7 +422,7 @@ public class DefaultSource extends ISOMetadata implements Source {
      *
      * @param  newValue  the new type and / or extent of the source.
      *
-     * @since 0.5
+     * @since SIS 0.5
      */
     public void setScope(final Scope newValue){
         checkWritePermission(scope);

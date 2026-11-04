@@ -44,7 +44,7 @@ import org.apache.sis.util.resources.Errors;
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.5
- * @since   0.5
+ * @since SIS 0.5
  */
 public class AbstractIdentifiedType implements Deprecable, Serializable {
     /**
@@ -98,7 +98,7 @@ public class AbstractIdentifiedType implements Deprecable, Serializable {
      *
      * @see #isDeprecated()
      *
-     * @since 0.8
+     * @since SIS 0.8
      */
     public static final String DEPRECATED_KEY = "deprecated";
 
@@ -110,7 +110,7 @@ public class AbstractIdentifiedType implements Deprecable, Serializable {
      * <p>This property is useful when creating a new property derived from an existing property.
      * An example of such derivation is {@link AbstractOperation#updateDependencies(Map)}.</p>
      *
-     * @since 1.5
+     * @since SIS 1.5
      */
     public static final String INHERIT_FROM_KEY = "inheritFrom";
 
@@ -384,7 +384,7 @@ public class AbstractIdentifiedType implements Deprecable, Serializable {
      *
      * @return the remarks, or {@code null} if none.
      *
-     * @since 0.8
+     * @since SIS 0.8
      */
     @Override
     public InternationalString getRemarks() {
@@ -398,7 +398,7 @@ public class AbstractIdentifiedType implements Deprecable, Serializable {
      *
      * @return whether this type is deprecated.
      *
-     * @since 0.8
+     * @since SIS 0.8
      */
     @Override
     public boolean isDeprecated() {

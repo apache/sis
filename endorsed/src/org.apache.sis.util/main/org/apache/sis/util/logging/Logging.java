@@ -43,7 +43,7 @@ import org.apache.sis.system.SystemListener;
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.5
- * @since   0.3
+ * @since SIS 0.3
  */
 public final class Logging {
     /**
@@ -72,7 +72,7 @@ public final class Logging {
      * @param  source  the class which will emit a logging message.
      * @return a logger for the specified class.
      *
-     * @since 1.0
+     * @since SIS 1.0
      */
     public static Logger getLogger(final Class<?> source) {
         return Logger.getLogger(source.getPackageName());
@@ -100,7 +100,7 @@ public final class Logging {
      * @param  method  the method to report as the source of the logging message.
      * @param  record  the record to complete and log.
      *
-     * @since 1.4
+     * @since SIS 1.4
      */
     public static void completeAndLog(Logger logger, final Class<?> classe, final String method, final LogRecord record) {
         ArgumentChecks.ensureNonNull("record", record);
@@ -352,7 +352,7 @@ public final class Logging {
      * @return {@code true} if the error has been logged, or {@code false} if the given {@code error}
      *         was null or if the logger does not log anything at {@link Level#FINER}.
      *
-     * @since 1.0
+     * @since SIS 1.0
      */
     public static boolean ignorableException(final Logger logger, final Class<?> classe,
                                              final String method, final Throwable error)

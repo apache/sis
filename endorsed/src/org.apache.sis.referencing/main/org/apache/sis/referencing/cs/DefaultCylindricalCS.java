@@ -53,7 +53,7 @@ import org.apache.sis.measure.Units;
  * @see DefaultPolarCS
  * @see org.apache.sis.referencing.factory.GeodeticAuthorityFactory#createCylindricalCS(String)
  *
- * @since 0.4
+ * @since SIS 0.4
  */
 @XmlType(name = "CylindricalCSType")
 @XmlRootElement(name = "CylindricalCS")
@@ -172,7 +172,7 @@ public class DefaultCylindricalCS extends AbstractCS implements CylindricalCS {
      * This is the base type required by {@code equals(…)} methods for returning a potentially {@code true} value.
      *
      * @return {@code CylindricalCS.class} or a user-defined sub-interface.
-     * @since 1.7
+     * @since SIS 1.7
      */
     @Override
     public Class<? extends CylindricalCS> getStandardType() {

@@ -109,7 +109,7 @@ import org.apache.sis.util.internal.shared.Numerics;
  * @see Range#toString()
  * @see <a href="https://en.wikipedia.org/wiki/ISO_31-11">Wikipedia: ISO 31-11</a>
  *
- * @since 0.3
+ * @since SIS 0.3
  */
 public class RangeFormat extends Format implements Localized {
     /**
@@ -144,7 +144,7 @@ public class RangeFormat extends Format implements Localized {
      *
      * @author  Martin Desruisseaux (Geomatys)
      * @version 0.3
-     * @since   0.3
+     * @since SIS 0.3
      */
     public static final class Field extends FormatField {
         /**
@@ -447,7 +447,7 @@ public class RangeFormat extends Format implements Localized {
      *
      * @return this formatter locale (never {@code null}).
      *
-     * @since 1.0
+     * @since SIS 1.0
      */
     @Override
     public Locale getLocale() {

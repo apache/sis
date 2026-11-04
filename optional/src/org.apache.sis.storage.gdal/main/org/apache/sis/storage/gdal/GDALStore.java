@@ -62,7 +62,7 @@ import org.apache.sis.system.Cleaners;
  * @author  Quentin Bialota (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.6
- * @since   1.5
+ * @since SIS 1.5
  */
 public class GDALStore extends DataStore implements Aggregate {
     /**

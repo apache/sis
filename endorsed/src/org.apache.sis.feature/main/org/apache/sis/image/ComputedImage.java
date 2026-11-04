@@ -118,7 +118,7 @@ import org.apache.sis.image.internal.shared.ImageUtilities;
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.7
- * @since   1.1
+ * @since SIS 1.1
  */
 public abstract class ComputedImage extends PlanarImage implements Disposable {
     /**
@@ -608,7 +608,7 @@ public abstract class ComputedImage extends PlanarImage implements Disposable {
      *         completed (successfully or not), or {@code null} if none.
      * @throws ImagingOpException if an error occurred while preparing tile computation.
      *
-     * @since 1.2
+     * @since SIS 1.2
      */
     @Override
     protected Disposable prefetch(Rectangle tiles) {
@@ -767,7 +767,7 @@ public abstract class ComputedImage extends PlanarImage implements Disposable {
      * @param  tiles  indices of tiles for which to check the error status.
      * @return {@code true} if at least one tile is flagged as in error.
      *
-     * @since 1.7
+     * @since SIS 1.7
      */
     public boolean hasErrorFlag(final Rectangle tiles) {
         return reference.hasErrorFlag(tiles.x, tiles.y,

@@ -33,7 +33,7 @@ import org.apache.sis.feature.DefaultFeatureType;
  *
  * @author  Johann Sorel (Geomatys)
  * @version 1.0
- * @since   0.8
+ * @since SIS 0.8
  */
 public interface FeatureSet extends DataSet {
     /**

@@ -58,7 +58,7 @@ import org.apache.sis.referencing.operation.matrix.UnderdeterminedMatrixExceptio
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @version 1.8
- * @since   0.4
+ * @since SIS 0.4
  */
 public final class CoordinateSystems {
     /**
@@ -76,7 +76,7 @@ public final class CoordinateSystems {
      * @return whether the given coordinate system can be associated with a geodetic CRS.
      *
      * @see #getSingleComponents(CoordinateSystem)
-     * @since 1.3
+     * @since SIS 1.3
      */
     public static boolean isGeodetic(final CoordinateSystem cs) {
         return (cs instanceof EllipsoidalCS) || (cs instanceof CartesianCS) || (cs instanceof SphericalCS);
@@ -144,7 +144,7 @@ public final class CoordinateSystems {
      *         Meridians in the East hemisphere are positive and meridians in the West hemisphere are negative.
      * @return the axis direction along the given meridian.
      *
-     * @since 0.6
+     * @since SIS 0.6
      */
     public static AxisDirection directionAlongMeridian(final AxisDirection baseDirection, final double meridian) {
         return new DirectionAlongMeridian(baseDirection, meridian).getDirection();
@@ -168,7 +168,7 @@ public final class CoordinateSystems {
      * @param  direction  the direction to test. Can be null.
      * @return if the given direction is non-null and seems to be a direction along a meridian.
      *
-     * @since 1.2
+     * @since SIS 1.2
      */
     public static boolean isAlongMeridian(final AxisDirection direction) {
         return AxisDirections.isUserDefined(direction) && DirectionAlongMeridian.matches(direction.name());
@@ -455,7 +455,7 @@ next:   for (final CoordinateSystem cs : targets) {
      *
      * @see AxesConvention#NORMALIZED
      *
-     * @since 0.6
+     * @since SIS 0.6
      */
     public static CoordinateSystem replaceAxes(final CoordinateSystem cs, final AxisFilter filter) {
         ArgumentChecks.ensureNonNull("filter", filter);
@@ -498,7 +498,7 @@ next:   for (final CoordinateSystem cs : targets) {
      *
      * @see Units#isLinear(Unit)
      *
-     * @since 0.7
+     * @since SIS 0.7
      */
     public static CoordinateSystem replaceLinearUnit(final CoordinateSystem cs, final Unit<Length> newUnit) {
         ArgumentChecks.ensureNonNull("newUnit", newUnit);
@@ -529,7 +529,7 @@ next:   for (final CoordinateSystem cs : targets) {
      *
      * @see Units#isAngular(Unit)
      *
-     * @since 0.7
+     * @since SIS 0.7
      */
     public static CoordinateSystem replaceAngularUnit(final CoordinateSystem cs, final Unit<javax.measure.quantity.Angle> newUnit) {
         ArgumentChecks.ensureNonNull("newUnit", newUnit);
@@ -557,7 +557,7 @@ next:   for (final CoordinateSystem cs : targets) {
      * @return the components, or an empty list if {@code cs} is null.
      *
      * @see #isGeodetic(CoordinateSystem)
-     * @since 1.5
+     * @since SIS 1.5
      */
     public static List<CoordinateSystem> getSingleComponents(final CoordinateSystem cs) {
         final var addTo = new ArrayList<CoordinateSystem>(3);
@@ -589,7 +589,7 @@ next:   for (final CoordinateSystem cs : targets) {
      * @throws NullPointerException if {@code cs} is null, or one of its axes is null,
      *         or a value returned by {@link CoordinateSystemAxis#getDirection()} is null.
      *
-     * @since 0.8
+     * @since SIS 0.8
      */
     public static AxisDirection[] getAxisDirections(final CoordinateSystem cs) {
         final var directions = new AxisDirection[cs.getDimension()];
@@ -616,7 +616,7 @@ next:   for (final CoordinateSystem cs : targets) {
      * @return the simple axis directions for the specified coordinate system.
      * @throws NullPointerException if {@code cs} is null, or one of its axes or directions is null.
      *
-     * @since 1.5
+     * @since SIS 1.5
      */
     public static AxisDirection[] getSimpleAxisDirections(final CoordinateSystem cs) {
         final var directions = getAxisDirections(cs);
@@ -642,7 +642,7 @@ next:   for (final CoordinateSystem cs : targets) {
      * @param  locale  desired locale for the label, or {@code null} for the default.
      * @return a relatively short axis label, in the desired locale if possible.
      *
-     * @since 1.3
+     * @since SIS 1.3
      */
     public static String getShortName(final CoordinateSystemAxis axis, final Locale locale) {
         return AxisName.find(Objects.requireNonNull(axis), locale);
@@ -696,7 +696,7 @@ next:   for (final CoordinateSystem cs : targets) {
      *
      * @see org.apache.sis.referencing.factory.GeodeticAuthorityFactory#createCoordinateSystem(String)
      *
-     * @since 1.0
+     * @since SIS 1.0
      */
     @OptionalCandidate
     public static Integer getEpsgCode(final Class<? extends CoordinateSystem> type, final CoordinateSystemAxis... axes) {
@@ -759,7 +759,7 @@ next:   for (final CoordinateSystem cs : targets) {
      * @see Units#getEpsgCode(Unit, boolean)
      * @see org.apache.sis.referencing.factory.GeodeticAuthorityFactory#createCoordinateSystem(String)
      *
-     * @since 0.8
+     * @since SIS 0.8
      */
     @OptionalCandidate
     public static Integer getEpsgCode(final Unit<?> unit, final AxisDirection... directions) {

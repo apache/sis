@@ -49,7 +49,7 @@ import org.apache.sis.util.internal.shared.Strings;
  *
  * @see DataStoreProvider#probeContent(StorageConnector)
  *
- * @since 0.4
+ * @since SIS 0.4
  */
 public class ProbeResult implements Serializable {
     /**
@@ -61,7 +61,7 @@ public class ProbeResult implements Serializable {
      * The {@code DataStoreProvider} will create a new file.
      * The file does not exist yet or is empty.
      *
-     * @since 1.5
+     * @since SIS 1.5
      */
     public static final ProbeResult CREATE_NEW = new Constant(true, "CREATE_NEW");
 

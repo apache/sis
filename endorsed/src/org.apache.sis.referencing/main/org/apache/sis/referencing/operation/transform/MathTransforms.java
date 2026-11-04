@@ -65,7 +65,7 @@ import org.opengis.geometry.MismatchedDimensionException;
  *
  * @see MathTransformFactory
  *
- * @since 0.5
+ * @since SIS 0.5
  */
 public final class MathTransforms {
     /**
@@ -107,7 +107,7 @@ public final class MathTransforms {
      * @param  dimension  number of dimensions of the transform to be returned.
      * @return a transform of the specified dimension which swaps the two first axes.
      *
-     * @since 1.7
+     * @since SIS 1.7
      */
     public static LinearTransform swapTwoFirstAxes(final int dimension) {
         ArgumentChecks.ensurePositive("dimension", dimension);
@@ -131,7 +131,7 @@ public final class MathTransforms {
      * @param  offset     the {@code offset} term in the linear equation.
      * @return an affine transform applying the specified translation.
      *
-     * @since 1.0
+     * @since SIS 1.0
      */
     public static LinearTransform uniformTranslation(final int dimension, final double offset) {
         ArgumentChecks.ensurePositive("dimension", dimension);
@@ -153,7 +153,7 @@ public final class MathTransforms {
      * @param  vector  the translation vector.
      * @return an affine transform applying the specified translation.
      *
-     * @since 1.0
+     * @since SIS 1.0
      */
     public static LinearTransform translation(final double... vector) {
         // Implicit null value check below.
@@ -174,7 +174,7 @@ public final class MathTransforms {
      * @param  factors  the scale factors.
      * @return an affine transform applying the specified scales.
      *
-     * @since 1.0
+     * @since SIS 1.0
      */
     public static LinearTransform scale(final double... factors) {
         // Implicit null value check below.
@@ -275,7 +275,7 @@ public final class MathTransforms {
      * @throws TransformException if an error occurred while transforming the given position
      *         or computing the derivative at that position.
      *
-     * @since 1.1
+     * @since SIS 1.1
      *
      * @see #getMatrix(MathTransform, DirectPosition)
      */
@@ -296,7 +296,7 @@ public final class MathTransforms {
      * @param  converter  the unit converter.
      * @return a transform doing the same computation as the given unit converter.
      *
-     * @since 1.4
+     * @since SIS 1.4
      */
     @SuppressWarnings("fallthrough")
     public static MathTransform1D convert(final UnitConverter converter) {
@@ -327,7 +327,7 @@ public final class MathTransforms {
      * @throws IllegalArgumentException if {@code preimage} is non-null and the sequence of values is not monotonic.
      * @return the <i>y=f(x)</i> function.
      *
-     * @since 0.7
+     * @since SIS 0.7
      */
     public static MathTransform1D interpolate(final double[] preimage, final double[] values) {
         return LinearInterpolator1D.create(preimage, values);
@@ -358,7 +358,7 @@ public final class MathTransforms {
      * @return a transform applying the given global transform except in sub-areas where specializations are available.
      * @throws IllegalArgumentException if a constraint is not met.
      *
-     * @since 1.0
+     * @since SIS 1.0
      */
     public static MathTransform specialize(final MathTransform global, final Map<Envelope,MathTransform> specializations) {
         ArgumentChecks.ensureNonNull("global", global);
@@ -391,7 +391,7 @@ public final class MathTransforms {
      * @param  numTrailingCoordinates   number of trailing coordinates to pass through.
      * @return a pass-through transform, potentially as a {@link PassThroughTransform} instance but not necessarily.
      *
-     * @since 1.0
+     * @since SIS 1.0
      */
     public static MathTransform passThrough(final int firstAffectedCoordinate,
                                             final MathTransform subTransform,
@@ -428,7 +428,7 @@ public final class MathTransforms {
      *
      * @see PassThroughTransform#create(BitSet, MathTransform, int, MathTransformFactory)
      *
-     * @since 1.4
+     * @since SIS 1.4
      */
     public static MathTransform passThrough(final int[] modifiedCoordinates, final MathTransform subTransform, final int resultDim) {
         ArgumentChecks.ensureNonNull("modifiedCoordinates", modifiedCoordinates);
@@ -469,7 +469,7 @@ public final class MathTransforms {
      * @see org.apache.sis.referencing.CRS#compound(CoordinateReferenceSystem...)
      * @see org.apache.sis.geometry.Envelopes#compound(Envelope...)
      *
-     * @since 0.6
+     * @since SIS 0.6
      */
     public static MathTransform compound(final MathTransform... components) {
         // Implicit null value check below.
@@ -622,7 +622,7 @@ public final class MathTransforms {
      * @return the given transform as a {@link MathTransform2D}, or {@code null} if the argument was null.
      * @throws MismatchedDimensionException if the number of source and target dimensions is not 2.
      *
-     * @since 1.1
+     * @since SIS 1.1
      */
     public static MathTransform2D bidimensional(final MathTransform transform) {
         if (transform == null || transform instanceof MathTransform2D) {
@@ -667,7 +667,7 @@ public final class MathTransforms {
      *
      * @param  transform  the transform for which to get the first step, or {@code null}.
      * @return the first step performed by the given transform, or {@code null} if the argument was null.
-     * @since 1.5
+     * @since SIS 1.5
      */
     public static MathTransform getFirstStep(MathTransform transform) {
         while (transform instanceof ConcatenatedTransform) {
@@ -683,7 +683,7 @@ public final class MathTransforms {
      *
      * @param  transform  the transform for which to get the last step, or {@code null}.
      * @return the last step performed by the given transform, or {@code null} if the argument was null.
-     * @since 1.5
+     * @since SIS 1.5
      */
     public static MathTransform getLastStep(MathTransform transform) {
         while (transform instanceof ConcatenatedTransform) {
@@ -749,7 +749,7 @@ public final class MathTransforms {
      * @throws TransformException if an error occurred while transforming the given position
      *         or computing the derivative at that position.
      *
-     * @since 1.0
+     * @since SIS 1.0
      *
      * @see #tangent(MathTransform, DirectPosition)
      */
@@ -798,7 +798,7 @@ public final class MathTransforms {
      * @see AbstractMathTransform#getDomain(DomainDefinition)
      * @see org.opengis.referencing.operation.CoordinateOperation#getDomainOfValidity()
      *
-     * @since 1.3
+     * @since SIS 1.3
      */
     public static Optional<Envelope> getDomain(final MathTransform evaluated) throws TransformException {
         if (evaluated instanceof AbstractMathTransform) {

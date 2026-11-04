@@ -84,7 +84,7 @@ import static org.apache.sis.gui.internal.LogHandler.LOGGER;
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.7
- * @since   1.1
+ * @since SIS 1.1
  */
 public class RecentReferenceSystems {
     /**
@@ -326,7 +326,7 @@ public class RecentReferenceSystems {
      * @param  replaceByAuthoritativeDefinition  whether the reference systems should be replaced by authoritative definition.
      * @param  geometries  grid coverage names together with their grid geometry. May be empty.
      *
-     * @since 1.3
+     * @since SIS 1.3
      */
     public void setGridReferencing(final boolean replaceByAuthoritativeDefinition,
                                    final Map<Identifier, GridGeometry> geometries)
@@ -997,7 +997,7 @@ next:       for (int i=0; i<count; i++) {
      * @param  action      the action to execute when a reference system is selected.
      * @return a choice box with reference systems specified by {@code setPreferred(…)} and {@code addAlternatives(…)} methods.
      *
-     * @since 1.3
+     * @since SIS 1.3
      */
     public ChoiceBox<ReferenceSystem> createChoiceBox(final boolean renderable, final ChangeListener<ReferenceSystem> action) {
         ArgumentChecks.ensureNonNull("action", action);
@@ -1025,7 +1025,7 @@ next:       for (int i=0; i<count; i++) {
      * @param  action      the action to execute when a reference system is selected.
      * @return a menu with reference systems specified by {@code setPreferred(…)} and {@code addAlternatives(…)} methods.
      *
-     * @since 1.3
+     * @since SIS 1.3
      */
     public Menu createMenuItems(final boolean renderable, final ChangeListener<ReferenceSystem> action) {
         ArgumentChecks.ensureNonNull("action", action);

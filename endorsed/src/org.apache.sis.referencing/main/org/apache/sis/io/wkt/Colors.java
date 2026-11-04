@@ -41,7 +41,7 @@ import org.apache.sis.util.resources.Errors;
  * @see WKTFormat#getColors()
  * @see WKTFormat#setColors(Colors)
  *
- * @since 0.4
+ * @since SIS 0.4
  */
 public class Colors implements Cloneable, Serializable {
     /**

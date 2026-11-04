@@ -44,7 +44,7 @@ import org.apache.sis.util.logging.Logging;
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @version 1.7
- * @since   1.7
+ * @since SIS 1.7
  */
 @XmlTransient
 public class DefiningConversion extends DefaultConversion {

@@ -57,7 +57,7 @@ import static org.opengis.annotation.Specification.UNSPECIFIED;
  * @author  Alexis Gaillard (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.4
- * @since   1.3
+ * @since SIS 1.3
  */
 @XmlType(name = "DQM_Measure_Type", namespace = Namespaces.DQM, propOrder = {
     "measureIdentifier",

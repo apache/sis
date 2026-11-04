@@ -63,7 +63,7 @@ import org.apache.sis.util.logging.Logging;
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.5
- * @since   1.5
+ * @since SIS 1.5
  */
 @SuppressWarnings("unchecked")  // See `getDatumEnsemble(…)`
 public final class DatumOrEnsemble {

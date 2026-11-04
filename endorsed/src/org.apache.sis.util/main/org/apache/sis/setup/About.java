@@ -79,7 +79,7 @@ import static org.apache.sis.util.internal.shared.Constants.UTC;
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.5
- * @since   0.3
+ * @since SIS 0.3
  */
 public enum About {
     /**
@@ -116,7 +116,7 @@ public enum About {
      *   <li>List of data store implementations</li>
      * </ul>
      *
-     * @since 0.8
+     * @since SIS 0.8
      */
     PLUGINS(Vocabulary.Keys.Plugins),
 

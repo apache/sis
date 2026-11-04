@@ -48,7 +48,7 @@ import org.opengis.referencing.cs.CoordinateSystemAxis;
  * @see org.apache.sis.referencing.datum.DefaultParametricDatum
  * @see org.apache.sis.referencing.factory.GeodeticAuthorityFactory#createParametricCS(String)
  *
- * @since 0.7
+ * @since SIS 0.7
  */
 @XmlType(name = "ParametricCSType")
 @XmlRootElement(name = "ParametricCS")

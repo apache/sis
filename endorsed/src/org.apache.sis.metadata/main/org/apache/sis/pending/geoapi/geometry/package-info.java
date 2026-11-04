@@ -24,7 +24,7 @@
  * may change in incompatible ways in any future version without notice.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.3
+ * @since SIS 0.3
  * @version 1.5
  */
 package org.apache.sis.pending.geoapi.geometry;

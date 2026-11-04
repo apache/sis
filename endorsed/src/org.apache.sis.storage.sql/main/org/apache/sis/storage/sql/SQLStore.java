@@ -74,7 +74,7 @@ import org.apache.sis.setup.GeometryLibrary;
  * @author  Johann Sorel (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.5
- * @since   1.0
+ * @since SIS 1.0
  */
 public abstract class SQLStore extends DataStore implements Aggregate {
     /**
@@ -118,7 +118,7 @@ public abstract class SQLStore extends DataStore implements Aggregate {
      *
      * @see #getDataSource()
      *
-     * @since 1.5
+     * @since SIS 1.5
      */
     protected final DataSource source;
 
@@ -192,7 +192,7 @@ public abstract class SQLStore extends DataStore implements Aggregate {
      *
      * @see OptionKey#LOCALE
      *
-     * @since 1.5
+     * @since SIS 1.5
      */
     protected final Locale contentLocale;
 
@@ -227,7 +227,7 @@ public abstract class SQLStore extends DataStore implements Aggregate {
      * @param  connector  information about the storage (JDBC data source, <i>etc</i>).
      * @throws DataStoreException if an error occurred while creating the data store for the given storage.
      *
-     * @since 1.5
+     * @since SIS 1.5
      */
     protected SQLStore(final DataStoreProvider provider, final StorageConnector connector) throws DataStoreException {
         super(provider, connector);
@@ -286,7 +286,7 @@ public abstract class SQLStore extends DataStore implements Aggregate {
      * @throws DataStoreException if an error occurred during the initialization.
      * @throws SQLException if an error occurred during the execution of an <abbr>SQL</abbr> query.
      *
-     * @since 1.5
+     * @since SIS 1.5
      */
     protected void initialize(Connection connection) throws DataStoreException, SQLException {
     }
@@ -295,7 +295,7 @@ public abstract class SQLStore extends DataStore implements Aggregate {
      * Returns the data source to use for obtaining connections to the database.
      *
      * @return the data source to use for obtaining connections to the database.
-     * @since 1.5
+     * @since SIS 1.5
      */
     public DataSource getDataSource() {
         return source;
@@ -425,7 +425,7 @@ public abstract class SQLStore extends DataStore implements Aggregate {
      * @return version of the database software as the first entry, followed by versions of extensions if any.
      * @throws DataStoreException if an error occurred while fetching the metadata.
      *
-     * @since 1.5
+     * @since SIS 1.5
      */
     public Map<String, Version> getDatabaseSoftwareVersions() throws DataStoreException {
         return model().getDatabaseSoftwareVersions();
@@ -540,7 +540,7 @@ public abstract class SQLStore extends DataStore implements Aggregate {
      *
      * @see #initialize(Connection)
      *
-     * @since 1.5
+     * @since SIS 1.5
      */
     protected abstract ResourceDefinition[] readResourceDefinitions(DataAccess dao) throws DataStoreException;
 
@@ -565,7 +565,7 @@ public abstract class SQLStore extends DataStore implements Aggregate {
      * @param  write  whether write operations may be performed.
      * @return an object provider low-level access (e.g. through <abbr>SQL</abbr> queries) to the data.
      *
-     * @since 1.5
+     * @since SIS 1.5
      */
     public DataAccess newDataAccess(final boolean write) {
         return new DataAccess(this, write);
@@ -613,7 +613,7 @@ public abstract class SQLStore extends DataStore implements Aggregate {
      *
      * @throws DataStoreException if an error occurred while executing the vacuum.
      *
-     * @since 1.5
+     * @since SIS 1.5
      */
     public void vacuum() throws DataStoreException {
         try (Connection c = source.getConnection()) {
@@ -642,7 +642,7 @@ public abstract class SQLStore extends DataStore implements Aggregate {
      * This method can be invoked when the database content has been modified by a process other than
      * the methods in this class.
      *
-     * @since 1.5
+     * @since SIS 1.5
      */
     public synchronized void refresh() {
         clearModel();

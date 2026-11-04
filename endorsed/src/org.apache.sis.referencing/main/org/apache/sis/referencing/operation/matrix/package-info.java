@@ -72,6 +72,6 @@
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @version 1.8
- * @since   0.4
+ * @since SIS 0.4
  */
 package org.apache.sis.referencing.operation.matrix;

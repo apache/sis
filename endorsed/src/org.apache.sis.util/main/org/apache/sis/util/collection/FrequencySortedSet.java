@@ -48,7 +48,7 @@ import org.apache.sis.util.ArgumentChecks;
  *
  * @param <E>  the type of elements in the set.
  *
- * @since 0.8
+ * @since SIS 0.8
  */
 public class FrequencySortedSet<E> extends AbstractSet<E> implements SortedSet<E>, Serializable {
     /**

@@ -97,7 +97,7 @@ import org.apache.sis.pending.geoapi.evolution.Interim;
  *
  * @see org.apache.sis.geometry.Envelopes
  *
- * @since 0.3
+ * @since SIS 0.3
  */
 public final class Extents {
     /**
@@ -153,7 +153,7 @@ public final class Extents {
      * @param  metadata  the metadata, or {@code null} if none.
      * @return extents found in all {@link Identification} elements, or an empty collection if none.
      *
-     * @since 1.3
+     * @since SIS 1.3
      */
     public static Collection<? extends Extent> fromIdentificationInfo(final Metadata metadata) {
         Collection<? extends Extent> result = null;
@@ -195,7 +195,7 @@ public final class Extents {
      * @param  metadata  the metadata from which to get a global bounding box, or {@code null} if none.
      * @return a global bounding box for all extents found in the given metadata, or {@code null} if none.
      *
-     * @since 1.1
+     * @since SIS 1.1
      */
     @OptionalCandidate
     public static GeographicBoundingBox getGeographicBoundingBox(final Metadata metadata) {
@@ -236,7 +236,7 @@ public final class Extents {
      * @see org.apache.sis.referencing.AbstractIdentifiedObject#getDomains()
      * @see org.apache.sis.referencing.CRS#getDomainOfValidity(CoordinateReferenceSystem)
      *
-     * @since 1.4
+     * @since SIS 1.4
      */
     public static Optional<GeographicBoundingBox> getGeographicBoundingBox(final Stream<? extends Extent> extents) {
         final Extents m = new Extents();
@@ -419,7 +419,7 @@ public final class Extents {
      * @return a vertical measurement range created from the given extent, or {@code null} if none.
      * @throws InvalidMetadataException if a vertical range contains a {@link Double#NaN} value.
      *
-     * @since 0.4
+     * @since SIS 0.4
      */
     @OptionalCandidate
     public static MeasurementRange<Double> getVerticalRange(final Extent extent) {
@@ -498,7 +498,7 @@ public final class Extents {
      * @param  extent  the extent to convert to a time range, or {@code null}.
      * @return a time range created from the given extent, or {@code null} if none.
      *
-     * @since 0.4
+     * @since SIS 0.4
      */
     @OptionalCandidate
     public static Range<Date> getTimeRange(final Extent extent) {
@@ -550,7 +550,7 @@ public final class Extents {
      * @throws DateTimeException if {@code zone} is null and a temporal value
      *         cannot be converted to an instant without that information.
      *
-     * @since 1.5
+     * @since SIS 1.5
      */
     public static Optional<Instant> getInstant(final Extent extent, final ZoneId zone, final double location) {
         ArgumentChecks.ensureFinite("location", location);
@@ -603,7 +603,7 @@ public final class Extents {
      * @param  locale  desired locale, or {@code null} for default.
      * @return description of the given extent, or {@code null} if none.
      *
-     * @since 1.1
+     * @since SIS 1.1
      */
     @OptionalCandidate
     public static String getDescription(final Extent extent, final Locale locale) {
@@ -647,7 +647,7 @@ public final class Extents {
      * @return an estimation of the area in the given bounding box (m²),
      *         or {@linkplain Double#NaN NaN} if the given box was null.
      *
-     * @since 0.4
+     * @since SIS 0.4
      */
     public static double area(final GeographicBoundingBox box) {
         if (box == null) {
@@ -684,7 +684,7 @@ public final class Extents {
      *
      * @see DefaultGeographicBoundingBox#add(GeographicBoundingBox)
      *
-     * @since 1.2
+     * @since SIS 1.2
      */
     public static GeographicBoundingBox union(final GeographicBoundingBox b1, final GeographicBoundingBox b2) {
         return apply(b1, b2, DefaultGeographicBoundingBox::new, DefaultGeographicBoundingBox::add);
@@ -708,7 +708,7 @@ public final class Extents {
      *
      * @see DefaultGeographicBoundingBox#intersect(GeographicBoundingBox)
      *
-     * @since 0.4
+     * @since SIS 0.4
      */
     public static GeographicBoundingBox intersection(final GeographicBoundingBox b1, final GeographicBoundingBox b2) {
         return apply(b1, b2, DefaultGeographicBoundingBox::new, DefaultGeographicBoundingBox::intersect);
@@ -752,7 +752,7 @@ public final class Extents {
      *
      * @see DefaultVerticalExtent#intersect(VerticalExtent)
      *
-     * @since 0.8
+     * @since SIS 0.8
      */
     public static VerticalExtent intersection(final VerticalExtent e1, final VerticalExtent e2) {
         return apply(e1, e2, DefaultVerticalExtent::new, DefaultVerticalExtent::intersect);
@@ -773,7 +773,7 @@ public final class Extents {
      *
      * @see DefaultTemporalExtent#intersect(TemporalExtent)
      *
-     * @since 0.8
+     * @since SIS 0.8
      */
     public static TemporalExtent intersection(final TemporalExtent e1, final TemporalExtent e2) {
         return apply(e1, e2, DefaultTemporalExtent::new, DefaultTemporalExtent::intersect);
@@ -801,7 +801,7 @@ public final class Extents {
      *
      * @see DefaultExtent#intersect(Extent)
      *
-     * @since 0.8
+     * @since SIS 0.8
      */
     public static Extent intersection(final Extent e1, final Extent e2) {
         return apply(e1, e2, DefaultExtent::new, DefaultExtent::intersect);
@@ -846,7 +846,7 @@ public final class Extents {
      * @return whether the given extent covers the world.
      *
      * @see #WORLD
-     * @since 1.5
+     * @since SIS 1.5
      */
     public static boolean isWorld(final Extent extent) {
         if (extent != null) {

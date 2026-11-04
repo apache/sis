@@ -79,7 +79,7 @@ import static org.opengis.annotation.Specification.ISO_19115;
  * @author  Martin Desruisseaux (Geomatys)
  * @author  Cullen Rombach (Image Matters)
  * @version 1.4
- * @since   0.5
+ * @since SIS 0.5
  */
 @XmlType(name = "MD_SampleDimension_Type", propOrder = {
     "maxValue",
@@ -494,7 +494,7 @@ public class DefaultSampleDimension extends DefaultRangeDimension {
      *
      * @return description and values of the specific range elements.
      *
-     * @since 1.3
+     * @since SIS 1.3
      */
     @XmlElement(name = "rangeElementDescription")
     @XmlJavaTypeAdapter(MI_RangeElementDescription.Since2014.class)
@@ -507,7 +507,7 @@ public class DefaultSampleDimension extends DefaultRangeDimension {
      *
      * @param  newValues  the new range element description.
      *
-     * @since 1.3
+     * @since SIS 1.3
      */
     public void setRangeElementDescriptions(final Collection<? extends RangeElementDescription> newValues) {
         rangeElementDescriptions = writeCollection(newValues, rangeElementDescriptions, RangeElementDescription.class);

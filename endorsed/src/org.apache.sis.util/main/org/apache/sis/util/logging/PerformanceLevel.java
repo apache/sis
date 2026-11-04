@@ -52,7 +52,7 @@ import org.apache.sis.system.Configuration;
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.4
- * @since   0.3
+ * @since SIS 0.3
  */
 public final class PerformanceLevel extends Level {
     /**
@@ -65,7 +65,7 @@ public final class PerformanceLevel extends Level {
      * time equals or greater than 1 second are logged at this level. However, this threshold can
      * be changed by a call to <code>SLOWNESS.{@linkplain #setMinDuration(long, TimeUnit)}</code>.
      *
-     * @since 1.3
+     * @since SIS 1.3
      */
     public static final PerformanceLevel SLOWNESS = new PerformanceLevel("SLOWNESS", Vocabulary.Keys.Slowness, 620, 1000_000_000L);
 
@@ -167,7 +167,7 @@ public final class PerformanceLevel extends Level {
      *
      * @return name of this level for the current locale.
      *
-     * @since 1.2
+     * @since SIS 1.2
      */
     @Override
     public String getLocalizedName() {

@@ -30,7 +30,7 @@ import org.opengis.util.FactoryException;
  *
  * @see MissingFactoryResourceException
  *
- * @since 0.7
+ * @since SIS 0.7
  */
 public class FactoryDataException extends FactoryException {
     /**
@@ -58,7 +58,7 @@ public class FactoryDataException extends FactoryException {
      *
      * @param cause  the cause, saved for later retrieval by the {@link #getCause()} method.
      *
-     * @since 1.2
+     * @since SIS 1.2
      */
     public FactoryDataException(Throwable cause) {
         super(cause);

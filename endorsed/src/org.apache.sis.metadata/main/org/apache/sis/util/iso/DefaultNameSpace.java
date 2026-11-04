@@ -59,7 +59,7 @@ import static org.apache.sis.util.ArgumentChecks.ensureNonNull;
  * @see DefaultMemberName
  * @see DefaultNameFactory
  *
- * @since 0.3
+ * @since SIS 0.3
  */
 public class DefaultNameSpace implements NameSpace, Serializable {
     /**
@@ -270,7 +270,7 @@ public class DefaultNameSpace implements NameSpace, Serializable {
      *               {@code false} for the separator between {@linkplain AbstractName#getParsedNames() parsed names}.
      * @return separator between name components.
      *
-     * @since 1.3
+     * @since SIS 1.3
      */
     public static String getSeparator(final NameSpace ns, final boolean head) {
         if (ns instanceof DefaultNameSpace) {

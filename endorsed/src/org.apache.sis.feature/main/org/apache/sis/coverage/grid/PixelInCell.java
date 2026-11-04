@@ -30,7 +30,7 @@ import org.opengis.metadata.spatial.PixelOrientation;
  *
  * @see PixelOrientation
  *
- * @since 1.5
+ * @since SIS 1.5
  */
 public enum PixelInCell {
     /**

@@ -66,7 +66,7 @@ import static org.opengis.annotation.Specification.ISO_19115;
  * @author  Martin Desruisseaux (Geomatys)
  * @author  Cullen Rombach (Image Matters)
  * @version 1.7
- * @since   0.5
+ * @since SIS 0.5
  */
 @TitleProperty(name = "name")
 @XmlType(name = "MD_AssociatedResource_Type", propOrder = {

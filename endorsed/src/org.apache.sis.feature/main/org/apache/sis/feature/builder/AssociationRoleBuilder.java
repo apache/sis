@@ -38,7 +38,7 @@ import org.apache.sis.feature.DefaultFeatureType;
  * @see FeatureTypeBuilder#addAssociation(DefaultFeatureType)
  * @see FeatureTypeBuilder#addAssociation(GenericName)
  *
- * @since 0.8
+ * @since SIS 0.8
  */
 public final class AssociationRoleBuilder extends PropertyTypeBuilder {
     /**

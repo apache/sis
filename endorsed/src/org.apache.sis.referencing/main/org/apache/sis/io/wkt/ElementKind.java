@@ -37,7 +37,7 @@ import org.apache.sis.referencing.datum.DefaultDatumEnsemble;
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.5
- * @since   0.4
+ * @since SIS 0.4
  */
 public enum ElementKind {
     /**
@@ -107,7 +107,7 @@ public enum ElementKind {
      *
      * @see org.apache.sis.referencing.datum.DefaultDatumEnsemble
      *
-     * @since 1.5
+     * @since SIS 1.5
      */
     ENSEMBLE,
 

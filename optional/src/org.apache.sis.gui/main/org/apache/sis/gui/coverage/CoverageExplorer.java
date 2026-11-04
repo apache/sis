@@ -75,7 +75,7 @@ import static org.apache.sis.gui.internal.LogHandler.LOGGER;
  * @see CoverageCanvas
  * @see GridView
  *
- * @since 1.1
+ * @since SIS 1.1
  */
 @DefaultProperty("coverage")
 public class CoverageExplorer extends Widget {
@@ -153,7 +153,7 @@ public class CoverageExplorer extends Widget {
      * @see #setResource(GridCoverageResource)
      * @see CoverageCanvas#resourceProperty
      *
-     * @since 1.2
+     * @since SIS 1.2
      */
     public final ObjectProperty<GridCoverageResource> resourceProperty;
 
@@ -224,7 +224,7 @@ public class CoverageExplorer extends Widget {
      *
      * @see #setViewType(View)
      *
-     * @since 1.2
+     * @since SIS 1.2
      */
     @SuppressWarnings("this-escape")
     public CoverageExplorer(final View type) {
@@ -245,7 +245,7 @@ public class CoverageExplorer extends Widget {
      *
      * @return the canvas where the image is shown.
      *
-     * @since 1.2
+     * @since SIS 1.2
      */
     public final CoverageCanvas getCanvas() {
         return getCoverageControls().view;
@@ -392,7 +392,7 @@ public class CoverageExplorer extends Widget {
      *
      * @see #resourceProperty
      *
-     * @since 1.2
+     * @since SIS 1.2
      */
     public final GridCoverageResource getResource() {
         return resourceProperty.get();
@@ -408,7 +408,7 @@ public class CoverageExplorer extends Widget {
      *
      * @see #resourceProperty
      *
-     * @since 1.2
+     * @since SIS 1.2
      */
     public final void setResource(final GridCoverageResource resource) {
         resourceProperty.set(resource);

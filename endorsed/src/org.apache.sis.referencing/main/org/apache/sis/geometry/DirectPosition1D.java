@@ -42,7 +42,7 @@ import static org.apache.sis.util.ArgumentChecks.ensureDimensionMatches;
  * @see GeneralDirectPosition
  * @see CoordinateFormat
  *
- * @since 0.3
+ * @since SIS 0.3
  */
 public class DirectPosition1D extends AbstractDirectPosition implements Serializable, Cloneable {
     /**
@@ -154,7 +154,7 @@ public class DirectPosition1D extends AbstractDirectPosition implements Serializ
      *
      * @return the coordinates.
      *
-     * @since 1.5
+     * @since SIS 1.5
      */
     @Override
     public final double[] getCoordinates() {
@@ -171,7 +171,7 @@ public class DirectPosition1D extends AbstractDirectPosition implements Serializ
      * @return the {@link #coordinate}.
      * @throws IndexOutOfBoundsException if the specified dimension is out of bounds.
      *
-     * @since 1.5
+     * @since SIS 1.5
      */
     @Override
     public final double getCoordinate(final int dimension) throws IndexOutOfBoundsException {
@@ -189,7 +189,7 @@ public class DirectPosition1D extends AbstractDirectPosition implements Serializ
      * @param  value      the coordinate value.
      * @throws IndexOutOfBoundsException if the specified dimension is out of bounds.
      *
-     * @since 1.5
+     * @since SIS 1.5
      */
     @Override
     public void setCoordinate(int dimension, double value) throws IndexOutOfBoundsException {

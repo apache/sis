@@ -74,7 +74,7 @@ import static org.opengis.annotation.Specification.ISO_19115;
  *
  * @see AbstractIdentification#getSpatialResolutions()
  *
- * @since 0.3
+ * @since SIS 0.3
  */
 @XmlType(name = "MD_Resolution_Type") // No need for propOrder since this structure is a union (see javadoc).
 @XmlRootElement(name = "MD_Resolution")
@@ -135,7 +135,7 @@ public class DefaultResolution extends ISOMetadata implements Resolution {
      *
      * @param  scale  the scale, or {@code null} if none.
      *
-     * @since 0.4
+     * @since SIS 0.4
      */
     public DefaultResolution(final RepresentativeFraction scale) {
         if (scale != null) {
@@ -292,7 +292,7 @@ public class DefaultResolution extends ISOMetadata implements Resolution {
      *
      * @return the vertical sampling distance, or {@code null}.
      *
-     * @since 0.5
+     * @since SIS 0.5
      */
     @XmlElement(name = "vertical")
     @XmlJavaTypeAdapter(GO_Real.Since2014.class)
@@ -312,7 +312,7 @@ public class DefaultResolution extends ISOMetadata implements Resolution {
      * @param  newValue  the new distance, or {@code null}.
      * @throws IllegalArgumentException if the given value is NaN, zero or negative.
      *
-     * @since 0.5
+     * @since SIS 0.5
      */
     public void setVertical(final Double newValue) {
         if (ensurePositive(DefaultResolution.class, "vertical", true, newValue)) {
@@ -325,7 +325,7 @@ public class DefaultResolution extends ISOMetadata implements Resolution {
      *
      * @return the angular sampling measure, or {@code null}.
      *
-     * @since 0.5
+     * @since SIS 0.5
      */
     @XmlElement(name = "angularDistance")
     @XmlJavaTypeAdapter(GO_Real.Since2014.class)
@@ -345,7 +345,7 @@ public class DefaultResolution extends ISOMetadata implements Resolution {
      * @param  newValue  the new distance, or {@code null}.
      * @throws IllegalArgumentException if the given value is NaN, zero or negative.
      *
-     * @since 0.5
+     * @since SIS 0.5
      */
     public void setAngularDistance(final Double newValue) {
         if (ensurePositive(DefaultResolution.class, "angular", true, newValue)) {
@@ -358,7 +358,7 @@ public class DefaultResolution extends ISOMetadata implements Resolution {
      *
      * @return textual description of the spatial resolution, or {@code null}.
      *
-     * @since 0.5
+     * @since SIS 0.5
      */
     @XmlElement(name = "levelOfDetail")
     @XmlJavaTypeAdapter(InternationalStringAdapter.Since2014.class)
@@ -376,7 +376,7 @@ public class DefaultResolution extends ISOMetadata implements Resolution {
      *
      * @param  newValue  the new distance.
      *
-     * @since 0.5
+     * @since SIS 0.5
      */
     public void setLevelOfDetail(final InternationalString newValue) {
         setProperty(TEXT, newValue);

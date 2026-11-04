@@ -73,7 +73,7 @@ import org.apache.sis.system.Reflect;
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.4
- * @since   0.7
+ * @since SIS 0.7
  */
 public abstract class InstallationResources {
     /**
@@ -88,7 +88,7 @@ public abstract class InstallationResources {
      * returns a non-empty set.
      *
      * @return installation resources found on the module path.
-     * @since 1.4
+     * @since SIS 1.4
      */
     public static ServiceLoader<InstallationResources> load() {
         try {
@@ -141,7 +141,7 @@ public abstract class InstallationResources {
      *
      * @return URL to installation instruction, or {@code null} if none.
      *
-     * @since 1.2
+     * @since SIS 1.2
      */
     public String getInstructionURL() {
         final Set<String> authorities = getAuthorities();
@@ -221,7 +221,7 @@ public abstract class InstallationResources {
      *
      * @see ClassLoader#getResource(String)
      *
-     * @since 0.8
+     * @since SIS 0.8
      */
     public Object getResource(String authority, int index) throws IOException {
         return null;

@@ -71,7 +71,7 @@ import org.apache.sis.referencing.datum.DefaultParametricDatum;
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @author  Johann Sorel (Geomatys)
  * @version 1.5
- * @since   0.7
+ * @since SIS 0.7
  */
 public abstract class GeodeticAuthorityFactory extends AbstractFactory implements AuthorityFactory {
     /**
@@ -169,7 +169,7 @@ public abstract class GeodeticAuthorityFactory extends AbstractFactory implement
      * @throws NoSuchAuthorityCodeException if the specified {@code code} was not found.
      * @throws FactoryException if an error occurred while fetching the description.
      *
-     * @since 1.5
+     * @since SIS 1.5
      */
     public Optional<InternationalString> getDescriptionText(Class<? extends IdentifiedObject> type, String code)
             throws FactoryException
@@ -208,7 +208,7 @@ public abstract class GeodeticAuthorityFactory extends AbstractFactory implement
      * @throws NoSuchAuthorityCodeException if the specified {@code code} was not found.
      * @throws FactoryException if the object creation failed for some other reason.
      *
-     * @since 1.5
+     * @since SIS 1.5
      */
     public final <T extends IdentifiedObject> T createObject(final Class<T> type, final String code)
             throws NoSuchAuthorityCodeException, FactoryException
@@ -615,7 +615,7 @@ public abstract class GeodeticAuthorityFactory extends AbstractFactory implement
      *
      * @see org.apache.sis.referencing.datum.DefaultDatumEnsemble
      *
-     * @since 1.5
+     * @since SIS 1.5
      */
     public DefaultDatumEnsemble<?> createDatumEnsemble(final String code) throws NoSuchAuthorityCodeException, FactoryException {
         return cast(DefaultDatumEnsemble.class, createDatum(code), code);
@@ -1396,7 +1396,7 @@ public abstract class GeodeticAuthorityFactory extends AbstractFactory implement
      * @return the code with the namespace part removed if that part matched one of the values given by {@link #getCodeSpaces()}.
      * @throws FactoryException if an error occurred while listing the code spaces managed by this factory.
      *
-     * @since 0.8
+     * @since SIS 0.8
      */
     protected final String trimNamespace(String code) throws FactoryException {
         code = CharSequences.trimIgnorables(code).toString();

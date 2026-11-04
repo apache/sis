@@ -28,7 +28,7 @@ package org.apache.sis.storage;
  *
  * @see org.apache.sis.referencing.factory.InternalFactoryException
  *
- * @since 1.0
+ * @since SIS 1.0
  */
 public class InternalDataStoreException extends DataStoreException {
     /**

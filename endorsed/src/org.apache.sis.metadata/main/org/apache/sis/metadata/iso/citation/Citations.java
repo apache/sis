@@ -78,7 +78,7 @@ import org.opengis.referencing.ReferenceIdentifier;
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @version 1.5
- * @since   0.3
+ * @since SIS 0.3
  */
 public final class Citations {
     /**
@@ -110,7 +110,7 @@ public final class Citations {
      *   <li>{@link org.apache.sis.metadata.iso.DefaultMetadata#getMetadataStandards()}</li>
      * </ul>
      *
-     * @since 0.6
+     * @since SIS 0.6
      */
     public static final List<Citation> ISO_19115 = Containers.viewAsUnmodifiableList(new CitationConstant[] {
         new CitationConstant("ISO 19115-1"),
@@ -189,7 +189,7 @@ public final class Citations {
      *
      * @see <a href="https://epsg.org/">EPSG Geodetic Parameter Dataset</a>
      *
-     * @since 0.4
+     * @since SIS 0.4
      */
     public static final IdentifierSpace<Integer> EPSG = new CitationConstant.Authority<>(Constants.EPSG);
 
@@ -211,7 +211,7 @@ public final class Citations {
      *
      * @see <a href="https://www.ogc.org/standards/wms">Web Map Service specification</a>
      *
-     * @since 0.7
+     * @since SIS 0.7
      */
     public static final IdentifierSpace<Integer> WMS = new CitationConstant.Authority<>("WMS", Constants.OGC);
 
@@ -294,7 +294,7 @@ public final class Citations {
      * @see #EPSG
      * @see <a href="https://www.esri.com">ESRI</a>
      *
-     * @since 0.4
+     * @since SIS 0.4
      */
     public static final IdentifierSpace<String> ESRI = new CitationConstant.Authority<>("ArcGIS", Constants.ESRI);
 
@@ -306,7 +306,7 @@ public final class Citations {
      *
      * @see <a href="https://www.wmo.int">World Meteorological Organization</a>
      *
-     * @since 1.2
+     * @since SIS 1.2
      */
     public static final IdentifierSpace<String> WMO = new CitationConstant.Authority<>("WMO");
 
@@ -337,7 +337,7 @@ public final class Citations {
      *   <li>{@link org.apache.sis.referencing.ImmutableIdentifier#getAuthority()}</li>
      * </ul>
      *
-     * @since 0.4
+     * @since SIS 0.4
      */
     public static final IdentifierSpace<String> NETCDF = new CitationConstant.Authority<>(Constants.NETCDF);
 
@@ -353,7 +353,7 @@ public final class Citations {
      *
      * @see <a href="https://www.ogc.org/standards/geotiff">GeoTIFF specification</a>
      *
-     * @since 0.4
+     * @since SIS 0.4
      */
     public static final IdentifierSpace<Integer> GEOTIFF = new CitationConstant.Authority<>(Constants.GEOTIFF);
 
@@ -372,7 +372,7 @@ public final class Citations {
      * @see #GDAL
      * @see <a href="https://proj.org/">PROJ</a>
      *
-     * @since 0.4
+     * @since SIS 0.4
      */
     public static final IdentifierSpace<String> PROJ4 = new CitationConstant.Authority<>("PROJ", Constants.PROJ4);
 
@@ -385,7 +385,7 @@ public final class Citations {
      *   <li>{@link org.apache.sis.referencing.ImmutableIdentifier#getAuthority()}</li>
      * </ul>
      *
-     * @since 0.6
+     * @since SIS 0.6
      */
     public static final IdentifierSpace<Integer> MAP_INFO = new CitationConstant.Authority<>("MapInfo");
 
@@ -398,7 +398,7 @@ public final class Citations {
      *   <li>{@link org.apache.sis.referencing.ImmutableIdentifier#getAuthority()}</li>
      * </ul>
      *
-     * @since 0.6
+     * @since SIS 0.6
      */
     public static final IdentifierSpace<Integer> S57 = new CitationConstant.Authority<>("IHO S-57", "S57");
 
@@ -441,7 +441,7 @@ public final class Citations {
      *   <li>{@link org.apache.sis.metadata.iso.quality.DefaultConformanceResult#getSpecification()}</li>
      * </ul>
      *
-     * @since 0.4
+     * @since SIS 0.4
      */
     public static final Citation SIS = new CitationConstant.Authority<String>(Constants.SIS);
 
@@ -451,7 +451,7 @@ public final class Citations {
      * @see #PROJ4
      * @see <a href="https://gdal.org/">Geospatial Data Abstraction Library</a>
      *
-     * @since 1.5
+     * @since SIS 1.5
      */
     public static final Citation GDAL = new CitationConstant.Authority<String>(Constants.GDAL);
 
@@ -508,7 +508,7 @@ public final class Citations {
      *
      * @return the value declared in this {@code Citations} class.
      *
-     * @since 1.0
+     * @since SIS 1.0
      */
     public static Citation[] values() {
         return Arrays.copyOf(CITATIONS, CITATIONS.length, Citation[].class);
@@ -522,7 +522,7 @@ public final class Citations {
      * @param  identifier  the citation title (or alternate title), or {@code null}.
      * @return a predefined citation using the specified name.
      *
-     * @since 1.5
+     * @since SIS 1.5
      */
     public static Optional<Citation> predefined(String identifier) {
         if (identifier == null || ((identifier = identifier.strip()).isEmpty())) {
@@ -900,7 +900,7 @@ public final class Citations {
      * @return a non-empty code space for the given citation without leading or trailing whitespaces,
      *         or {@code null} if the given citation is null or does not have any Unicode identifier or title.
      *
-     * @since 1.0
+     * @since SIS 1.0
      */
     public static String toCodeSpace(final Citation citation) {
         if (citation instanceof IdentifierSpace<?>) {

@@ -63,7 +63,7 @@ import org.apache.sis.metadata.iso.citation.AbstractParty;
  * @see ReferencingByIdentifiers
  * @see LocationFormat
  *
- * @since 0.8
+ * @since SIS 0.8
  */
 public abstract class AbstractLocation {
     /**

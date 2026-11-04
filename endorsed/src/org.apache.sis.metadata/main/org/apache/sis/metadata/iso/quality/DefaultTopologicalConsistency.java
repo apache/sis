@@ -41,7 +41,7 @@ import org.opengis.metadata.quality.TopologicalConsistency;
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @author  Touraïvane (IRD)
  * @version 1.4
- * @since   0.3
+ * @since SIS 0.3
  */
 @XmlType(name = "DQ_TopologicalConsistency_Type")
 @XmlRootElement(name = "DQ_TopologicalConsistency")

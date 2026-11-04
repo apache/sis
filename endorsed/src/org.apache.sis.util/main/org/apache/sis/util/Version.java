@@ -49,7 +49,7 @@ import static org.apache.sis.system.Modules.MINOR_VERSION;
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @version 1.5
- * @since   0.3
+ * @since SIS 0.3
  */
 public class Version implements CharSequence, Comparable<Version>, Serializable {
     /**
@@ -116,7 +116,7 @@ public class Version implements CharSequence, Comparable<Version>, Serializable 
      * @return version declared by the library that provides the given class.
      *
      * @see Attributes.Name#IMPLEMENTATION_VERSION
-     * @since 1.5
+     * @since SIS 1.5
      */
     public static Optional<Version> ofLibrary(final Class<?> member) {
         URL url = member.getResource(member.getSimpleName() + ".class");
@@ -160,7 +160,7 @@ public class Version implements CharSequence, Comparable<Version>, Serializable 
      * @param  components  the major number, optionally followed by minor, revision or other numbers.
      * @return a new or existing instance of {@code Version} for the given numbers.
      *
-     * @since 0.4
+     * @since SIS 0.4
      */
     public static Version valueOf(final int... components) {
         ArgumentChecks.ensureNonEmptyBounded("components", false, Integer.MIN_VALUE, Integer.MAX_VALUE, components);

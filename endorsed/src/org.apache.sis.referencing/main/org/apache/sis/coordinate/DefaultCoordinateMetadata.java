@@ -44,7 +44,7 @@ import org.apache.sis.util.LenientComparable;
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.7
- * @since   1.5
+ * @since SIS 1.5
  */
 public class DefaultCoordinateMetadata extends FormattableObject
         implements LenientComparable, Serializable

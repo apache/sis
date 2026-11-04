@@ -42,7 +42,7 @@ import static org.apache.sis.util.internal.shared.Numerics.MAX_INTEGER_CONVERTIB
  *
  * @see org.apache.sis.math.NumberType
  *
- * @since 1.1
+ * @since SIS 1.1
  */
 public enum DataType {
     /**
@@ -83,7 +83,7 @@ public enum DataType {
      * <p>This case is selected when the data are used with any packed sample model:
      * {@link SinglePixelPackedSampleModel} or {@link MultiPixelPackedSampleModel}.</p>
      *
-     * @since 1.5
+     * @since SIS 1.5
      */
     UINT(DataBuffer.TYPE_INT, 0),
 
@@ -154,7 +154,7 @@ public enum DataType {
      * @return type of sample values in the bands managed by the given sample model (never {@code null}).
      * @throws RasterFormatException if the sample model does not use a recognized data type.
      *
-     * @since 1.5
+     * @since SIS 1.5
      */
     public static DataType forBands(final SampleModel sm) {
         final int type = sm.getDataType();
@@ -304,7 +304,7 @@ public enum DataType {
      * @return the data type (never {@code null}) for the given number of bits.
      * @throws RasterFormatException if the combination of argument values is invalid.
      *
-     * @since 1.2
+     * @since SIS 1.2
      */
     public static DataType forNumberOfBits(final int size, final boolean real, final boolean signed) {
         if (size < 1 || size > Double.SIZE || Integer.lowestOneBit(size) != size) {
@@ -343,7 +343,7 @@ public enum DataType {
      *
      * @return size in bytes of this data type, from 1 to 4 inclusive.
      *
-     * @since 1.3
+     * @since SIS 1.3
      */
     public final int bytes() {
         return size() / Byte.SIZE;  // `size()` is never smaller than 8.
@@ -367,7 +367,7 @@ public enum DataType {
      * @param  sm  the sample model, or {@code null}.
      * @return whether the given sample model uses an integer type.
      *
-     * @since 1.5
+     * @since SIS 1.5
      */
     public static boolean isInteger(final SampleModel sm) {
         return (sm != null) && ImageUtilities.isIntegerType(sm.getDataType());
@@ -391,7 +391,7 @@ public enum DataType {
      * @param  sm  the sample model, or {@code null}.
      * @return whether the given sample model provides unsigned sample values.
      *
-     * @since 1.5
+     * @since SIS 1.5
      */
     public static boolean isUnsigned(final SampleModel sm) {
         if (sm != null) {
@@ -426,7 +426,7 @@ public enum DataType {
      *
      * @return the data type that most closely corresponds to a Java primitive type.
      *
-     * @since 1.5
+     * @since SIS 1.5
      */
     public final DataType toPrimitive() {
         switch (dataType) {
@@ -474,7 +474,7 @@ public enum DataType {
      *
      * @return 0 of NaN in an instance of the wrapper class of the sample values.
      *
-     * @since 1.5
+     * @since SIS 1.5
      */
     public final Number fillValue() {
         return fillValue;

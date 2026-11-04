@@ -61,7 +61,7 @@ import static org.opengis.annotation.Specification.ISO_19115;
  * @author  Rémi Maréchal (Geomatys)
  * @author  Cullen Rombach (Image Matters)
  * @version 1.5
- * @since   0.3
+ * @since SIS 0.3
  */
 @TitleProperty(name = "dimensionName")
 @XmlType(name = "MD_Dimension_Type", propOrder = {
@@ -258,7 +258,7 @@ public class DefaultDimension extends ISOMetadata implements Dimension {
      *
      * @return the enhancement / modifier of the dimension name.
      *
-     * @since 0.5
+     * @since SIS 0.5
      */
     @XmlElement(name = "dimensionTitle")
     @XmlJavaTypeAdapter(InternationalStringAdapter.Since2014.class)
@@ -272,7 +272,7 @@ public class DefaultDimension extends ISOMetadata implements Dimension {
      *
      * @param  newValue  the new enhancement / modifier of the dimension name.
      *
-     * @since 0.5
+     * @since SIS 0.5
      */
     public void setDimensionTitle(final InternationalString newValue) {
         checkWritePermission(dimensionTitle);
@@ -284,7 +284,7 @@ public class DefaultDimension extends ISOMetadata implements Dimension {
      *
      * @return the axis dimension description.
      *
-     * @since 0.5
+     * @since SIS 0.5
      */
     @XmlElement(name = "dimensionDescription")
     @XmlJavaTypeAdapter(InternationalStringAdapter.Since2014.class)
@@ -298,7 +298,7 @@ public class DefaultDimension extends ISOMetadata implements Dimension {
      *
      * @param  newValue  the new axis dimension description.
      *
-     * @since 0.5
+     * @since SIS 0.5
      */
     public void setDimensionDescription(final InternationalString newValue) {
         checkWritePermission(dimensionDescription);

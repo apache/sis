@@ -38,7 +38,7 @@ import org.apache.sis.referencing.internal.Resources;
  * @see Matrix3
  * @see Matrix4
  *
- * @since 0.4
+ * @since SIS 0.4
  */
 public class Matrix2 extends MatrixSIS {
     /**
@@ -246,7 +246,7 @@ public class Matrix2 extends MatrixSIS {
      *        └                  ┘</pre>
      *
      * @param θ  arithmetic rotation angle in radians.
-     * @since 1.5
+     * @since SIS 1.5
      */
     public void setToRotation(double θ) {
         m00 =  (m11 = Math.cos(θ));
@@ -287,7 +287,7 @@ public class Matrix2 extends MatrixSIS {
     /**
      * {@inheritDoc}
      *
-     * @since 1.5
+     * @since SIS 1.5
      */
     @Override
     public double[] multiply(final double[] vector) {

@@ -31,7 +31,7 @@ import org.apache.sis.xml.Namespaces;
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @author  Touraïvane (IRD)
  * @version 1.4
- * @since   0.3
+ * @since SIS 0.3
  *
  * @deprecated Renamed {@link AbstractTemporalQuality} for following a renaming in ISO 19157:2013.
  */

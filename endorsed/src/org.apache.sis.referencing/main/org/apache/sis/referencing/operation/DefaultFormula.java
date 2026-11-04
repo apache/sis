@@ -45,7 +45,7 @@ import org.apache.sis.util.iso.Types;
  * @see org.apache.sis.referencing.operation.transform.AbstractMathTransform
  * @see org.apache.sis.referencing.operation.transform.MathTransformProvider
  *
- * @since 0.5
+ * @since SIS 0.5
  */
 public class DefaultFormula extends FormattableObject implements Formula, Serializable {
     /**

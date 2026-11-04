@@ -51,7 +51,7 @@ import org.apache.sis.xml.bind.NonMarshalledAuthority;
  * @see IdentifiedObject
  * @see IdentifierMap
  *
- * @since 0.3
+ * @since SIS 0.3
  */
 public interface IdentifierSpace<T> extends Citation {
     /**

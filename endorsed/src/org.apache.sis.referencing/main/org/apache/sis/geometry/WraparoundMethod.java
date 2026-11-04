@@ -50,7 +50,7 @@ import org.opengis.geometry.DirectPosition;
  *
  * @see GeneralEnvelope#wraparound(WraparoundMethod)
  *
- * @since 1.1
+ * @since SIS 1.1
  */
 public enum WraparoundMethod {
     /**

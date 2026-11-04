@@ -42,7 +42,7 @@ import org.apache.sis.util.internal.shared.DoubleDouble;
  *
  * @see org.apache.sis.math.MathFunctions
  *
- * @since 0.3
+ * @since SIS 0.3
  */
 @SuppressWarnings("UnnecessaryBoxing")
 public final class Numbers {
@@ -63,7 +63,7 @@ public final class Numbers {
      * @see Double#isNaN()
      * @see Fraction#isNaN()
      *
-     * @since 1.1
+     * @since SIS 1.1
      */
     public static boolean isNaN(final Number value) {
         if (value == null) return true;
@@ -97,7 +97,7 @@ public final class Numbers {
      * @see BigDecimal#longValueExact()
      * @see BigInteger#longValueExact()
      *
-     * @since 1.4
+     * @since SIS 1.4
      */
     public static long round(final Number value) {
         final NumberType mapping = NumberType.forNumberClass(value.getClass());
@@ -447,7 +447,7 @@ public final class Numbers {
      * @throws IllegalArgumentException if the given type is not supported by this {@code Numbers} class,
      *         or if the given value cannot be wrapped in an instance of the given class without precision lost.
      *
-     * @since 0.8
+     * @since SIS 0.8
      *
      * @see NumberType#wrapExact(long)
      */

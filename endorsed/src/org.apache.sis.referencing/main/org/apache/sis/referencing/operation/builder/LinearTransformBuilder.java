@@ -98,7 +98,7 @@ import org.opengis.geometry.coordinate.Position;
  * @see Line
  * @see Plane
  *
- * @since 0.5
+ * @since SIS 0.5
  */
 public class LinearTransformBuilder extends TransformBuilder {
     /**
@@ -225,7 +225,7 @@ public class LinearTransformBuilder extends TransformBuilder {
      * @throws IllegalArgumentException if a grid size is not strictly positive, or if the product
      *         of all values (∏{@code gridSize}) is greater than {@link Integer#MAX_VALUE}.
      *
-     * @since 0.8
+     * @since SIS 0.8
      */
     public LinearTransformBuilder(int... gridSize) {
         ArgumentChecks.ensureNonEmptyBounded("gridSize", false, 1, Integer.MAX_VALUE, gridSize);
@@ -263,7 +263,7 @@ public class LinearTransformBuilder extends TransformBuilder {
      * @see #setControlPoints(MathTransform)
      * @see org.apache.sis.coverage.grid.DomainLinearizer
      *
-     * @since 1.1
+     * @since SIS 1.1
      */
     public static LinearTransform approximate(final MathTransform gridToCRS, final Envelope domain) throws FactoryException {
         ArgumentChecks.ensureNonNull("gridToCRS", gridToCRS);
@@ -455,7 +455,7 @@ search: for (int j=numPoints; --j >= 0;) {
      *
      * @see LinearTransform#getSourceDimensions()
      *
-     * @since 0.8
+     * @since SIS 0.8
      */
     public int getSourceDimensions() {
         if (gridSize != null) return gridSize.length;
@@ -474,7 +474,7 @@ search: for (int j=numPoints; --j >= 0;) {
      *
      * @see LinearTransform#getTargetDimensions()
      *
-     * @since 0.8
+     * @since SIS 0.8
      */
     public int getTargetDimensions() {
         if (targets != null) return targets.length;
@@ -496,7 +496,7 @@ search: for (int j=numPoints; --j >= 0;) {
      * @return the envelope of source points (cell centers), inclusive.
      * @throws IllegalStateException if the source points are not yet known.
      *
-     * @since 1.0
+     * @since SIS 1.0
      */
     public Envelope getSourceEnvelope() {
         if (gridSize != null) {
@@ -520,7 +520,7 @@ search: for (int j=numPoints; --j >= 0;) {
      * @return the envelope of target points.
      * @throws IllegalStateException if the target points are not yet known.
      *
-     * @since 1.0
+     * @since SIS 1.0
      */
     public Envelope getTargetEnvelope() {
         return envelope(targets, (gridLength != 0) ? gridLength : numPoints);
@@ -571,7 +571,7 @@ search: for (int j=numPoints; --j >= 0;) {
      *
      * @see #approximate(MathTransform, Envelope)
      *
-     * @since 1.1
+     * @since SIS 1.1
      */
     public void setControlPoints(final MathTransform gridToCRS) throws TransformException {
         if (gridSize == null) {
@@ -639,7 +639,7 @@ search: for (int j=numPoints; --j >= 0;) {
      *         created for a grid} but some source coordinates are not indices in that grid.
      * @throws MismatchedDimensionException if some positions do not have the expected number of dimensions.
      *
-     * @since 0.8
+     * @since SIS 0.8
      */
     public void setControlPoints(final Map<? extends Position, ? extends Position> sourceToTarget)
             throws MismatchedDimensionException
@@ -722,7 +722,7 @@ search: for (int j=numPoints; --j >= 0;) {
      *
      * @return all control points in this builder.
      *
-     * @since 1.0
+     * @since SIS 1.0
      */
     public Map<DirectPosition,DirectPosition> getControlPoints() {
         return (gridSize != null) ? new ControlPoints() : new Ungridded();
@@ -970,7 +970,7 @@ search:         for (int j=domain(); --j >= 0;) {
      *         but some source coordinates are out of index range, or if {@code target} contains NaN of infinite numbers.
      * @throws MismatchedDimensionException if the source or target position does not have the expected number of dimensions.
      *
-     * @since 0.8
+     * @since SIS 0.8
      */
     public void setControlPoint(final int[] source, final double[] target) {
         ensureModifiable();
@@ -1046,7 +1046,7 @@ search:         for (int j=domain(); --j >= 0;) {
      *         but some source coordinates are out of index range.
      * @throws MismatchedDimensionException if the source position does not have the expected number of dimensions.
      *
-     * @since 0.8
+     * @since SIS 0.8
      */
     public double[] getControlPoint(final int[] source) {
         verifySourceDimension(source.length);
@@ -1305,7 +1305,7 @@ search:         for (int j=domain(); --j >= 0;) {
      * @see #linearizer()
      * @see #correlation()
      *
-     * @since 1.0
+     * @since SIS 1.0
      */
     public void addLinearizers(final Map<String,MathTransform> projections, final int... projToGrid) {
         addLinearizers(Objects.requireNonNull(projections), false, projToGrid);
@@ -1370,7 +1370,7 @@ search:         for (int j=domain(); --j >= 0;) {
      * @throws FactoryException if the transform cannot be created,
      *         for example because the source or target points have not be specified.
      *
-     * @since 0.8
+     * @since SIS 0.8
      */
     @Override
     public LinearTransform create(final MathTransformFactory factory) throws FactoryException {
@@ -1595,7 +1595,7 @@ search:         for (int j=domain(); --j >= 0;) {
      *
      * @return the projection applied on target coordinates before to compute a linear transform.
      *
-     * @since 1.1
+     * @since SIS 1.1
      */
     public Optional<Map.Entry<String,MathTransform>> linearizer() {
         return Optional.ofNullable(appliedLinearizer);

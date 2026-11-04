@@ -43,7 +43,7 @@ import org.apache.sis.xml.Namespaces;
  * @author  Cédric Briançon (Geomatys)
  * @author  Cullen Rombach (Image Matters)
  * @version 1.4
- * @since   0.3
+ * @since SIS 0.3
  */
 @XmlType(name = "MD_MetadataExtensionInformation_Type", namespace = Namespaces.MEX, propOrder = {
     "extensionOnLineResource",

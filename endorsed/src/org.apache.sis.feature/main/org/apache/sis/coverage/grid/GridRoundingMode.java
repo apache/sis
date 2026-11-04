@@ -25,7 +25,7 @@ package org.apache.sis.coverage.grid;
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.1
- * @since   1.0
+ * @since SIS 1.0
  */
 public enum GridRoundingMode {
     /**
@@ -78,7 +78,7 @@ public enum GridRoundingMode {
      * this rounding mode is convenient for computing the <em>outputs</em> extent because it gives
      * an extent small enough for allowing inputs to provide data in the whole region.
      *
-     * @since 1.1
+     * @since SIS 1.1
      */
     CONTAINED
 }

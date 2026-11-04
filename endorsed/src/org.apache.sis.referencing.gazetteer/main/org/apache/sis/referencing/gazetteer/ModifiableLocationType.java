@@ -109,7 +109,7 @@ import org.apache.sis.metadata.iso.citation.AbstractParty;
  * @see AbstractLocation
  * @see ReferencingByIdentifiers
  *
- * @since 0.8
+ * @since SIS 0.8
  */
 public class ModifiableLocationType extends AbstractLocationType {      // Not Serializable on intent.
     /**

@@ -82,7 +82,7 @@ import org.apache.sis.referencing.datum.DefaultDatumEnsemble;
  *
  * @see org.apache.sis.referencing.factory.GeodeticAuthorityFactory#createGeocentricCRS(String)
  *
- * @since 0.4
+ * @since SIS 0.4
  */
 @XmlTransient
 public class DefaultGeocentricCRS extends DefaultGeodeticCRS implements GeocentricCRS {
@@ -135,7 +135,7 @@ public class DefaultGeocentricCRS extends DefaultGeodeticCRS implements Geocentr
      *
      * @see org.apache.sis.referencing.factory.GeodeticObjectFactory#createGeodeticCRS(Map, GeodeticDatum, DefaultDatumEnsemble, CartesianCS)
      *
-     * @since 1.5
+     * @since SIS 1.5
      */
     public DefaultGeocentricCRS(final Map<String,?> properties,
                                 final GeodeticDatum datum,
@@ -160,7 +160,7 @@ public class DefaultGeocentricCRS extends DefaultGeodeticCRS implements Geocentr
      *
      * @see org.apache.sis.referencing.factory.GeodeticObjectFactory#createGeodeticCRS(Map, GeodeticDatum, DefaultDatumEnsemble, SphericalCS)
      *
-     * @since 1.5
+     * @since SIS 1.5
      */
     public DefaultGeocentricCRS(final Map<String,?> properties,
                                 final GeodeticDatum datum,
@@ -230,7 +230,7 @@ public class DefaultGeocentricCRS extends DefaultGeodeticCRS implements Geocentr
      * own set of interfaces.
      *
      * @return {@code GeocentricCRS.class} or a user-defined sub-interface.
-     * @since 1.7
+     * @since SIS 1.7
      */
     @Override
     public Type getStandardType() {
@@ -263,7 +263,7 @@ public class DefaultGeocentricCRS extends DefaultGeodeticCRS implements Geocentr
      * @return the datum ensemble, or {@code null} if this <abbr>CRS</abbr> is related
      *         to an object identified only by a single {@linkplain #getDatum() datum}.
      *
-     * @since 1.5
+     * @since SIS 1.5
      */
     @Override
     public DefaultDatumEnsemble<GeodeticDatum> getDatumEnsemble() {

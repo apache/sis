@@ -134,7 +134,7 @@ import org.opengis.referencing.ReferenceIdentifier;
  * @see org.apache.sis.referencing.CommonCRS#datum(boolean)
  * @see org.apache.sis.referencing.factory.GeodeticAuthorityFactory#createGeodeticDatum(String)
  *
- * @since 0.4
+ * @since SIS 0.4
  */
 @XmlType(name = "GeodeticDatumType", propOrder = {
     "primeMeridian",
@@ -328,7 +328,7 @@ public class DefaultGeodeticDatum extends AbstractDatum implements GeodeticDatum
      * This is the base type required by {@code equals(…)} methods for returning a potentially {@code true} value.
      *
      * @return {@code GeodeticDatum.class} or a user-defined sub-interface.
-     * @since 1.7
+     * @since SIS 1.7
      */
     @Override
     public Type getStandardType() {
@@ -547,7 +547,7 @@ public class DefaultGeodeticDatum extends AbstractDatum implements GeodeticDatum
      *
      * @author  Martin Desruisseaux (Geomatys)
      * @version 1.5
-     * @since   1.5
+     * @since SIS 1.5
      */
     public static class Dynamic extends DefaultGeodeticDatum implements DynamicReferenceFrame {
         /**
@@ -647,7 +647,7 @@ public class DefaultGeodeticDatum extends AbstractDatum implements GeodeticDatum
      * @param  name  the name to compare.
      * @return {@code true} if the primary name or at least one alias matches the specified {@code name}.
      *
-     * @since 0.7
+     * @since SIS 0.7
      */
     @Override
     public boolean isHeuristicMatchForName(final String name) {

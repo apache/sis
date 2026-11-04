@@ -74,7 +74,7 @@ import static org.apache.sis.metadata.internal.shared.ImplementationHelper.ensur
  *
  * @see DefaultResolution#getEquivalentScale()
  *
- * @since 0.3
+ * @since SIS 0.3
  */
 @XmlType(name = "MD_RepresentativeFraction_Type")
 @XmlRootElement(name = "MD_RepresentativeFraction")
@@ -266,7 +266,7 @@ public class DefaultRepresentativeFraction extends Number implements Representat
      * @see #doubleValue()
      * @see #floatValue()
      *
-     * @since 0.6
+     * @since SIS 0.6
      */
     @Override
     public boolean isEmpty() {
@@ -279,7 +279,7 @@ public class DefaultRepresentativeFraction extends Number implements Representat
      *
      * @see ModifiableMetadata#transitionTo(ModifiableMetadata.State)
      *
-     * @since 0.7
+     * @since SIS 0.7
      */
     public void freeze() {
         isUnmodifiable = true;

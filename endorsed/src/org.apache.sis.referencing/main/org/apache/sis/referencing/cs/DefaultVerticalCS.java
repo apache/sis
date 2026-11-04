@@ -64,7 +64,7 @@ import org.apache.sis.measure.Units;
  * @see org.apache.sis.referencing.datum.DefaultVerticalDatum
  * @see org.apache.sis.referencing.factory.GeodeticAuthorityFactory#createVerticalCS(String)
  *
- * @since 0.4
+ * @since SIS 0.4
  */
 @XmlType(name = "VerticalCSType")
 @XmlRootElement(name = "VerticalCS")
@@ -180,7 +180,7 @@ public class DefaultVerticalCS extends AbstractCS implements VerticalCS {
      * This is the base type required by {@code equals(…)} methods for returning a potentially {@code true} value.
      *
      * @return {@code VerticalCS.class} or a user-defined sub-interface.
-     * @since 1.7
+     * @since SIS 1.7
      */
     @Override
     public Class<? extends VerticalCS> getStandardType() {

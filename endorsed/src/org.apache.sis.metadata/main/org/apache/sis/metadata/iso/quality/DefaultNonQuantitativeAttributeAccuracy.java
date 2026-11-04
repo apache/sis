@@ -27,7 +27,7 @@ import org.apache.sis.xml.internal.shared.LegacyNamespaces;
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @version 1.4
- * @since   0.3
+ * @since SIS 0.3
  *
  * @deprecated Renamed {@link DefaultNonQuantitativeAttributeCorrectness} for following a renaming in ISO 19157:2013.
  */

@@ -54,7 +54,7 @@ import org.apache.sis.util.collection.Containers;
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.4
- * @since   1.4
+ * @since SIS 1.4
  */
 public interface Colorizer extends Function<Colorizer.Target, Optional<ColorModel>> {
     /**
@@ -66,7 +66,7 @@ public interface Colorizer extends Function<Colorizer.Target, Optional<ColorMode
      *
      * @author  Martin Desruisseaux (Geomatys)
      * @version 1.5
-     * @since   1.4
+     * @since SIS 1.4
      */
     class Target {
         /**
@@ -118,7 +118,7 @@ public interface Colorizer extends Function<Colorizer.Target, Optional<ColorMode
          *
          * @param model     sample model of the computed image to colorize (mandatory).
          * @param template  the image from which to get the sample dimensions and visible band, or {@code null} if none.
-         * @since 1.5
+         * @since SIS 1.5
          */
         public Target(SampleModel model, final RenderedImage template) {
             this.model  = Objects.requireNonNull(model);

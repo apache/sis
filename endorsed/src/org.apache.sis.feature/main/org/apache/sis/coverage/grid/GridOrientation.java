@@ -42,7 +42,7 @@ import org.apache.sis.util.resources.Errors;
  *
  * @see GridGeometry#GridGeometry(GridExtent, Envelope, GridOrientation)
  *
- * @since 1.1
+ * @since SIS 1.1
  */
 public final class GridOrientation implements Serializable {
     /**
@@ -153,7 +153,7 @@ public final class GridOrientation implements Serializable {
      * transforms inferred from this orientation will be null.
      * All methods in this class invoked on the {@code UNKNOWN} instance will return {@code UNKNOWN}.
      *
-     * @since 1.6
+     * @since SIS 1.6
      */
     public static final GridOrientation UNKNOWN = new GridOrientation(0, null, true);
 

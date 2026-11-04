@@ -33,7 +33,7 @@ import java.util.function.Predicate;
  *
  * @param  <R>  the type of resources (e.g. {@link org.apache.sis.feature.AbstractFeature}) to filter.
  *
- * @since 1.1
+ * @since SIS 1.1
  */
 public interface Filter<R> extends Predicate<R> {
     /**
@@ -70,7 +70,7 @@ public interface Filter<R> extends Predicate<R> {
      *
      * @return type of resources accepted by this filter.
      *
-     * @since 1.4
+     * @since SIS 1.4
      */
     Class<? super R> getResourceClass();
 

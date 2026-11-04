@@ -50,7 +50,7 @@ import org.apache.sis.measure.Units;
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @version 1.7
- * @since   0.4
+ * @since SIS 0.4
  */
 @XmlType(name = "LinearCSType")
 @XmlRootElement(name = "LinearCS")
@@ -163,7 +163,7 @@ public class DefaultLinearCS extends AbstractCS implements LinearCS {
      * This is the base type required by {@code equals(…)} methods for returning a potentially {@code true} value.
      *
      * @return {@code LinearCS.class} or a user-defined sub-interface.
-     * @since 1.7
+     * @since SIS 1.7
      */
     @Override
     public Class<? extends LinearCS> getStandardType() {

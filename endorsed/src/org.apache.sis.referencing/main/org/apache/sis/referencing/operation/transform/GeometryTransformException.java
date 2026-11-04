@@ -29,7 +29,7 @@ import org.opengis.referencing.operation.TransformException;
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.8
- * @since   1.8
+ * @since SIS 1.8
  */
 public class GeometryTransformException extends TransformException {
     /**

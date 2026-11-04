@@ -64,7 +64,7 @@ import org.apache.sis.image.DataType;
  *
  * @see CoverageExplorer
  *
- * @since 1.1
+ * @since SIS 1.1
  */
 @DefaultProperty("image")
 public class GridView extends Control {
@@ -578,7 +578,7 @@ public class GridView extends Control {
      *
      * @see #formatCoordinateValue(long)
      *
-     * @since 1.5
+     * @since SIS 1.5
      */
     public final String formatSampleValue(final long x, final long y) {
         if (x < minX || x >= maxX || y < minY || y >= maxY) {
@@ -615,7 +615,7 @@ public class GridView extends Control {
      * @param  index  the pixel coordinate to format.
      * @return string representation of the given pixel coordinate.
      *
-     * @since 1.5
+     * @since SIS 1.5
      */
     public final String formatCoordinateValue(final long index) {
         return cellFormat.format(headerFormat, index);

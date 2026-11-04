@@ -35,7 +35,7 @@ import org.opengis.geometry.MismatchedDimensionException;
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.6
- * @since   1.6
+ * @since SIS 1.6
  */
 public final class ImmutableDirectPosition extends AbstractDirectPosition implements Serializable {
     /**

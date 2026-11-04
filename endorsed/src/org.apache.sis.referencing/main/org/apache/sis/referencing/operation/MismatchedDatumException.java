@@ -39,7 +39,7 @@ package org.apache.sis.referencing.operation;
  * @see org.opengis.geometry.MismatchedDimensionException
  * @see org.apache.sis.referencing.operation.matrix.MismatchedMatrixSizeException
  *
- * @since 0.6
+ * @since SIS 0.6
  */
 public class MismatchedDatumException extends IllegalArgumentException {
     /**

@@ -89,7 +89,7 @@ import static org.apache.sis.metadata.internal.shared.ImplementationHelper.ISO_N
  * @author  Cullen Rombach  (Image Matters)
  * @author  Alexis Gaillard (Geomatys)
  * @version 1.4
- * @since   0.3
+ * @since SIS 0.3
  */
 public final class Namespaces {
     /**
@@ -104,7 +104,7 @@ public final class Namespaces {
      * The usual prefix for this namespace is {@code "lan"}.
      *
      * @category ISO
-     * @since 1.0
+     * @since SIS 1.0
      */
     public static final String LAN = ISO_NAMESPACE + "19115/-3/lan/1.0";
 
@@ -131,7 +131,7 @@ public final class Namespaces {
      * The usual prefix for this namespace is {@code "mcc"}.
      *
      * @category ISO
-     * @since 1.0
+     * @since SIS 1.0
      */
     public static final String MCC = ISO_NAMESPACE + "19115/-3/mcc/1.0";
 
@@ -141,7 +141,7 @@ public final class Namespaces {
      * The usual prefix for this namespace is {@code "fcc"}.
      *
      * @category ISO
-     * @since 1.0
+     * @since SIS 1.0
      */
     public static final String FCC = ISO_NAMESPACE + "19110/fcc/1.0";
 
@@ -168,7 +168,7 @@ public final class Namespaces {
      * The usual prefix for this namespace is {@code "cat"}.
      *
      * @category ISO
-     * @since 1.0
+     * @since SIS 1.0
      */
     public static final String CAT = ISO_NAMESPACE + "19115/-3/cat/1.0";
 
@@ -178,7 +178,7 @@ public final class Namespaces {
      * The usual prefix for this namespace is {@code "mdb"}.
      *
      * @category ISO
-     * @since 1.0
+     * @since SIS 1.0
      */
     public static final String MDB = ISO_NAMESPACE + "19115/-3/mdb/1.0";
 
@@ -188,7 +188,7 @@ public final class Namespaces {
      * The usual prefix for this namespace is {@code "cit"}.
      *
      * @category ISO
-     * @since 1.0
+     * @since SIS 1.0
      */
     public static final String CIT = ISO_NAMESPACE + "19115/-3/cit/1.0";
 
@@ -198,7 +198,7 @@ public final class Namespaces {
      * The usual prefix for this namespace is {@code "gex"}.
      *
      * @category ISO
-     * @since 1.0
+     * @since SIS 1.0
      */
     public static final String GEX = ISO_NAMESPACE + "19115/-3/gex/1.0";
 
@@ -208,7 +208,7 @@ public final class Namespaces {
      * The usual prefix for this namespace is {@code "mrs"}.
      *
      * @category ISO
-     * @since 1.0
+     * @since SIS 1.0
      */
     public static final String MRS = ISO_NAMESPACE + "19115/-3/mrs/1.0";
 
@@ -218,7 +218,7 @@ public final class Namespaces {
      * The usual prefix for this namespace is {@code "rce"}.
      *
      * @category ISO
-     * @since 1.0
+     * @since SIS 1.0
      */
     public static final String RCE = ISO_NAMESPACE + "19111/rce/1.0";
 
@@ -228,7 +228,7 @@ public final class Namespaces {
      * The usual prefix for this namespace is {@code "msr"}.
      *
      * @category ISO
-     * @since 1.0
+     * @since SIS 1.0
      */
     public static final String MSR = ISO_NAMESPACE + "19115/-3/msr/1.0";
 
@@ -238,7 +238,7 @@ public final class Namespaces {
      * The usual prefix for this namespace is {@code "mrc"}.
      *
      * @category ISO
-     * @since 1.0
+     * @since SIS 1.0
      */
     public static final String MRC = ISO_NAMESPACE + "19115/-3/mrc/1.0";
 
@@ -248,7 +248,7 @@ public final class Namespaces {
      * The usual prefix for this namespace is {@code "mri"}.
      *
      * @category ISO
-     * @since 1.0
+     * @since SIS 1.0
      */
     public static final String MRI = ISO_NAMESPACE + "19115/-3/mri/1.0";
 
@@ -258,7 +258,7 @@ public final class Namespaces {
      * The usual prefix for this namespace is {@code "mrd"}.
      *
      * @category ISO
-     * @since 1.0
+     * @since SIS 1.0
      */
     public static final String MRD = ISO_NAMESPACE + "19115/-3/mrd/1.0";
 
@@ -268,7 +268,7 @@ public final class Namespaces {
      * The usual prefix for this namespace is {@code "mdt"}.
      *
      * @category ISO
-     * @since 1.0
+     * @since SIS 1.0
      */
     public static final String MDT = ISO_NAMESPACE + "19115/-3/mdt/1.0";
 
@@ -278,7 +278,7 @@ public final class Namespaces {
      * The usual prefix for this namespace is {@code "mco"}.
      *
      * @category ISO
-     * @since 1.0
+     * @since SIS 1.0
      */
     public static final String MCO = ISO_NAMESPACE + "19115/-3/mco/1.0";
 
@@ -288,7 +288,7 @@ public final class Namespaces {
      * The usual prefix for this namespace is {@code "mac"}.
      *
      * @category ISO
-     * @since 1.0
+     * @since SIS 1.0
      */
     public static final String MAC = ISO_NAMESPACE + "19115/-3/mac/1.0";
 
@@ -298,7 +298,7 @@ public final class Namespaces {
      * The usual prefix for this namespace is {@code "mrl"}.
      *
      * @category ISO
-     * @since 1.0
+     * @since SIS 1.0
      */
     public static final String MRL = ISO_NAMESPACE + "19115/-3/mrl/1.0";
 
@@ -308,7 +308,7 @@ public final class Namespaces {
      * The usual prefix for this namespace is {@code "mmi"}.
      *
      * @category ISO
-     * @since 1.0
+     * @since SIS 1.0
      */
     public static final String MMI = ISO_NAMESPACE + "19115/-3/mmi/1.0";
 
@@ -318,7 +318,7 @@ public final class Namespaces {
      * The usual prefix for this namespace is {@code "dqc"}.
      *
      * @category ISO
-     * @since 1.0
+     * @since SIS 1.0
      */
     public static final String DQC = ISO_NAMESPACE + "19157/-2/dqc/1.0";
 
@@ -328,7 +328,7 @@ public final class Namespaces {
      * The usual prefix for this namespace is {@code "mdq"}.
      *
      * @category ISO
-     * @since 1.0
+     * @since SIS 1.0
      */
     public static final String MDQ = ISO_NAMESPACE + "19157/-2/mdq/1.0";
 
@@ -338,7 +338,7 @@ public final class Namespaces {
      * The usual prefix for this namespace is {@code "dqm"}.
      *
      * @category ISO
-     * @since 1.3
+     * @since SIS 1.3
      */
     public static final String DQM = ISO_NAMESPACE + "19157/-2/dqm/1.0";
 
@@ -348,7 +348,7 @@ public final class Namespaces {
      * The usual prefix for this namespace is {@code "mds"}.
      *
      * @category ISO
-     * @since 1.0
+     * @since SIS 1.0
      */
     public static final String MDS = ISO_NAMESPACE + "19115/-3/mds/1.0";
 
@@ -366,7 +366,7 @@ public final class Namespaces {
      * </table>
      *
      * @category ISO
-     * @since 1.0
+     * @since SIS 1.0
      */
     public static final String SRV = ISO_NAMESPACE + "19115/-3/srv/2.0";
 
@@ -376,7 +376,7 @@ public final class Namespaces {
      * The usual prefix for this namespace is {@code "mpc"}.
      *
      * @category ISO
-     * @since 1.0
+     * @since SIS 1.0
      */
     public static final String MPC = ISO_NAMESPACE + "19115/-3/mpc/1.0";
 
@@ -386,7 +386,7 @@ public final class Namespaces {
      * The usual prefix for this namespace is {@code "mda"}.
      *
      * @category ISO
-     * @since 1.0
+     * @since SIS 1.0
      */
     public static final String MDA = ISO_NAMESPACE + "19115/-3/mda/1.0";
 
@@ -396,7 +396,7 @@ public final class Namespaces {
      * The usual prefix for this namespace is {@code "mas"}.
      *
      * @category ISO
-     * @since 1.0
+     * @since SIS 1.0
      */
     public static final String MAS = ISO_NAMESPACE + "19115/-3/mas/1.0";
 
@@ -406,7 +406,7 @@ public final class Namespaces {
      * The usual prefix for this namespace is {@code "mex"}.
      *
      * @category ISO
-     * @since 1.0
+     * @since SIS 1.0
      */
     public static final String MEX = ISO_NAMESPACE + "19115/-3/mex/1.0";
 
@@ -416,7 +416,7 @@ public final class Namespaces {
      * The usual prefix for this namespace is {@code "gcx"}.
      *
      * @category ISO
-     * @since 1.0
+     * @since SIS 1.0
      */
     public static final String GCX = ISO_NAMESPACE + "19115/-3/gcx/1.0";
 
@@ -426,7 +426,7 @@ public final class Namespaces {
      * The usual prefix for this namespace is {@code "md1"}.
      *
      * @category ISO
-     * @since 1.0
+     * @since SIS 1.0
      */
     public static final String MD1 = ISO_NAMESPACE + "19115/-3/md1/1.0";
 
@@ -436,7 +436,7 @@ public final class Namespaces {
      * The usual prefix for this namespace is {@code "md2"}.
      *
      * @category ISO
-     * @since 1.0
+     * @since SIS 1.0
      */
     public static final String MD2 = ISO_NAMESPACE + "19115/-3/md2/1.0";
 
@@ -446,7 +446,7 @@ public final class Namespaces {
      * The usual prefix for this namespace is {@code "gmw"}.
      *
      * @category ISO
-     * @since 1.0
+     * @since SIS 1.0
      */
     public static final String GMW = ISO_NAMESPACE + "19115/-3/gmw/1.0";
 
@@ -507,7 +507,7 @@ public final class Namespaces {
      * </table>
      *
      * @category OGC
-     * @since 1.4
+     * @since SIS 1.4
      */
     public static final String SE = "http://www.opengis.net/se";
 
@@ -626,7 +626,7 @@ public final class Namespaces {
      * @param  type  a class name defined by ISO 19115 or related standards (e.g. {@code "CI_Citation"}.
      * @return a <em>possible</em> namespace for the given type, or {@code null} if unknown.
      *
-     * @since 1.0
+     * @since SIS 1.0
      */
     public static String guessForType(final String type) {
         /*

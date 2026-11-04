@@ -48,6 +48,6 @@
  * @author  Martin Desruisseaux (Geomatys)
  * @author  Johann Sorel (Geomatys)
  * @version 1.7
- * @since   1.5
+ * @since SIS 1.5
  */
 package org.apache.sis.storage.gdal;

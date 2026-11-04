@@ -28,7 +28,7 @@ package org.apache.sis.util;
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @version 0.3
- * @since   0.3
+ * @since SIS 0.3
  */
 public class UnconvertibleObjectException extends IllegalArgumentException {
     /**

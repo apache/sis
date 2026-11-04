@@ -106,7 +106,7 @@ import org.apache.sis.referencing.datum.DefaultDatumEnsemble;
  *
  * @param <DAO>  the type of factory used as Data Access Object (DAO).
  *
- * @since 0.7
+ * @since SIS 0.7
  */
 public abstract class ConcurrentAuthorityFactory<DAO extends GeodeticAuthorityFactory>
         extends GeodeticAuthorityFactory implements AutoCloseable, Printable
@@ -800,7 +800,7 @@ public abstract class ConcurrentAuthorityFactory<DAO extends GeodeticAuthorityFa
      * @throws NoSuchAuthorityCodeException if the specified {@code code} was not found.
      * @throws FactoryException if the query failed for some other reason.
      *
-     * @since 1.5
+     * @since SIS 1.5
      */
     @Override
     public Optional<InternationalString> getDescriptionText(Class<? extends IdentifiedObject> type, String code)
@@ -1129,7 +1129,7 @@ public abstract class ConcurrentAuthorityFactory<DAO extends GeodeticAuthorityFa
      * @return the datum for the given code.
      * @throws FactoryException if the object creation failed.
      *
-     * @since 1.5
+     * @since SIS 1.5
      */
     @Override
     public DefaultDatumEnsemble<?> createDatumEnsemble(final String code) throws FactoryException {
@@ -2087,7 +2087,7 @@ public abstract class ConcurrentAuthorityFactory<DAO extends GeodeticAuthorityFa
      *
      * @see #printCacheContent(PrintWriter)
      *
-     * @since 0.8
+     * @since SIS 0.8
      */
     protected boolean isCacheable(String code, Object object) {
         return true;

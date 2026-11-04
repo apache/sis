@@ -56,7 +56,7 @@ import org.apache.sis.feature.internal.Resources;
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.7
- * @since   1.5
+ * @since SIS 1.5
  */
 public class ImageLayout {
     /**
@@ -69,7 +69,7 @@ public class ImageLayout {
      *
      * @see #MAX_TILE_SIZE
      * @see #DEFAULT_TILE_SIZE
-     * @since 1.7
+     * @since SIS 1.7
      */
     @Configuration
     public static final int MIN_TILE_SIZE = 180;
@@ -83,7 +83,7 @@ public class ImageLayout {
      *
      * @see #MIN_TILE_SIZE
      * @see #DEFAULT_TILE_SIZE
-     * @since 1.7
+     * @since SIS 1.7
      */
     @Configuration
     public static final int MAX_TILE_SIZE = 8192;

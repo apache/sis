@@ -55,7 +55,7 @@ import org.apache.sis.metadata.iso.extent.DefaultExtent;
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.4
- * @since   1.4
+ * @since SIS 1.4
  */
 public class DefaultObjectDomain extends FormattableObject implements LenientComparable, Serializable {
     /**

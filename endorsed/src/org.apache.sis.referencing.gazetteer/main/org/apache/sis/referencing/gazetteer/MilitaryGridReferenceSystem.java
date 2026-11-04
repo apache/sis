@@ -138,7 +138,7 @@ import org.apache.sis.metadata.iso.citation.AbstractParty;
  * @see CommonCRS#universal(double, double)
  * @see <a href="https://en.wikipedia.org/wiki/Military_Grid_Reference_System">Military Grid Reference System on Wikipedia</a>
  *
- * @since 0.8
+ * @since SIS 0.8
  */
 @XmlTransient
 public class MilitaryGridReferenceSystem extends ReferencingByIdentifiers {
@@ -366,7 +366,7 @@ public class MilitaryGridReferenceSystem extends ReferencingByIdentifiers {
      *
      * @author  Martin Desruisseaux (Geomatys)
      * @version 1.4
-     * @since   0.8
+     * @since SIS 0.8
      */
     public class Coder extends ReferencingByIdentifiers.Coder {
         /**
@@ -438,7 +438,7 @@ public class MilitaryGridReferenceSystem extends ReferencingByIdentifiers {
          *
          * @return the enclosing reference system.
          *
-         * @since 1.3
+         * @since SIS 1.3
          */
         @Override
         public final MilitaryGridReferenceSystem getReferenceSystem() {
@@ -505,7 +505,7 @@ public class MilitaryGridReferenceSystem extends ReferencingByIdentifiers {
          * @param  position  ignored (can be null).
          * @return precision of formatted references in metres.
          *
-         * @since 1.3
+         * @since SIS 1.3
          */
         @Override
         public Quantity<Length> getPrecision(DirectPosition position) {
@@ -522,7 +522,7 @@ public class MilitaryGridReferenceSystem extends ReferencingByIdentifiers {
          * @throws IncommensurableException if the given precision does not use linear or angular units.
          * @throws ArithmeticException if the precision is zero, negative, infinity or NaN.
          *
-         * @since 1.3
+         * @since SIS 1.3
          */
         @Override
         public void setPrecision(final Quantity<?> precision, DirectPosition position) throws IncommensurableException {
@@ -676,7 +676,7 @@ public class MilitaryGridReferenceSystem extends ReferencingByIdentifiers {
          * @throws IncommensurableException if the given precision does not use linear or angular units.
          * @throws TransformException if an error occurred while transforming the given coordinate to a MGRS reference.
          *
-         * @since 1.3
+         * @since SIS 1.3
          */
         @Override
         public String encode(final DirectPosition position, final Quantity<?> precision)

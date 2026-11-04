@@ -60,7 +60,7 @@ import org.apache.sis.feature.DefaultFeatureType;
  * @author  Alexis Manin (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.6
- * @since   1.0
+ * @since SIS 1.0
  */
 public class ConcatenatedFeatureSet extends AggregatedFeatureSet {
     /**
@@ -257,7 +257,7 @@ public class ConcatenatedFeatureSet extends AggregatedFeatureSet {
      * Configures the optimization of a query with information about the expected types of all feature instances.
      * This method is invoked indirectly when a {@linkplain #subset feature subset} is created from a query.
      *
-     * @since 1.6
+     * @since SIS 1.6
      */
     @Override
     protected void prepareQueryOptimization(FeatureQuery query, Optimization optimizer) throws DataStoreException {

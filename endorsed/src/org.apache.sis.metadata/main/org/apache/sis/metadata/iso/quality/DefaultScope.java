@@ -36,7 +36,7 @@ import org.opengis.metadata.maintenance.ScopeCode;
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @author  Touraïvane (IRD)
  * @version 1.4
- * @since   0.3
+ * @since SIS 0.3
  *
  * @deprecated As of ISO 19115:2014, {@code DQ_Scope} has been replaced by {@code MD_Scope}.
  *             The latter is defined in the {@link org.apache.sis.metadata.iso.maintenance} package.

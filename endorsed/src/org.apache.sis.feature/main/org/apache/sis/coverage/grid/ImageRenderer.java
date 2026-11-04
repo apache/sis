@@ -104,7 +104,7 @@ import org.opengis.geometry.MismatchedDimensionException;
  *
  * @see GridCoverage#render(GridExtent)
  *
- * @since 1.0
+ * @since SIS 1.0
  */
 public class ImageRenderer {
     /**
@@ -418,7 +418,7 @@ public class ImageRenderer {
      *
      * @see org.apache.sis.image.PlanarImage#XY_DIMENSIONS_KEY
      *
-     * @since 1.3
+     * @since SIS 1.3
      */
     public final int[] getXYDimensions() {
         return gridDimensions.clone();
@@ -446,7 +446,7 @@ public class ImageRenderer {
      *
      * @see org.apache.sis.image.PlanarImage#GRID_GEOMETRY_KEY
      *
-     * @since 1.1
+     * @since SIS 1.1
      */
     public GridGeometry getImageGeometry(final int dimCRS) {
         GridGeometry ig = imageGeometry;
@@ -480,7 +480,7 @@ public class ImageRenderer {
      * @param  key  the property for which to get a value.
      * @return value associated with the given property, or {@code null} if none.
      *
-     * @since 1.1
+     * @since SIS 1.1
      */
     public Object getProperty(final String key) {
         switch (key) {
@@ -499,7 +499,7 @@ public class ImageRenderer {
      * @param  value  value to associate to the given key.
      * @throws IllegalArgumentException if a value is already associated with the given key.
      *
-     * @since 1.1
+     * @since SIS 1.1
      */
     @SuppressWarnings("UseOfObsoleteCollectionType")
     public void addProperty(final String key, final Object value) {
@@ -587,7 +587,7 @@ public class ImageRenderer {
      * @throws RasterFormatException if buffers do not have the same number of remaining values.
      * @throws ArithmeticException if a buffer position overflows the 32 bits integer capacity.
      *
-     * @since 1.1
+     * @since SIS 1.1
      */
     public void setData(final DataType dataType, final Buffer... data) {
         ArgumentChecks.ensureNonNull("dataType", dataType);
@@ -667,7 +667,7 @@ public class ImageRenderer {
      *
      * @see org.apache.sis.image.Colorizer.Target#getVisibleBand()
      *
-     * @since 1.2
+     * @since SIS 1.2
      */
     public void setVisibleBand(final int band) {
         ArgumentChecks.ensureBetween("band", 0, getNumBands() - 1, band);
@@ -695,7 +695,7 @@ public class ImageRenderer {
      * @param colors  the colors to use for each category. The {@code colors} argument cannot be null,
      *                but {@code colors.apply(Category)} can return null.
      *
-     * @since 1.2
+     * @since SIS 1.2
      */
     public void setCategoryColors(final Function<Category,Color[]> colors) {
         this.colors = Objects.requireNonNull(colors);
@@ -711,7 +711,7 @@ public class ImageRenderer {
      * @throws RasterFormatException if a call to a {@link Raster} factory method failed.
      * @throws ArithmeticException if a property of the raster to construct exceeds the capacity of 32 bits integers.
      *
-     * @since 1.1
+     * @since SIS 1.1
      */
     public Raster createRaster() {
         if (buffer == null) {
@@ -764,7 +764,7 @@ public class ImageRenderer {
      * @throws RasterFormatException if a call to a {@link Raster} factory method failed.
      * @throws ArithmeticException if a property of the image to construct exceeds the capacity of 32 bits integers.
      *
-     * @since 1.1
+     * @since SIS 1.1
      */
     @SuppressWarnings("UseOfObsoleteCollectionType")
     public RenderedImage createImage() {

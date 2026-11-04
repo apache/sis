@@ -73,7 +73,7 @@ import org.apache.sis.referencing.internal.Legacy;
  * @see CRS
  * @see org.apache.sis.geometry.Envelopes
  *
- * @since 0.4
+ * @since SIS 0.4
  */
 public final class IdentifiedObjects {
     /**
@@ -341,7 +341,7 @@ public final class IdentifiedObjects {
      * @see Citations#toCodeSpace(Citation)
      * @see CharSequences#isUnicodeIdentifier(CharSequence)
      *
-     * @since 1.0
+     * @since SIS 1.0
      */
     @OptionalCandidate
     public static String getSimpleNameOrIdentifier(final IdentifiedObject object) {
@@ -393,7 +393,7 @@ public final class IdentifiedObjects {
      *
      * @see #getDisplayName(IdentifiedObject, Locale)
      *
-     * @since 1.5
+     * @since SIS 1.5
      */
     public static InternationalString getDisplayName(final IdentifiedObject object) {
         return (object == null) ? null : new DisplayName(object);
@@ -411,7 +411,7 @@ public final class IdentifiedObjects {
      *
      * @see #getDisplayName(IdentifiedObject)
      *
-     * @since 1.1
+     * @since SIS 1.1
      */
     public static String getDisplayName(final IdentifiedObject object, final Locale locale) {
         if (object == null) {
@@ -450,7 +450,7 @@ public final class IdentifiedObjects {
      * @param  object  the object for which to get the domain of validity, or {@code null}.
      * @return the domain of validity where the object is valid, or empty if unspecified.
      *
-     * @since 1.5
+     * @since SIS 1.5
      */
     public static Optional<Extent> getDomainOfValidity(final IdentifiedObject object) {
         Extent domain = null;
@@ -474,7 +474,7 @@ public final class IdentifiedObjects {
      * @see IdentifiedObject#getDomains()
      * @see Extents#getGeographicBoundingBox(Stream)
      *
-     * @since 1.5
+     * @since SIS 1.5
      */
     public static Optional<GeographicBoundingBox> getGeographicBoundingBox(final IdentifiedObject object) {
         if (object == null) {
@@ -520,7 +520,7 @@ public final class IdentifiedObjects {
      * @see #newFinder(String)
      * @see #toURN(Class, Identifier)
      *
-     * @since 0.7
+     * @since SIS 0.7
      */
     @OptionalCandidate
     public static String lookupURN(final IdentifiedObject object, final Citation authority) throws FactoryException {
@@ -642,7 +642,7 @@ public final class IdentifiedObjects {
      *
      * @see #newFinder(String)
      *
-     * @since 0.7
+     * @since SIS 0.7
      */
     @OptionalCandidate
     public static Integer lookupEPSG(final IdentifiedObject object) throws FactoryException {
@@ -834,7 +834,7 @@ public final class IdentifiedObjects {
      *
      * @see #lookupURN(IdentifiedObject, Citation)
      *
-     * @since 0.7
+     * @since SIS 0.7
      */
     public static String toURN(final Class<?> type, final Identifier identifier) {
         ArgumentChecks.ensureNonNull("type", type);

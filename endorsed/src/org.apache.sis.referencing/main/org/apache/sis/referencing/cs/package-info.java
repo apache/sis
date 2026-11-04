@@ -34,7 +34,7 @@
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @version 1.8
- * @since   0.4
+ * @since SIS 0.4
  */
 @XmlSchema(location = "http://schemas.opengis.net/gml/3.2.1/coordinateSystems.xsd",
            elementFormDefault = XmlNsForm.QUALIFIED, namespace = Namespaces.GML, xmlns =

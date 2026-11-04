@@ -50,7 +50,7 @@ import org.apache.sis.util.Workaround;
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @version 1.6
- * @since   0.4
+ * @since SIS 0.4
  */
 @XmlTransient
 public class DefaultCompoundCS extends AbstractCS {

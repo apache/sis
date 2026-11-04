@@ -26,7 +26,7 @@ package org.apache.sis.coverage;
  *
  * @see org.opengis.geometry.MismatchedDimensionException
  *
- * @since 1.0
+ * @since SIS 1.0
  */
 public class MismatchedCoverageRangeException extends IllegalArgumentException {
     /**

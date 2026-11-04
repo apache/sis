@@ -24,7 +24,7 @@
  * @author  Cédric Briançon (Geomatys)
  * @author  Cullen Rombach (Image Matters)
  * @version 1.8
- * @since   0.3
+ * @since SIS 0.3
  */
 module org.apache.sis.metadata {
     /*

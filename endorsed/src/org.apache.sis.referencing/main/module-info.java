@@ -22,7 +22,7 @@
  * @author  Rémi Maréchal (Geomatys)
  * @author  Maxime Gavens (Geomatys)
  * @version 1.8
- * @since   0.3
+ * @since SIS 0.3
  */
 module org.apache.sis.referencing {
     requires java.sql;

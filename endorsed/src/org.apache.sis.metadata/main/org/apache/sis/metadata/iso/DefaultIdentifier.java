@@ -96,7 +96,7 @@ import static org.opengis.annotation.Specification.ISO_19115;
  * @see org.apache.sis.referencing.ImmutableIdentifier
  * @see org.apache.sis.referencing.IdentifiedObjects#toURN(Class, Identifier)
  *
- * @since 0.3
+ * @since SIS 0.3
  */
 @TitleProperty(name = "code")
 @XmlType(name = "MD_Identifier_Type", namespace = Namespaces.MCC, propOrder = {
@@ -175,7 +175,7 @@ public class DefaultIdentifier extends ISOMetadata implements Identifier {
      * @param code       alphanumeric value identifying an instance in the namespace, or {@code null} if none.
      * @param version    the version identifier for the namespace as specified by the code authority, or {@code null} if none.
      *
-     * @since 1.0
+     * @since SIS 1.0
      */
     public DefaultIdentifier(final String codeSpace, final String code, final String version) {
         this.code      = code;
@@ -324,7 +324,7 @@ public class DefaultIdentifier extends ISOMetadata implements Identifier {
      *
      * @return the identifier or namespace in which the code is valid, or {@code null} if none.
      *
-     * @since 0.5
+     * @since SIS 0.5
      */
     @XmlElement(name = "codeSpace")
     @UML(identifier="codeSpace", obligation=OPTIONAL, specification=ISO_19115)
@@ -337,7 +337,7 @@ public class DefaultIdentifier extends ISOMetadata implements Identifier {
      *
      * @param  newValue  the new code space, or {@code null} if none.
      *
-     * @since 0.5
+     * @since SIS 0.5
      */
     public void setCodeSpace(final String newValue) {
         checkWritePermission(codeSpace);
@@ -378,7 +378,7 @@ public class DefaultIdentifier extends ISOMetadata implements Identifier {
      *
      * @return the natural language description, or {@code null} if none.
      *
-     * @since 0.5
+     * @since SIS 0.5
      */
     @XmlElement(name = "description")
     @UML(identifier="description", obligation=OPTIONAL, specification=ISO_19115)
@@ -391,7 +391,7 @@ public class DefaultIdentifier extends ISOMetadata implements Identifier {
      *
      * @param  newValue  the new natural language description, or {@code null} if none.
      *
-     * @since 0.5
+     * @since SIS 0.5
      */
     public void setDescription(final InternationalString newValue) {
         checkWritePermission(description);

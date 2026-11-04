@@ -59,7 +59,7 @@ import org.apache.sis.pending.jdk.JDK18;
  *
  * @see <a href="https://en.wikipedia.org/wiki/Geohash">Geohash on Wikipedia</a>
  *
- * @since 0.8
+ * @since SIS 0.8
  */
 @XmlTransient
 public class GeohashReferenceSystem extends ReferencingByIdentifiers {
@@ -232,7 +232,7 @@ public class GeohashReferenceSystem extends ReferencingByIdentifiers {
      * @author  Chris Mattmann (JPL)
      * @author  Martin Desruisseaux (Geomatys)
      * @version 1.4
-     * @since   0.8
+     * @since SIS 0.8
      */
     public class Coder extends ReferencingByIdentifiers.Coder {
         /**
@@ -268,7 +268,7 @@ public class GeohashReferenceSystem extends ReferencingByIdentifiers {
          *
          * @return the enclosing reference system.
          *
-         * @since 1.3
+         * @since SIS 1.3
          */
         @Override
         public final GeohashReferenceSystem getReferenceSystem() {
@@ -305,7 +305,7 @@ public class GeohashReferenceSystem extends ReferencingByIdentifiers {
          * @param  position  where to evaluate the precision, or {@code null} for equator.
          * @return approximate precision of formatted geohashes.
          *
-         * @since 1.3
+         * @since SIS 1.3
          */
         @Override
         public Quantity<Length> getPrecision(DirectPosition position) {
@@ -335,7 +335,7 @@ public class GeohashReferenceSystem extends ReferencingByIdentifiers {
          * @param  position   location where the specified precision is desired, or {@code null} for the equator.
          * @throws IncommensurableException if the given precision does not use linear or angular units.
          *
-         * @since 1.3
+         * @since SIS 1.3
          */
         @Override
         public void setPrecision(final Quantity<?> precision, DirectPosition position) throws IncommensurableException {
@@ -480,7 +480,7 @@ public class GeohashReferenceSystem extends ReferencingByIdentifiers {
          * @throws IncommensurableException if the given precision does not use linear or angular units.
          * @throws TransformException if an error occurred while transforming the given coordinate to a geohash reference.
          *
-         * @since 1.3
+         * @since SIS 1.3
          */
         @Override
         public String encode(DirectPosition position, final Quantity<?> precision)

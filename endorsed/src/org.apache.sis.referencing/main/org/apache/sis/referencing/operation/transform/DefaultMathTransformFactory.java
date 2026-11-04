@@ -138,7 +138,7 @@ import org.apache.sis.util.resources.Errors;
  * @see MathTransformProvider
  * @see AbstractMathTransform
  *
- * @since 0.6
+ * @since SIS 0.6
  */
 public class DefaultMathTransformFactory extends AbstractFactory implements MathTransformFactory, Parser {
     /*
@@ -224,7 +224,7 @@ public class DefaultMathTransformFactory extends AbstractFactory implements Math
      * @return the default provider of math transforms.
      *
      * @see java.util.ServiceLoader
-     * @since 1.4
+     * @since SIS 1.4
      */
     public static DefaultMathTransformFactory provider() {
         return INSTANCE;
@@ -318,7 +318,7 @@ public class DefaultMathTransformFactory extends AbstractFactory implements Math
      * @param  enabled  whether caching should be enabled.
      * @return a factory for the given caching policy.
      *
-     * @since 1.1
+     * @since SIS 1.1
      */
     public DefaultMathTransformFactory caching(final boolean enabled) {
         if (enabled) {
@@ -483,7 +483,7 @@ public class DefaultMathTransformFactory extends AbstractFactory implements Math
      * @throws NoSuchIdentifierException if there is no supported method for the given name or identifier.
      *
      * @see #getAvailableMethods(Class)
-     * @since 1.5
+     * @since SIS 1.5
      */
     public MathTransformBuilder builder(final String method) throws NoSuchIdentifierException {
         if (method.replace('_', ' ').equalsIgnoreCase(Constants.COORDINATE_SYSTEM_CONVERSION)) {

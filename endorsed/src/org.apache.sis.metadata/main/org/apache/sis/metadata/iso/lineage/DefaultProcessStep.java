@@ -73,7 +73,7 @@ import static org.opengis.annotation.Specification.ISO_19115;
  * @author  Rémi Maréchal (Geomatys)
  * @author  Cullen Rombach (Image Matters)
  * @version 1.4
- * @since   0.3
+ * @since SIS 0.3
  */
 @TitleProperty(name = "description")
 @XmlType(name = "LI_ProcessStep_Type", propOrder = {
@@ -275,7 +275,7 @@ public class DefaultProcessStep extends ISOMetadata implements ProcessStep {
      *
      * @return date, time or period over which the process step occurred, or {@code null}.
      *
-     * @since 1.0
+     * @since SIS 1.0
      */
     @XmlElement(name = "stepDateTime")
     @XmlJavaTypeAdapter(TM_Primitive.Since2014.class)
@@ -288,7 +288,7 @@ public class DefaultProcessStep extends ISOMetadata implements ProcessStep {
      *
      * @param  newValue  the new date, time or period.
      *
-     * @since 1.0
+     * @since SIS 1.0
      */
     public void setStepDateTime(final TemporalPrimitive newValue) {
         checkWritePermission(stepDateTime);
@@ -369,7 +369,7 @@ public class DefaultProcessStep extends ISOMetadata implements ProcessStep {
      *
      * @return process step documentation.
      *
-     * @since 0.5
+     * @since SIS 0.5
      */
     // @XmlElement at the end of this class.
     @UML(identifier="reference", obligation=OPTIONAL, specification=ISO_19115)
@@ -382,7 +382,7 @@ public class DefaultProcessStep extends ISOMetadata implements ProcessStep {
      *
      * @param  newValues  the new documentation.
      *
-     * @since 0.5
+     * @since SIS 0.5
      */
     public void setReferences(final Collection<? extends Citation> newValues){
         references = writeCollection(newValues, references, Citation.class);
@@ -393,7 +393,7 @@ public class DefaultProcessStep extends ISOMetadata implements ProcessStep {
      *
      * @return type of resource, or {@code null} if none.
      *
-     * @since 0.5
+     * @since SIS 0.5
      */
     @XmlElement(name = "scope")
     @XmlJavaTypeAdapter(MD_Scope.Since2014.class)
@@ -407,7 +407,7 @@ public class DefaultProcessStep extends ISOMetadata implements ProcessStep {
      *
      * @param  newValue  the new type of resource.
      *
-     * @since 0.5
+     * @since SIS 0.5
      */
     public void setScope(final Scope newValue) {
         checkWritePermission(scope);

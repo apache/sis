@@ -101,7 +101,7 @@ import org.apache.sis.filter.Expression;
  * @author  Johann Sorel (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.6
- * @since   0.7
+ * @since SIS 0.7
  */
 public final class FeatureOperations {
     /**
@@ -292,7 +292,7 @@ public final class FeatureOperations {
      * @param  components      attribute, association or operation providing the geometries to group as a polyline.
      * @return a feature operation which computes its values by merging points or polylines.
      *
-     * @since 1.4
+     * @since SIS 1.4
      */
     public static AbstractOperation groupAsPolyline(final Map<String,?> identification, final GeometryLibrary library,
                                             final AbstractIdentifiedType components)
@@ -318,7 +318,7 @@ public final class FeatureOperations {
      * @param  resultType      type of values computed by the expression.
      * @return a feature operation which computes its values using the given expression.
      *
-     * @since 1.4
+     * @since SIS 1.4
      */
     public static <V> AbstractOperation function(final Map<String, ?> identification,
                                          final Function<? super AbstractFeature, ? extends V> expression,
@@ -347,7 +347,7 @@ public final class FeatureOperations {
      * @return a feature operation which computes its values using the given expression.
      * @throws ClassCastException if the result type is not a target type supported by the expression.
      *
-     * @since 1.4
+     * @since SIS 1.4
      */
     public static <V> AbstractOperation expression(final Map<String, ?> identification,
                                            final Expression<? super AbstractFeature, ?> expression,
@@ -368,7 +368,7 @@ public final class FeatureOperations {
      * @throws IllegalArgumentException if the {@linkplain AbstractOperation#getResult() result type}
      *         of the given operation is not an {@code AttributeType}.
      *
-     * @since 1.6
+     * @since SIS 1.6
      */
     public static AbstractOperation replace(final AbstractIdentifiedType property, final Expression<? super AbstractFeature, ?> expression) {
         final DefaultAttributeType<?> resultType;
@@ -418,7 +418,7 @@ public final class FeatureOperations {
      *
      * @param  property  the property for which to get an expression.
      * @return an expression for fetching the values of the property identified by the given type.
-     * @since 1.5
+     * @since SIS 1.5
      */
     public static Expression<? super AbstractFeature, ?> expressionOf(final AbstractIdentifiedType property) {
         // Test final class first because it is fast.

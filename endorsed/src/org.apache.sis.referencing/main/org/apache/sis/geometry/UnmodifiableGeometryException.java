@@ -25,7 +25,7 @@ package org.apache.sis.geometry;
  * implementation dependent.
  *
  * @author  Martin Desruisseaux (IRD)
- * @since   0.3
+ * @since SIS 0.3
  * @version 0.3
  */
 public class UnmodifiableGeometryException extends UnsupportedOperationException {

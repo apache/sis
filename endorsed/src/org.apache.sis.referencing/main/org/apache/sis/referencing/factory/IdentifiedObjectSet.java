@@ -82,7 +82,7 @@ import org.apache.sis.util.collection.CheckedContainer;
  *
  * @param <T>  the type of objects to be included in this set.
  *
- * @since 0.7
+ * @since SIS 0.7
  */
 public class IdentifiedObjectSet<T extends IdentifiedObject> extends AbstractSet<T> implements CheckedContainer<T>, Localized {
     /**
@@ -153,7 +153,7 @@ public class IdentifiedObjectSet<T extends IdentifiedObject> extends AbstractSet
      * Indicates that this collection is modifiable (at least by default).
      *
      * @return {@link Mutability#MODIFIABLE} by default.
-     * @since 1.6
+     * @since SIS 1.6
      */
     @Override
     public Mutability getMutability() {

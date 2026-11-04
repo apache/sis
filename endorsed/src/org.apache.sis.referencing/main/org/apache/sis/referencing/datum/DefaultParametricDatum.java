@@ -51,7 +51,7 @@ import org.apache.sis.io.wkt.Formatter;
  * @see org.apache.sis.referencing.crs.DefaultParametricCRS
  * @see org.apache.sis.referencing.factory.GeodeticAuthorityFactory#createParametricDatum(String)
  *
- * @since 0.7
+ * @since SIS 0.7
  */
 @XmlType(name = "ParametricDatumType")
 @XmlRootElement(name = "ParametricDatum")

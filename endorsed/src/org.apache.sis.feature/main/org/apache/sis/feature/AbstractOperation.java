@@ -54,7 +54,7 @@ import org.apache.sis.parameter.DefaultParameterDescriptorGroup;
  *
  * @see DefaultFeatureType
  *
- * @since 0.6
+ * @since SIS 0.6
  */
 public abstract class AbstractOperation extends AbstractIdentifiedType
         implements BiFunction<AbstractFeature, ParameterValueGroup, Object>
@@ -233,7 +233,7 @@ public abstract class AbstractOperation extends AbstractIdentifiedType
      *
      * @see #INHERIT_FROM_KEY
      *
-     * @since 1.5
+     * @since SIS 1.5
      */
     public AbstractOperation updateDependencies(final Map<String, AbstractIdentifiedType> dependencies) {
         return this;

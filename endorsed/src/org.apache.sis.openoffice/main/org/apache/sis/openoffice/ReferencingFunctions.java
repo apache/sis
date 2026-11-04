@@ -57,7 +57,7 @@ import org.apache.sis.referencing.internal.Legacy;
  * @author  Richard Deplanque (IRD)
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @version 1.7
- * @since   0.8
+ * @since SIS 0.8
  */
 @SuppressWarnings("UseSpecificCatch")
 public class ReferencingFunctions extends CalcAddins implements XReferencing {

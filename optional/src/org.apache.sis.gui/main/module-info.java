@@ -22,7 +22,7 @@
  * @author  Johann Sorel (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.8
- * @since   1.1
+ * @since SIS 1.1
  */
 module org.apache.sis.gui {
     requires            java.prefs;

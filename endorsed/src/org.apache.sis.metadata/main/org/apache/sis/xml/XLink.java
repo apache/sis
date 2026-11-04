@@ -77,7 +77,7 @@ import org.apache.sis.xml.bind.Context;
  * @see <a href="http://www.w3.org/TR/xlink/">XML Linking Language</a>
  * @see <a href="http://schemas.opengis.net/xlink/1.0.0/xlinks.xsd">OGC schema</a>
  *
- * @since 0.3
+ * @since SIS 0.3
  */
 @XmlTransient
 public class XLink implements Serializable {
@@ -209,7 +209,7 @@ public class XLink implements Serializable {
      *
      * @author  Martin Desruisseaux (Geomatys)
      * @version 1.4
-     * @since   0.3
+     * @since SIS 0.3
      *
      * @see XLink#getType()
      */
@@ -532,7 +532,7 @@ public class XLink implements Serializable {
      *
      * @author  Martin Desruisseaux (Geomatys)
      * @version 1.4
-     * @since   0.3
+     * @since SIS 0.3
      *
      * @see XLink#getShow()
      */
@@ -605,7 +605,7 @@ public class XLink implements Serializable {
      *
      * @author  Martin Desruisseaux (Geomatys)
      * @version 1.4
-     * @since   0.3
+     * @since SIS 0.3
      *
      * @see XLink#getActuate()
      */

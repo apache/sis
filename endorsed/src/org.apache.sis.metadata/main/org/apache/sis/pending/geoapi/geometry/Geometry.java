@@ -24,7 +24,7 @@ import org.opengis.referencing.crs.CoordinateReferenceSystem;
  * Placeholder for a GeoAPI interfaces incomplete in GeoAPI 3.0.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @since   1.5
+ * @since SIS 1.5
  * @version 1.5
  */
 public interface Geometry extends org.opengis.geometry.Geometry {

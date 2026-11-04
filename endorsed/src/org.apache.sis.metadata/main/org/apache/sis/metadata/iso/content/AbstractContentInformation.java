@@ -41,7 +41,7 @@ import org.apache.sis.metadata.iso.ISOMetadata;
  * @author  Touraïvane (IRD)
  * @author  Cédric Briançon (Geomatys)
  * @version 1.4
- * @since   0.3
+ * @since SIS 0.3
  */
 @XmlType(name = "AbstractMD_ContentInformation_Type")
 @XmlRootElement(name = "AbstractMD_ContentInformation")

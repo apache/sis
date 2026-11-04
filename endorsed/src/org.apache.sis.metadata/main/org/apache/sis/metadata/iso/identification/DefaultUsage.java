@@ -74,7 +74,7 @@ import static org.opengis.annotation.Specification.ISO_19115;
  * @author  Rémi Maréchal (Geomatys)
  * @author  Cullen Rombach (Image Matters)
  * @version 1.5
- * @since   0.3
+ * @since SIS 0.3
  */
 @TitleProperty(name = "specificUsage")
 @XmlType(name = "MD_Usage_Type", propOrder = {
@@ -277,7 +277,7 @@ public class DefaultUsage extends ISOMetadata implements Usage {
      *
      * @return date of the first use of the resource.
      *
-     * @since 1.5
+     * @since SIS 1.5
      */
     @XmlElement(name = "usageDateTime")
     @XmlJavaTypeAdapter(TM_Primitive.Since2014.class)
@@ -291,7 +291,7 @@ public class DefaultUsage extends ISOMetadata implements Usage {
      *
      * @param  newValues  date of the first use of the resource.
      *
-     * @since 1.5
+     * @since SIS 1.5
      */
     public void setUsageDates(final Collection<TemporalPrimitive> newValues) {
         usageDates = writeCollection(usageDates, newValues, TemporalPrimitive.class);
@@ -304,7 +304,7 @@ public class DefaultUsage extends ISOMetadata implements Usage {
      * @param  beginning  the begin instant (inclusive), or {@code null}.
      * @param  ending     the end instant (inclusive), or {@code null}.
      *
-     * @since 1.5
+     * @since SIS 1.5
      */
     public void addUsageDates(final Temporal beginning, final Temporal ending) {
         TemporalPrimitive period = TemporalObjects.createPeriod(beginning, ending);
@@ -369,7 +369,7 @@ public class DefaultUsage extends ISOMetadata implements Usage {
      *
      * @return response to the user-determined limitations.
      *
-     * @since 0.5
+     * @since SIS 0.5
      */
     // @XmlElement at the end of this class.
     @UML(identifier="response", obligation=OPTIONAL, specification=ISO_19115)
@@ -382,7 +382,7 @@ public class DefaultUsage extends ISOMetadata implements Usage {
      *
      * @param  newValues  the new response to the user-determined limitations.
      *
-     * @since 0.5
+     * @since SIS 0.5
      */
     public void setResponses(final Collection<? extends InternationalString> newValues) {
         responses = writeCollection(newValues, responses, InternationalString.class);
@@ -393,7 +393,7 @@ public class DefaultUsage extends ISOMetadata implements Usage {
      *
      * @return publications that describe usage of data.
      *
-     * @since 0.5
+     * @since SIS 0.5
      */
     // @XmlElement at the end of this class.
     @UML(identifier="additionalDocumentation", obligation=OPTIONAL, specification=ISO_19115)
@@ -406,7 +406,7 @@ public class DefaultUsage extends ISOMetadata implements Usage {
      *
      * @param  newValues  the new publications.
      *
-     * @since 0.5
+     * @since SIS 0.5
      */
     public void setAdditionalDocumentation(final Collection<? extends Citation> newValues) {
         additionalDocumentation = writeCollection(newValues, additionalDocumentation, Citation.class);
@@ -418,7 +418,7 @@ public class DefaultUsage extends ISOMetadata implements Usage {
      *
      * @return citation of a description of known issues associated with the resource.
      *
-     * @since 0.5
+     * @since SIS 0.5
      */
     // @XmlElement at the end of this class.
     @UML(identifier="identifiedIssues", obligation=OPTIONAL, specification=ISO_19115)
@@ -432,7 +432,7 @@ public class DefaultUsage extends ISOMetadata implements Usage {
      *
      * @param  newValues  the new citation of a description.
      *
-     * @since 0.5
+     * @since SIS 0.5
      */
     public void setIdentifiedIssues(final Collection<? extends Citation> newValues) {
         identifiedIssues = writeCollection(newValues, identifiedIssues, Citation.class);

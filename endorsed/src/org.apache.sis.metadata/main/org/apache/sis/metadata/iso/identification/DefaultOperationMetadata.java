@@ -69,7 +69,7 @@ import org.apache.sis.xml.bind.metadata.code.DCPList;
  * @author  Martin Desruisseaux (Geomatys)
  * @author  Cullen Rombach (Image Matters)
  * @version 1.4
- * @since   0.5
+ * @since SIS 0.5
  */
 @TitleProperty(name = "operationName")
 @XmlType(name = "SV_OperationMetadata_Type", namespace = Namespaces.SRV, propOrder = {

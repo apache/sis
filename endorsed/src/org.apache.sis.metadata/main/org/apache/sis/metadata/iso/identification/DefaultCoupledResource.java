@@ -64,7 +64,7 @@ import static org.opengis.annotation.Specification.ISO_19115;
  * @author  Martin Desruisseaux (Geomatys)
  * @author  Cullen Rombach (Image Matters)
  * @version 1.4
- * @since   0.5
+ * @since SIS 0.5
  */
 @XmlType(name = "SV_CoupledResource_Type", namespace = Namespaces.SRV, propOrder = {
     "scopedName",               // ISO 19115-3:2016 way to write scoped name

@@ -32,7 +32,7 @@ import org.apache.sis.util.collection.CodeListSet;
  *
  * @see Matrices#createTransform(AxisDirection[], AxisDirection[])
  *
- * @since 1.6
+ * @since SIS 1.6
  */
 public class UnderdeterminedMatrixException extends IllegalArgumentException {
     /**

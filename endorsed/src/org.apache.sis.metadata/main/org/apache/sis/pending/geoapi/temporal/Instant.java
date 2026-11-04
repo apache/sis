@@ -26,7 +26,7 @@ import org.opengis.temporal.TemporalPrimitive;
  * Placeholder for a GeoAPI interfaces not present in GeoAPI 3.0.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @since   1.5
+ * @since SIS 1.5
  * @version 1.5
  */
 public interface Instant extends TemporalPrimitive {

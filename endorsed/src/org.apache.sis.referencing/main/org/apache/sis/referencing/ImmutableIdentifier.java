@@ -111,7 +111,7 @@ import org.apache.sis.metadata.iso.DefaultIdentifier;
  * @see org.apache.sis.metadata.iso.DefaultIdentifier
  * @see org.apache.sis.referencing.IdentifiedObjects#toURN(Class, Identifier)
  *
- * @since 1.0
+ * @since SIS 1.0
  */
 @TitleProperty(name = "code")
 public class ImmutableIdentifier extends FormattableObject implements ReferenceIdentifier, Serializable {
@@ -417,7 +417,7 @@ public class ImmutableIdentifier extends FormattableObject implements ReferenceI
      *
      * @return the natural language description, or {@code null} if none.
      *
-     * @since 0.5
+     * @since SIS 0.5
      */
     public InternationalString getDescription() {
         return description;

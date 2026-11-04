@@ -69,7 +69,7 @@ import org.apache.sis.util.resources.Errors;
  * @see FeatureTypeBuilder#addAttribute(Class)
  * @see org.apache.sis.feature.DefaultAttributeType
  *
- * @since 0.8
+ * @since SIS 0.8
  */
 public final class AttributeTypeBuilder<V> extends PropertyTypeBuilder {
     /**

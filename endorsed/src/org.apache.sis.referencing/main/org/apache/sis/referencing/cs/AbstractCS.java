@@ -84,7 +84,7 @@ import org.opengis.geometry.MismatchedDimensionException;
  * @see DefaultCoordinateSystemAxis
  * @see org.apache.sis.referencing.crs.AbstractCRS
  *
- * @since 0.4
+ * @since SIS 0.4
  */
 @XmlType(name = "AbstractCoordinateSystemType")
 @XmlRootElement(name = "AbstractCoordinateSystem")
@@ -354,7 +354,7 @@ public class AbstractCS extends AbstractIdentifiedObject implements CoordinateSy
      * Subclasses implementing a more specific GeoAPI interface shall override this method.
      *
      * @return the coordinate system interface implemented by this class.
-     * @since 1.7
+     * @since SIS 1.7
      */
     @Override
     public Class<? extends CoordinateSystem> getStandardType() {
@@ -406,7 +406,7 @@ public class AbstractCS extends AbstractIdentifiedObject implements CoordinateSy
      * @param  other  the other coordinate system to compare with this <abbr>CS</abbr>.
      * @return whether this coordinate system has the same axes as the specified <abbr>CS</abbr>.
      *
-     * @since 1.5
+     * @since SIS 1.5
      */
     public final boolean hasSameAxes(final CoordinateSystem other) {
         if (other.getDimension() != axes.length) {

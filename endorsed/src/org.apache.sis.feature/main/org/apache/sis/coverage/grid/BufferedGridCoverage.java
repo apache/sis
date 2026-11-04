@@ -77,7 +77,7 @@ import org.apache.sis.coverage.CannotEvaluateException;
  * @author  Johann Sorel (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.7
- * @since   1.1
+ * @since SIS 1.1
  */
 public class BufferedGridCoverage extends GridCoverage {
     /**
@@ -278,7 +278,7 @@ public class BufferedGridCoverage extends GridCoverage {
      *
      * @param  renderer  the renderer to configure before to create an image.
      *
-     * @since 1.3
+     * @since SIS 1.3
      */
     protected void configure(ImageRenderer renderer) {
     }

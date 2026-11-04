@@ -41,7 +41,7 @@ import org.apache.sis.math.MathFunctions;
  * @see AngleFormat
  * @see org.apache.sis.geometry.CoordinateFormat
  *
- * @since 0.3
+ * @since SIS 0.3
  */
 public final class Longitude extends Angle {
     /**
@@ -110,7 +110,7 @@ public final class Longitude extends Angle {
      *         or if no axis oriented toward East or West is found, or if that axis does
      *         not use {@linkplain Units#isAngular angular units}.
      *
-     * @since 0.8
+     * @since SIS 0.8
      */
     public Longitude(final DirectPosition position) throws IllegalArgumentException {
         super(valueOf(position, AxisDirection.EAST, AxisDirection.WEST));
@@ -145,7 +145,7 @@ public final class Longitude extends Angle {
      *
      * @see Latitude#clamp(double)
      *
-     * @since 0.4
+     * @since SIS 0.4
      */
     public static double normalize(double λ) {
         /*
@@ -173,7 +173,7 @@ public final class Longitude extends Angle {
      * @return {@code true} if <var>west</var> &gt; <var>east</var> or if the arguments are (+0, −0),
      *         {@code false} otherwise (including when at least one argument is NaN).
      *
-     * @since 1.1
+     * @since SIS 1.1
      */
     public static boolean isWraparound(final double west, final double east) {
         return (west > east) || (MathFunctions.isPositiveZero(west) &&

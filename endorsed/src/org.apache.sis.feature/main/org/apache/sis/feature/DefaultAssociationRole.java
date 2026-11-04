@@ -52,7 +52,7 @@ import org.apache.sis.feature.internal.shared.AttributeConvention;
  * @see DefaultFeatureType
  * @see AbstractAssociation
  *
- * @since 0.5
+ * @since SIS 0.5
  */
 public class DefaultAssociationRole extends FieldType {
     /**
@@ -176,7 +176,7 @@ public class DefaultAssociationRole extends FieldType {
      *
      * @see #getValueType()
      *
-     * @since 0.8
+     * @since SIS 0.8
      */
     public final boolean isResolved() {
         final FeatureType type = valueType;

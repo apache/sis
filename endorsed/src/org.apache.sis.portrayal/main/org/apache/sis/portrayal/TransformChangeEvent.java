@@ -49,7 +49,7 @@ import org.apache.sis.util.logging.Logging;
  *
  * @see Canvas#OBJECTIVE_TO_DISPLAY_PROPERTY
  *
- * @since 1.3
+ * @since SIS 1.3
  */
 public class TransformChangeEvent extends PropertyChangeEvent {
     /**

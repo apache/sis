@@ -67,7 +67,7 @@ import org.apache.sis.gui.map.MapWindows;
  * @author  Martin Desruisseaux (Geomatys)
  * @author  Johann Sorel (Geomatys)
  * @version 1.7
- * @since   1.1
+ * @since SIS 1.1
  */
 public class ResourceExplorer extends Widget {
     /**
@@ -190,7 +190,7 @@ public class ResourceExplorer extends Widget {
      * If {@code windows} is non-null, the contextual menu will contain a "Show in mosaic" menu item.
      *
      * @param windows  manager of windows for map canvases, or {@code null} if none.
-     * @since 1.7
+     * @since SIS 1.7
      */
     @SuppressWarnings("this-escape")    // `this` appears in a cyclic graph.
     public ResourceExplorer(final MapWindows windows) {
@@ -319,7 +319,7 @@ public class ResourceExplorer extends Widget {
      *
      * @see ResourceTree#onResourceClosed
      *
-     * @since 1.2
+     * @since SIS 1.2
      */
     public EventHandler<ResourceEvent> getOnResourceClosed() {
         return resources.onResourceClosed.get();
@@ -334,7 +334,7 @@ public class ResourceExplorer extends Widget {
      *
      * @see ResourceTree#onResourceClosed
      *
-     * @since 1.2
+     * @since SIS 1.2
      */
     public void setOnResourceClosed(final EventHandler<ResourceEvent> handler) {
         resources.onResourceClosed.set(handler);

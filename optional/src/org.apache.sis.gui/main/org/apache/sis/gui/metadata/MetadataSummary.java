@@ -56,7 +56,7 @@ import org.opengis.util.CodeList;
  * @author  Smaniotto Enzo (GSoC)
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.5
- * @since   1.1
+ * @since SIS 1.1
  */
 @DefaultProperty("metadata")
 public class MetadataSummary extends Widget {

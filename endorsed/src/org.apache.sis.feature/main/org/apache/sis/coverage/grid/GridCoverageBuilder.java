@@ -105,7 +105,7 @@ import org.apache.sis.pending.jdk.JDK18;
  * @see GridCoverage2D
  * @see SampleDimension.Builder
  *
- * @since 1.1
+ * @since SIS 1.1
  */
 public class GridCoverageBuilder {
     /**
@@ -459,7 +459,7 @@ public class GridCoverageBuilder {
      *
      * @see WritablePixelIterator#setRemainingPixels(DoubleBinaryOperator[])
      *
-     * @since 1.7
+     * @since SIS 1.7
      */
     public GridCoverageBuilder setValues(DataType type, Rectangle bounds, Dimension tiling, DoubleBinaryOperator... bands) {
         calcAsDoubles = functions(type, bounds, tiling, bands);
@@ -486,7 +486,7 @@ public class GridCoverageBuilder {
      *
      * @see WritablePixelIterator#setRemainingPixels(IntBinaryOperator[])
      *
-     * @since 1.7
+     * @since SIS 1.7
      */
     public GridCoverageBuilder setIntegerValues(DataType type, Rectangle bounds, Dimension tiling, IntBinaryOperator... bands) {
         calcAsIntegers = functions(type, bounds, tiling, bands);
@@ -557,7 +557,7 @@ public class GridCoverageBuilder {
      * @return {@code this} for method invocation chaining.
      * @throws IllegalArgumentException if a value is already associated with the given key.
      *
-     * @since 1.1
+     * @since SIS 1.1
      */
     @SuppressWarnings("UseOfObsoleteCollectionType")
     public GridCoverageBuilder addImageProperty(final String key, final Object value) {

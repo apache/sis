@@ -86,7 +86,7 @@ import static org.apache.sis.util.Utilities.deepEquals;
  * @see DefaultParameterValueGroup
  * @see DefaultParameterDescriptor
  *
- * @since 0.4
+ * @since SIS 0.4
  */
 @XmlType(name = "OperationParameterGroupType")
 @XmlRootElement(name = "OperationParameterGroup")
@@ -170,7 +170,7 @@ public class DefaultParameterDescriptorGroup extends AbstractParameterDescriptor
      * @param properties  the properties to be given to the new parameter group.
      * @param parameters  the existing group from which to copy the {@linkplain #descriptors() parameter descriptors}.
      *
-     * @since 0.7
+     * @since SIS 0.7
      */
     public DefaultParameterDescriptorGroup(final Map<String,?> properties, final ParameterDescriptorGroup parameters) {
         super(properties, parameters.getMinimumOccurs(), parameters.getMaximumOccurs());
@@ -269,7 +269,7 @@ public class DefaultParameterDescriptorGroup extends AbstractParameterDescriptor
      * This is the base type required by {@code equals(…)} methods for returning a potentially {@code true} value.
      *
      * @return {@code ParameterDescriptorGroup.class} or a user-defined sub-interface.
-     * @since 1.7
+     * @since SIS 1.7
      */
     @Override
     public Type getStandardType() {

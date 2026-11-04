@@ -72,7 +72,7 @@ import org.apache.sis.referencing.datum.DefaultDatumEnsemble;
  *
  * @see org.apache.sis.referencing.factory.GeodeticAuthorityFactory#createProjectedCRS(String)
  *
- * @since 0.6
+ * @since SIS 0.6
  */
 @XmlType(name = "ProjectedCRSType", propOrder = {
     "baseCRS",
@@ -211,7 +211,7 @@ public class DefaultProjectedCRS extends AbstractDerivedCRS<Projection> implemen
      * This is the base type required by {@code equals(…)} methods for returning a potentially {@code true} value.
      *
      * @return {@code ProjectedCRS.class} or a user-defined sub-interface.
-     * @since 1.7
+     * @since SIS 1.7
      */
     @Override
     public Type getStandardType() {
@@ -239,7 +239,7 @@ public class DefaultProjectedCRS extends AbstractDerivedCRS<Projection> implemen
      * @return the datum ensemble of the {@linkplain #getBaseCRS() base CRS}, or {@code null} if this
      *         <abbr>CRS</abbr> is related to an object identified only by a {@linkplain #getDatum() datum}.
      *
-     * @since 1.5
+     * @since SIS 1.5
      */
     @Override
     public DefaultDatumEnsemble<GeodeticDatum> getDatumEnsemble() {

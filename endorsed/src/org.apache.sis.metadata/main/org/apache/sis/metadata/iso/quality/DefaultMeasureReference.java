@@ -48,7 +48,7 @@ import static org.opengis.annotation.Specification.UNSPECIFIED;
  * @author  Alexis Gaillard (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.5
- * @since   1.3
+ * @since SIS 1.3
  */
 @XmlType(name = "DQ_MeasureReference_Type", propOrder = {
     "measureIdentification",
@@ -92,7 +92,7 @@ public class DefaultMeasureReference extends ISOMetadata {
      *
      * @param name  the name of the measure as a {@link String} or an {@link InternationalString} object,
      *              or {@code null} if none.
-     * @since 1.5
+     * @since SIS 1.5
      */
     public DefaultMeasureReference(final CharSequence name) {
         namesOfMeasure = singleton(Types.toInternationalString(name), InternationalString.class);

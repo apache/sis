@@ -66,7 +66,7 @@ import org.opengis.geometry.MismatchedDimensionException;
  * @see Point2D
  * @see CoordinateFormat
  *
- * @since 0.3
+ * @since SIS 0.3
  */
 public class DirectPosition2D extends Point2D.Double implements DirectPosition, Cloneable {
     /**
@@ -102,7 +102,7 @@ public class DirectPosition2D extends Point2D.Double implements DirectPosition, 
      *
      * @param p  the point from which to copy the coordinate values.
      *
-     * @since 1.3
+     * @since SIS 1.3
      */
     public DirectPosition2D(final Point2D p) {
         super(p.getX(), p.getY());
@@ -248,7 +248,7 @@ public class DirectPosition2D extends Point2D.Double implements DirectPosition, 
      *
      * @return the coordinate.
      *
-     * @since 1.5
+     * @since SIS 1.5
      */
     public final double[] getCoordinates() {
         return new double[] {x,y};
@@ -281,7 +281,7 @@ public class DirectPosition2D extends Point2D.Double implements DirectPosition, 
      * @return the coordinate at the specified dimension.
      * @throws IndexOutOfBoundsException if the specified dimension is out of bounds.
      *
-     * @since 1.5
+     * @since SIS 1.5
      */
     public final double getCoordinate(final int dimension) throws IndexOutOfBoundsException {
         switch (dimension) {
@@ -312,7 +312,7 @@ public class DirectPosition2D extends Point2D.Double implements DirectPosition, 
      * @param  value      the coordinate value of interest.
      * @throws IndexOutOfBoundsException if the specified dimension is out of bounds.
      *
-     * @since 1.5
+     * @since SIS 1.5
      */
     public void setCoordinate(int dimension, double value) throws IndexOutOfBoundsException {
         switch (dimension) {

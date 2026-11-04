@@ -73,7 +73,7 @@ import static org.apache.sis.util.collection.WeakEntry.*;
  *
  * @see java.util.WeakHashMap
  *
- * @since 0.3
+ * @since SIS 0.3
  */
 public class WeakHashSet<E> extends AbstractSet<E> implements CheckedContainer<E> {
     /**
@@ -154,7 +154,7 @@ public class WeakHashSet<E> extends AbstractSet<E> implements CheckedContainer<E
      * Indicates that this collection is modifiable (at least by default).
      *
      * @return {@link Mutability#MODIFIABLE} by default.
-     * @since 1.6
+     * @since SIS 1.6
      */
     @Override
     public Mutability getMutability() {

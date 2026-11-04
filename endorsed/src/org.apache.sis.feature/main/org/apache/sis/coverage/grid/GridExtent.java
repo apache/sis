@@ -103,7 +103,7 @@ import org.apache.sis.coverage.PointOutsideCoverageException;
  * @author  Alexis Manin (Geomatys)
  * @author  Johann Sorel (Geomatys)
  * @version 1.7
- * @since   1.0
+ * @since SIS 1.0
  */
 public class GridExtent implements Serializable, LenientComparable {
     /**
@@ -275,7 +275,7 @@ public class GridExtent implements Serializable, LenientComparable {
      * @param  bounds  the bounds to copy in the new grid extent.
      * @throws IllegalArgumentException if the rectangle is empty.
      *
-     * @since 1.1
+     * @since SIS 1.1
      */
     public GridExtent(final Rectangle bounds) {
         this(bounds.width, bounds.height);
@@ -316,7 +316,7 @@ public class GridExtent implements Serializable, LenientComparable {
      *                         or {@code false} if it is exclusive (as in Java2D usage).
      * @throws IllegalArgumentException if {@code low} is greater than {@code high}.
      *
-     * @since 1.5
+     * @since SIS 1.5
      */
     public GridExtent(final DimensionNameType axisType, final long low, long high, final boolean isHighIncluded) {
         if (!isHighIncluded) {
@@ -395,7 +395,7 @@ public class GridExtent implements Serializable, LenientComparable {
      * @param  upper  the grid extent providing the highest dimensions.
      * @throws IllegalArgumentException if the concatenation results in duplicated {@linkplain #getAxisType(int) axis types}.
      *
-     * @since 1.5
+     * @since SIS 1.5
      */
     public GridExtent(final GridExtent lower, final GridExtent upper) {
         final int d1  = lower.getDimension();
@@ -420,7 +420,7 @@ public class GridExtent implements Serializable, LenientComparable {
      * @param  axis  the coordinate system axis for which to get a suggested grid dimension name.
      * @return suggested grid dimension for the given CRS axis.
      *
-     * @since 1.5
+     * @since SIS 1.5
      */
     public static Optional<DimensionNameType> typeFromAxis(final CoordinateSystemAxis axis) {
         return Optional.ofNullable(DIMENSION_NAMES.get(axis.getDirection()));
@@ -694,7 +694,7 @@ public class GridExtent implements Serializable, LenientComparable {
      *
      * @see #getSubspaceDimensions(int)
      *
-     * @since 1.5
+     * @since SIS 1.5
      */
     public int getDegreesOfFreedom() {
         int n = 0;
@@ -806,7 +806,7 @@ public class GridExtent implements Serializable, LenientComparable {
      * @throws IndexOutOfBoundsException if the given index is negative or is equal or greater
      *         than the {@linkplain #getDimension() grid dimension}.
      *
-     * @since 1.3
+     * @since SIS 1.3
      */
     public long getMedian(final int index) {
         final int dimension = getDimension();
@@ -835,7 +835,7 @@ public class GridExtent implements Serializable, LenientComparable {
      *         than the {@linkplain #getDimension() grid dimension}.
      * @throws ArithmeticException if the extrapolated coordinate cannot be represented as a 64 bits integer.
      *
-     * @since 1.4
+     * @since SIS 1.4
      */
     public long getRelative(final int index, final double ratio) {
         if (ratio == 0.5) {
@@ -897,7 +897,7 @@ public class GridExtent implements Serializable, LenientComparable {
      * @throws ArithmeticException if the count is too large for the {@code long} primitive type.
      *
      * @see #latticePointStream(boolean)
-     * @since 1.7
+     * @since SIS 1.7
      */
     public long getLatticePointCount() {
         final int dimension = getDimension();
@@ -926,7 +926,7 @@ public class GridExtent implements Serializable, LenientComparable {
      * then the extent with the smallest number of dimensions is considered before the other extent.
      * Null values are considered after all non-null values.
      *
-     * @since 1.7
+     * @since SIS 1.7
      */
     public static final Comparator<GridExtent> SIZES_COMPARATOR = (e1, e2) -> {
         if (e1 == e2)   return  0;
@@ -969,7 +969,7 @@ public class GridExtent implements Serializable, LenientComparable {
      * @param  anchor  the convention to be used for conversion to "real world" coordinates.
      * @return the grid coordinates of a representative point.
      *
-     * @since 1.3
+     * @since SIS 1.3
      */
     public double[] getPointOfInterest(final PixelInCell anchor) {
         final int dimension = getDimension();
@@ -1011,7 +1011,7 @@ public class GridExtent implements Serializable, LenientComparable {
      *
      * @see GridCoverage.Evaluator#setDefaultSlice(Map)
      *
-     * @since 1.3
+     * @since SIS 1.3
      */
     public SortedMap<Integer, Long> getSliceCoordinates() {
         final var slice = new TreeMap<Integer, Long>();
@@ -1127,7 +1127,7 @@ public class GridExtent implements Serializable, LenientComparable {
      * @return indices of the {@code numDim} dimensions having the largest sizes, in increasing order.
      * @throws CannotEvaluateException if this grid extent does not have at least {@code numDim} dimensions.
      *
-     * @since 1.4
+     * @since SIS 1.4
      */
     public int[] getLargestDimensions(final int numDim) {
         return DimSize.sort(coordinates, ensureValidDimension(numDim), numDim);
@@ -1242,7 +1242,7 @@ public class GridExtent implements Serializable, LenientComparable {
      * @see #getLow(int)
      * @see #getHigh(int)
      *
-     * @since 1.3
+     * @since SIS 1.3
      */
     public GridExtent withRange(final int index, final long low, final long high) {
         int ih = getDimension();
@@ -1273,7 +1273,7 @@ public class GridExtent implements Serializable, LenientComparable {
      * @see GridGeometry#getEnvelope()
      * @see PixelInCell#CELL_CORNER
      *
-     * @since 1.1
+     * @since SIS 1.1
      */
     public GeneralEnvelope toEnvelope(final MathTransform cornerToCRS) throws TransformException {
         ArgumentChecks.ensureNonNull("cornerToCRS", cornerToCRS);
@@ -1303,7 +1303,7 @@ public class GridExtent implements Serializable, LenientComparable {
      *
      * @see GridGeometry#createGridCRS(Identifier, PixelInCell)
      *
-     * @since 1.7
+     * @since SIS 1.7
      */
     public GeneralEnvelope toEnvelope(final MathTransform cornerToCRS, final Identifier datum)
             throws TransformException
@@ -1494,7 +1494,7 @@ public class GridExtent implements Serializable, LenientComparable {
      *
      * @see #selectDimensions(int...)
      *
-     * @since 1.1
+     * @since SIS 1.1
      */
     public GridExtent insertDimension(final int index, final DimensionNameType axisType,
                                       final long low, long high, final boolean isHighIncluded)
@@ -1543,7 +1543,7 @@ public class GridExtent implements Serializable, LenientComparable {
      * @see GridGeometry#selectDimensions(int...)
      * @see DimensionalityReduction#apply(GridExtent)
      *
-     * @since 1.3
+     * @since SIS 1.3
      */
     public GridExtent selectDimensions(int... indices) {
         indices = verifyDimensions(indices, getDimension());
@@ -1725,7 +1725,7 @@ public class GridExtent implements Serializable, LenientComparable {
      *
      * @see #GridExtent(DimensionNameType[], long[], long[], boolean)
      *
-     * @since 1.7
+     * @since SIS 1.7
      */
     public GridExtent reshape(final long[] low, final long[] high, final boolean isHighIncluded) {
         ArgumentChecks.ensureNonNull("high", high);
@@ -1768,7 +1768,7 @@ public class GridExtent implements Serializable, LenientComparable {
      *
      * @see GridDerivation#subgrid(GridExtent, long...)
      *
-     * @since 1.5
+     * @since SIS 1.5
      */
     public GridExtent subsample(final long... periods) {
         final int m = getDimension();
@@ -1813,7 +1813,7 @@ public class GridExtent implements Serializable, LenientComparable {
      *
      * @see GridGeometry#upsample(long...)
      *
-     * @since 1.5
+     * @since SIS 1.5
      */
     public GridExtent upsample(final long... periods) {
         final int m = getDimension();
@@ -1957,7 +1957,7 @@ public class GridExtent implements Serializable, LenientComparable {
      * @see #startsAtZero()
      * @see GridGeometry#shiftGrid(long...)
      *
-     * @since 1.1
+     * @since SIS 1.1
      */
     public final GridExtent translate(final long... translation) {
         return translate(translation, false);
@@ -1974,7 +1974,7 @@ public class GridExtent implements Serializable, LenientComparable {
      *         If the given translation is a no-op (no value or only 0 ones), then this extent is returned as is.
      * @throws ArithmeticException if the translation results in coordinates that overflow 64-bits integer.
      *
-     * @since 1.5
+     * @since SIS 1.5
      */
     public GridExtent translate(final long[] translation, final boolean negate) {
         final int m = getDimension();
@@ -2012,7 +2012,7 @@ public class GridExtent implements Serializable, LenientComparable {
      * @param  cell  grid coordinates of a cell to check for inclusion.
      * @return whether the given grid coordinates are inside this extent.
      *
-     * @since 1.2
+     * @since SIS 1.2
      */
     public boolean contains(final long... cell) {
         final int m = getDimension();
@@ -2039,7 +2039,7 @@ public class GridExtent implements Serializable, LenientComparable {
      *
      * @see GridGeometry#contains(GridGeometry)
      *
-     * @since 1.5
+     * @since SIS 1.5
      */
     public boolean contains(final GridExtent other) {
         ensureSameAxes(other, "other");
@@ -2067,7 +2067,7 @@ public class GridExtent implements Serializable, LenientComparable {
      *
      * @see GridGeometry#intersects(GridGeometry)
      *
-     * @since 1.5
+     * @since SIS 1.5
      */
     public boolean intersects(final GridExtent other) {
         ensureSameAxes(other, "other");
@@ -2092,7 +2092,7 @@ public class GridExtent implements Serializable, LenientComparable {
      * @throws IllegalArgumentException if axis types are specified but inconsistent in at least one dimension.
      * @throws DisjointExtentException if the given extent does not intersect this extent.
      *
-     * @since 1.3
+     * @since SIS 1.3
      */
     public GridExtent intersect(final GridExtent other) {
         return combine(other, false);
@@ -2109,7 +2109,7 @@ public class GridExtent implements Serializable, LenientComparable {
      * @throws MismatchedDimensionException if the two extents do not have the same number of dimensions.
      * @throws IllegalArgumentException if axis types are specified but inconsistent in at least one dimension.
      *
-     * @since 1.3
+     * @since SIS 1.3
      */
     public GridExtent union(final GridExtent other) {
         return combine(other, true);
@@ -2214,7 +2214,7 @@ public class GridExtent implements Serializable, LenientComparable {
      * @return stream of lattice points inside this grid extent.
      *
      * @see #getLatticePointCount()
-     * @since 1.7
+     * @since SIS 1.7
      */
     public Stream<long[]> latticePointStream(final boolean parallel) {
         return StreamSupport.stream(new Iter(coordinates.clone()), parallel);
@@ -2369,7 +2369,7 @@ public class GridExtent implements Serializable, LenientComparable {
      * @param  mode    the strictness level of the comparison.
      * @return {@code true} if the given object is equal to this grid extent.
      *
-     * @since 1.1
+     * @since SIS 1.1
      */
     @Override
     @SuppressWarnings("fallthrough")

@@ -57,7 +57,7 @@ import org.apache.sis.measure.Units;
  *
  * @see org.apache.sis.referencing.factory.GeodeticAuthorityFactory#createSphericalCS(String)
  *
- * @since 0.4
+ * @since SIS 0.4
  */
 @XmlType(name = "SphericalCSType")
 @XmlRootElement(name = "SphericalCS")
@@ -125,7 +125,7 @@ public class DefaultSphericalCS extends AbstractCS implements SphericalCS {
      *
      * @see org.apache.sis.referencing.factory.GeodeticObjectFactory#createSphericalCS(Map, CoordinateSystemAxis, CoordinateSystemAxis)
      *
-     * @since 1.4
+     * @since SIS 1.4
      */
     public DefaultSphericalCS(final Map<String,?>   properties,
                               final CoordinateSystemAxis axis0,
@@ -195,7 +195,7 @@ public class DefaultSphericalCS extends AbstractCS implements SphericalCS {
      * This is the base type required by {@code equals(…)} methods for returning a potentially {@code true} value.
      *
      * @return {@code SphericalCS.class} or a user-defined sub-interface.
-     * @since 1.7
+     * @since SIS 1.7
      */
     @Override
     public Class<? extends SphericalCS> getStandardType() {

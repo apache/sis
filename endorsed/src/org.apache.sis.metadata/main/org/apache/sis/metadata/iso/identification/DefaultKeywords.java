@@ -56,7 +56,7 @@ import static org.opengis.annotation.Specification.ISO_19115;
  * @author  Cédric Briançon (Geomatys)
  * @author  Cullen Rombach (Image Matters)
  * @version 1.4
- * @since   0.3
+ * @since SIS 0.3
  */
 @XmlType(name = "MD_Keywords_Type", propOrder = {
     "keywords",
@@ -236,7 +236,7 @@ public class DefaultKeywords extends ISOMetadata implements Keywords {
      *
      * @return user-defined categorization of groups of keywords, or {@code null} if none.
      *
-     * @since 0.5
+     * @since SIS 0.5
      */
     @XmlElement(name = "keywordClass")
     @XmlJavaTypeAdapter(MD_KeywordClass.Since2014.class)
@@ -254,7 +254,7 @@ public class DefaultKeywords extends ISOMetadata implements Keywords {
      *
      * @param newValue  new user-defined categorization of groups of keywords.
      *
-     * @since 0.5
+     * @since SIS 0.5
      */
     public void setKeywordClass(final DefaultKeywordClass newValue) {
         checkWritePermission(keywordClass);

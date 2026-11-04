@@ -38,7 +38,7 @@ package org.apache.sis.io.wkt;
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @version 0.6
- * @since   0.4
+ * @since SIS 0.4
  */
 public enum KeywordCase {
     /**

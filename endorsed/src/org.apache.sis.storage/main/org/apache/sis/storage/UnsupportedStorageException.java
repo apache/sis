@@ -34,7 +34,7 @@ import org.apache.sis.io.stream.IOUtilities;
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.0
- * @since   0.4
+ * @since SIS 0.4
  */
 public class UnsupportedStorageException extends IllegalOpenParameterException {
     /**
@@ -99,7 +99,7 @@ public class UnsupportedStorageException extends IllegalOpenParameterException {
      *                 {@code WRITE} options for inferring if the data store was to be used as a reader or as a writer.
      *                 Those options can be obtained by {@code StorageConnector.getOption(OptionKey.OPEN_OPTIONS)}.
      *
-     * @since 0.8
+     * @since SIS 0.8
      */
     public UnsupportedStorageException(final Locale locale, final String format, final Object storage, final OpenOption... options) {
         super(locale, IOUtilities.isWrite(options) ? Resources.Keys.IllegalOutputTypeForWriter_2

@@ -133,7 +133,7 @@ import org.opengis.referencing.ReferenceIdentifier;
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.6
- * @since   1.1
+ * @since SIS 1.1
  */
 public class WKTDictionary extends GeodeticAuthorityFactory {
     /**
@@ -971,7 +971,7 @@ public class WKTDictionary extends GeodeticAuthorityFactory {
      * @throws NoSuchAuthorityCodeException if the specified {@code code} was not found.
      * @throws FactoryException if the query failed for some other reason.
      *
-     * @since 1.5
+     * @since SIS 1.5
      */
     @Override
     public Optional<InternationalString> getDescriptionText(Class<? extends IdentifiedObject> type, final String code)

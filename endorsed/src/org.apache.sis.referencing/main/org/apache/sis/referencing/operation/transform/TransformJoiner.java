@@ -73,7 +73,7 @@ import org.apache.sis.util.collection.BackingStoreException;
  *
  * @see AbstractMathTransform#tryConcatenate(TransformJoiner)
  *
- * @since 1.5
+ * @since SIS 1.5
  */
 public final class TransformJoiner {
     /**

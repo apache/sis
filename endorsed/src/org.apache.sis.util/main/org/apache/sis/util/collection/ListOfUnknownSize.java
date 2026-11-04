@@ -50,7 +50,7 @@ import static org.apache.sis.util.collection.SetOfUnknownSize.DEFAULT_INITIAL_SI
  *
  * @param <E>  the type of elements in the list.
  *
- * @since 1.6
+ * @since SIS 1.6
  */
 @SuppressWarnings("EqualsAndHashcode")
 public abstract class ListOfUnknownSize<E> extends AbstractSequentialList<E> {

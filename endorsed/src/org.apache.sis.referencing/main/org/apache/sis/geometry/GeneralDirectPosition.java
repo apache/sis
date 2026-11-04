@@ -56,7 +56,7 @@ import org.apache.sis.util.ArraysExt;
  * @see DirectPosition2D
  * @see CoordinateFormat
  *
- * @since 0.3
+ * @since SIS 0.3
  */
 public class GeneralDirectPosition extends AbstractDirectPosition implements Serializable, Cloneable {
     /**
@@ -207,7 +207,7 @@ public class GeneralDirectPosition extends AbstractDirectPosition implements Ser
      *
      * @return a copy of the {@link #coordinates coordinates} array.
      *
-     * @since 1.5
+     * @since SIS 1.5
      */
     @Override
     public final double[] getCoordinates() {
@@ -222,7 +222,7 @@ public class GeneralDirectPosition extends AbstractDirectPosition implements Ser
      * @throws MismatchedDimensionException if the length of the specified array is not
      *         equals to the {@linkplain #getDimension() dimension} of this position.
      *
-     * @since 1.5
+     * @since SIS 1.5
      */
     public void setCoordinates(final double... coordinates) throws MismatchedDimensionException {
         if (coordinates == null) {
@@ -243,7 +243,7 @@ public class GeneralDirectPosition extends AbstractDirectPosition implements Ser
      * @return the coordinate at the specified dimension.
      * @throws IndexOutOfBoundsException if the specified dimension is out of bounds.
      *
-     * @since 1.5
+     * @since SIS 1.5
      */
     @Override
     public final double getCoordinate(final int dimension) throws IndexOutOfBoundsException {
@@ -257,7 +257,7 @@ public class GeneralDirectPosition extends AbstractDirectPosition implements Ser
      * @param  value      the coordinate value of interest.
      * @throws IndexOutOfBoundsException if the specified dimension is out of bounds.
      *
-     * @since 1.5
+     * @since SIS 1.5
      */
     @Override
     public void setCoordinate(final int dimension, final double value) throws IndexOutOfBoundsException {

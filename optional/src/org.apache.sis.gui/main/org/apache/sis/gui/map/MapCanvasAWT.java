@@ -54,7 +54,7 @@ import org.apache.sis.system.Configuration;
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.7
- * @since   1.1
+ * @since SIS 1.1
  */
 public abstract class MapCanvasAWT extends MapCanvas {
     /**
@@ -213,7 +213,7 @@ public abstract class MapCanvasAWT extends MapCanvas {
      *
      * @author  Martin Desruisseaux (Geomatys)
      * @version 1.1
-     * @since   1.1
+     * @since SIS 1.1
      */
     protected abstract static class Renderer extends MapCanvas.Renderer {
         /**

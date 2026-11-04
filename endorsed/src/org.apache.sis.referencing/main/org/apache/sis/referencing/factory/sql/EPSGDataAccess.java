@@ -170,7 +170,7 @@ import org.apache.sis.temporal.TemporalDate;
  *
  * @see <a href="https://sis.apache.org/tables/CoordinateReferenceSystems.html">List of authority codes</a>
  *
- * @since 0.7
+ * @since SIS 0.7
  */
 public class EPSGDataAccess extends GeodeticAuthorityFactory implements CRSAuthorityFactory,
         CSAuthorityFactory, DatumAuthorityFactory, CoordinateOperationAuthorityFactory, Localized, AutoCloseable
@@ -707,7 +707,7 @@ public class EPSGDataAccess extends GeodeticAuthorityFactory implements CRSAutho
      * @return the object name, or empty if none.
      * @throws FactoryException if the query failed for some other reason.
      *
-     * @since 1.5
+     * @since SIS 1.5
      */
     @Override
     public Optional<InternationalString> getDescriptionText(final Class<? extends IdentifiedObject> type, final String code)

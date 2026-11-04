@@ -123,7 +123,7 @@ import org.apache.sis.metadata.iso.DefaultIdentifier;
  * @author  Martin Desruisseaux (Geomatys)
  * @author  Rémi Eve (IRD)
  * @version 1.7
- * @since   0.4
+ * @since SIS 0.4
  */
 public class WKTFormat extends CompoundFormat<Object> {
     /**
@@ -300,7 +300,7 @@ public class WKTFormat extends CompoundFormat<Object> {
      * Creates a format for the root locale and UTC timezone.
      * This is the standard configuration for ISO 19162 Well-Known Text.
      *
-     * @since 1.5
+     * @since SIS 1.5
      */
     public WKTFormat() {
         this(null, (TimeZone) null);
@@ -319,7 +319,7 @@ public class WKTFormat extends CompoundFormat<Object> {
      * @see #getLocale()
      * @see #getTimeZone()
      *
-     * @since 1.5
+     * @since SIS 1.5
      */
     public WKTFormat(final Locale locale, final ZoneId timezone) {
         this(locale, (timezone != null) ? TimeZone.getTimeZone(timezone) : null);
@@ -447,7 +447,7 @@ public class WKTFormat extends CompoundFormat<Object> {
      *
      * @return the mapper between Java character sequences and the characters to write in WKT.
      *
-     * @since 0.6
+     * @since SIS 0.6
      */
     public Transliterator getTransliterator() {
         Transliterator result = transliterator;
@@ -466,7 +466,7 @@ public class WKTFormat extends CompoundFormat<Object> {
      *
      * @param  map  the new mapper to use, or {@code null} for restoring the default value.
      *
-     * @since 0.6
+     * @since SIS 0.6
      */
     public void setTransliterator(final Transliterator map) {
         if (transliterator != map) {
@@ -500,7 +500,7 @@ public class WKTFormat extends CompoundFormat<Object> {
      *
      * @return the style used for formatting keywords.
      *
-     * @since 0.6
+     * @since SIS 0.6
      */
     public KeywordStyle getKeywordStyle() {
         return keywordStyle;
@@ -511,7 +511,7 @@ public class WKTFormat extends CompoundFormat<Object> {
      *
      * @param  style  the style to use for formatting keywords.
      *
-     * @since 0.6
+     * @since SIS 0.6
      */
     public void setKeywordStyle(final KeywordStyle style) {
         keywordStyle = Objects.requireNonNull(style);
@@ -676,7 +676,7 @@ public class WKTFormat extends CompoundFormat<Object> {
      *
      * @return the current lists size limit, or {@link Integer#MAX_VALUE} if unlimited.
      *
-     * @since 1.0
+     * @since SIS 1.0
      */
     public int getMaximumListElements() {
         return listSizeLimit;
@@ -688,7 +688,7 @@ public class WKTFormat extends CompoundFormat<Object> {
      *
      * @param  limit  the new lists size limit, or {@link Integer#MAX_VALUE} if unlimited.
      *
-     * @since 1.0
+     * @since SIS 1.0
      */
     public void setMaximumListElements(final int limit) {
         ArgumentChecks.ensureStrictlyPositive("listSizeLimit", limit);
@@ -792,7 +792,7 @@ public class WKTFormat extends CompoundFormat<Object> {
      * @see org.apache.sis.xml.MarshalContext#getDocumentURI()
      * @see URI#resolve(URI)
      *
-     * @since 1.5
+     * @since SIS 1.5
      */
     public URI getSourceFile() {
         return sourceFile;
@@ -810,7 +810,7 @@ public class WKTFormat extends CompoundFormat<Object> {
      * @see org.apache.sis.parameter.DefaultParameterValue#setSourceFile(URI)
      * @see URI#resolve(URI)
      *
-     * @since 1.5
+     * @since SIS 1.5
      */
     public void setSourceFile(final URI document) {
         if (!Objects.equals(sourceFile, document)) {
@@ -1175,7 +1175,7 @@ public class WKTFormat extends CompoundFormat<Object> {
      *
      * @return the warnings of the last parsing of formatting operation, or {@code null} if none.
      *
-     * @since 0.6
+     * @since SIS 0.6
      */
     @OptionalCandidate
     public Warnings getWarnings() {

@@ -28,7 +28,7 @@ import org.apache.sis.feature.internal.Resources;
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.1
- * @since   1.0
+ * @since SIS 1.0
  */
 public class IllegalGridGeometryException extends IllegalArgumentException {
     /**
@@ -56,7 +56,7 @@ public class IllegalGridGeometryException extends IllegalArgumentException {
      *
      * @param  cause  the cause for this exception.
      *
-     * @since 1.1
+     * @since SIS 1.1
      */
     public IllegalGridGeometryException(final Throwable cause) {
         super(cause);

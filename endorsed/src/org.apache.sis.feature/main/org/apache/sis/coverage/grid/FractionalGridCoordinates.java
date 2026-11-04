@@ -46,7 +46,7 @@ import org.apache.sis.util.StringBuilders;
  *
  * @see GridCoverage.Evaluator#toGridCoordinates(DirectPosition)
  *
- * @since 1.1
+ * @since SIS 1.1
  */
 public class FractionalGridCoordinates implements Serializable {
     /**

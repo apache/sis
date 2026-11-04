@@ -95,7 +95,7 @@ import org.apache.sis.util.resources.Errors;
  * @author  Estelle Idée (Geomatys)
  * @author  Johann Sorel (Geomatys)
  * @version 1.7
- * @since   0.8
+ * @since SIS 0.8
  */
 public class GeoTiffStore extends DataStore implements Aggregate {
     /**
@@ -216,7 +216,7 @@ public class GeoTiffStore extends DataStore implements Aggregate {
      * @param  connector  information about the storage (URL, stream, <i>etc</i>).
      * @throws DataStoreException if an error occurred while opening the GeoTIFF file.
      *
-     * @since 1.5
+     * @since SIS 1.5
      */
     public GeoTiffStore(final DataStoreProvider provider, final StorageConnector connector) throws DataStoreException {
         this(null, provider, connector, false);
@@ -242,7 +242,7 @@ public class GeoTiffStore extends DataStore implements Aggregate {
      *                    components} instead of the GeoTIFF store itself.
      * @throws DataStoreException if an error occurred while opening the GeoTIFF file.
      *
-     * @since 1.1
+     * @since SIS 1.1
      */
     @SuppressWarnings("this-escape")        // `this` appears in a cyclic graph.
     public GeoTiffStore(final DataStore parent, final DataStoreProvider provider, final StorageConnector connector,
@@ -353,7 +353,7 @@ public class GeoTiffStore extends DataStore implements Aggregate {
      *
      * @return format modifiers of this data store.
      *
-     * @since 1.5
+     * @since SIS 1.5
      */
     public Set<FormatModifier> getModifiers() {
         final Writer w = writer; if (w != null) return w.getModifiers();
@@ -368,7 +368,7 @@ public class GeoTiffStore extends DataStore implements Aggregate {
      *
      * @return the compression to use for writing new images, or empty if unspecified.
      *
-     * @since 1.5
+     * @since SIS 1.5
      */
     public Optional<Compression> getCompression() {
         return Optional.ofNullable(compression);
@@ -382,7 +382,7 @@ public class GeoTiffStore extends DataStore implements Aggregate {
      * @return the identifier derived from the filename.
      * @throws DataStoreException if an error occurred while fetching the identifier.
      *
-     * @since 1.0
+     * @since SIS 1.0
      */
     @Override
     public Optional<GenericName> getIdentifier() throws DataStoreException {
@@ -469,7 +469,7 @@ public class GeoTiffStore extends DataStore implements Aggregate {
      * @return resources information structured in an implementation-specific way.
      * @throws DataStoreException if an error occurred while reading the metadata.
      *
-     * @since 1.2
+     * @since SIS 1.2
      */
     @Override
     public synchronized Optional<TreeTable> getNativeMetadata() throws DataStoreException {
@@ -488,7 +488,7 @@ public class GeoTiffStore extends DataStore implements Aggregate {
      * @return files used by this resource, or an empty value if unknown.
      * @throws DataStoreException if an error occurred while preparing the set of files.
      *
-     * @since 1.5
+     * @since SIS 1.5
      */
     @Override
     public Optional<FileSet> getFileSet() throws DataStoreException {
@@ -558,7 +558,7 @@ public class GeoTiffStore extends DataStore implements Aggregate {
      * @return descriptions of all images in this GeoTIFF file.
      * @throws DataStoreException if an error occurred while fetching the image descriptions.
      *
-     * @since 1.0
+     * @since SIS 1.0
      */
     @Override
     @SuppressWarnings("ReturnOfCollectionOrArrayField")
@@ -723,7 +723,7 @@ public class GeoTiffStore extends DataStore implements Aggregate {
      * @throws IncompatibleResourceException if the given {@code image} has a property which is not supported by this writer.
      * @throws DataStoreException if an error occurred while writing to the output stream.
      *
-     * @since 1.5
+     * @since SIS 1.5
      */
     @SuppressWarnings("LocalVariableHidesMemberVariable")
     public synchronized GridCoverageResource append(RenderedImage image, final GridGeometry grid, final Metadata metadata)
@@ -794,7 +794,7 @@ public class GeoTiffStore extends DataStore implements Aggregate {
      * @throws DataStoreException if the given {@code image} has a property which is not supported by this writer,
      *         or if an error occurred while writing to the output stream.
      *
-     * @since 1.5
+     * @since SIS 1.5
      */
     public GridCoverageResource append(final GridCoverage coverage, final Metadata metadata) throws DataStoreException {
         return append(coverage.render(null), coverage.getGridGeometry(), metadata);

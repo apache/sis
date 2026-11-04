@@ -80,7 +80,7 @@ import static org.opengis.annotation.Specification.ISO_19115;
  * @author  Rémi Maréchal (Geomatys)
  * @author  Cullen Rombach (Image Matters)
  * @version 1.7
- * @since   0.3
+ * @since SIS 0.3
  */
 @TitleProperty(name = "statement")
 @XmlType(name = "LI_Lineage_Type", propOrder = {
@@ -211,7 +211,7 @@ public class DefaultLineage extends ISOMetadata implements Lineage {
      *
      * @return type of resource and / or extents to which the lineage information applies.
      *
-     * @since 0.5
+     * @since SIS 0.5
      */
     @XmlElement(name = "scope")
     @XmlJavaTypeAdapter(MD_Scope.Since2014.class)
@@ -225,7 +225,7 @@ public class DefaultLineage extends ISOMetadata implements Lineage {
      *
      * @param  newValue  the new type of resource.
      *
-     * @since 0.5
+     * @since SIS 0.5
      */
     public void setScope(final Scope newValue) {
         checkWritePermission(scope);
@@ -237,7 +237,7 @@ public class DefaultLineage extends ISOMetadata implements Lineage {
      *
      * @return additional documentation.
      *
-     * @since 0.5
+     * @since SIS 0.5
      */
     // @XmlElement at the end of this class.
     @UML(identifier="additionalDocumentation", obligation=OPTIONAL, specification=ISO_19115)
@@ -250,7 +250,7 @@ public class DefaultLineage extends ISOMetadata implements Lineage {
      *
      * @param newValues Additional documentation.
      *
-     * @since 0.5
+     * @since SIS 0.5
      */
     public void setAdditionalDocumentation(final Collection<? extends Citation> newValues)  {
         additionalDocumentation = writeCollection(newValues, additionalDocumentation, Citation.class);

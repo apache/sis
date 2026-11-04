@@ -24,7 +24,7 @@ package org.apache.sis.storage;
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.2
- * @since   1.2
+ * @since SIS 1.2
  */
 public class ResourceAlreadyExistsException extends DataStoreException {
     /**

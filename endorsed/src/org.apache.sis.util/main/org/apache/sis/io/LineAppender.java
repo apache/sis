@@ -56,7 +56,7 @@ import org.apache.sis.util.internal.shared.X364;
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.5
- * @since   0.3
+ * @since SIS 0.3
  */
 public class LineAppender extends Appender implements Flushable {
     /**
@@ -222,7 +222,7 @@ public class LineAppender extends Appender implements Flushable {
      *
      * @return number of code points in the current line.
      *
-     * @since 1.5
+     * @since SIS 1.5
      */
     public int getCurrentLineLength() {
         return codePointCount;
@@ -237,7 +237,7 @@ public class LineAppender extends Appender implements Flushable {
      *
      * @param  length  the new length of the current line, in units of Unicode code points.
      *
-     * @since 1.5
+     * @since SIS 1.5
      */
     public void setCurrentLineLength(final int length) {
         ArgumentChecks.ensurePositive("length", length);

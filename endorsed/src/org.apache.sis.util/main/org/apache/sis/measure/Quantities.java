@@ -41,7 +41,7 @@ import org.apache.sis.util.resources.Errors;
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.3
- * @since   0.8
+ * @since SIS 0.8
  */
 public final class Quantities {
     /**
@@ -175,7 +175,7 @@ public final class Quantities {
      * @param  q2   the second quantity (can be {@code null}).
      * @return the smallest of the two given quantities.
      *
-     * @since 1.1
+     * @since SIS 1.1
      */
     public static <Q extends Quantity<Q>> Quantity<Q> min(final Quantity<Q> q1, final Quantity<Q> q2) {
         return minOrMax(q1, q2, false);
@@ -191,7 +191,7 @@ public final class Quantities {
      * @param  q2   the second quantity (can be {@code null}).
      * @return the largest of the two given quantities.
      *
-     * @since 1.1
+     * @since SIS 1.1
      */
     public static <Q extends Quantity<Q>> Quantity<Q> max(final Quantity<Q> q1, final Quantity<Q> q2) {
         return minOrMax(q1, q2, true);

@@ -64,7 +64,7 @@ import org.apache.sis.util.collection.Containers;
  * @author  Touraïvane (IRD)
  * @author  Cullen Rombach (Image Matters)
  * @version 1.4
- * @since   0.3
+ * @since SIS 0.3
  */
 @XmlType(name = "MD_Scope_Type", namespace = Namespaces.MCC, propOrder = {
    "level",
@@ -183,7 +183,7 @@ public class DefaultScope extends ISOMetadata implements Scope {
      *
      * @return information about the extent of the resource.
      *
-     * @since 0.5
+     * @since SIS 0.5
      */
     @XmlElement(name = "extent")
     @UML(identifier="extent", obligation=OPTIONAL, specification=ISO_19115)
@@ -196,7 +196,7 @@ public class DefaultScope extends ISOMetadata implements Scope {
      *
      * @param newValues New information about the extent of the resource.
      *
-     * @since 0.5
+     * @since SIS 0.5
      */
     public void setExtents(final Collection<? extends Extent> newValues) {
         extents = writeCollection(newValues, extents, Extent.class);

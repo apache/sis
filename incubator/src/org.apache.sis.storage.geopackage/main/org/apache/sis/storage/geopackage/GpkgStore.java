@@ -72,7 +72,7 @@ import org.apache.sis.util.Workaround;
  * @author  Johann Sorel (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.5
- * @since   1.5
+ * @since SIS 1.5
  *
  * @see <a href="https://www.geopackage.org/spec140/index.html">OGC® GeoPackage Encoding Standard version 1.4.0</a>
  */

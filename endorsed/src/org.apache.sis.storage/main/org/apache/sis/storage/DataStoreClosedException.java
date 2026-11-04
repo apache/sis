@@ -27,7 +27,7 @@ import org.apache.sis.storage.internal.Resources;
  *
  * @author  Marc Le Bihan
  * @version 0.6
- * @since   0.8
+ * @since SIS 0.8
  */
 public class DataStoreClosedException extends DataStoreException {
     /**
@@ -64,7 +64,7 @@ public class DataStoreClosedException extends DataStoreException {
      *                 This method looks in particular for {@link java.nio.file.StandardOpenOption#READ} and
      *                 {@code WRITE} options for inferring if the data store was used as a reader or as a writer.
      *
-     * @since 0.8
+     * @since SIS 0.8
      */
     public DataStoreClosedException(final Locale locale, final String format, final OpenOption... options) {
         super(locale, IOUtilities.isWrite(options) ? Resources.Keys.ClosedWriter_1 : Resources.Keys.ClosedReader_1, format);

@@ -63,7 +63,7 @@ import org.apache.sis.system.Environment;
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @version 1.5
- * @since   0.4
+ * @since SIS 0.4
  */
 @XmlTransient
 public abstract class FormattableObject implements Printable {

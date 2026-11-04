@@ -59,7 +59,7 @@ import java.lang.annotation.Documented;
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @version 0.8
- * @since   0.8
+ * @since SIS 0.8
  *
  * @see ValueExistencePolicy#TITLED
  * @see MetadataStandard#getTitle(Object)

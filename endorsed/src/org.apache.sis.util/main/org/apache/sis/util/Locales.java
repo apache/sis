@@ -44,7 +44,7 @@ import static org.apache.sis.util.resources.IndexedResourceBundle.LOGGER;
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @author  Cullen Rombach (Image Matters)
  * @version 1.5
- * @since   0.3
+ * @since SIS 0.3
  */
 public final class Locales {
     /**

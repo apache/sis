@@ -142,7 +142,7 @@ import org.opengis.metadata.extent.GeographicDescription;
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @version 0.8
- * @since   0.3
+ * @since SIS 0.3
  */
 public class AttributeNames {
     /**
@@ -198,7 +198,7 @@ public class AttributeNames {
      *
      * @author  Martin Desruisseaux (Geomatys)
      * @version 0.8
-     * @since   0.8
+     * @since SIS 0.8
      */
     public static class Term implements Serializable {
         /**
@@ -240,7 +240,7 @@ public class AttributeNames {
          * @param text        the keyword or the identifier code.
          * @param vocabulary  the vocabulary or identifier namespace.
          *
-         * @since 0.8
+         * @since SIS 0.8
          */
         public Term(final String text, final String vocabulary) {
             TEXT       = text;
@@ -379,7 +379,7 @@ public class AttributeNames {
      *
      * @see <a href="http://wiki.esipfed.org/index.php/Attribute_Convention_for_Data_Discovery#source">ESIP reference</a>
      *
-     * @since 0.8
+     * @since SIS 0.8
      */
     public static final String SOURCE = "source";
 
@@ -414,7 +414,7 @@ public class AttributeNames {
      * {@code dateInfo}
      * {@link CitationDate#getDate() date} with {@link DateType#REVISION}</li></ul>
      *
-     * @since 0.8
+     * @since SIS 0.8
      */
     public static final String METADATA_MODIFIED = "date_metadata_modified";
 
@@ -490,7 +490,7 @@ public class AttributeNames {
      * @see #PROJECT
      * @see <a href="http://wiki.esipfed.org/index.php/Attribute_Convention_for_Data_Discovery#program">ESIP reference</a>
      *
-     * @since 0.8
+     * @since SIS 0.8
      */
     public static final Term PROGRAM = new Term("program", null);
 
@@ -509,7 +509,7 @@ public class AttributeNames {
      * {@link Identifier#getAuthority() authority} /
      * {@link Citation#getTitle() title}</li></ul>
      *
-     * @since 0.8
+     * @since SIS 0.8
      */
     public static final Term PLATFORM = new Term("platform", "platform_vocabulary");
 
@@ -530,7 +530,7 @@ public class AttributeNames {
      * {@link Identifier#getAuthority() authority} /
      * {@link Citation#getTitle() title}</li></ul>
      *
-     * @since 0.8
+     * @since SIS 0.8
      */
     public static final Term INSTRUMENT = new Term("instrument", "instrument_vocabulary");
 
@@ -595,7 +595,7 @@ public class AttributeNames {
      *
      * @see org.apache.sis.storage.netcdf.AttributeNames.Dimension
      *
-     * @since 0.3
+     * @since SIS 0.3
      */
     public static class Responsible implements Serializable {
         /**
@@ -677,7 +677,7 @@ public class AttributeNames {
          * @param role         the attribute name for the responsible party role.
          * @param defaultRole  the role to use as a fallback if no attribute value is associated with the {@code role} key.
          *
-         * @since 0.8
+         * @since SIS 0.8
          */
         public Responsible(final String name, final String type, final String institution, final String url,
                 final String email, final String role, final Role defaultRole)
@@ -796,7 +796,7 @@ public class AttributeNames {
      *
      * @see <a href="http://wiki.esipfed.org/index.php/Attribute_Convention_for_Data_Discovery#acknowledgement">ESIP reference</a>
      *
-     * @since 0.8
+     * @since SIS 0.8
      */
     public static final String ACKNOWLEDGEMENT = ACDD.acknowledgement;
 
@@ -852,7 +852,7 @@ public class AttributeNames {
      *
      * @see <a href="http://wiki.esipfed.org/index.php/Attribute_Convention_for_Data_Discovery#geospatial_bounds">ESIP reference</a>
      *
-     * @since 0.8
+     * @since SIS 0.8
      */
     public static final String GEOSPATIAL_BOUNDS = "geospatial_bounds";
 
@@ -925,7 +925,7 @@ public class AttributeNames {
      *
      * @see org.apache.sis.storage.netcdf.AttributeNames.Responsible
      *
-     * @since 0.3
+     * @since SIS 0.3
      */
     public static class Dimension implements Serializable {
         /**
@@ -1193,7 +1193,7 @@ public class AttributeNames {
      *
      * @see <a href="http://wiki.esipfed.org/index.php/Attribute_Convention_for_Data_Discovery#metadata_link">ESIP reference</a>
      *
-     * @since 0.8
+     * @since SIS 0.8
      */
     public static final String METADATA_LINK = "metadata_link";
 

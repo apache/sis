@@ -96,7 +96,7 @@ import org.apache.sis.pending.geoapi.filter.ValueReference;
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.7
- * @since   1.1
+ * @since SIS 1.1
  */
 public class Optimization {
     /**
@@ -167,7 +167,7 @@ public class Optimization {
      *
      * @return exhaustive set of types of all feature instances that the filters and expressions may see.
      *
-     * @since 1.6
+     * @since SIS 1.6
      */
     @SuppressWarnings("ReturnOfCollectionOrArrayField")
     public Set<DefaultFeatureType> getFinalFeatureTypes() {
@@ -182,7 +182,7 @@ public class Optimization {
      *
      * @param  types  exhaustive set of types of all feature instances that the filters and expressions may see.
      *
-     * @since 1.6
+     * @since SIS 1.6
      */
     public void setFinalFeatureTypes(final Collection<? extends DefaultFeatureType> types) {
         featureTypes = Set.copyOf(types);
@@ -199,7 +199,7 @@ public class Optimization {
      *
      * @param  type  the type of feature instances to be filtered, or {@code null} if unknown.
      *
-     * @since 1.6
+     * @since SIS 1.6
      */
     public final void setFinalFeatureType(final DefaultFeatureType type) {
         setFinalFeatureTypes((type != null) ? Set.of(type) : Set.of());
@@ -298,7 +298,7 @@ public class Optimization {
      * @throws IllegalArgumentException if the parameter is a {@link ValueReference} and
      *         the referenced property has not been found in at least one feature type.
      *
-     * @since 1.6
+     * @since SIS 1.6
      */
     public Optional<CoordinateReferenceSystem> findExpectedCRS(final Expression<?,?> parameter)
             throws IllegalArgumentException
@@ -508,7 +508,7 @@ public class Optimization {
      * @param  <R>  the type of resources to filter.
      *
      * @version 1.6
-     * @since   1.1
+     * @since SIS 1.1
      */
     public interface OnFilter<R> extends Filter<R> {
         /**
@@ -685,7 +685,7 @@ public class Optimization {
      * @param  <V>  the type of values computed by the expression.
      *
      * @version 1.6
-     * @since   1.1
+     * @since SIS 1.1
      */
     public interface OnExpression<R,V> extends Expression<R,V> {
         /**
@@ -832,7 +832,7 @@ public class Optimization {
      * @param exception   the recoverable exception that occurred.
      * @param resolvable  whether an optimization with more information may avoid this warning.
      *
-     * @since 1.6
+     * @since SIS 1.6
      */
     public void warning(Exception exception, boolean resolvable) {
         isImprovable |= resolvable;
@@ -857,7 +857,7 @@ public class Optimization {
      * @param  filter  the filter for which to query function properties.
      * @return the manners in which values are computed from resources.
      *
-     * @since 1.4
+     * @since SIS 1.4
      */
     public static Set<FunctionProperty> properties(final Filter<?> filter) {
         return Node.transitiveProperties(filter.getExpressions());
@@ -878,7 +878,7 @@ public class Optimization {
      * @param  expression  the expression for which to query function properties.
      * @return the manners in which values are computed from resources.
      *
-     * @since 1.4
+     * @since SIS 1.4
      */
     public static Set<FunctionProperty> properties(final Expression<?,?> expression) {
         return Node.properties(expression);

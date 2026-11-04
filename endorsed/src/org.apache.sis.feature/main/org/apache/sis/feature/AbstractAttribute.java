@@ -68,7 +68,7 @@ import org.apache.sis.util.Classes;
  * @see AbstractFeature
  * @see DefaultAttributeType
  *
- * @since 0.5
+ * @since SIS 0.5
  */
 public abstract class AbstractAttribute<V> extends Field<V> implements Serializable {
     /**

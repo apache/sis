@@ -47,7 +47,7 @@ import org.opengis.util.TypeName;
  * @see DefaultNameFactory
  * @see DefaultRecordType
  *
- * @since 0.3
+ * @since SIS 0.3
  */
 @XmlType(name = "MemberName_Type")
 @XmlRootElement(name = "MemberName")
@@ -92,7 +92,7 @@ public class DefaultMemberName extends DefaultLocalName implements MemberName {
      * @return a SIS implementation containing the values of the given object (may be the
      *         given object itself), or {@code null} if the argument was null.
      *
-     * @since 0.5
+     * @since SIS 0.5
      */
     public static DefaultMemberName castOrCopy(final MemberName object) {
         if (object == null || object instanceof DefaultMemberName) {

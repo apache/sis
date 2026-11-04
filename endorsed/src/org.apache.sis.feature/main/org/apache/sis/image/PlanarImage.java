@@ -108,7 +108,7 @@ import org.apache.sis.pending.jdk.JDK18;
  * @author  Johann Sorel (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.7
- * @since   1.1
+ * @since SIS 1.1
  */
 public abstract class PlanarImage implements RenderedImage {
     /**
@@ -122,7 +122,7 @@ public abstract class PlanarImage implements RenderedImage {
      * @see org.apache.sis.storage.DataStore#getDisplayName()
      * @see org.apache.sis.storage.Resource#getIdentifier()
      *
-     * @since 1.7
+     * @since SIS 1.7
      */
     public static final String SOURCE_NAME_KEY = "org.apache.sis.SourceName";
 
@@ -139,7 +139,7 @@ public abstract class PlanarImage implements RenderedImage {
      * @see org.apache.sis.coverage.grid.ImageRenderer#getXYDimensions()
      * @see org.apache.sis.coverage.grid.GridExtent#getSubspaceDimensions(int)
      *
-     * @since 1.5
+     * @since SIS 1.5
      */
     public static final String XY_DIMENSIONS_KEY = "org.apache.sis.XYDimensions";
 
@@ -190,7 +190,7 @@ public abstract class PlanarImage implements RenderedImage {
      *
      * @see org.apache.sis.coverage.grid.GridCoverage#getSampleDimensions()
      *
-     * @since 1.4
+     * @since SIS 1.4
      */
     public static final String SAMPLE_DIMENSIONS_KEY = "org.apache.sis.SampleDimensions";
 
@@ -351,7 +351,7 @@ public abstract class PlanarImage implements RenderedImage {
      * @return a shape containing all pixels that are valid. Not necessarily the smallest shape
      *         containing those pixels, but shall be fully contained inside the image bounds.
      *
-     * @since 1.5
+     * @since SIS 1.5
      */
     public Shape getValidArea() {
         return getBounds();
@@ -496,7 +496,7 @@ public abstract class PlanarImage implements RenderedImage {
      * @param  index  the tile index to validate.
      * @throws IndexOutOfBoundsException if the given tile index is out of bounds.
      *
-     * @since 1.7
+     * @since SIS 1.7
      */
     protected static void checkTileIndex(final String name, final int min, final int count, final int index) {
         final int max = min + (count - 1);

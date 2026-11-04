@@ -60,7 +60,7 @@ import org.apache.sis.util.collection.TreeTable;
  * @author  Quentin Bialota (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.7
- * @since   1.5
+ * @since SIS 1.5
  */
 @StoreMetadata(formatName    = Constants.GDAL,
                capabilities  = {Capability.READ},
@@ -169,7 +169,7 @@ public class GDALStoreProvider extends DataStoreProvider {
      * @throws DataStoreException if the <abbr>GDAL</abbr> library has not been found
      *         or if this Apache SIS module is not authorized to call native methods.
      *
-     * @since 1.7
+     * @since SIS 1.7
      */
     public static synchronized GDALStoreProvider provider() throws DataStoreException {
         if (GLOBAL == null) {
@@ -202,7 +202,7 @@ public class GDALStoreProvider extends DataStoreProvider {
      * @throws DataStoreException if the <abbr>GDAL</abbr> library has not been found
      *         or if this Apache SIS module is not authorized to call native methods.
      *
-     * @since 1.7
+     * @since SIS 1.7
      */
     public static GDALStoreProvider provider(final Path library) throws DataStoreException {
         try {

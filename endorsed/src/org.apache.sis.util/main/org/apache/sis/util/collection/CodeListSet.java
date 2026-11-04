@@ -55,7 +55,7 @@ import org.apache.sis.util.internal.shared.CodeLists;
  *
  * @see java.util.EnumSet
  *
- * @since 0.3
+ * @since SIS 0.3
  */
 public class CodeListSet<E extends CodeList<E>> extends AbstractSet<E>
         implements CheckedContainer<E>, Cloneable, Serializable
@@ -162,7 +162,7 @@ public class CodeListSet<E extends CodeList<E>> extends AbstractSet<E>
      * Indicates that this collection is modifiable (at least by default).
      *
      * @return {@link Mutability#MODIFIABLE} by default.
-     * @since 1.6
+     * @since SIS 1.6
      */
     @Override
     public Mutability getMutability() {

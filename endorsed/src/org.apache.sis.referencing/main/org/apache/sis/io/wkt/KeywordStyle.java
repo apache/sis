@@ -27,7 +27,7 @@ package org.apache.sis.io.wkt;
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @version 0.6
- * @since   0.6
+ * @since SIS 0.6
  */
 public enum KeywordStyle {
     /**

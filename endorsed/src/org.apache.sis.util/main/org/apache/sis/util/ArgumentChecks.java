@@ -83,7 +83,7 @@ import org.opengis.geometry.MismatchedDimensionException;
  * @author  Martin Desruisseaux (Geomatys)
  * @author  Alexis Manin (Geomatys)
  * @version 1.7
- * @since   0.3
+ * @since SIS 0.3
  */
 public final class ArgumentChecks {
     /**
@@ -192,7 +192,7 @@ public final class ArgumentChecks {
      * @throws NullPointerException if {@code array} is null.
      * @throws IllegalArgumentException if {@code array} is empty.
      *
-     * @since 1.0
+     * @since SIS 1.0
      */
     public static void ensureNonEmpty(final String name, final Object[] array)
             throws NullPointerException, IllegalArgumentException
@@ -215,7 +215,7 @@ public final class ArgumentChecks {
      * @throws NullPointerException if {@code toCheck} is null.
      * @throws IllegalArgumentException if {@code toCheck} is empty.
      *
-     * @since 1.1
+     * @since SIS 1.1
      */
     public static void ensureNonEmpty(final String name, final Collection<?> toCheck) {
         if (toCheck == null) {
@@ -236,7 +236,7 @@ public final class ArgumentChecks {
      * @throws NullPointerException if {@code toCheck} is null.
      * @throws IllegalArgumentException if {@code toCheck} is empty.
      *
-     * @since 1.4
+     * @since SIS 1.4
      */
     public static void ensureNonEmpty(final String name, final Emptiable toCheck) {
         if (toCheck == null) {
@@ -263,7 +263,7 @@ public final class ArgumentChecks {
      * @throws IllegalArgumentException if {@code values} is empty, contains a value lower than {@code min},
      *         contains a value greater than {@code max}, or contains duplicated values while {@code distinct} is {@code true}.
      *
-     * @since 1.4
+     * @since SIS 1.4
      */
     public static void ensureNonEmptyBounded(final String name, final boolean distinct, final int min, final int max, final int[] values)
             throws IllegalArgumentException
@@ -628,7 +628,7 @@ public final class ArgumentChecks {
      *
      * @see #ensureBetween(String, int, int, int)
      *
-     * @since 1.4
+     * @since SIS 1.4
      */
     public static void ensureCountBetween(final String name, final boolean collection,
             final int min, final int max, final int count) throws IllegalArgumentException
@@ -658,7 +658,7 @@ public final class ArgumentChecks {
      * @param  code  the Unicode code point to verify.
      * @throws IllegalArgumentException if the given value is not a valid Unicode code point.
      *
-     * @since 0.4
+     * @since SIS 0.4
      */
     public static void ensureValidUnicodeCodePoint(final String name, final int code) throws IllegalArgumentException {
         if (!Character.isValidCodePoint(code)) {
@@ -678,7 +678,7 @@ public final class ArgumentChecks {
      * @throws IllegalArgumentException if {@code (number % divisor) != 0}.
      * @throws ArithmeticException if {@code divisor == 0}.
      *
-     * @since 1.1
+     * @since SIS 1.1
      */
     public static void ensureDivisor(final String name, final int number, final int divisor) {
         if ((number % divisor) != 0) {
@@ -697,7 +697,7 @@ public final class ArgumentChecks {
      * @throws IllegalArgumentException if {@code (multiple % number) != 0}.
      * @throws ArithmeticException if {@code number == 0}.
      *
-     * @since 1.1
+     * @since SIS 1.1
      */
     public static void ensureMultiple(final String name, final int number, final int multiple) {
         if ((multiple % number) != 0) {
@@ -740,7 +740,7 @@ public final class ArgumentChecks {
      * @throws MismatchedDimensionException if the given coordinate system is non-null
      *         and does not have the expected number of dimensions.
      *
-     * @since 0.6
+     * @since SIS 0.6
      */
     public static void ensureDimensionMatches(final String name, final int expected,
             final CoordinateSystem cs) throws MismatchedDimensionException
@@ -764,7 +764,7 @@ public final class ArgumentChecks {
      * @throws MismatchedDimensionException if the given array of indices is non-null and does not have
      *         the expected number of dimensions (taken as its length).
      *
-     * @since 1.0
+     * @since SIS 1.0
      */
     public static void ensureDimensionMatches(final String name, final int expected, final int[] indices)
             throws MismatchedDimensionException
@@ -788,7 +788,7 @@ public final class ArgumentChecks {
      * @throws MismatchedDimensionException if the given array of indices is non-null and does not have
      *         the expected number of dimensions (taken as its length).
      *
-     * @since 1.7
+     * @since SIS 1.7
      */
     public static void ensureDimensionMatches(final String name, final int expected, final long[] indices)
             throws MismatchedDimensionException
@@ -879,7 +879,7 @@ public final class ArgumentChecks {
      * @throws MismatchedDimensionException if the given transform is non-null and does
      *         not have the expected number of dimensions.
      *
-     * @since 1.1
+     * @since SIS 1.1
      */
     public static void ensureDimensionsMatch(final String name, int expectedSource, final int expectedTarget,
                                              final MathTransform transform) throws MismatchedDimensionException

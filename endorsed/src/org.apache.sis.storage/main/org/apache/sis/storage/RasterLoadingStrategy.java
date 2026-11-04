@@ -45,7 +45,7 @@ import org.apache.sis.coverage.CannotEvaluateException;
  *
  * @see GridCoverageResource#setLoadingStrategy(RasterLoadingStrategy)
  *
- * @since 1.1
+ * @since SIS 1.1
  */
 public enum RasterLoadingStrategy {
     /**

@@ -23,7 +23,7 @@
  * @author  Minh Chinh Vu (VNSC)
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.7
- * @since   0.8
+ * @since SIS 0.8
  */
 module org.apache.sis.storage.earthobservation {
     requires transitive org.apache.sis.storage.geotiff;

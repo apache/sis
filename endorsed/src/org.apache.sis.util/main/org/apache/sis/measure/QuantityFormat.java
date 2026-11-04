@@ -40,7 +40,7 @@ import org.apache.sis.util.resources.Errors;
  * @see NumberFormat
  * @see UnitFormat
  *
- * @since 1.1
+ * @since SIS 1.1
  */
 public class QuantityFormat extends Format implements javax.measure.format.QuantityFormat {
     /**
@@ -90,7 +90,7 @@ public class QuantityFormat extends Format implements javax.measure.format.Quant
      * This is {@code true} in this {@code QuantityFormat} implementation.
      *
      * @return whether this format depends on the locale, which is true in this implementation.
-     * @since  1.4
+     * @since SIS 1.4
      */
     @Override
     public boolean isLocaleSensitive() {
@@ -103,7 +103,7 @@ public class QuantityFormat extends Format implements javax.measure.format.Quant
      *
      * @param  quantity  the quantity to format.
      * @return the string representation of the given quantity.
-     * @since  1.4
+     * @since SIS 1.4
      */
     @Override
     public String format(final Quantity<?> quantity) {
@@ -118,7 +118,7 @@ public class QuantityFormat extends Format implements javax.measure.format.Quant
      * @param  toAppendTo  where to format the quantity.
      * @return the given {@code toAppendTo} argument, for method calls chaining.
      * @throws IOException if an I/O exception occurred.
-     * @since  1.4
+     * @since SIS 1.4
      */
     @Override
     public Appendable format(final Quantity<?> quantity, final Appendable toAppendTo) throws IOException {
@@ -153,7 +153,7 @@ public class QuantityFormat extends Format implements javax.measure.format.Quant
      * @param  source  the text to parse.
      * @return the quantity parsed from the specified text.
      * @throws MeasurementParseException if the given text cannot be parsed.
-     * @since  1.4
+     * @since SIS 1.4
      */
     @Override
     public Quantity<?> parse(final CharSequence source) throws MeasurementParseException {
@@ -168,7 +168,7 @@ public class QuantityFormat extends Format implements javax.measure.format.Quant
      * @param  pos     index and error index information.
      * @return the quantity parsed from the specified character sub-sequence.
      * @throws MeasurementParseException if the given text cannot be parsed.
-     * @since  1.4
+     * @since SIS 1.4
      */
     @Override
     public Quantity<?> parse(final CharSequence source, final ParsePosition pos) throws MeasurementParseException {
@@ -235,7 +235,7 @@ public class QuantityFormat extends Format implements javax.measure.format.Quant
      * @param  source  the number to parse.
      * @return the number parsed from the specified text.
      * @throws MeasurementParseException if the given text cannot be parsed.
-     * @since  1.5
+     * @since SIS 1.5
      */
     public Number parseNumber(final String source) throws MeasurementParseException {
         final var pos = new ParsePosition(0);

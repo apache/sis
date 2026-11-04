@@ -124,7 +124,7 @@ import org.apache.sis.temporal.TemporalDate;
  *
  * @see DefaultCoordinateOperationFactory#createOperation(CoordinateReferenceSystem, CoordinateReferenceSystem, CoordinateOperationContext)
  *
- * @since 0.7
+ * @since SIS 0.7
  */
 public class CoordinateOperationFinder extends CoordinateOperationRegistry {
     /**
@@ -230,7 +230,7 @@ public class CoordinateOperationFinder extends CoordinateOperationRegistry {
      * @throws OperationNotFoundException if no operation path was found from {@code sourceCRS} to {@code targetCRS}.
      * @throws FactoryException if the operation creation failed for some other reason.
      *
-     * @since 1.0
+     * @since SIS 1.0
      */
     @Override
     public List<CoordinateOperation> createOperations(final CoordinateReferenceSystem sourceCRS,

@@ -28,7 +28,7 @@ import java.util.Set;
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.5
- * @since   1.2
+ * @since SIS 1.2
  */
 public class IncompatibleResourceException extends DataStoreException {
     /**
@@ -75,7 +75,7 @@ public class IncompatibleResourceException extends DataStoreException {
      *
      * @param  name  an identification of the aspect which is incompatible.
      * @return {@code this} for method call chaining.
-     * @since 1.5
+     * @since SIS 1.5
      */
     public IncompatibleResourceException addAspect(final String name) {
         if (aspects == null) {
@@ -104,7 +104,7 @@ public class IncompatibleResourceException extends DataStoreException {
      * </ul>
      *
      * @return identifications of aspects which are incompatible.
-     * @since 1.5
+     * @since SIS 1.5
      */
     public Set<String> getAspects() {
         return (aspects != null) ? aspects : Set.of();

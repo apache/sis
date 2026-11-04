@@ -108,7 +108,7 @@ import static org.apache.sis.util.internal.shared.Constants.UTC;
  *
  * @param <T>  the base type of objects parsed and formatted by this class.
  *
- * @since 0.3
+ * @since SIS 0.3
  */
 public abstract class CompoundFormat<T> extends Format implements Localized {
     /**
@@ -188,7 +188,7 @@ public abstract class CompoundFormat<T> extends Format implements Localized {
      * @param  category  the category for which a locale is desired.
      * @return the locale for the given category (never {@code null}).
      *
-     * @since 0.4
+     * @since SIS 0.4
      */
     public Locale getLocale(final Locale.Category category) {
         ArgumentChecks.ensureNonNull("category", category);
@@ -350,7 +350,7 @@ public abstract class CompoundFormat<T> extends Format implements Localized {
      *         of the expected {@linkplain #getValueType() value type}.
      * @throws IOException if an error occurred while writing to the given appendable.
      *
-     * @since 1.7
+     * @since SIS 1.7
      */
     public void formatObject(final Object object, final Appendable toAppendTo) throws IOException {
         final T value;
@@ -382,7 +382,7 @@ public abstract class CompoundFormat<T> extends Format implements Localized {
      * @param  object      the object to format.
      * @param  toAppendTo  where to format the object.
      *
-     * @since 1.6
+     * @since SIS 1.6
      */
     public void format(T object, StringBuilder toAppendTo) {
         try {
@@ -587,7 +587,7 @@ public abstract class CompoundFormat<T> extends Format implements Localized {
      *
      * @param  dates  {@code true} for the date style, or {@code false} for the time (hours) style.
      * @return the date or time style to use.
-     * @since 1.5
+     * @since SIS 1.5
      */
     protected FormatStyle getTemporalStyle(final boolean dates) {
         return FormatStyle.MEDIUM;

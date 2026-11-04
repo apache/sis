@@ -43,7 +43,7 @@ import org.apache.sis.metadata.iso.ISOMetadata;
  * @author  Touraïvane (IRD)
  * @author  Cédric Briançon (Geomatys)
  * @version 1.4
- * @since   0.3
+ * @since SIS 0.3
  */
 @XmlType(name = "AbstractEX_GeographicExtent_Type")
 @XmlRootElement(name = "AbstractEX_GeographicExtent")

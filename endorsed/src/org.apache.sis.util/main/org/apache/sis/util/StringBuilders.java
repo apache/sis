@@ -38,7 +38,7 @@ import org.apache.sis.util.resources.Errors;
  *
  * @see CharSequences
  *
- * @since 0.3
+ * @since SIS 0.3
  */
 public final class StringBuilders {
     /**
@@ -67,7 +67,7 @@ public final class StringBuilders {
      *
      * @see CharSequences#trimWhitespaces(CharSequence, int, int)
      *
-     * @since 1.5
+     * @since SIS 1.5
      */
     public static int trimWhitespaces(final StringBuilder buffer, final int lower, final int upper) {
         ArgumentChecks.ensureNonNull("buffer", buffer);
@@ -193,7 +193,7 @@ public final class StringBuilders {
      * @throws IndexOutOfBoundsException if the given index is invalid.
      * @throws IllegalArgumentException if the given count is negative.
      *
-     * @since 0.8
+     * @since SIS 0.8
      */
     public static void repeat(final StringBuilder buffer, final int offset, final char c, final int count) {
         switch (count) {

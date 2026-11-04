@@ -32,7 +32,7 @@ import java.io.IOException;
  * @see java.io.InputStream#reset()
  * @see javax.imageio.stream.ImageInputStream#reset()
  *
- * @since 0.8
+ * @since SIS 0.8
  */
 public class InvalidSeekException extends IOException {
     /**

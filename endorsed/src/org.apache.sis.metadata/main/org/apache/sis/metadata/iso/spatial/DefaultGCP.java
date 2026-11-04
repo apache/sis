@@ -50,7 +50,7 @@ import org.apache.sis.metadata.iso.ISOMetadata;
  *
  * @see DefaultGCPCollection
  *
- * @since 0.3
+ * @since SIS 0.3
  */
 @XmlType(name = "MI_GCP_Type", propOrder = {
     //"geographicCoordinates",

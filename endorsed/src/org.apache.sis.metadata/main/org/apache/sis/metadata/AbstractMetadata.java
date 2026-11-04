@@ -77,7 +77,7 @@ import org.apache.sis.util.collection.TreeTable;
  *
  * @see MetadataStandard
  *
- * @since 0.3
+ * @since SIS 0.3
  */
 @XmlTransient
 public abstract class AbstractMetadata implements LenientComparable, Emptiable {
@@ -114,7 +114,7 @@ public abstract class AbstractMetadata implements LenientComparable, Emptiable {
      *
      * @param  source  the metadata from which to copy nil reasons, or {@code null} if none.
      *
-     * @since 1.5
+     * @since SIS 1.5
      */
     @SuppressWarnings("unchecked")
     protected AbstractMetadata(final Object source) {
@@ -147,7 +147,7 @@ public abstract class AbstractMetadata implements LenientComparable, Emptiable {
      * @return the standard interface implemented by this class.
      *
      * @see MetadataStandard#getInterface(Class)
-     * @since 1.7
+     * @since SIS 1.7
      */
     @Override
     public Type getStandardType() {
@@ -255,7 +255,7 @@ public abstract class AbstractMetadata implements LenientComparable, Emptiable {
      *
      * @see MetadataStandard#asNilReasonMap(Object, Class, KeyNamePolicy)
      *
-     * @since 1.5
+     * @since SIS 1.5
      */
     public Map<String,NilReason> nilReasons() {
         return getStandard().asNilReasonMap(this, null, KeyNamePolicy.JAVABEANS_PROPERTY);

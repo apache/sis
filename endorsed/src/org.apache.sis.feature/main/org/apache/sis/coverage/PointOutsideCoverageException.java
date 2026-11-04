@@ -26,7 +26,7 @@ package org.apache.sis.coverage;
  *
  * @author  Johann Sorel (Geomatys)
  * @version 1.0
- * @since   1.0
+ * @since SIS 1.0
  */
 public class PointOutsideCoverageException extends CannotEvaluateException {
     /**

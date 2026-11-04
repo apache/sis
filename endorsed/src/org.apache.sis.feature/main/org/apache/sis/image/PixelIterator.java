@@ -83,7 +83,7 @@ import static org.apache.sis.pending.jdk.JDK18.ceilDiv;
  * @author  Martin Desruisseaux (Geomatys)
  * @author  Johann Sorel (Geomatys)
  * @version 1.2
- * @since   1.0
+ * @since SIS 1.0
  */
 public class PixelIterator {
     /**
@@ -555,7 +555,7 @@ public class PixelIterator {
      *
      * @see DataType#forBands(SampleModel)
      *
-     * @since 1.2
+     * @since SIS 1.2
      */
     public DataType getDataType() {
         return DataType.forBands(getSampleModel());
@@ -1076,7 +1076,7 @@ public class PixelIterator {
      *
      * @see Raster#getDataElements(int, int, Object)
      *
-     * @since 1.1
+     * @since SIS 1.1
      */
     public Object getDataElements(final Object dest) {
         return currentRaster.getDataElements(x, y, dest);
@@ -1170,7 +1170,7 @@ public class PixelIterator {
      *
      * @param  <T>  the type of buffer which can be used for transferring data.
      *
-     * @since 0.8
+     * @since SIS 0.8
      */
     public abstract static class Window<T extends Buffer> {
         /**
@@ -1216,7 +1216,7 @@ public class PixelIterator {
          *
          * @return the window size in pixels.
          *
-         * @since 1.1
+         * @since SIS 1.1
          */
         public final Dimension getSize() {
             final PixelIterator it = owner();

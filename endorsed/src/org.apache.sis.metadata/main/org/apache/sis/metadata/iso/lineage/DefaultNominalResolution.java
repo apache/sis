@@ -45,7 +45,7 @@ import static org.apache.sis.metadata.internal.shared.ImplementationHelper.ensur
  * @author  Cédric Briançon (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.4
- * @since   0.3
+ * @since SIS 0.3
  */
 @XmlType(name = "LE_NominalResolution_Type", propOrder = {
     "scanningResolution",

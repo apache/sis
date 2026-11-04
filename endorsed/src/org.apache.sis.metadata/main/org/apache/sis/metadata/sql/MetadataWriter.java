@@ -110,7 +110,7 @@ import org.opengis.referencing.ReferenceIdentifier;
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.1
- * @since   0.8
+ * @since SIS 0.8
  */
 public class MetadataWriter extends MetadataSource {
     /**

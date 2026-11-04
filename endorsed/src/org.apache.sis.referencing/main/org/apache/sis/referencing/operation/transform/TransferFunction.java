@@ -63,7 +63,7 @@ import org.apache.sis.referencing.operation.matrix.Matrix2;
  *
  * @see org.apache.sis.coverage.SampleDimension#getTransferFunction()
  *
- * @since 0.5
+ * @since SIS 0.5
  */
 public class TransferFunction implements Cloneable, Serializable {
     /**
@@ -119,7 +119,7 @@ public class TransferFunction implements Cloneable, Serializable {
      *
      * @return whether this transfer function is identity.
      *
-     * @since 1.0
+     * @since SIS 1.0
      */
     public boolean isIdentity() {
         return type == TransferFunctionType.LINEAR && scale == 1 && offset == 0;
@@ -238,7 +238,7 @@ public class TransferFunction implements Cloneable, Serializable {
      * @return the transform from sample to geophysics values.
      * @throws FactoryException if the given factory failed to create a transform.
      *
-     * @since 1.0
+     * @since SIS 1.0
      */
     public MathTransform createTransform(final MathTransformFactory factory) throws FactoryException {
         ArgumentChecks.ensureNonNull("factory", factory);
@@ -375,7 +375,7 @@ public class TransferFunction implements Cloneable, Serializable {
      *
      * @return a clone of this transfer function.
      *
-     * @since 0.8
+     * @since SIS 0.8
      */
     @Override
     public TransferFunction clone() {

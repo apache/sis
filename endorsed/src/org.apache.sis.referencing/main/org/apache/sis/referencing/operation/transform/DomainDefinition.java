@@ -57,7 +57,7 @@ import org.apache.sis.geometry.GeneralEnvelope;
  * @see AbstractMathTransform#getDomain(DomainDefinition)
  * @see org.opengis.referencing.operation.CoordinateOperation#getDomainOfValidity()
  *
- * @since 1.3
+ * @since SIS 1.3
  */
 public class DomainDefinition {
     /**
@@ -144,7 +144,7 @@ public class DomainDefinition {
      *
      * @return whether to allow the domain to approach asymptotes.
      *
-     * @since 1.8
+     * @since SIS 1.8
      */
     public boolean canApproachAsymptotes() {
         return canApproachAsymptotes;
@@ -173,7 +173,7 @@ public class DomainDefinition {
      *
      * @param  allowed  whether to allow the domain to approach asymptotes.
      *
-     * @since 1.8
+     * @since SIS 1.8
      */
     public void canApproachAsymptotes(final boolean allowed) {
         canApproachAsymptotes = allowed;

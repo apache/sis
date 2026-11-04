@@ -80,7 +80,7 @@ import org.apache.sis.util.iso.Names;
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @author  Alexis Manin (Geomatys)
  * @version 1.7
- * @since 1.0
+ * @since SIS 1.0
  */
 public class SampleDimension implements LenientComparable, Serializable {
     /**
@@ -224,7 +224,7 @@ public class SampleDimension implements LenientComparable, Serializable {
      *
      * @return concise definition of the sample dimension.
      *
-     * @since 1.5
+     * @since SIS 1.5
      */
     public InternationalString getDefinition() {
         for (Category category : categories) {
@@ -441,7 +441,7 @@ public class SampleDimension implements LenientComparable, Serializable {
      * @see #getNoDataValues()
      * @see org.apache.sis.math.MathFunctions#toNanFloat(int)
      *
-     * @since 1.1
+     * @since SIS 1.1
      */
     public boolean allowsNaN() {
         return categories.allowsNaN();
@@ -498,7 +498,7 @@ public class SampleDimension implements LenientComparable, Serializable {
      * @return {@code true} if both objects are equal according the given strictness level.
      *
      * @see Category#equals(Object, ComparisonMode)
-     * @since 1.7
+     * @since SIS 1.7
      */
     @Override
     public boolean equals(final Object object, final ComparisonMode mode) {
@@ -599,7 +599,7 @@ public class SampleDimension implements LenientComparable, Serializable {
      * @author  Martin Desruisseaux (IRD, Geomatys)
      * @author  Alexis Manin (Geomatys)
      * @version 1.5
-     * @since   1.0
+     * @since SIS 1.0
      */
     public static class Builder {
         /**
@@ -679,7 +679,7 @@ public class SampleDimension implements LenientComparable, Serializable {
          *
          * @see SampleDimension#getName()
          *
-         * @since 1.2
+         * @since SIS 1.2
          */
         public GenericName getName() {
             return dimensionName;
@@ -783,7 +783,7 @@ public class SampleDimension implements LenientComparable, Serializable {
          *
          * @see SampleDimension#getBackground()
          *
-         * @since 1.2
+         * @since SIS 1.2
          */
         public Number getBackground() {
             return toNaN.background;
@@ -799,7 +799,7 @@ public class SampleDimension implements LenientComparable, Serializable {
          * @param  sample  the background value, or {@code null} if none.
          * @return {@code this}, for method call chaining.
          *
-         * @since 1.2
+         * @since SIS 1.2
          */
         public Builder setBackground(final Number sample) {
             toNaN.background = sample;
@@ -1035,7 +1035,7 @@ public class SampleDimension implements LenientComparable, Serializable {
          *
          * @see MathFunctions#toNanFloat(int)
          *
-         * @since 1.1
+         * @since SIS 1.1
          */
         public Builder mapQualitative(CharSequence name, final Number sample, final float converted) {
             ArgumentChecks.ensureNonNull("sample", sample);
@@ -1062,7 +1062,7 @@ public class SampleDimension implements LenientComparable, Serializable {
          *
          * @see MathFunctions#toNanFloat(int)
          *
-         * @since 1.1
+         * @since SIS 1.1
          */
         public Builder mapQualitative(CharSequence name, final NumberRange<?> samples, final float converted) {
             ArgumentChecks.ensureNonEmpty("samples", samples);

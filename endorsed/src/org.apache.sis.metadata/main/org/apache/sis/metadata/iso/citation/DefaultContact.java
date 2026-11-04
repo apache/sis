@@ -64,7 +64,7 @@ import org.apache.sis.pending.geoapi.evolution.UnsupportedCodeList;
  * @author  Rémi Maréchal (Geomatys)
  * @author  Cullen Rombach (Image Matters)
  * @version 1.4
- * @since   0.3
+ * @since SIS 0.3
  */
 @XmlType(name = "CI_Contact_Type", propOrder = {
     "phone",
@@ -194,7 +194,7 @@ public class DefaultContact extends ISOMetadata implements Contact {
      *
      * @return telephone numbers at which the organization or individual may be contacted.
      *
-     * @since 0.5
+     * @since SIS 0.5
      */
     // @XmlElement at the end of this class.
     @UML(identifier="phone", obligation=OPTIONAL, specification=ISO_19115)
@@ -207,7 +207,7 @@ public class DefaultContact extends ISOMetadata implements Contact {
      *
      * @param  newValues  the new telephones.
      *
-     * @since 0.5
+     * @since SIS 0.5
      */
     public void setPhones(Collection<? extends Telephone> newValues) {
         phones = writeCollection(newValues, phones, Telephone.class);
@@ -311,7 +311,7 @@ public class DefaultContact extends ISOMetadata implements Contact {
      *
      * @return physical and email addresses at which the organization or individual may be contacted, or {@code null}.
      *
-     * @since 0.5
+     * @since SIS 0.5
      */
     // @XmlElement at the end of this class.
     @UML(identifier="address", obligation=OPTIONAL, specification=ISO_19115)
@@ -324,7 +324,7 @@ public class DefaultContact extends ISOMetadata implements Contact {
      *
      * @param  newValues  the new addresses.
      *
-     * @since 0.5
+     * @since SIS 0.5
      */
     public void setAddresses(final Collection<? extends Address> newValues) {
         addresses = writeCollection(newValues, addresses, Address.class);
@@ -367,7 +367,7 @@ public class DefaultContact extends ISOMetadata implements Contact {
      *
      * @return on-line information that can be used to contact the individual or organization.
      *
-     * @since 0.5
+     * @since SIS 0.5
      */
     // @XmlElement at the end of this class.
     @UML(identifier="onlineResource", obligation=OPTIONAL, specification=ISO_19115)
@@ -380,7 +380,7 @@ public class DefaultContact extends ISOMetadata implements Contact {
      *
      * @param  newValues  the new online resources.
      *
-     * @since 0.5
+     * @since SIS 0.5
      */
     public void setOnlineResources(final Collection<? extends OnlineResource> newValues) {
         onlineResources = writeCollection(newValues, onlineResources, OnlineResource.class);
@@ -476,7 +476,7 @@ public class DefaultContact extends ISOMetadata implements Contact {
      *
      * @return type of the contact, or {@code null} if none.
      *
-     * @since 0.5
+     * @since SIS 0.5
      */
     @XmlElement(name = "contactType")
     @XmlJavaTypeAdapter(InternationalStringAdapter.Since2014.class)
@@ -490,7 +490,7 @@ public class DefaultContact extends ISOMetadata implements Contact {
      *
      * @param  newValue  the new type of the contact.
      *
-     * @since 0.5
+     * @since SIS 0.5
      */
     public void setContactType(final InternationalString newValue) {
         checkWritePermission(contactType);

@@ -72,7 +72,7 @@ import org.apache.sis.referencing.internal.shared.DirectPositionView;
  * @see DatumShiftGrid
  * @see org.apache.sis.referencing.operation.builder.LocalizationGridBuilder
  *
- * @since 0.7
+ * @since SIS 0.7
  */
 public class InterpolatedTransform extends DatumShiftTransform {
     /**
@@ -234,7 +234,7 @@ public class InterpolatedTransform extends DatumShiftTransform {
      *
      * @return the grid of datum shifts from source to target datum.
      *
-     * @since 1.1
+     * @since SIS 1.1
      */
     public final DatumShiftGrid<?,?> getShiftGrid() {
         return grid;

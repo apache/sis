@@ -22,7 +22,7 @@ package org.apache.sis.geometry;
  * reference systems of components.
  *
  * @author  Martin Desruisseaux (IRD)
- * @since   0.3
+ * @since SIS 0.3
  * @version 0.3
  */
 public class MismatchedReferenceSystemException extends IllegalArgumentException {

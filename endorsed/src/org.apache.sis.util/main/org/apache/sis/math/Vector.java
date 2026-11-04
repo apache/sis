@@ -98,7 +98,7 @@ import org.apache.sis.system.Loggers;
  *
  * @see org.apache.sis.util.collection.IntegerList
  *
- * @since 0.8
+ * @since SIS 0.8
  */
 public abstract class Vector extends AbstractList<Number> implements RandomAccess {
     /**
@@ -159,7 +159,7 @@ public abstract class Vector extends AbstractList<Number> implements RandomAcces
      * @param  array  the array of floating point values to wrap in a vector, or {@code null}.
      * @return the given array wrapped in a vector, or {@code null} if the argument was {@code null}.
      *
-     * @since 1.0
+     * @since SIS 1.0
      */
     public static Vector create(final double[] array) {
         /*
@@ -287,7 +287,7 @@ public abstract class Vector extends AbstractList<Number> implements RandomAcces
      * @see #floatValue(int)
      * @see #floatValues()
      *
-     * @since 1.1
+     * @since SIS 1.1
      */
     public boolean isSinglePrecision() {
         return getNumberType().isConversionLossless(NumberType.FLOAT);
@@ -347,7 +347,7 @@ public abstract class Vector extends AbstractList<Number> implements RandomAcces
      *
      * @return whether this vector is empty or contains only {@code NaN} values.
      *
-     * @since 1.1
+     * @since SIS 1.1
      */
     public boolean isEmptyOrNaN() {
         final int n = size();
@@ -565,7 +565,7 @@ public abstract class Vector extends AbstractList<Number> implements RandomAcces
      * @param  toIndex    index of the last element (exclusive) to be filled with the specified value.
      * @param  value      the value to be stored in elements of the vector.
      *
-     * @since 1.1
+     * @since SIS 1.1
      */
     public void fill(int fromIndex, final int toIndex, final Number value) {
         // Subclasses override with more efficient implementations.
@@ -642,7 +642,7 @@ public abstract class Vector extends AbstractList<Number> implements RandomAcces
      * @return the number of times that entities (numbers, or group of numbers) appears consecutively with identical values.
      *         If no such repetition is found, an empty array.
      *
-     * @since 1.0
+     * @since SIS 1.0
      *
      * @see #repeat(boolean, int)
      */
@@ -1335,7 +1335,7 @@ search:     for (;;) {
      * @param  count      number of repetitions as a positive number (including zero).
      * @return this vector repeated <var>count</var> time.
      *
-     * @since 1.0
+     * @since SIS 1.0
      *
      * @see #repetitions(int...)
      */
@@ -1377,7 +1377,7 @@ search:     for (;;) {
      * @return a vector with values computed by {@code doubleValue(i)} × {@code scale} + {@code offset}.
      * @throws IllegalArgumentException if an argument is NaN or infinite.
      *
-     * @since 1.0
+     * @since SIS 1.0
      */
     @SuppressWarnings("ReturnOfCollectionOrArrayField")
     public Vector transform(final double scale, final double offset) {
@@ -1501,7 +1501,7 @@ search:     for (;;) {
      *
      * @return the vector data as a buffer. Absent if this vector is not backed by an array or a buffer.
      *
-     * @since 1.0
+     * @since SIS 1.0
      */
     public Optional<Buffer> buffer() {
         return Optional.empty();
@@ -1514,7 +1514,7 @@ search:     for (;;) {
      * to {@link #size()} exclusive. Subclasses may override with more efficient implementation.</p>
      *
      * @return a stream of all floating point values in this vector.
-     * @since 1.7
+     * @since SIS 1.7
      */
     public DoubleStream doubleStream() {
         return IntStream.range(0, size()).mapToDouble(this::doubleValue);
@@ -1632,7 +1632,7 @@ search:     for (;;) {
      * @param  locale  the desired locale.
      * @return format configured for the data contained in this vector.
      *
-     * @since 1.7
+     * @since SIS 1.7
      */
     public NumberFormat createNumberFormat(final Locale locale) {
         if (isInteger()) {
@@ -1684,7 +1684,7 @@ search:     for (;;) {
      *
      * @return a hash code value for the values in this vector.
      *
-     * @since 1.0
+     * @since SIS 1.0
      */
     @Override
     public int hashCode() {
@@ -1704,7 +1704,7 @@ search:     for (;;) {
      * @param  object  the other object to compare with this vector.
      * @return {@code true} if the given object is a vector containing the same values as this vector.
      *
-     * @since 1.0
+     * @since SIS 1.0
      */
     @Override
     public boolean equals(final Object object) {

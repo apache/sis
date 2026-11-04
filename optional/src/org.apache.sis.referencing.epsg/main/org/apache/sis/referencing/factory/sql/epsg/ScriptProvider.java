@@ -40,7 +40,7 @@ import org.apache.sis.referencing.factory.sql.InstallationScriptProvider;
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.5
- * @since   0.7
+ * @since SIS 0.7
  *
  * @see <a href="https://epsg.org/">https://epsg.org/</a>
  */

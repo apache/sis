@@ -39,7 +39,7 @@ import org.apache.sis.gui.internal.BackgroundThreads;
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.7
- * @since   1.1
+ * @since SIS 1.1
  */
 public abstract class ValuesUnderCursor {
     /**
@@ -119,7 +119,7 @@ public abstract class ValuesUnderCursor {
      *
      * @return task for fetching and formatting values in a background thread, or {@code null} if none.
      *
-     * @since 1.3
+     * @since SIS 1.3
      */
     protected abstract Formatter formatter();
 
@@ -136,7 +136,7 @@ public abstract class ValuesUnderCursor {
      * @param  point  the cursor location in arbitrary CRS (usually the CRS shown in the status bar).
      *                May be {@code null} for declaring that the point is outside canvas region.
      *
-     * @since 1.3
+     * @since SIS 1.3
      */
     public void evaluateLater(final DirectPosition point) {
         final Formatter formatter = formatter();
@@ -156,7 +156,7 @@ public abstract class ValuesUnderCursor {
      *
      * @author  Martin Desruisseaux (Geomatys)
      * @version 1.3
-     * @since   1.3
+     * @since SIS 1.3
      */
     protected abstract static class Formatter implements Runnable {
         /**

@@ -118,7 +118,7 @@ import static org.apache.sis.math.MathFunctions.isNegativeZero;
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @version 1.4
- * @since   0.3
+ * @since SIS 0.3
  */
 @XmlTransient
 public abstract class AbstractEnvelope extends FormattableObject implements Envelope, Emptiable {
@@ -560,7 +560,7 @@ public abstract class AbstractEnvelope extends FormattableObject implements Enve
      * @see Envelopes#toTimeRange(Envelope)
      * @see GeneralEnvelope#setTimeRange(Instant, Instant)
      *
-     * @since 1.1
+     * @since SIS 1.1
      */
     public Optional<Range<Instant>> getTimeRange() {
         final TemporalAccessor t = TemporalAccessor.of(getCoordinateReferenceSystem(), 0);
@@ -592,7 +592,7 @@ public abstract class AbstractEnvelope extends FormattableObject implements Enve
      * @see Envelope2D#toRectangles()
      * @see GeneralEnvelope#simplify()
      *
-     * @since 0.4
+     * @since SIS 0.4
      */
     @SuppressWarnings("ReturnOfCollectionOrArrayField")
     public Envelope[] toSimpleEnvelopes() {
@@ -682,7 +682,7 @@ public abstract class AbstractEnvelope extends FormattableObject implements Enve
      *
      * @return {@code true} if this envelope contains only finite coordinate values.
      *
-     * @since 1.4
+     * @since SIS 1.4
      */
     public boolean isFinite() {
         for (int i = getDimension(); --i >= 0;) {
@@ -834,7 +834,7 @@ public abstract class AbstractEnvelope extends FormattableObject implements Enve
      * @see #intersects(Envelope)
      * @see #equals(Envelope, double, boolean)
      *
-     * @since 0.4
+     * @since SIS 0.4
      */
     @ArgumentCheckByAssertion
     public boolean contains(final Envelope envelope) throws MismatchedDimensionException {
@@ -961,7 +961,7 @@ public abstract class AbstractEnvelope extends FormattableObject implements Enve
      * @see #contains(Envelope, boolean)
      * @see #equals(Envelope, double, boolean)
      *
-     * @since 0.4
+     * @since SIS 0.4
      */
     @ArgumentCheckByAssertion
     public boolean intersects(final Envelope envelope) throws MismatchedDimensionException {
@@ -1281,7 +1281,7 @@ public abstract class AbstractEnvelope extends FormattableObject implements Enve
      * @param  formatter  the formatter where to format the inner content of this envelope.
      * @return the pseudo-WKT keyword, which is {@code "Box"} for this element.
      *
-     * @since 1.0
+     * @since SIS 1.0
      */
     @Override
     protected String formatTo(final Formatter formatter) {

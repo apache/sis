@@ -46,7 +46,7 @@ import org.apache.sis.util.resources.Errors;
  *
  * @param  <T>  the type of buffer which can be used for transferring data.
  *
- * @since 1.0
+ * @since SIS 1.0
  *
  * @see Raster#getTransferType()
  * @see PixelIterator#createWindow(TransferType)

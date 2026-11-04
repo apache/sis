@@ -74,7 +74,7 @@ import org.opengis.referencing.ReferenceIdentifier;
  *
  * @see DataStores#open(Object)
  *
- * @since 0.3
+ * @since SIS 0.3
  */
 public abstract class DataStore implements Resource, Localized, AutoCloseable {
     /**
@@ -82,7 +82,7 @@ public abstract class DataStore implements Resource, Localized, AutoCloseable {
      * This information can be useful for fetching information common to all {@code DataStore}
      * instances of the same class.
      *
-     * @since 0.8
+     * @since SIS 0.8
      *
      * @see #getProvider()
      */
@@ -130,7 +130,7 @@ public abstract class DataStore implements Resource, Localized, AutoCloseable {
      * @param  connector  information about the storage (<abbr>URL</abbr>, stream, reader instance, <i>etc</i>).
      * @throws DataStoreException if an error occurred while creating the data store for the given storage.
      *
-     * @since 0.8
+     * @since SIS 0.8
      */
     protected DataStore(final DataStoreProvider provider, final StorageConnector connector) throws DataStoreException {
         this(null, provider, connector, false);
@@ -150,7 +150,7 @@ public abstract class DataStore implements Resource, Localized, AutoCloseable {
      *                    expose only some components of the aggregate instead of the aggregate itself.
      * @throws DataStoreException if an error occurred while creating the data store for the given storage.
      *
-     * @since 1.1
+     * @since SIS 1.1
      */
     @SuppressWarnings("this-escape")    // `this` appears in a cyclic graph. Should not be accessible before completion.
     protected DataStore(final DataStore         parent,
@@ -193,7 +193,7 @@ public abstract class DataStore implements Resource, Localized, AutoCloseable {
      *
      * @see #provider
      *
-     * @since 0.8
+     * @since SIS 0.8
      */
     public DataStoreProvider getProvider() {
         return provider;
@@ -218,7 +218,7 @@ public abstract class DataStore implements Resource, Localized, AutoCloseable {
      *
      * @see DataStoreProvider#getOpenParameters()
      *
-     * @since 0.8
+     * @since SIS 0.8
      */
     public abstract Optional<ParameterValueGroup> getOpenParameters();
 
@@ -276,7 +276,7 @@ public abstract class DataStore implements Resource, Localized, AutoCloseable {
      * @see #getIdentifier()
      * @see #getLocale()
      *
-     * @since 0.8
+     * @since SIS 0.8
      */
     public String getDisplayName() {
         return displayName;
@@ -322,7 +322,7 @@ public abstract class DataStore implements Resource, Localized, AutoCloseable {
      * @see #getMetadata()
      * @see #getDisplayName()
      *
-     * @since 1.0
+     * @since SIS 1.0
      */
     @Override
     public Optional<GenericName> getIdentifier() throws DataStoreException {
@@ -389,7 +389,7 @@ public abstract class DataStore implements Resource, Localized, AutoCloseable {
      * @return resources information structured in an implementation-specific way.
      * @throws DataStoreException if an error occurred while reading the metadata.
      *
-     * @since 1.1
+     * @since SIS 1.1
      */
     public Optional<TreeTable> getNativeMetadata() throws DataStoreException {
         return Optional.empty();
@@ -490,7 +490,7 @@ public abstract class DataStore implements Resource, Localized, AutoCloseable {
      * @param  eventType  type of {@link StoreEvent} to listen (cannot be {@code null}).
      * @param  listener   listener to notify about events.
      *
-     * @since 1.0
+     * @since SIS 1.0
      */
     @Override
     public <T extends StoreEvent> void addListener(Class<T> eventType, StoreListener<? super T> listener) {
@@ -517,7 +517,7 @@ public abstract class DataStore implements Resource, Localized, AutoCloseable {
      * @param  eventType  type of {@link StoreEvent} which were listened (cannot be {@code null}).
      * @param  listener   listener to stop notifying about events.
      *
-     * @since 1.0
+     * @since SIS 1.0
      */
     @Override
     public <T extends StoreEvent> void removeListener(Class<T> eventType, StoreListener<? super T> listener) {

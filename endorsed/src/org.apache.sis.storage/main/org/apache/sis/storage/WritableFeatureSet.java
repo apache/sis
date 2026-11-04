@@ -33,7 +33,7 @@ import org.apache.sis.feature.DefaultFeatureType;
  *
  * @author  Johann Sorel (Geomatys)
  * @version 1.4
- * @since   1.0
+ * @since SIS 1.0
  */
 public interface WritableFeatureSet extends FeatureSet {
     /**

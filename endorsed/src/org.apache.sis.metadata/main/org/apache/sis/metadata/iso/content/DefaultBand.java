@@ -63,7 +63,7 @@ import static org.opengis.annotation.Specification.ISO_19115;
  * @author  Rémi Maréchal (Geomatys)
  * @author  Cullen Rombach (Image Matters)
  * @version 1.4
- * @since   0.3
+ * @since SIS 0.3
  */
 @XmlType(name = "MD_Band_Type", propOrder = {
     "boundMax",
@@ -196,7 +196,7 @@ public class DefaultBand extends DefaultSampleDimension implements Band {
      * @return Shortest wavelength that the sensor is capable of collecting within a designated band,
      *         or {@code null} if unspecified.
      *
-     * @since 0.5
+     * @since SIS 0.5
      */
     @ValueRange(minimum = 0)
     @XmlElement(name = "boundMin")
@@ -212,7 +212,7 @@ public class DefaultBand extends DefaultSampleDimension implements Band {
      * @param  newValue  the new shortest wavelength, or {@code null}.
      * @throws IllegalArgumentException if the given value is negative.
      *
-     * @since 0.5
+     * @since SIS 0.5
      */
     public void setBoundMin(final Double newValue) {
         checkWritePermission(boundMin);
@@ -228,7 +228,7 @@ public class DefaultBand extends DefaultSampleDimension implements Band {
      * @return longest wavelength that the sensor is capable of collecting within a designated band,
      *         or {@code null} if unspecified.
      *
-     * @since 0.5
+     * @since SIS 0.5
      */
     @ValueRange(minimum = 0)
     @XmlElement(name = "boundMax")
@@ -244,7 +244,7 @@ public class DefaultBand extends DefaultSampleDimension implements Band {
      * @param  newValue  the new longest wavelength, or {@code null}.
      * @throws IllegalArgumentException if the given value is negative.
      *
-     * @since 0.5
+     * @since SIS 0.5
      */
     public void setBoundMax(final Double newValue) {
         checkWritePermission(boundMax);
@@ -258,7 +258,7 @@ public class DefaultBand extends DefaultSampleDimension implements Band {
      *
      * @return units in which sensor wavelengths are expressed.
      *
-     * @since 0.5
+     * @since SIS 0.5
      *
      * @see org.apache.sis.measure.Units#NANOMETRE
      */
@@ -274,7 +274,7 @@ public class DefaultBand extends DefaultSampleDimension implements Band {
      *
      * @param newValue the new unit.
      *
-     * @since 0.5
+     * @since SIS 0.5
      */
     public void setBoundUnits(final Unit<Length> newValue) {
         checkWritePermission(boundUnits);

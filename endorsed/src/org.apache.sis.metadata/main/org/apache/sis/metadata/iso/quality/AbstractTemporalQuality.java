@@ -48,7 +48,7 @@ import static org.opengis.annotation.Specification.UNSPECIFIED;
  * @author  Martin Desruisseaux (Geomatys)
  * @author  Alexis Gaillard (Geomatys)
  * @version 1.4
- * @since   1.3
+ * @since SIS 1.3
  */
 @XmlType(name = "AbstractDQ_TemporalQuality_Type")
 @XmlRootElement(name = "AbstractDQ_TemporalQuality")

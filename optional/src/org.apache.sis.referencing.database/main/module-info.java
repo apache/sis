@@ -29,7 +29,7 @@
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.7
- * @since   0.7
+ * @since SIS 0.7
  */
 module org.apache.sis.referencing.database {
     requires transitive org.apache.sis.referencing;

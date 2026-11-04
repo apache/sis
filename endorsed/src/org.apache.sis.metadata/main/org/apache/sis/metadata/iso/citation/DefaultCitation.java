@@ -78,7 +78,7 @@ import static org.opengis.annotation.Specification.ISO_19115;
  * @author  Rémi Maréchal (Geomatys)
  * @author  Cullen Rombach (Image Matters)
  * @version 1.5
- * @since   0.3
+ * @since SIS 0.3
  */
 @TitleProperty(name = "title")
 @XmlType(name = "CI_Citation_Type", propOrder = {
@@ -375,7 +375,7 @@ public class DefaultCitation extends ISOMetadata implements Citation {
      *
      * @param  newValue  the new edition date, or {@code null} if none.
      *
-     * @since 1.5
+     * @since SIS 1.5
      */
     public void setEditionDate(final Temporal newValue) {
         checkWritePermission(editionDate);
@@ -665,7 +665,7 @@ public class DefaultCitation extends ISOMetadata implements Citation {
      *
      * @return online references to the cited resource, or an empty collection if there is none.
      *
-     * @since 0.5
+     * @since SIS 0.5
      */
     // @XmlElement at the end of this class.
     @UML(identifier="onlineResource", obligation=OPTIONAL, specification=ISO_19115)
@@ -678,7 +678,7 @@ public class DefaultCitation extends ISOMetadata implements Citation {
      *
      * @param  newValues  the new online references to the cited resource.
      *
-     * @since 0.5
+     * @since SIS 0.5
      */
     public void setOnlineResources(final Collection<? extends OnlineResource> newValues) {
         onlineResources = writeCollection(newValues, onlineResources, OnlineResource.class);
@@ -689,7 +689,7 @@ public class DefaultCitation extends ISOMetadata implements Citation {
      *
      * @return graphics or logo for cited party, or an empty collection if there is none.
      *
-     * @since 0.5
+     * @since SIS 0.5
      */
     // @XmlElement at the end of this class.
     @UML(identifier="graphic", obligation=OPTIONAL, specification=ISO_19115)
@@ -702,7 +702,7 @@ public class DefaultCitation extends ISOMetadata implements Citation {
      *
      * @param  newValues  the new citation graphics or logo for cited party.
      *
-     * @since 0.5
+     * @since SIS 0.5
      */
     public void setGraphics(final Collection<? extends BrowseGraphic> newValues) {
         graphics = writeCollection(newValues, graphics, BrowseGraphic.class);

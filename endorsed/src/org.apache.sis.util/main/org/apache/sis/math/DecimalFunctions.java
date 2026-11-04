@@ -50,7 +50,7 @@ import static org.apache.sis.pending.jdk.JDK19.DOUBLE_PRECISION;
  * @see MathFunctions#pow10(int)
  * @see Math#log10(double)
  *
- * @since 0.4
+ * @since SIS 0.4
  */
 public final class DecimalFunctions {
     /**
@@ -483,7 +483,7 @@ public final class DecimalFunctions {
      *
      * @see MathFunctions#pow10(int)
      *
-     * @since 1.0
+     * @since SIS 1.0
      */
     public static int floorLog10(final double x) {
         if (x > 0) {
@@ -506,7 +506,7 @@ public final class DecimalFunctions {
      * @return logarithm of the given value, rounded toward zero.
      * @throws ArithmeticException if the given value is zero or negative.
      *
-     * @since 1.7
+     * @since SIS 1.7
      */
     public static int floorLog10(final long x) {
         if (x <= 0) {
@@ -551,7 +551,7 @@ public final class DecimalFunctions {
      * @param  approximate  the number which may have missing decimal fraction digits.
      * @return whether the two number are equal, ignoring missing decimal fraction digits in {@code approximate}.
      *
-     * @since 1.0
+     * @since SIS 1.0
      */
     public static boolean equalsIgnoreMissingFractionDigits(double accurate, double approximate) {
         final double delta = Math.abs(accurate - approximate);

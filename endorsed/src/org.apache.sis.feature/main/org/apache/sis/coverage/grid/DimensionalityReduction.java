@@ -69,7 +69,7 @@ import org.apache.sis.coverage.PointOutsideCoverageException;
  * @author  Alexis Manin (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.5
- * @since   1.4
+ * @since SIS 1.4
  */
 public class DimensionalityReduction implements UnaryOperator<GridCoverage>, Serializable {
     /**

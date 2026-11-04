@@ -65,7 +65,7 @@ import org.apache.sis.metadata.iso.citation.AbstractParty;
  * @see ModifiableLocationType
  * @see AbstractLocation
  *
- * @since 0.8
+ * @since SIS 0.8
  */
 @XmlTransient
 public abstract class ReferencingByIdentifiers extends AbstractReferenceSystem {
@@ -273,7 +273,7 @@ public abstract class ReferencingByIdentifiers extends AbstractReferenceSystem {
      *
      * @return a new object performing conversions between {@link DirectPosition} and identifiers.
      *
-     * @since 1.3
+     * @since SIS 1.3
      */
     public abstract Coder createCoder();
 
@@ -289,7 +289,7 @@ public abstract class ReferencingByIdentifiers extends AbstractReferenceSystem {
      *
      * @author  Martin Desruisseaux (Geomatys)
      * @version 1.4
-     * @since   1.3
+     * @since SIS 1.3
      */
     public abstract static class Coder {
         /**

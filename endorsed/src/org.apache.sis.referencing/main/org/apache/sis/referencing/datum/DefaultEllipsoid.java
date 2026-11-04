@@ -110,7 +110,7 @@ import org.opengis.referencing.ReferenceIdentifier;
  * @see org.apache.sis.referencing.CommonCRS#ellipsoid()
  * @see org.apache.sis.referencing.factory.GeodeticAuthorityFactory#createEllipsoid(String)
  *
- * @since 0.4
+ * @since SIS 0.4
  */
 @XmlType(name = "EllipsoidType", propOrder = {
     "semiMajorAxisMeasure",
@@ -321,7 +321,7 @@ public class DefaultEllipsoid extends AbstractIdentifiedObject implements Ellips
      * This is the base type required by {@code equals(…)} methods for returning a potentially {@code true} value.
      *
      * @return {@code Ellipsoid.class} or a user-defined sub-interface.
-     * @since 1.7
+     * @since SIS 1.7
      */
     @Override
     public Type getStandardType() {
@@ -391,7 +391,7 @@ public class DefaultEllipsoid extends AbstractIdentifiedObject implements Ellips
      * @see org.apache.sis.referencing.operation.transform.EllipsoidToRadiusTransform
      * @see <a href="https://en.wikipedia.org/wiki/Earth_radius#Geocentric_radius">Geocentric radius on Wikipedia</a>
      *
-     * @since 1.4
+     * @since SIS 1.4
      */
     public double getGeocentricRadius(final double φ) {
         return Formulas.geocentricRadius(this, Math.toRadians(φ));
@@ -416,7 +416,7 @@ public class DefaultEllipsoid extends AbstractIdentifiedObject implements Ellips
      *
      * @return ℯ², the square of the eccentricity value.
      *
-     * @since 0.7
+     * @since SIS 0.7
      */
     public double getEccentricitySquared() {
         return eccentricitySquared().doubleValue();
@@ -513,7 +513,7 @@ public class DefaultEllipsoid extends AbstractIdentifiedObject implements Ellips
      * @param  other  the other ellipsoid from which to get semi-major axis length difference.
      * @return (<var>other</var> ellipsoid semi-major axis) - (<var>this</var> ellipsoid semi-major axis).
      *
-     * @since 0.7
+     * @since SIS 0.7
      */
     public double semiMajorAxisDifference(final Ellipsoid other) {
         double semiMajor = other.getSemiMajorAxis();
@@ -534,7 +534,7 @@ public class DefaultEllipsoid extends AbstractIdentifiedObject implements Ellips
      * @param  other  the other ellipsoid from which to get flattening difference.
      * @return (<var>other</var> ellipsoid flattening) - (<var>this</var> ellipsoid flattening).
      *
-     * @since 0.7
+     * @since SIS 0.7
      */
     public double flatteningDifference(final Ellipsoid other) {
         return flattening(other).subtract(flattening(this)).doubleValue();
@@ -560,7 +560,7 @@ public class DefaultEllipsoid extends AbstractIdentifiedObject implements Ellips
      * @return ellipsoid of the same shape using the given unit of measurement.
      *
      * @see #getAxisUnit()
-     * @since 1.5
+     * @since SIS 1.5
      */
     public DefaultEllipsoid convertTo(final Unit<Length> target) {
         final UnitConverter c = unit.getConverterTo(target);

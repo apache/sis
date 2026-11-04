@@ -39,7 +39,7 @@ import org.apache.sis.coverage.grid.DisjointExtentException;
  *
  * <a href="https://sis.apache.org/formats.html">Data formats supported by Apache SIS</a>
  *
- * @since 0.4
+ * @since SIS 0.4
  */
 public final class DataStores {
     /**
@@ -55,7 +55,7 @@ public final class DataStores {
      *
      * @return descriptions of available data stores.
      *
-     * @since 0.8
+     * @since SIS 0.8
      */
     public static Collection<DataStoreProvider> providers() {
         return DataStoreRegistry.INSTANCE;
@@ -141,7 +141,7 @@ public final class DataStores {
      * @see DataStore#getProvider()
      * @see DataStoreProvider#getShortName()
      *
-     * @since 1.5
+     * @since SIS 1.5
      */
     public static DataStore open(final Object storage, final String preferredFormat)
             throws UnsupportedStorageException, DataStoreException
@@ -177,7 +177,7 @@ public final class DataStores {
      * @throws UnsupportedStorageException if no {@link DataStoreProvider} is found for the given storage object.
      * @throws DataStoreException if an error occurred while opening the storage in write mode.
      *
-     * @since 1.4
+     * @since SIS 1.4
      */
     public static DataStore openWritable(final Object storage, final String preferredFormat)
             throws UnsupportedStorageException, DataStoreException
@@ -214,7 +214,7 @@ public final class DataStores {
      * @throws DataStoreException if an error occurred while opening the storage or reading the grid coverage.
      * @throws DisjointExtentException if the given envelope does not intersect any resource extent.
      *
-     * @since 1.5
+     * @since SIS 1.5
      */
     public static Optional<GridCoverage> readGridCoverage(final Object storage, final Envelope aoi)
             throws UnsupportedStorageException, DataStoreException

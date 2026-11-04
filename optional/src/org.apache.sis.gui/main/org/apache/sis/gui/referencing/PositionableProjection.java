@@ -47,7 +47,7 @@ import java.util.ArrayList;
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.5
- * @since   1.1
+ * @since SIS 1.1
  */
 @SuppressWarnings("serial")         // We do not guarantee serialization compatibility.
 public abstract class PositionableProjection extends CodeList<PositionableProjection> {

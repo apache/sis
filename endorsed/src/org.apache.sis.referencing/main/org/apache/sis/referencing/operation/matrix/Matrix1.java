@@ -37,7 +37,7 @@ import org.apache.sis.referencing.internal.Resources;
  * @see Matrix3
  * @see Matrix4
  *
- * @since 0.4
+ * @since SIS 0.4
  */
 public class Matrix1 extends MatrixSIS {
     /**
@@ -241,7 +241,7 @@ public class Matrix1 extends MatrixSIS {
     /**
      * {@inheritDoc}
      *
-     * @since 1.5
+     * @since SIS 1.5
      */
     @Override
     public double[] multiply(final double[] vector) {

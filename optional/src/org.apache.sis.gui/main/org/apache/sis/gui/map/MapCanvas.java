@@ -139,7 +139,7 @@ import org.opengis.geometry.MismatchedDimensionException;
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.7
- * @since   1.1
+ * @since SIS 1.1
  */
 public abstract class MapCanvas extends PlanarCanvas {
     /**
@@ -423,7 +423,7 @@ public abstract class MapCanvas extends PlanarCanvas {
      * @see #setObjectiveBounds(Envelope)
      * @see #getGridGeometry()
      *
-     * @since 1.3
+     * @since SIS 1.3
      */
     protected void initialize(final GridGeometry visibleArea) {
         Envelope bounds = null;
@@ -449,7 +449,7 @@ public abstract class MapCanvas extends PlanarCanvas {
      * {@linkplain org.apache.sis.storage.GridCoverageResource#getIdentifier() resource identifier}.
      *
      * @return an identifier of the rendered data.
-     * @since 1.7
+     * @since SIS 1.7
      */
     public Optional<Identifier> getContentIdentifier() {
         return Optional.empty();
@@ -464,7 +464,7 @@ public abstract class MapCanvas extends PlanarCanvas {
      * after a few seconds.
      *
      * @return a pane where to add shapes without the need to track navigation events after this method call.
-     * @since 1.7
+     * @since SIS 1.7
      */
     public StaticGraphics usingFixedTransform() {
         return new StaticGraphics(this).unique();
@@ -487,7 +487,7 @@ public abstract class MapCanvas extends PlanarCanvas {
      *
      * @author  Martin Desruisseaux (Geomatys)
      * @version 1.7
-     * @since   1.7
+     * @since SIS 1.7
      */
     public static class StaticGraphics {
         /**
@@ -1015,7 +1015,7 @@ public abstract class MapCanvas extends PlanarCanvas {
      * @return the data bounds to use for computing the initial "objective to display" transform,
      *         or {@code null} if unspecified.
      *
-     * @since 1.3
+     * @since SIS 1.3
      */
     public Envelope getObjectiveBounds() {
         return objectiveBounds;
@@ -1101,7 +1101,7 @@ public abstract class MapCanvas extends PlanarCanvas {
      *
      * @param  before  coordinate conversion to apply before the current <i>objective to display</i> transform.
      *
-     * @since 1.3
+     * @since SIS 1.3
      */
     @Override
     public void transformObjectiveCoordinates(final AffineTransform before) {
@@ -1139,7 +1139,7 @@ public abstract class MapCanvas extends PlanarCanvas {
      *
      * @param  after  coordinate conversion to apply after the current <i>objective to display</i> transform.
      *
-     * @since 1.3
+     * @since SIS 1.3
      */
     @Override
     public void transformDisplayCoordinates(final AffineTransform after) {
@@ -1167,7 +1167,7 @@ public abstract class MapCanvas extends PlanarCanvas {
      * @param  accuracy  an estimation of positional accuracy, or {@code null} if none.
      *
      * @see #positionalAccuracyProperty()
-     * @since 1.7
+     * @since SIS 1.7
      */
     protected void setPositionalAccuracy(final Quantity<Length> accuracy) {
         positionalAccuracy.set(Quantities.castOrCopy(accuracy));
@@ -1248,7 +1248,7 @@ public abstract class MapCanvas extends PlanarCanvas {
      *
      * @author  Martin Desruisseaux (Geomatys)
      * @version 1.4
-     * @since   1.1
+     * @since SIS 1.1
      */
     protected abstract static class Renderer {
         /**
@@ -1753,7 +1753,7 @@ public abstract class MapCanvas extends PlanarCanvas {
      * @return a property giving an estimation of positional accuracy.
      *
      * @see StatusBar#lowestAccuracy
-     * @since 1.7
+     * @since SIS 1.7
      */
     public final ReadOnlyObjectProperty<Length> positionalAccuracyProperty() {
         return positionalAccuracy.getReadOnlyProperty();
@@ -1829,7 +1829,7 @@ public abstract class MapCanvas extends PlanarCanvas {
      * @see #renderingProperty()
      * @see Platform#runLater(Runnable)
      *
-     * @since 1.2
+     * @since SIS 1.2
      */
     protected boolean runAfterRendering(final Runnable task) {
         ArgumentChecks.ensureNonNull("task", task);
@@ -1905,7 +1905,7 @@ public abstract class MapCanvas extends PlanarCanvas {
      *
      * @return debug string (may change in any future version).
      *
-     * @since 1.3
+     * @since SIS 1.3
      */
     @Override
     public String toString() {

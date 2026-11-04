@@ -83,7 +83,7 @@ import org.apache.sis.util.collection.Containers;
  * @author  Thi Phuong Hao Nguyen (VNSC)
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.7
- * @since   1.1
+ * @since SIS 1.1
  */
 public class LandsatStore extends DataStore implements Aggregate {
     /**
@@ -132,7 +132,7 @@ public class LandsatStore extends DataStore implements Aggregate {
      * @param  connector  information about the storage (URL, stream, reader instance, <i>etc</i>).
      * @throws DataStoreException if an error occurred while opening the Landsat file.
      *
-     * @since 1.5
+     * @since SIS 1.5
      */
     @SuppressWarnings("this-escape")    // The invoked method does not store `this` and is not overrideable.
     public LandsatStore(final DataStoreProvider provider, final StorageConnector connector) throws DataStoreException {
@@ -191,7 +191,7 @@ public class LandsatStore extends DataStore implements Aggregate {
      *
      * @return parameters used for opening this data store.
      *
-     * @since 0.8
+     * @since SIS 0.8
      */
     @Override
     public Optional<ParameterValueGroup> getOpenParameters() {
@@ -206,7 +206,7 @@ public class LandsatStore extends DataStore implements Aggregate {
      * @return the identifier fetched from metadata, or {@code null} if none.
      * @throws DataStoreException if an error occurred while reading the metadata.
      *
-     * @since 1.0
+     * @since SIS 1.0
      */
     @Override
     public synchronized Optional<GenericName> getIdentifier() throws DataStoreException {
@@ -284,7 +284,7 @@ public class LandsatStore extends DataStore implements Aggregate {
      * @return all group of bands that are components of this aggregate. Never {@code null}.
      * @throws DataStoreException if an error occurred while fetching the components.
      *
-     * @since 1.1
+     * @since SIS 1.1
      */
     @Override
     public synchronized List<Aggregate> components() throws DataStoreException {

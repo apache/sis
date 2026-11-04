@@ -31,7 +31,7 @@ import org.apache.sis.feature.internal.Resources;
  * @author  Johann Sorel (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.3
- * @since   1.0
+ * @since SIS 1.0
  */
 public class DisjointExtentException extends IllegalGridGeometryException {
     /**
@@ -86,7 +86,7 @@ public class DisjointExtentException extends IllegalGridGeometryException {
      * @param request  extent of a slice requested by user.
      * @param dim      index of the dimension having an invalid value.
      *
-     * @since 1.3
+     * @since SIS 1.3
      */
     public DisjointExtentException(final GridExtent source, final GridExtent request, final int dim) {
         this(source.getAxisIdentification(dim, dim),

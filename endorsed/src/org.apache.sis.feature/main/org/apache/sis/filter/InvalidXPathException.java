@@ -33,7 +33,7 @@ package org.apache.sis.filter;
  *
  * @see javax.xml.xpath.XPathException
  *
- * @since 1.5
+ * @since SIS 1.5
  */
 public class InvalidXPathException extends IllegalArgumentException {
     /**

@@ -25,7 +25,7 @@ package org.apache.sis.coverage;
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.1
- * @since   1.1
+ * @since SIS 1.1
  */
 public class IllegalSampleDimensionException extends IllegalArgumentException {
     /**

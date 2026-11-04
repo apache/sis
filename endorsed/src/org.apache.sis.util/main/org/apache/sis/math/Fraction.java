@@ -32,7 +32,7 @@ import static org.apache.sis.pending.jdk.JDK19.DOUBLE_PRECISION;
  *
  * @author  Martin Desruisseaux (MPO, Geomatys)
  * @version 1.7
- * @since   0.8
+ * @since SIS 0.8
  */
 public final class Fraction extends Number implements Comparable<Fraction>, Serializable {
     /**
@@ -43,7 +43,7 @@ public final class Fraction extends Number implements Comparable<Fraction>, Seri
     /**
      * The value 1 as a fraction.
      *
-     * @since 1.7
+     * @since SIS 1.7
      */
     public static final Fraction ONE = new Fraction(1, 1);
 
@@ -86,7 +86,7 @@ public final class Fraction extends Number implements Comparable<Fraction>, Seri
      * @return the simplified fraction.
      * @throws ArithmeticException if the numerator and denominator cannot be represented by 32 bit integers.
      *
-     * @since 1.4
+     * @since SIS 1.4
      */
     public static Fraction valueOf(final long numerator, final long denominator) {
         return simplify(null, numerator, denominator);
@@ -113,7 +113,7 @@ public final class Fraction extends Number implements Comparable<Fraction>, Seri
      * @return a fraction such as {@link #doubleValue()} is equal to the given value.
      * @throws IllegalArgumentException if the given value cannot be converted to a fraction.
      *
-     * @since 1.0
+     * @since SIS 1.0
      */
     public static Fraction valueOf(final double value) {
         if (value == 0) {
@@ -269,7 +269,7 @@ public final class Fraction extends Number implements Comparable<Fraction>, Seri
      * @return the result of {@code 1/this}.
      * @throws ArithmeticException if the result overflows.
      *
-     * @since 1.4
+     * @since SIS 1.4
      *
      * @see #divide(Fraction)
      */
@@ -503,7 +503,7 @@ public final class Fraction extends Number implements Comparable<Fraction>, Seri
      *
      * @return whether this fraction is 0/0.
      *
-     * @since 1.4
+     * @since SIS 1.4
      */
     public boolean isNaN() {
         return (numerator | denominator) == 0;
@@ -517,7 +517,7 @@ public final class Fraction extends Number implements Comparable<Fraction>, Seri
      *
      * @see Integer#signum(int)
      *
-     * @since 1.0
+     * @since SIS 1.0
      */
     public int signum() {
         if (numerator == 0) return 0;
@@ -628,7 +628,7 @@ public final class Fraction extends Number implements Comparable<Fraction>, Seri
      * @param  s  the text to parse.
      * @throws NumberFormatException if the given text cannot be parsed.
      *
-     * @since 1.0
+     * @since SIS 1.0
      */
     public Fraction(final String s) throws NumberFormatException {
         ArgumentChecks.ensureNonEmpty("s", s);

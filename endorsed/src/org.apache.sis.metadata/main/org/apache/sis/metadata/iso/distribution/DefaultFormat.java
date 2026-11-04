@@ -90,7 +90,7 @@ import static org.opengis.annotation.Specification.ISO_19115;
  * @author  Cédric Briançon (Geomatys)
  * @author  Cullen Rombach (Image Matters)
  * @version 1.7
- * @since   0.3
+ * @since SIS 0.3
  */
 @TitleProperty(name = "formatSpecificationCitation")
 @XmlType(name = "MD_Format_Type", propOrder = {
@@ -206,7 +206,7 @@ public class DefaultFormat extends ISOMetadata implements Format {
      *
      * @return citation / URL of the specification format.
      *
-     * @since 0.5
+     * @since SIS 0.5
      */
     @XmlElement(name = "formatSpecificationCitation", required = true)
     @XmlJavaTypeAdapter(CI_Citation.Since2014.class)
@@ -220,7 +220,7 @@ public class DefaultFormat extends ISOMetadata implements Format {
      *
      * @param  newValue  the new specification format.
      *
-     * @since 0.5
+     * @since SIS 0.5
      */
     public void setFormatSpecificationCitation(final Citation newValue) {
         checkWritePermission(formatSpecificationCitation);
@@ -413,7 +413,7 @@ public class DefaultFormat extends ISOMetadata implements Format {
      *
      * @return media used by the format.
      *
-     * @since 0.5
+     * @since SIS 0.5
      */
     @XmlElement(name = "medium")
     @XmlJavaTypeAdapter(MD_Medium.Since2014.class)
@@ -427,7 +427,7 @@ public class DefaultFormat extends ISOMetadata implements Format {
      *
      * @param  newValues  the new media.
      *
-     * @since 0.5
+     * @since SIS 0.5
      */
     public void setMedia(final Collection<? extends Medium> newValues) {
         media = writeCollection(newValues, media, Medium.class);

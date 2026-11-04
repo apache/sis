@@ -87,7 +87,7 @@ import org.apache.sis.referencing.internal.Legacy;
  * @see org.apache.sis.referencing.cs.AbstractCS
  * @see org.apache.sis.referencing.crs.AbstractCRS
  *
- * @since 0.4
+ * @since SIS 0.4
  */
 @XmlType(name = "AbstractDatumType", propOrder = {
     "anchorPoint",
@@ -116,7 +116,7 @@ public class AbstractDatum extends AbstractIdentifiedObject implements Datum {
      * @see DatumFactory
      * @see #getAnchorDefinition()
      *
-     * @since 1.5
+     * @since SIS 1.5
      */
     public static final String ANCHOR_DEFINITION_KEY = "anchorDefinition";
 
@@ -128,7 +128,7 @@ public class AbstractDatum extends AbstractIdentifiedObject implements Datum {
      * @see DatumFactory
      * @see #getAnchorEpoch()
      *
-     * @since 1.5
+     * @since SIS 1.5
      */
     public static final String ANCHOR_EPOCH_KEY = "anchorEpoch";
 
@@ -137,7 +137,7 @@ public class AbstractDatum extends AbstractIdentifiedObject implements Datum {
      * {@code DatumFactory.createFoo(Map, ...)} methods.
      * This is used for setting the value to be returned by {@link #getPublicationDate()}.
      *
-     * @since 1.5
+     * @since SIS 1.5
      */
     public static final String PUBLICATION_DATE_KEY = "publicationDate";
 
@@ -146,7 +146,7 @@ public class AbstractDatum extends AbstractIdentifiedObject implements Datum {
      * {@code DatumFactory.createFoo(Map, ...)} methods.
      * This is used for setting the value to be returned by {@link #getConventionalRS()}.
      *
-     * @since 1.5
+     * @since SIS 1.5
      */
     public static final String CONVENTIONAL_RS_KEY = "conventionalRS";
 
@@ -371,7 +371,7 @@ public class AbstractDatum extends AbstractIdentifiedObject implements Datum {
      *
      * @return description, possibly including coordinates, of the point or points used to anchor the datum to the Earth.
      *
-     * @since 1.5
+     * @since SIS 1.5
      */
     public Optional<InternationalString> getAnchorDefinition() {
         return Optional.ofNullable(anchorDefinition);
@@ -401,7 +401,7 @@ public class AbstractDatum extends AbstractIdentifiedObject implements Datum {
      * @see java.time.YearMonth
      * @see java.time.LocalDate
      *
-     * @since 1.5
+     * @since SIS 1.5
      */
     public Optional<Temporal> getAnchorEpoch() {
         return Optional.ofNullable(anchorEpoch);
@@ -464,7 +464,7 @@ public class AbstractDatum extends AbstractIdentifiedObject implements Datum {
      *
      * @return date on which the datum definition was published.
      *
-     * @since 1.5
+     * @since SIS 1.5
      */
     public Optional<Temporal> getPublicationDate() {
         return Optional.ofNullable(publicationDate);
@@ -477,7 +477,7 @@ public class AbstractDatum extends AbstractIdentifiedObject implements Datum {
      *
      * @return reference system realized by this reference frame.
      *
-     * @since 1.5
+     * @since SIS 1.5
      */
     public Optional<IdentifiedObject> getConventionalRS() {
         return Optional.ofNullable(conventionalRS);

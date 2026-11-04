@@ -48,7 +48,7 @@ import org.apache.sis.temporal.TemporalDate;
  * @author  Cédric Briançon (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.5
- * @since   0.3
+ * @since SIS 0.3
  */
 @XmlType(name = "MI_RequestedDate_Type", propOrder = {
     "requestedDateOfCollection",
@@ -144,7 +144,7 @@ public class DefaultRequestedDate extends ISOMetadata implements RequestedDate {
      *
      * @param  newValue  the new requested date of collection value.
      *
-     * @since 1.5
+     * @since SIS 1.5
      */
     public void setRequestedDateOfCollection(final Temporal newValue) {
         checkWritePermission(requestedDateOfCollection);
@@ -186,7 +186,7 @@ public class DefaultRequestedDate extends ISOMetadata implements RequestedDate {
      *
      * @param  newValue  the new latest acceptable data value.
      *
-     * @since 1.5
+     * @since SIS 1.5
      */
     public void setLatestAcceptableDate(final Temporal newValue) {
         checkWritePermission(latestAcceptableDate);

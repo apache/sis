@@ -60,7 +60,7 @@ import static org.opengis.annotation.Specification.ISO_19115;
  * @author  Rémi Maréchal (Geomatys)
  * @author  Cullen Rombach (Image Matters)
  * @version 1.7
- * @since   0.3
+ * @since SIS 0.3
  */
 @TitleProperty(name = "fileName")
 @XmlType(name = "MD_BrowseGraphic_Type", namespace = Namespaces.MCC, propOrder = {
@@ -242,7 +242,7 @@ public class DefaultBrowseGraphic extends ISOMetadata implements BrowseGraphic {
      *
      * @return restrictions on access and / or use of browse graphic.
      *
-     * @since 0.5
+     * @since SIS 0.5
      */
     // @XmlElement at the end of this class.
     @UML(identifier="imageContraints", obligation=OPTIONAL, specification=ISO_19115)
@@ -255,7 +255,7 @@ public class DefaultBrowseGraphic extends ISOMetadata implements BrowseGraphic {
      *
      * @param  newValues  the new restrictions on access and / or use of browse graphic.
      *
-     * @since 0.5
+     * @since SIS 0.5
      */
     public void setImageConstraints(final Collection<? extends Constraints> newValues) {
         imageConstraints = writeCollection(newValues, imageConstraints, Constraints.class);
@@ -266,7 +266,7 @@ public class DefaultBrowseGraphic extends ISOMetadata implements BrowseGraphic {
      *
      * @return the links to browse graphic.
      *
-     * @since 0.5
+     * @since SIS 0.5
      */
     // @XmlElement at the end of this class.
     @UML(identifier="linkage", obligation=OPTIONAL, specification=ISO_19115)
@@ -279,7 +279,7 @@ public class DefaultBrowseGraphic extends ISOMetadata implements BrowseGraphic {
      *
      * @param  newValues  the new links to browse graphic.
      *
-     * @since 0.5
+     * @since SIS 0.5
      */
     public void setLinkages(final Collection<? extends OnlineResource> newValues) {
         linkages = writeCollection(newValues, linkages, OnlineResource.class);

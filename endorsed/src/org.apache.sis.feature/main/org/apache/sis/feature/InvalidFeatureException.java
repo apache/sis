@@ -24,7 +24,7 @@ import org.opengis.util.InternationalString;
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.8
- * @since   1.8
+ * @since SIS 1.8
  *
  * @see Features#validate(AbstractFeature)
  */

@@ -93,7 +93,7 @@ import static org.apache.sis.util.Characters.NO_BREAK_SPACE;
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @version 1.7
- * @since   0.3
+ * @since SIS 0.3
  */
 public class TreeTableFormat extends TabularFormat<TreeTable> {
     /**
@@ -317,7 +317,7 @@ public class TreeTableFormat extends TabularFormat<TreeTable> {
      *
      * @return a filter for specifying whether a node should be formatted, or {@code null} if no filtering is applied.
      *
-     * @since 1.0
+     * @since SIS 1.0
      */
     public Predicate<TreeTable.Node> getNodeFilter() {
         return nodeFilter;
@@ -335,7 +335,7 @@ public class TreeTableFormat extends TabularFormat<TreeTable> {
      * @param  filter  filter for specifying whether a node should be formatted, or {@code null} for no filtering.
      *
      * @see TreeTable.Node#isVisible()
-     * @since 1.0
+     * @since SIS 1.0
      */
     public void setNodeFilter(final Predicate<TreeTable.Node> filter) {
         this.nodeFilter = filter;
@@ -959,7 +959,7 @@ public class TreeTableFormat extends TabularFormat<TreeTable> {
      *
      * @see TableAppender#nextColumn(char)
      *
-     * @since 1.0
+     * @since SIS 1.0
      */
     protected void writeColumnSeparator(final int nextColumn, final TableAppender out) {
         out.append(beforeFill);

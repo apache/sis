@@ -125,7 +125,7 @@ import static org.apache.sis.math.MathFunctions.isNegativeZero;
  * @see Envelope2D
  * @see org.apache.sis.metadata.iso.extent.DefaultGeographicBoundingBox
  *
- * @since 0.3
+ * @since SIS 0.3
  */
 public class GeneralEnvelope extends ArrayEnvelope implements Cloneable, Serializable {
     /**
@@ -479,7 +479,7 @@ public class GeneralEnvelope extends ArrayEnvelope implements Cloneable, Seriali
      * @return whether the temporal component has been set, or {@code false}
      *         if no temporal dimension has been found in this envelope.
      *
-     * @since 1.0
+     * @since SIS 1.0
      *
      * @see #getTimeRange()
      * @see Envelopes#toTimeRange(Envelope)
@@ -510,7 +510,7 @@ public class GeneralEnvelope extends ArrayEnvelope implements Cloneable, Seriali
      * @param vector  the translation vector. The length of this array shall be equal to this envelope
      *                {@linkplain #getDimension() dimension}.
      *
-     * @since 0.5
+     * @since SIS 0.5
      */
     public void translate(final double... vector) {
         Objects.requireNonNull(vector);
@@ -1112,7 +1112,7 @@ public class GeneralEnvelope extends ArrayEnvelope implements Cloneable, Seriali
      * @throws IllegalStateException if a upper coordinate value is less than a lower coordinate
      *         value on an axis which does not have the {@code WRAPAROUND} range meaning.
      *
-     * @since 1.1
+     * @since SIS 1.1
      */
     public boolean wraparound(final WraparoundMethod method) throws IllegalStateException {
         switch (method) {
@@ -1184,7 +1184,7 @@ public class GeneralEnvelope extends ArrayEnvelope implements Cloneable, Seriali
      * @see #subEnvelope(int, int)
      * @see CRS#getHorizontalComponent(CoordinateReferenceSystem)
      *
-     * @since 1.1
+     * @since SIS 1.1
      */
     public GeneralEnvelope horizontal() throws IllegalStateException {
         if (crs == null) {

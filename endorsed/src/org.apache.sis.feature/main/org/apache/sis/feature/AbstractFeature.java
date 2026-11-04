@@ -77,7 +77,7 @@ import org.apache.sis.feature.internal.Resources;
  *
  * @see DefaultFeatureType#newInstance()
  *
- * @since 0.5
+ * @since SIS 0.5
  */
 public abstract class AbstractFeature implements Serializable {
     /**
@@ -379,7 +379,7 @@ public abstract class AbstractFeature implements Serializable {
      *               property type for that name is an instance of {@link AbstractOperation}.
      * @return the result value of the given operation, or {@code null} if none.
      *
-     * @since 0.8
+     * @since SIS 0.8
      */
     protected Object getOperationValue(final String name) {
         final AbstractOperation operation = (AbstractOperation) type.getProperty(name);
@@ -410,7 +410,7 @@ public abstract class AbstractFeature implements Serializable {
      * @param  value  the value to assign to the result of the named operation.
      * @throws IllegalStateException if the operation of the given name does not accept assignment.
      *
-     * @since 0.8
+     * @since SIS 0.8
      */
     protected void setOperationValue(final String name, final Object value) {
         final AbstractOperation operation = (AbstractOperation) type.getProperty(name);
@@ -450,7 +450,7 @@ public abstract class AbstractFeature implements Serializable {
      *         if the property is not an attribute or the attribute has no such characteristic.
      * @throws IllegalArgumentException if the {@code property} argument is not the name of a property of this feature.
      *
-     * @since 1.5
+     * @since SIS 1.5
      */
     public Optional<?> getCharacteristicValue(final String property, final String characteristic)
             throws IllegalArgumentException
@@ -911,7 +911,7 @@ public abstract class AbstractFeature implements Serializable {
      *
      * @return a hash code value.
      *
-     * @since 0.8
+     * @since SIS 0.8
      */
     @Override
     public int hashCode() {
@@ -952,7 +952,7 @@ public abstract class AbstractFeature implements Serializable {
      *
      * @return {@code true} if both objects are equal.
      *
-     * @since 0.8
+     * @since SIS 0.8
      */
     @Override
     public boolean equals(final Object obj) {

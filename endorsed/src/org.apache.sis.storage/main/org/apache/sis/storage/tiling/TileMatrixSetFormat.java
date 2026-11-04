@@ -77,7 +77,7 @@ import org.apache.sis.io.TableAppender;
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.7
- * @since   1.7
+ * @since SIS 1.7
  */
 public class TileMatrixSetFormat extends CompoundFormat<TileMatrixSet> {
     /**

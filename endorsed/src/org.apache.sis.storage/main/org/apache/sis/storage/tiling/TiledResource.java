@@ -35,7 +35,7 @@ import org.apache.sis.storage.Resource;
  * @author  Johann Sorel (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.2
- * @since   1.2
+ * @since SIS 1.2
  */
 public interface TiledResource extends Resource {
     /**

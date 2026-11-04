@@ -89,7 +89,7 @@ import org.apache.sis.measure.NumberRange;
  *
  * @see org.apache.sis.image.ImageProcessor
  *
- * @since 1.1
+ * @since SIS 1.1
  */
 public class GridCoverageProcessor implements Cloneable {
     /**
@@ -135,7 +135,7 @@ public class GridCoverageProcessor implements Cloneable {
      * @see #getOptimizations()
      * @see #setOptimizations(Set)
      *
-     * @since 1.3
+     * @since SIS 1.3
      */
     protected final EnumSet<Optimization> optimizations = EnumSet.allOf(Optimization.class);
 
@@ -187,7 +187,7 @@ public class GridCoverageProcessor implements Cloneable {
      *
      * @see ImageProcessor#getFillValues()
      *
-     * @since 1.2
+     * @since SIS 1.2
      */
     public Number[] getFillValues() {
         return imageProcessor.getFillValues();
@@ -201,7 +201,7 @@ public class GridCoverageProcessor implements Cloneable {
      *
      * @see ImageProcessor#setFillValues(Number...)
      *
-     * @since 1.2
+     * @since SIS 1.2
      */
     public void setFillValues(final Number... values) {
         imageProcessor.setFillValues(values);
@@ -215,7 +215,7 @@ public class GridCoverageProcessor implements Cloneable {
      *
      * @see ImageProcessor#getColorizer()
      *
-     * @since 1.4
+     * @since SIS 1.4
      */
     public Colorizer getColorizer() {
         return imageProcessor.getColorizer();
@@ -232,7 +232,7 @@ public class GridCoverageProcessor implements Cloneable {
      * @see ImageProcessor#setColorizer(Colorizer)
      * @see #visualize(GridCoverage, GridExtent)
      *
-     * @since 1.4
+     * @since SIS 1.4
      */
     public void setColorizer(final Colorizer colorizer) {
         imageProcessor.setColorizer(colorizer);
@@ -279,7 +279,7 @@ public class GridCoverageProcessor implements Cloneable {
      * @see #getOptimizations()
      * @see #setOptimizations(Set)
      *
-     * @since 1.3
+     * @since SIS 1.3
      */
     public enum Optimization {
         /**
@@ -315,7 +315,7 @@ public class GridCoverageProcessor implements Cloneable {
      * <p>The returned set is a copy. Changes in this set will not affect the state of this processor.</p>
      *
      * @return copy of the set of optimizations that are enabled.
-     * @since 1.3
+     * @since SIS 1.3
      */
     public synchronized Set<Optimization> getOptimizations() {
         return optimizations.clone();
@@ -326,7 +326,7 @@ public class GridCoverageProcessor implements Cloneable {
      * All optimizations not in the given set will be disabled.
      *
      * @param enabled  set of optimizations to enable.
-     * @since 1.3
+     * @since SIS 1.3
      */
     public synchronized void setOptimizations(final Set<Optimization> enabled) {
         ArgumentChecks.ensureNonNull("enabled", enabled);
@@ -370,7 +370,7 @@ public class GridCoverageProcessor implements Cloneable {
      *
      * @see ImageProcessor#mask(RenderedImage, Shape, boolean)
      *
-     * @since 1.2
+     * @since SIS 1.2
      */
     public GridCoverage mask(final GridCoverage source, final RegionOfInterest mask, final boolean maskInside)
             throws TransformException
@@ -417,7 +417,7 @@ public class GridCoverageProcessor implements Cloneable {
      *
      * @see ImageProcessor#convert(RenderedImage, NumberRange<?>[], MathTransform1D[], DataType)
      *
-     * @since 1.3
+     * @since SIS 1.3
      */
     public GridCoverage convert(final GridCoverage source, MathTransform1D[] converters,
             Function<SampleDimension.Builder, SampleDimension> sampleDimensionModifier)
@@ -485,7 +485,7 @@ public class GridCoverageProcessor implements Cloneable {
      * @see GridExtent#translate(long...)
      * @see GridGeometry#shiftGrid(long...)
      *
-     * @since 1.3
+     * @since SIS 1.3
      */
     public GridCoverage shiftGrid(final GridCoverage source, long... translation) {
         ArgumentChecks.ensureNonNull("source", source);
@@ -513,7 +513,7 @@ public class GridCoverageProcessor implements Cloneable {
      * @throws DisjointExtentException if the given extent does not intersect the given coverage.
      * @throws IllegalArgumentException if axes of the given extent are inconsistent with the axes of the grid of the given coverage.
      *
-     * @since 1.5
+     * @since SIS 1.5
      */
     public GridCoverage clip(final GridCoverage source, final GridExtent clip) {
         ArgumentChecks.ensureNonNull("source", source);
@@ -645,7 +645,7 @@ public class GridCoverageProcessor implements Cloneable {
      * @throws IncompleteGridGeometryException if the source grid geometry is missing an information.
      * @throws TransformException if some coordinates cannot be transformed to the specified target.
      *
-     * @since 1.3
+     * @since SIS 1.3
      */
     public GridCoverage resample(final GridCoverage source, final CoordinateReferenceSystem target) throws TransformException {
         ArgumentChecks.ensureNonNull("source", source);
@@ -665,7 +665,7 @@ public class GridCoverageProcessor implements Cloneable {
      *         would result in duplicated {@linkplain GridExtent#getAxisType(int) grid axis types},
      *         or the compound CRS cannot be created.
      *
-     * @since 1.5
+     * @since SIS 1.5
      */
     public GridCoverage appendDimensions(final GridCoverage source, final GridGeometry dimToAdd) {
         ArgumentChecks.ensureNonNull("source",   source);
@@ -691,7 +691,7 @@ public class GridCoverageProcessor implements Cloneable {
      * @return a coverage with the specified dimension added.
      * @throws IllegalGridGeometryException if the compound CRS or compound extent cannot be created.
      *
-     * @since 1.5
+     * @since SIS 1.5
      */
     public GridCoverage appendDimension(final GridCoverage source, double lower, final double span, final SingleCRS crs) {
         /*
@@ -717,7 +717,7 @@ public class GridCoverageProcessor implements Cloneable {
      * @return a coverage with the specified temporal dimension added.
      * @throws IllegalGridGeometryException if the compound CRS or compound extent cannot be created.
      *
-     * @since 1.5
+     * @since SIS 1.5
      */
     public GridCoverage appendDimension(final GridCoverage source, final Instant lower, final Duration span) {
         final DefaultTemporalCRS crs = DefaultTemporalCRS.castOrCopy(CommonCRS.defaultTemporal());
@@ -739,7 +739,7 @@ public class GridCoverageProcessor implements Cloneable {
      *
      * @see DimensionalityReduction#reduce(GridGeometry)
      *
-     * @since 1.4
+     * @since SIS 1.4
      */
     public GridCoverage reduceDimensionality(final GridCoverage source) {
         return DimensionalityReduction.reduce(source.getGridGeometry()).apply(source);
@@ -783,7 +783,7 @@ public class GridCoverageProcessor implements Cloneable {
      *
      * @see DimensionalityReduction#remove(GridGeometry, int...)
      *
-     * @since 1.4
+     * @since SIS 1.4
      */
     public GridCoverage removeGridDimensions(final GridCoverage source, final int... gridAxesToRemove) {
         var reduction = DimensionalityReduction.remove(source.getGridGeometry(), gridAxesToRemove);
@@ -833,7 +833,7 @@ public class GridCoverageProcessor implements Cloneable {
      *
      * @see DimensionalityReduction#select(GridGeometry, int...)
      *
-     * @since 1.4
+     * @since SIS 1.4
      */
     public GridCoverage selectGridDimensions(final GridCoverage source, final int... gridAxesToPass) {
         var reduction = DimensionalityReduction.select(source.getGridGeometry(), gridAxesToPass);
@@ -855,7 +855,7 @@ public class GridCoverageProcessor implements Cloneable {
      *
      * @see ImageProcessor#selectBands(RenderedImage, int...)
      *
-     * @since 1.4
+     * @since SIS 1.4
      */
     public GridCoverage selectSampleDimensions(final GridCoverage source, final int... bands) {
         ArgumentChecks.ensureNonNull("source", source);
@@ -877,7 +877,7 @@ public class GridCoverageProcessor implements Cloneable {
      * @see #aggregateRanges(GridCoverage[], int[][])
      * @see ImageProcessor#aggregateBands(RenderedImage...)
      *
-     * @since 1.4
+     * @since SIS 1.4
      */
     public GridCoverage aggregateRanges(final GridCoverage... sources) {
         return aggregateRanges(sources, (int[][]) null);
@@ -911,7 +911,7 @@ public class GridCoverageProcessor implements Cloneable {
      *
      * @see ImageProcessor#aggregateBands(RenderedImage[], int[][])
      *
-     * @since 1.4
+     * @since SIS 1.4
      */
     public GridCoverage aggregateRanges(GridCoverage[] sources, int[][] bandsPerSource) {
         final var aggregate = new BandAggregateArgument<>(sources, bandsPerSource);
@@ -961,7 +961,7 @@ public class GridCoverageProcessor implements Cloneable {
      *
      * @see ImageProcessor#visualize(RenderedImage)
      *
-     * @since 1.4
+     * @since SIS 1.4
      */
     public RenderedImage visualize(final GridCoverage source, final GridExtent slice) {
         ArgumentChecks.ensureNonNull("source", source);
