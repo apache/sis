@@ -27,7 +27,9 @@ import org.apache.sis.geometries.DataPoints;
 import org.apache.sis.geometries.Geometry;
 import org.apache.sis.geometries.GeometryCollection;
 import org.apache.sis.geometries.GeometryFactory;
+import org.apache.sis.geometries.Point;
 import org.apache.sis.geometries.DataPointsType;
+import org.apache.sis.geometries.curve.LineString;
 import org.apache.sis.geometries.curve.LinearRing;
 import org.apache.sis.geometries.internal.shared.ArrayDataPoints;
 import org.apache.sis.geometries.mesh.MeshPrimitive;
@@ -78,9 +80,11 @@ public final class Transform {
         }
     }
 
-    public static LinearRing transform(LinearRing r, CoordinateReferenceSystem crs, MathTransform transform) throws OperationException {
-
-        DataPoints ps = r.getDataPoints();
+    /**
+     * Transforms the positions of the given data points.
+     * Note : this method will copy all other attributes untransformed.
+     */
+    private static ArrayDataPoints transform(DataPoints ps, CoordinateReferenceSystem crs, MathTransform transform) throws OperationException {
         final Array reference = ps.getAttributeArray(DataPointsType.ATT_POSITION);
         final Array positions = transform(reference, crs, transform);
         final ArrayDataPoints cp = new ArrayDataPoints(positions);
@@ -89,7 +93,27 @@ public final class Transform {
                 cp.setAttribute(name, ps.getAttributeArray(name).copy());
             }
         }
-        return GeometryFactory.DEFAULT.createLinearRing(cp);
+        return cp;
+    }
+
+    /**
+     * Transform point to a new CoordinateReferenceSystem.
+     * Note : this method will copy all other attributes untransformed.
+     */
+    public static Point transform(Point p, CoordinateReferenceSystem crs, MathTransform transform) throws OperationException {
+        return GeometryFactory.DEFAULT.createPoint((DataPoints) transform(p.getDataPoints(), crs, transform));
+    }
+
+    /**
+     * Transform line string to a new CoordinateReferenceSystem.
+     * Note : this method will copy all other attributes untransformed.
+     */
+    public static LineString transform(LineString l, CoordinateReferenceSystem crs, MathTransform transform) throws OperationException {
+        return GeometryFactory.DEFAULT.createLineString(transform(l.getDataPoints(), crs, transform));
+    }
+
+    public static LinearRing transform(LinearRing r, CoordinateReferenceSystem crs, MathTransform transform) throws OperationException {
+        return GeometryFactory.DEFAULT.createLinearRing(transform(r.getDataPoints(), crs, transform));
     }
 
     public static Polygon transform(Polygon p, CoordinateReferenceSystem crs, MathTransform transform) throws OperationException {

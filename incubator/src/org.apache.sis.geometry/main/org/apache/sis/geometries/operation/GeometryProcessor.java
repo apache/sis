@@ -29,6 +29,7 @@ import static org.opengis.annotation.Specification.ISO_19107;
 import org.opengis.annotation.UML;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import org.opengis.referencing.operation.MathTransform;
+import org.opengis.util.FactoryException;
 import org.apache.sis.geometries.Curve;
 import org.apache.sis.geometries.DE9IM;
 import org.apache.sis.geometries.DataPointsType;
@@ -58,6 +59,7 @@ import org.apache.sis.maths.NDArrays;
 import org.apache.sis.maths.SampleSystem;
 import org.apache.sis.maths.Vector;
 import org.apache.sis.measure.Quantities;
+import org.apache.sis.referencing.CRS;
 import org.apache.sis.measure.Units;
 import org.apache.sis.util.ArgumentChecks;
 
@@ -571,21 +573,30 @@ public final class GeometryProcessor {
         if (crs == null) {
             crs = geom.getCoordinateReferenceSystem();
         }
-
-        if (geom instanceof LinearRing cdt) {
-            return Transform.transform(cdt, crs, transform);
-        } else if (geom instanceof Triangle cdt) {
-            return Transform.transform(cdt, crs, transform);
-        } else if (geom instanceof Polygon cdt) {
-            return Transform.transform(cdt, crs, transform);
-        } else if (geom instanceof MeshPrimitive cdt) {
-            return Transform.transform(cdt, crs, transform);
-        } else if (geom instanceof GeometryCollection<?> cdt) {
-            // Checked after mesh primitives because the points and lines primitives are also collections.
-            return Transform.transform(cdt, crs, transform);
+        if (transform == null) {
+            try {
+                transform = CRS.findOperation(geom.getCoordinateReferenceSystem(), crs, null).getMathTransform();
+            } catch (FactoryException ex) {
+                throw new OperationException(ex.getMessage(), ex);
+            }
         }
 
-        throw new UnsupportedOperationException();
+        /*
+         * Case order matters: the first matching case is selected.
+         * Mesh primitives are checked before line strings and collections
+         * because the points and lines primitives are also of those types.
+         */
+        return switch (geom) {
+            case LinearRing            cdt -> Transform.transform(cdt, crs, transform);
+            case Triangle              cdt -> Transform.transform(cdt, crs, transform);
+            case Polygon               cdt -> Transform.transform(cdt, crs, transform);
+            case MeshPrimitive         cdt -> Transform.transform(cdt, crs, transform);
+            case LineString            cdt -> Transform.transform(cdt, crs, transform);
+            case Point                 cdt -> Transform.transform(cdt, crs, transform);
+            case GeometryCollection<?> cdt -> Transform.transform(cdt, crs, transform);
+            default -> throw new UnsupportedOperationException(
+                    "Transform of " + geom.getGeometryType() + " geometries is not supported yet.");
+        };
     }
 
     /**
