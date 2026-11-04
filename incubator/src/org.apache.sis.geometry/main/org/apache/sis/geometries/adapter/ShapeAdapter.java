@@ -24,7 +24,9 @@ import java.awt.geom.Point2D;
 import java.awt.geom.Rectangle2D;
 import java.util.Objects;
 import org.opengis.geometry.Envelope;
+import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import org.apache.sis.geometries.DataPoints;
+import org.apache.sis.geometries.Geometries;
 import org.apache.sis.geometries.Geometry;
 import org.apache.sis.geometries.GeometryFactory;
 import org.apache.sis.geometries.DataPointsType;
@@ -34,7 +36,7 @@ import org.apache.sis.geometry.wrapper.j2d.EmptyShape;
 import org.apache.sis.maths.Array;
 import org.apache.sis.maths.DataType;
 import org.apache.sis.maths.NDArrays;
-import org.apache.sis.maths.SampleSystem;
+import org.apache.sis.referencing.CRS;
 import org.apache.sis.referencing.internal.shared.AbstractShape;
 import org.apache.sis.referencing.internal.shared.IntervalRectangle;
 
@@ -107,7 +109,7 @@ public final class ShapeAdapter extends AbstractShape {
      */
     @Override
     public boolean contains(final double x, final double y) {
-        return geometry.contains(GeometryFactory.DEFAULT.createPoint(SampleSystem.ofSize(2), x, y));
+        return geometry.contains(GeometryFactory.DEFAULT.createPoint(crs2D(), x, y));
     }
 
     /**
@@ -143,11 +145,24 @@ public final class ShapeAdapter extends AbstractShape {
     }
 
     /**
+     * Returns the two-dimensional CRS of the shape coordinates, which is the geometry CRS
+     * or its horizontal component. If no such CRS can be determined, an undefined CRS is used.
+     */
+    private CoordinateReferenceSystem crs2D() {
+        CoordinateReferenceSystem crs = geometry.getCoordinateReferenceSystem();
+        if (crs != null && crs.getCoordinateSystem().getDimension() != 2) {
+            crs = CRS.getHorizontalComponent(crs);
+        }
+        return (crs != null) ? crs : Geometries.getUndefinedCRS(2);
+    }
+
+    /**
      * Creates a SIS polygon which is a rectangle with the given coordinates.
      * This is a temporary shape used for union and intersection tests.
+     * The rectangle is in the same CRS as the geometry, as required by the geometry operations.
      */
-    private static Geometry createRect(final double xmin, final double ymin, final double xmax, final double ymax) {
-        final Array positions = NDArrays.of(2, new double[]{
+    private Geometry createRect(final double xmin, final double ymin, final double xmax, final double ymax) {
+        final Array positions = NDArrays.of(crs2D(), new double[]{
             xmin, ymin,
             xmin, ymax,
             xmax, ymax,

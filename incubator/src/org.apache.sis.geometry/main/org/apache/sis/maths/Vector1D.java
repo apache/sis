@@ -124,6 +124,10 @@ public abstract sealed class Vector1D<T extends Vector1D<T>> extends AbstractVec
 
         public final byte x;
 
+        public Byte() {
+            this.x = 0;
+        }
+
         public Byte(byte x) {
             this.x = x;
         }
@@ -263,6 +267,10 @@ public abstract sealed class Vector1D<T extends Vector1D<T>> extends AbstractVec
     public static final class UByte extends Vector1D<UByte> {
 
         public final byte x;
+
+        public UByte() {
+            this.x = 0;
+        }
 
         public UByte(byte x) {
             this.x = x;
@@ -404,6 +412,10 @@ public abstract sealed class Vector1D<T extends Vector1D<T>> extends AbstractVec
 
         public final short x;
 
+        public Short() {
+            this.x = 0;
+        }
+
         public Short(short x) {
             this.x = x;
         }
@@ -543,6 +555,10 @@ public abstract sealed class Vector1D<T extends Vector1D<T>> extends AbstractVec
     public static final class UShort extends Vector1D<UShort> {
 
         public final short x;
+
+        public UShort() {
+            this.x = 0;
+        }
 
         public UShort(short x) {
             this.x = x;
@@ -684,6 +700,10 @@ public abstract sealed class Vector1D<T extends Vector1D<T>> extends AbstractVec
 
         public final int x;
 
+        public Int() {
+            this.x = 0;
+        }
+
         public Int(int x) {
             this.x = x;
         }
@@ -823,6 +843,10 @@ public abstract sealed class Vector1D<T extends Vector1D<T>> extends AbstractVec
     public static final class UInt extends Vector1D<UInt> {
 
         public final int x;
+
+        public UInt() {
+            this.x = 0;
+        }
 
         public UInt(int x) {
             this.x = x;
@@ -964,6 +988,10 @@ public abstract sealed class Vector1D<T extends Vector1D<T>> extends AbstractVec
 
         public final long x;
 
+        public Long() {
+            this.x = 0;
+        }
+
         public Long(long x) {
             this.x = x;
         }
@@ -1103,6 +1131,10 @@ public abstract sealed class Vector1D<T extends Vector1D<T>> extends AbstractVec
     public static final class Float extends Vector1D<Float> {
 
         public final float x;
+
+        public Float() {
+            this.x = 0;
+        }
 
         public Float(float x) {
             this.x = x;
@@ -1270,6 +1302,10 @@ public abstract sealed class Vector1D<T extends Vector1D<T>> extends AbstractVec
     public static final class Double extends Vector1D<Double> {
 
         public final double x;
+
+        public Double() {
+            this.x = 0;
+        }
 
         public Double(double x) {
             this.x = x;

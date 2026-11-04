@@ -173,6 +173,16 @@ public sealed interface MeshPrimitive extends Geometry
     void setAttribute(String name, Array array);
 
     /**
+     * Replaces all attributes at once. Attributes not in the given map are removed.
+     * Used when all attributes are rebuilt with a new length, which {@link #setAttribute(String, Array)}
+     * cannot do one attribute at a time.
+     *
+     * @param attributes the new attributes, which must contain the positions.
+     * @throws IllegalArgumentException if positions are missing or the arrays have different lengths.
+     */
+    void setAttributes(Map<String,Array> attributes);
+
+    /**
      * Get geometry index.
      * The index combined with the index range define the different primitives.
      * If index is null all points in the geometry are used.
@@ -470,6 +480,12 @@ public sealed interface MeshPrimitive extends Geometry
             } else {
                 dataPoints.setAttribute(name, array);
             }
+        }
+
+        @Override
+        public void setAttributes(Map<String,Array> attributes) {
+            dataPoints.setAttributes(attributes);
+            positions = dataPoints.getAttribute(ATT_POSITION);
         }
 
         /**

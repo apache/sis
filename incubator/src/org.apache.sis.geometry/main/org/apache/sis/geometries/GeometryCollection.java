@@ -16,6 +16,13 @@
  */
 package org.apache.sis.geometries;
 
+import java.util.Iterator;
+import java.util.NoSuchElementException;
+import java.util.Objects;
+import java.util.Spliterator;
+import java.util.function.Consumer;
+import java.util.stream.Stream;
+import java.util.stream.StreamSupport;
 import javax.measure.Quantity;
 import static org.opengis.annotation.Specification.ISO_19107;
 import org.opengis.annotation.UML;
@@ -27,11 +34,11 @@ import org.apache.sis.geometries.internal.shared.ConcatenatedDataPoints;
 import org.apache.sis.geometries.internal.shared.DefaultGeometryCollection;
 import org.apache.sis.geometries.internal.shared.DefaultMultiPoint;
 import org.apache.sis.geometries.internal.shared.EmptyDataPoints;
+import org.apache.sis.geometries.internal.shared.GeometryCollectionSpliterator;
 import org.apache.sis.geometries.mesh.MeshPrimitive;
 import org.apache.sis.geometry.GeneralEnvelope;
 import org.apache.sis.measure.Quantities;
 import org.apache.sis.measure.Units;
-
 
 /**
  * A typed collection of geometric objects which behaves as the set union of its elements.
@@ -42,6 +49,7 @@ import org.apache.sis.measure.Units;
  *       system of the collection.</li>
  *   <li>Every element is an instance of one of the {@linkplain #getElementType() allowed types},
  *       or of a subtype of one of them.</li>
+ *   <li>No element is null. An empty element shall be represented by an empty geometry.</li>
  *   <li>The topological dimension of the collection is the largest topological dimension among
  *       its elements.</li>
  *   <li>No other constraint is placed on the elements, but subtypes may restrict membership based
@@ -78,7 +86,7 @@ import org.apache.sis.measure.Units;
  * @see ISO 19107:2019 - 6.4.31
  */
 @UML(identifier="Collection", specification=ISO_19107)
-public sealed interface GeometryCollection<T extends Geometry> extends Geometry
+public sealed interface GeometryCollection<T extends Geometry> extends Geometry, Iterable<T>
         permits ProductCurve,
                 DefaultMultiPoint,
                 DefaultGeometryCollection,
@@ -246,7 +254,7 @@ public sealed interface GeometryCollection<T extends Geometry> extends Geometry
      * </ul>
      *
      * @param n geometry index.
-     * @return the Nth geometr in this GeometryCollection.
+     * @return the Nth geometry in this GeometryCollection, never null.
      *
      * @see OGC Simple Feature Access 1.2.1 - 6.1.3.2
      * @see ISO 19107:2019 - 6.4.32, 6.4.32.2, 6.4.32.3
@@ -376,6 +384,81 @@ public sealed interface GeometryCollection<T extends Geometry> extends Geometry
      */
     default Point getPointOnSurface() {
         return getRepresentativePoint();
+    }
+
+    /**
+     * Returns an iterator over the elements of this collection, in the order of their indices.
+     *
+     * The number of elements is read when the iterator is created and the iterator does not support removal.
+     * It throws {@link NullPointerException} if an element is null.
+     *
+     * @return an iterator over the elements of this collection.
+     */
+    @Override
+    default Iterator<T> iterator() {
+        return new Iterator<T>() {
+            /** Index of the next element to return. */
+            private int index;
+
+            /** Number of elements in the collection. */
+            private final int count = getNumGeometries();
+
+            @Override
+            public boolean hasNext() {
+                return index < count;
+            }
+
+            @Override
+            public T next() {
+                if (index >= count) {
+                    throw new NoSuchElementException();
+                }
+                return getGeometryN(index++);
+            }
+
+            @Override
+            public void forEachRemaining(final Consumer<? super T> action) {
+                Objects.requireNonNull(action);
+                while (index < count) {
+                    action.accept(getGeometryN(index++));
+                }
+            }
+        };
+    }
+
+    /**
+     * Returns a spliterator over the elements of this collection, in the order of their indices.
+     * The spliterator reads the elements with {@link #getGeometryN(int)} and splits in halves of exact size.
+     * It reports {@link Spliterator#NONNULL} and throws {@link NullPointerException} if an element is null.
+     *
+     * @return a spliterator over the elements of this collection.
+     */
+    @Override
+    default Spliterator<T> spliterator() {
+        return new GeometryCollectionSpliterator<>(this);
+    }
+
+    /**
+     * Returns a sequential stream over the elements of this collection, in the order of their indices.
+     *
+     * @return a sequential stream over the elements of this collection.
+     *
+     * @see java.util.Collection#stream()
+     */
+    default Stream<T> stream() {
+        return StreamSupport.stream(spliterator(), false);
+    }
+
+    /**
+     * Returns a possibly parallel stream over the elements of this collection.
+     * It is allowable for this method to return a sequential stream.
+     *
+     * @return a possibly parallel stream over the elements of this collection.
+     *
+     * @see java.util.Collection#parallelStream()
+     */
+    default Stream<T> parallelStream() {
+        return StreamSupport.stream(spliterator(), true);
     }
 
 }

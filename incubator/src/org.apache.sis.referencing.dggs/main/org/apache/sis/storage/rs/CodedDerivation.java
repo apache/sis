@@ -49,7 +49,7 @@ import org.apache.sis.storage.dggs.DiscreteGlobalGridGeometry;
 import org.apache.sis.storage.dggs.DiscreteGlobalGridSystems;
 import org.apache.sis.storage.dggs.internal.shared.GridAsDiscreteGlobalGridResource;
 import org.apache.sis.storage.rs.internal.shared.CodeTransforms;
-import org.apache.sis.storage.rs.internal.shared.s2.S2;
+import org.apache.sis.geometry.wrapper.s2.S2;
 import org.apache.sis.util.Utilities;
 
 

@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.sis.storage.rs.internal.shared.s2;
+package org.apache.sis.geometry.wrapper.s2;
 
 import java.util.Iterator;
 import com.google.common.geometry.S2Region;

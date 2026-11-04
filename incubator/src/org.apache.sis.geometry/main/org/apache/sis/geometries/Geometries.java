@@ -49,7 +49,6 @@ import org.apache.sis.geometries.adapter.JTSAdapter;
 import org.apache.sis.geometries.adapter.ShapeAdapter;
 import org.apache.sis.geometries.adapter.ShapeConverter;
 import org.apache.sis.geometries.mesh.MeshPrimitive;
-import org.apache.sis.geometries.mesh.MultiMeshPrimitive;
 import org.apache.sis.geometry.wrapper.jts.JTS;
 import org.apache.sis.maths.Array;
 import org.apache.sis.maths.Matrix3D;
@@ -390,9 +389,9 @@ public final class Geometries {
      *
      * @param mesh not null
      */
-    public static void smoothVertices(MultiMeshPrimitive<?> mesh) {
+    public static void smoothVertices(GeometryCollection<? extends MeshPrimitive> mesh) {
         ArgumentChecks.ensureNonNull("mesh", mesh);
-        for (MeshPrimitive p : mesh.getComponents()) {
+        for (MeshPrimitive p : mesh) {
             p.removeDuplicatesByPosition();
         }
     }
@@ -648,17 +647,48 @@ public final class Geometries {
             index[i] = newIndex;
         }
 
-        //rebuild attributes arrays
+        //rebuild attributes arrays, all attributes change length, they must be replaced together
+        final Map<String,Array> rebuilt = new HashMap<>();
         for (String name : rebuild.keySet()) {
             final Array oldTa = primitive.getAttribute(name);
             final List<Vector<?>> newTa = rebuild.get(name);
-            final Array ta = NDArrays.of(newTa, oldTa.getSampleSystem(), oldTa.getDataType());
-            primitive.setAttribute(name, ta);
+            rebuilt.put(name, NDArrays.of(newTa, oldTa.getSampleSystem(), oldTa.getDataType()));
         }
+        primitive.setAttributes(rebuilt);
         //new index
         primitive.setIndex(NDArrays.ofUnsigned(primitive.getIndex().getSampleSystem(), index));
     }
 
+    /**
+     * Check geometry definition.
+     */
+    public static void validate(GeometryCollection<? extends MeshPrimitive> collection) {
+        for (MeshPrimitive p : collection) {
+            p.validate();
+        }
+    }
+
+    /**
+     * Set each vertex normal by computing the normal of the triangle
+     * where it is used.
+     * This method should not be used if vertices are shared by multiple
+     * triangles or it will cause visual glitches.
+     */
+    public static void computeFaceNormals(GeometryCollection<? extends MeshPrimitive> collection) {
+        for (MeshPrimitive p : collection) {
+            p.computeFaceNormals();
+        }
+    }
+
+    /**
+     * Set each vertex normal by computing the normal of the triangle
+     * where it is used.
+     */
+    public static void computeSmoothNormals(GeometryCollection<? extends MeshPrimitive> collection) {
+        for (MeshPrimitive p : collection) {
+            p.computeSmoothNormals();
+        }
+    }
     public static MeshPrimitive.Triangles toPrimitive(List<org.locationtech.jts.geom.Polygon> triangles, CoordinateReferenceSystem crs) {
         final int dimension = crs.getCoordinateSystem().getDimension();
         final float[] values = new float[Math.multiplyExact(triangles.size(), 3 * dimension)];

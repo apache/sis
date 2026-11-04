@@ -35,7 +35,6 @@ import org.apache.sis.geometries.solid.polyhedron.Hexahedron;
 import org.apache.sis.geometries.solid.polyhedron.Icosahedron;
 import org.apache.sis.geometries.solid.polyhedron.Tetrahedron;
 import org.apache.sis.geometries.mesh.MeshPrimitive;
-import org.apache.sis.geometries.mesh.MultiMeshPrimitive;
 import org.apache.sis.maths.NDArrays;
 import org.apache.sis.maths.Array;
 import org.apache.sis.measure.NumberRange;
@@ -105,8 +104,8 @@ public class ToPrimitiveTest {
         final var arc2 = f.createCircularString(f.createDataPoints(CRS2D, 20,0, 25,5, 30,0));
         final Geometry result = new GeometryProcessor().toPrimitive(f.createMultiCurve(CRS2D, arc1, arc2),
                 Quantities.create(1, Units.DEGREE), null);
-        assertTrue(result instanceof MultiMeshPrimitive);
-        for (final Object component : ((MultiMeshPrimitive<?>) result).getComponents()) {
+        assertTrue(result instanceof GeometryCollection);
+        for (final Object component : (GeometryCollection<?>) result) {
             final Array positions = ((MeshPrimitive) component).getPositions();
             // A half circle of radius 5 is 15.7 long, so a spacing of 1 needs at least 16 segments.
             assertTrue(positions.getLength() >= 17, "Spacing not applied: " + positions.getLength() + " points.");
@@ -124,8 +123,8 @@ public class ToPrimitiveTest {
                 f.createLineString(f.createDataPoints(CRS2D, 0,5, 10,5)));
         assertEquals(MeshPrimitive.Type.LINES, ((MeshPrimitive) new GeometryProcessor().toPrimitive(lines, null, null)).getType());
         final Geometry result = new GeometryProcessor().toPrimitive(lines, Quantities.create(2.5, Units.DEGREE), null);
-        assertTrue(result instanceof MultiMeshPrimitive);
-        for (final Object component : ((MultiMeshPrimitive<?>) result).getComponents()) {
+        assertTrue(result instanceof GeometryCollection);
+        for (final Object component : (GeometryCollection<?>) result) {
             assertEquals(5, ((MeshPrimitive) component).getPositions().getLength());
         }
     }
@@ -499,8 +498,8 @@ public class ToPrimitiveTest {
             final GeometryCollection<LineString> mlines = GeometryFactory.DEFAULT.createMultiLineString(line1, line2);
 
             final Geometry result = new GeometryProcessor().toPrimitive(mlines, null, null);
-            assertTrue(result instanceof MultiMeshPrimitive);
-            final MultiMeshPrimitive mp = (MultiMeshPrimitive) result;
+            assertTrue(result instanceof GeometryCollection);
+            final GeometryCollection<?> mp = (GeometryCollection<?>) result;
             assertEquals(2, mp.getNumGeometries());
             assertTrue(mp.getGeometryN(0) instanceof MeshPrimitive);
             assertTrue(mp.getGeometryN(1) instanceof MeshPrimitive);
@@ -594,7 +593,7 @@ public class ToPrimitiveTest {
         result = processor.toPrimitive(f.createMultiLineString(CRS2D,
                 f.createLineString(attributedPoints(0,0, 1,1, 2,0)),
                 f.createLineString(attributedPoints(3,0, 4,1, 5,0))), null, null);
-        final MultiMeshPrimitive<?> multi = assertInstanceOf(MultiMeshPrimitive.class, result);
+        final GeometryCollection<?> multi = assertInstanceOf(GeometryCollection.class, result);
         assertEquals(2, multi.getNumGeometries());
         for (int i = 0; i < 2; i++) {
             assertAttributes((MeshPrimitive) multi.getGeometryN(i), 3);

@@ -56,7 +56,12 @@ public non-sealed class DefaultGeometryCollection<T extends Geometry> extends Ab
      */
     public DefaultGeometryCollection(GeometryType elementType, CoordinateReferenceSystem fallbackCRS, T[] geometries) {
         this.elementType = elementType;
-        if (geometries != null) this.geometries.addAll(List.of(geometries));
+        if (geometries != null) {
+            for (int i = 0; i < geometries.length; i++) {
+                ArgumentChecks.ensureNonNullElement("geometries", i, geometries[i]);
+            }
+            this.geometries.addAll(List.of(geometries));
+        }
         this.fallbackCRS = (fallbackCRS != null) ? fallbackCRS : Geometries.getUndefinedCRS(2);
     }
 
@@ -114,10 +119,12 @@ public non-sealed class DefaultGeometryCollection<T extends Geometry> extends Ab
     /**
      * Add primitives.
      *
-     * @param other Primitives to merge in.
+     * @param other Primitives to merge in, without null element.
      */
     public void append(Collection<? extends Geometry> other) {
+        int i = 0;
         for (Geometry p : other) {
+            ArgumentChecks.ensureNonNullElement("other", i++, p);
             if (!CRS.equivalent(fallbackCRS, p.getCoordinateReferenceSystem())) {
                 throw new IllegalArgumentException("Primitives must have the same CRS as the MultiPrimitive.");
             }

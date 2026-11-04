@@ -16,16 +16,15 @@
  */
 package org.apache.sis.geometries.operation;
 
-import java.util.ArrayList;
-import java.util.List;
 import java.util.function.Function;
 import org.apache.sis.geometries.Geometry;
+import org.apache.sis.geometries.GeometryCollection;
+import org.apache.sis.geometries.GeometryFactory;
 import org.apache.sis.geometries.Point;
 import org.apache.sis.geometries.internal.shared.ArrayDataPoints;
 import org.apache.sis.geometries.internal.shared.Vertex;
 import org.apache.sis.geometries.mesh.MeshPrimitive;
 import org.apache.sis.geometries.mesh.MeshPrimitiveVisitor;
-import org.apache.sis.geometries.mesh.MultiMeshPrimitive;
 import org.apache.sis.maths.Array;
 import org.apache.sis.maths.DataType;
 import org.apache.sis.maths.NDArrays;
@@ -69,21 +68,20 @@ public final class ComputeAttribute {
 
 
     /**
-     * Compute attribute on MultiPrimitive.
-     * Also works for ModelPrimitive.
+     * Compute attribute on each primitive of a collection.
+     *
+     * @throws UnsupportedOperationException if an element of the collection is not a mesh primitive.
      */
-    public static MultiMeshPrimitive compute(MultiMeshPrimitive base, String attributeName, SampleSystem attributeSystem, DataType attributeType, Function<Point,Vector> valueGenerator) {
-        final List<org.apache.sis.geometries.mesh.MeshPrimitive> news = new ArrayList<>();
-        for (int i = 0, n = base.getNumGeometries(); i < n; i++) {
-            Geometry p = base.getGeometryN(i);
-            p = compute((MeshPrimitive)p, attributeName, attributeSystem, attributeType, valueGenerator);
-            news.add((org.apache.sis.geometries.mesh.MeshPrimitive) p);
+    public static GeometryCollection<MeshPrimitive> compute(GeometryCollection<?> base, String attributeName, SampleSystem attributeSystem, DataType attributeType, Function<Point,Vector> valueGenerator) {
+        final MeshPrimitive[] news = new MeshPrimitive[base.getNumGeometries()];
+        for (int i = 0; i < news.length; i++) {
+            final Geometry p = base.getGeometryN(i);
+            if (!(p instanceof MeshPrimitive mp)) {
+                throw new UnsupportedOperationException("Collection element is not a mesh primitive : " + p.getGeometryType());
+            }
+            news[i] = compute(mp, attributeName, attributeSystem, attributeType, valueGenerator);
         }
-
-        final org.apache.sis.geometries.mesh.MultiMeshPrimitive copy3d = new org.apache.sis.geometries.mesh.MultiMeshPrimitive(base.getCoordinateReferenceSystem());
-        copy3d.append(news);
-
-        return copy3d;
+        return GeometryFactory.DEFAULT.createGeometryCollection(base.getCoordinateReferenceSystem(), news);
     }
 
 }

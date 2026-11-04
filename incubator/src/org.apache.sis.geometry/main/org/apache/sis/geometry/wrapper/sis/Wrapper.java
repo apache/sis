@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.sis.geometries.adapter;
+package org.apache.sis.geometry.wrapper.sis;
 
 import java.awt.Shape;
 import java.util.ArrayList;
@@ -42,6 +42,8 @@ import org.apache.sis.geometries.GeometryCollection;
 import org.apache.sis.geometries.GeometryFactory;
 import org.apache.sis.geometries.Point;
 import org.apache.sis.geometries.Surface;
+import org.apache.sis.geometries.adapter.JTSAdapter;
+import org.apache.sis.geometries.adapter.ShapeAdapter;
 import org.apache.sis.geometries.curve.LineString;
 import org.apache.sis.geometries.curve.LinearRing;
 import org.apache.sis.geometries.operation.GeometryProcessor;
@@ -52,6 +54,7 @@ import org.apache.sis.geometry.wrapper.Dimensions;
 import org.apache.sis.geometry.wrapper.Geometries;
 import org.apache.sis.geometry.wrapper.GeometryType;
 import org.apache.sis.geometry.wrapper.GeometryWrapper;
+import org.apache.sis.geometry.wrapper.sis.Factory;
 import org.apache.sis.maths.Array;
 import org.apache.sis.maths.NDArrays;
 import org.apache.sis.maths.SampleSystem;
@@ -142,7 +145,7 @@ public final class Wrapper extends GeometryWrapper {
      */
     @Override
     protected Geometries<Geometry> factory() {
-        return SIS.INSTANCE;
+        return Factory.INSTANCE;
     }
 
     /**

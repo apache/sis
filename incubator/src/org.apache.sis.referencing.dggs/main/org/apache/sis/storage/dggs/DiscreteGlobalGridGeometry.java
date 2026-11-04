@@ -40,7 +40,7 @@ import org.apache.sis.referencing.operation.transform.TransformFactoryException;
 import org.apache.sis.storage.rs.CodeTransform;
 import org.apache.sis.storage.rs.CodedGeometry;
 import org.apache.sis.storage.rs.internal.shared.CodeTransforms;
-import org.apache.sis.storage.rs.internal.shared.s2.S2;
+import org.apache.sis.geometry.wrapper.s2.S2;
 import org.apache.sis.util.Utilities;
 
 

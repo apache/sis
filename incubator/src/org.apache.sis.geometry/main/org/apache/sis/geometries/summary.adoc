@@ -5,18 +5,19 @@ Overview of the geometry types defined in the `org.apache.sis.geometry` module
 
 == Interface hierarchy
 
-The 56 interfaces of the `Geometry` hierarchy are shown below, split by theme.
-`Geometry` and most of its subtypes are `sealed`, so their permitted subtypes are fixed
-at compile time and a `switch` over them can be exhaustive.
+The 55 interfaces of the `Geometry` hierarchy are shown below, split by theme.
+All of them are `sealed`, so their permitted subtypes are fixed at compile time
+and a `switch` over them can be exhaustive.
 Implementation classes are omitted; see the `internal.shared` package.
+A few analytic shapes (`BBox`, `OBBox`, `Plane`, `HyperPlane`, `Frustrum`) are classes
+implementing `Geometry` directly, without an interface of their own.
 
-Colours: white is a `sealed` type; *yellow* is `non-sealed`, still open for extension
-because it has no implementation yet; *blue-grey* is a type detailed in another diagram
+Colours: white is a type of this diagram; *blue-grey* is a type detailed in another diagram
 here, repeated only to anchor it; *grey* is a type declared outside this module.
 
 === Core types
 
-The spine of the hierarchy. `Geometry` splits into a single `Primitive`, a `GeometryCollection` of geometries, an analytic `OrientedGeometry`, the `Empty` set, an extruded `Prism` and a GPU-oriented `MeshPrimitive` batch. Each leaf below is detailed in one of the following diagrams.
+The spine of the hierarchy. `Geometry` splits into a single `Primitive`, a `GeometryCollection` of geometries, the `Empty` set, an extruded `Prism` and a GPU-oriented `MeshPrimitive` batch. Each leaf below is detailed in one of the following diagrams.
 
 [plantuml,geometry-core,svg]
 ....
@@ -26,10 +27,6 @@ skinparam shadowing false
 skinparam interface {
     BackgroundColor #FDFDFD
     BorderColor #4A6785
-}
-skinparam interface<<open>> {
-    BackgroundColor #FFF6E0
-    BorderColor #C9A227
 }
 skinparam interface<<context>> {
     BackgroundColor #EEF3F8
@@ -46,17 +43,15 @@ interface Geometry
 interface "GeometryCollection<T extends Geometry>" as GeometryCollection
 interface MeshPrimitive
 interface Orientable
-interface OrientedGeometry
 interface Point
 interface Primitive
-interface Prism <<open>>
+interface Prism
 interface Solid
 interface Surface
 
 Geometry <|-- Empty
 Geometry <|-- GeometryCollection
 Geometry <|-- MeshPrimitive
-Geometry <|-- OrientedGeometry
 Geometry <|-- Primitive
 Geometry <|-- Prism
 Orientable <|-- Curve
@@ -69,7 +64,8 @@ Primitive <|-- Solid
 
 === Curves
 
-Subtypes of `Curve` that interpolate a stored sequence of points, plus the conic family.
+Subtypes of `Curve` that interpolate a stored sequence of points, plus the conic family
+and the curves defined by a construction (geodesic, rhumb line, ray, offset).
 
 [plantuml,geometry-curves,svg]
 ....
@@ -79,10 +75,6 @@ skinparam shadowing false
 skinparam interface {
     BackgroundColor #FDFDFD
     BorderColor #4A6785
-}
-skinparam interface<<open>> {
-    BackgroundColor #FFF6E0
-    BorderColor #C9A227
 }
 skinparam interface<<context>> {
     BackgroundColor #EEF3F8
@@ -96,17 +88,19 @@ skinparam interface<<external>> {
 interface Arc
 interface ArcByBulge
 interface ArcByCenterPoint
-interface Circle <<open>>
+interface Circle
 interface CircularString
-interface Clothoid <<open>>
+interface Clothoid
 interface CompoundCurve
 interface Conic
 interface Curve <<context>>
-interface EllipticArc <<open>>
+interface EllipticArc
 interface Geodesic
+interface Line
 interface LineString
 interface LinearRing
-interface OffsetCurve <<open>>
+interface OffsetCurve
+interface Ray
 interface Rhumb
 interface Spiral
 
@@ -119,8 +113,10 @@ Curve <|-- CircularString
 Curve <|-- CompoundCurve
 Curve <|-- Conic
 Curve <|-- Geodesic
+Curve <|-- Line
 Curve <|-- LineString
 Curve <|-- OffsetCurve
+Curve <|-- Ray
 Curve <|-- Rhumb
 Curve <|-- Spiral
 LineString <|-- LinearRing
@@ -141,10 +137,6 @@ skinparam interface {
     BackgroundColor #FDFDFD
     BorderColor #4A6785
 }
-skinparam interface<<open>> {
-    BackgroundColor #FFF6E0
-    BorderColor #C9A227
-}
 skinparam interface<<context>> {
     BackgroundColor #EEF3F8
     BorderColor #93A9C0
@@ -155,8 +147,8 @@ skinparam interface<<external>> {
 }
 
 interface BSplineCurve
-interface Bezier <<open>>
-interface CubicSpline <<open>>
+interface Bezier
+interface CubicSpline
 interface Curve <<context>>
 interface "FunctionCurve<T extends FunctionArc>" as FunctionCurve
 interface NurbCurve
@@ -178,7 +170,7 @@ SplineCurve <|-- PolynomialSpline
 
 === Surfaces
 
-Subtypes of `Surface`: polygonal, patch-based and parametric.
+Subtypes of `Surface`: polygonal, patch-based, parametric and implicit shapes.
 
 [plantuml,geometry-surfaces,svg]
 ....
@@ -188,10 +180,6 @@ skinparam shadowing false
 skinparam interface {
     BackgroundColor #FDFDFD
     BorderColor #4A6785
-}
-skinparam interface<<open>> {
-    BackgroundColor #FFF6E0
-    BorderColor #C9A227
 }
 skinparam interface<<context>> {
     BackgroundColor #EEF3F8
@@ -203,13 +191,17 @@ skinparam interface<<external>> {
 }
 
 interface BSplineSurface
-interface BilinearGrid <<open>>
+interface BilinearGrid
+interface Capsule
 interface CurvePolygon
+interface Cylinder
+interface Ellipsoid
 interface NurbSurface
 interface ParametricCurveSurface
 interface Polygon
 interface "PolyhedralSurface<T extends Polygon>" as PolyhedralSurface
 interface PreparedTIN
+interface Sphere
 interface Surface <<context>>
 interface TIN
 interface Triangle
@@ -220,10 +212,14 @@ interface ReferenceSystem <<external>>
 BSplineSurface <|-- NurbSurface
 ParametricCurveSurface <|-- BSplineSurface
 ParametricCurveSurface <|-- BilinearGrid
+ParametricCurveSurface <|-- Ellipsoid
+ParametricCurveSurface <|-- Sphere
 Polygon <|-- Triangle
 PolyhedralSurface <|-- TriangulatedSurface
 ReferenceSystem <|-- ParametricCurveSurface
+Surface <|-- Capsule
 Surface <|-- CurvePolygon
+Surface <|-- Cylinder
 Surface <|-- ParametricCurveSurface
 Surface <|-- Polygon
 Surface <|-- PolyhedralSurface
@@ -245,10 +241,6 @@ skinparam interface {
     BackgroundColor #FDFDFD
     BorderColor #4A6785
 }
-skinparam interface<<open>> {
-    BackgroundColor #FFF6E0
-    BorderColor #C9A227
-}
 skinparam interface<<context>> {
     BackgroundColor #EEF3F8
     BorderColor #93A9C0
@@ -258,12 +250,12 @@ skinparam interface<<external>> {
     BorderColor #999999
 }
 
-interface BSolidSpline <<open>>
+interface BSplineSolid
 interface ParametricCurveSolid
 interface Polyhedron
 interface Solid <<context>>
 
-ParametricCurveSolid <|-- BSolidSpline
+ParametricCurveSolid <|-- BSplineSolid
 Solid <|-- ParametricCurveSolid
 Solid <|-- Polyhedron
 @enduml
@@ -271,7 +263,12 @@ Solid <|-- Polyhedron
 
 === Collections
 
-Subtypes of `GeometryCollection`, each restricting its elements to one geometry kind. `ProductCurve` appears here because it is both a collection and a `Curve`.
+`GeometryCollection` has a single interface subtype, `ProductCurve`, which is both a collection and a `Curve`.
+Multi-geometries have no interface of their own: they are `GeometryCollection` instances whose
+`getElementType()` restricts the elements, created by the `GeometryFactory` methods
+`createMultiPoint`, `createMultiCurve`, `createMultiLineString`, `createMultiSurface`, `createMultiPolygon`
+and `createMultiPolyhedron`. Several mesh primitives are grouped in a `GeometryCollection<MeshPrimitive>`.
+The `Points` and `Lines` mesh primitives are themselves collections of points and of line segments.
 
 [plantuml,geometry-collections,svg]
 ....
@@ -282,39 +279,20 @@ skinparam interface {
     BackgroundColor #FDFDFD
     BorderColor #4A6785
 }
-skinparam interface<<open>> {
-    BackgroundColor #FFF6E0
-    BorderColor #C9A227
-}
 skinparam interface<<context>> {
     BackgroundColor #EEF3F8
     BorderColor #93A9C0
 }
-skinparam interface<<external>> {
-    BackgroundColor #F0F0F0
-    BorderColor #999999
-}
 
 interface Curve <<context>>
 interface "GeometryCollection<T extends Geometry>" as GeometryCollection <<context>>
-interface "MultiCurve<T extends Curve>" as MultiCurve
-interface MultiLineString
-interface "MultiPoint<T extends Point>" as MultiPoint
-interface MultiPolygon
-interface MultiPolyhedron
-interface "MultiSurface<T extends Surface>" as MultiSurface
-interface ProductCurve <<open>>
+interface ProductCurve
 
 Curve <|-- ProductCurve
-GeometryCollection <|-- MultiCurve
-GeometryCollection <|-- MultiPoint
-GeometryCollection <|-- MultiPolyhedron : Polyhedron
-GeometryCollection <|-- MultiSurface
 GeometryCollection <|-- ProductCurve : Curve
-MultiCurve <|-- MultiLineString : LineString
-MultiSurface <|-- MultiPolygon : Polygon
 @enduml
 ....
+
 == Format mapping
 
 [cols="2,3,2,2,2,2,2,6", options="header"]
@@ -415,6 +393,15 @@ MultiSurface <|-- MultiPolygon : Polygon
 |—
 |`LineString` that is both closed and simple.
 
+|Line
+|`curve`
+|—
+|—
+|—
+|—
+|—
+|Curve with linear interpolation between consecutive points, each pair defining a line segment.
+
 |CompoundCurve
 |`curve`
 |—
@@ -432,6 +419,7 @@ MultiSurface <|-- MultiPolygon : Polygon
 |—
 |—
 |Curve derived from a base curve by applying a lateral offset distance.
+The offset of a `LineString` is computed by `DefaultOffsetLineString`.
 
 |ProductCurve
 |`curve`
@@ -443,7 +431,7 @@ MultiSurface <|-- MultiPolygon : Polygon
 |Collection of curves treated as one continuous curve.
 
 |Ray
-|—
+|`curve`
 |—
 |—
 |—
@@ -461,7 +449,7 @@ MultiSurface <|-- MultiPolygon : Polygon
 |Curve of constant bearing (loxodrome) crossing all meridians at the same angle.
 
 |Bearing
-|—
+|`cs`
 |—
 |—
 |—
@@ -592,14 +580,14 @@ MultiSurface <|-- MultiPolygon : Polygon
 |—
 |Solid defined by a parametric function.
 
-|BSolidSpline
+|BSplineSolid
 |`solid`
 |—
 |—
 |—
 |—
 |—
-|`ParametricCurveSolid` defined by a B-spline volumetric representation.
+|`ParametricCurveSolid` defined by a B-spline volumetric representation (ISO 19107 `BSolidSpline`).
 
 |ConstructiveSolidGeometry
 |`csg`
@@ -610,35 +598,35 @@ MultiSurface <|-- MultiPolygon : Polygon
 |—
 |Placeholder type for boolean-combined solids (union, intersection, difference).
 
-// --- Oriented / analytic shapes ------------------------------------------
-8+| *Oriented / analytic shapes*
-
-|OrientedGeometry
-|—
-|—
-|—
-|—
-|—
-|—
-|Base type for named analytic shapes carrying their own rotation and translation.
+// --- Analytic shapes ----------------------------------------------------
+8+| *Analytic shapes*
 
 |Cylinder
-|`solid`
+|`surface`
 |—
 |—
 |—
 |—
 |cylinder, cone
-|Oriented geometry describing a tube shape with a radius and a height.
+|Surface along the axis joining two positions, with a radius at each end. A cone when one radius is zero.
 
 |Sphere
-|`solid`
+|`surface`
 |—
 |—
 |—
 |—
 |sphere
 |Parametric surface made of the set of points equidistant from a center.
+
+|Ellipsoid
+|`surface`
+|—
+|—
+|—
+|—
+|—
+|Parametric surface defined by a center and one semi-axis length per axis.
 
 |Frustrum
 |`solid`
@@ -647,16 +635,16 @@ MultiSurface <|-- MultiPolygon : Polygon
 |—
 |—
 |—
-|Oriented geometry describing a cone or pyramid with its top cut off.
+|Space delimited by one or more planes, used for example to clip what lies outside a camera view.
 
 |Capsule
-|`solid`
+|`surface`
 |—
 |—
 |—
 |—
 |—
-|Oriented geometry describing a cylinder capped with two hemispherical ends.
+|Surface of a cylinder capped with two hemispherical ends, defined by the two capping spheres.
 
 |Plane
 |—
@@ -665,7 +653,7 @@ MultiSurface <|-- MultiPolygon : Polygon
 |—
 |—
 |quad
-|Oriented geometry describing a flat surface.
+|Plane centered on a position and perpendicular to a normal, optionally with finite extents.
 
 |HyperPlane
 |—
@@ -674,7 +662,7 @@ MultiSurface <|-- MultiPolygon : Polygon
 |—
 |—
 |—
-|Oriented geometry dividing the coordinate space in two half-spaces.
+|Plane dividing the coordinate space in two half-spaces, defined by a position and a normal.
 
 |BBox
 |—
@@ -706,59 +694,59 @@ MultiSurface <|-- MultiPolygon : Polygon
 |—
 |Collection of an arbitrary number of geometric objects sharing the same spatial reference system.
 
-|MultiPoint
-|`point`
+|GeometryCollection<Point>
+|—
 |MultiPoint
 |MultiPoint
 |MultiPoint
 |—
 |—
-|0-dimensional `GeometryCollection` whose elements are restricted to `Point`.
+|MultiPoint: collection of element type `POINT`, created by `GeometryFactory.createMultiPoint`. `DefaultMultiPoint` stores all the points in a single `DataPoints`.
 
-|MultiCurve
-|`curve`
-|MultiCurve
+|GeometryCollection<Curve>
 |—
 |MultiCurve
 |—
+|MultiCurve
 |—
-|1-dimensional `GeometryCollection` whose elements are `Curve`.
+|—
+|MultiCurve: collection of element type `CURVE`, created by `GeometryFactory.createMultiCurve`.
 
-|MultiLineString
-|`curve`
+|GeometryCollection<LineString>
+|—
 |MultiLineString
 |MultiLineString
 |MultiLineString
 |—
 |—
-|`MultiCurve` whose elements are `LineString`.
+|MultiLineString: collection of element type `LINESTRING`, created by `GeometryFactory.createMultiLineString`.
 
+|GeometryCollection<Surface>
+|—
 |MultiSurface
-|`surface`
-|MultiSurface
 |—
 |MultiSurface
 |—
 |—
-|2-dimensional `GeometryCollection` whose elements are `Surface`.
+|MultiSurface: collection of element type `SURFACE`, created by `GeometryFactory.createMultiSurface`.
 
-|MultiPolygon
-|`surface`
+|GeometryCollection<Polygon>
+|—
 |MultiPolygon
 |MultiPolygon
 |MultiPolygon
 |—
 |—
-|`MultiSurface` whose elements are `Polygon`.
+|MultiPolygon: collection of element type `POLYGON`, created by `GeometryFactory.createMultiPolygon`.
 
+|GeometryCollection<Polyhedron>
+|—
+|—
+|—
 |MultiPolyhedron
-|`solid`
 |—
 |—
-|MultiPolyhedron
-|—
-|—
-|Arbitrary aggregation of `Polyhedron` solids.
+|MultiPolyhedron: collection of element type `POLYHEDRON`, created by `GeometryFactory.createMultiPolyhedron`.
 
 // --- Mesh -----------------------------------------------------------------
 8+| *Mesh*
@@ -772,14 +760,14 @@ MultiSurface <|-- MultiPolygon : Polygon
 |triangle
 |GPU-like batch of simple geometries (points, lines or triangles), inspired by glTF 2.0.
 
-|MultiMeshPrimitive
-|`mesh`
+|GeometryCollection<MeshPrimitive>
+|—
 |—
 |—
 |—
 |Mesh
 |—
-|`GeometryCollection` of `MeshPrimitive` batches.
+|Several `MeshPrimitive` batches, like the primitives of a glTF mesh.
 
 // --- Regular polyhedra ------------------------------------------------
 8+| *Regular polyhedra*
@@ -1108,4 +1096,127 @@ MultiSurface <|-- MultiPolygon : Polygon
 |isosurface
 |Implicit surface extracted from a scalar field at given iso-values (marching-cubes style)
 
+|===
+
+== JTS backend
+
+The methods below still delegate their computation to the https://locationtech.github.io/jts/[JTS Topology Suite]
+(packages `org.locationtech.jts`). The geometry is viewed as a JTS geometry by `adapter.JTSAdapter`,
+which supports only points, line strings, linear rings, polygons and collections of them:
+other geometry types make those methods throw `UnsupportedOperationException` or `IllegalArgumentException`.
+A geometry computed by JTS is converted back with the coordinate reference system of the operand,
+but its points keep no attribute other than the position.
+
+The conversions between both models (`adapter.JTSAdapter`, `Geometries.asJTS`, `Geometries.fromJTS`,
+`adapter.Wrapper.asJTS`) are not listed: converting is their purpose.
+
+[cols="3,3,3,5", options="header"]
+|===
+|Method |Implemented in |Computed without JTS |Notes
+
+4+| *Spatial operations*, declared by `Geometry` and implemented by `operation.GeometryProcessor`
+
+|`buffer`
+|`GeometryProcessor.buffer`
+|Empty geometry.
+|Attributes of the result are lost.
+
+|`convexHull`
+|`GeometryProcessor.convexHull`
+|Empty geometry.
+|Attributes of the result are lost.
+
+|`difference`, `symDifference`, `union`
+|`GeometryProcessor`
+|Empty operands.
+|Attributes of the result are lost.
+
+|`intersection`
+|`GeometryProcessor.intersection`
+|Empty operands; mesh `Triangles` with mesh `Points` or `Lines` (`operation.Intersection`).
+|Attributes of the result are lost, except in the mesh cases.
+
+|`distance`
+|`GeometryProcessor.distance`
+|Empty operands; point to point (`operation.Distance`).
+|
+
+|`contains`
+|`GeometryProcessor.contains`
+|Empty operands; polygon containing a point (`operation.Contains`).
+|
+
+|`crosses`, `disjoint`, `equal`, `intersects`, `overlaps`, `touches`, `within`, `withinDistance`
+|`GeometryProcessor`
+|Empty operands.
+|
+
+|`relate`
+|`GeometryProcessor.relate`
+|Empty operands.
+|The DE-9IM matrix of non-empty operands is computed by JTS.
+
+4+| *Measures and properties*, implemented by the classes of `internal.shared`
+
+|`getLength`
+|`DefaultLineString`, also inherited by `DefaultLinearRing`
+|—
+|Other curves compute their length natively.
+
+|`getPerimeter`
+|`DefaultPolygon`, also inherited by `DefaultTriangle`
+|—
+|
+
+|`getBoundary`
+|`DefaultPolygon`, `DefaultGeometryCollection`, `DefaultMultiPoint`
+|Empty geometry.
+|`DefaultTriangle` inherits the JTS version of `DefaultPolygon` instead of the `Triangle` default, which returns the exterior ring.
+
+|`isSimple`, `isValid`
+|`DefaultLineString`, `DefaultPolygon`, `DefaultGeometryCollection`, `DefaultMultiPoint`
+|—
+|Also inherited by `DefaultLinearRing` and `DefaultTriangle`.
+
+|`getLength`, `getCentroid`, `isSimple`, `isValid`
+|`DefaultLine`
+|Empty geometry (`getCentroid`).
+|Always unsupported: `JTSAdapter` cannot convert a `Line`, which is not a `LineString`.
+The `Curve` default of `getCentroid` would compute it natively.
+
+4+| *SQL/MM functions*, implemented by `adapter.Wrapper`
+
+|`ST_Simplify`
+|`Wrapper.operationSameCRS`
+|—
+|JTS `DouglasPeuckerSimplifier`.
+
+|`ST_SimplifyPreserveTopology`
+|`Wrapper.operationSameCRS`
+|—
+|JTS `TopologyPreservingSimplifier`.
+
+4+| The other SQL/MM functions call the `Geometry` methods above.
+
+4+| *JTS classes used internally*
+
+|`ISOBand.create`
+|`operation.spatialanalysis2d.ISOBand`
+|Band polygons of each triangle.
+|Returns JTS polygons. The bands are merged with JTS `union()`, retried after `buffer(0)` on topology errors.
+
+|`ISOLine.createMesh`
+|`operation.spatialanalysis2d.ISOLine`
+|Everything.
+|JTS `Coordinate` is used only to hold interpolated positions.
+
+|`PreparedTIN.getPatches`
+|`surface.PreparedTIN`
+|Everything.
+|The triangles are indexed in a JTS `Quadtree`, queried with JTS `Envelope`.
+
+|`TerrainExtruder`
+|`operation.extrude.TerrainExtruder`
+|Everything.
+|The terrain triangles are indexed in a JTS `Quadtree`, queried with JTS `Envelope`.
 |===

@@ -156,6 +156,11 @@ public abstract sealed class Vector2D<T extends Vector2D<T>> extends AbstractVec
         public final byte x;
         public final byte y;
 
+        public Byte() {
+            this.x = 0;
+            this.y = 0;
+        }
+
         public Byte(byte x, byte y) {
             this.x = x;
             this.y = y;
@@ -325,6 +330,11 @@ public abstract sealed class Vector2D<T extends Vector2D<T>> extends AbstractVec
 
         public final byte x;
         public final byte y;
+
+        public UByte() {
+            this.x = 0;
+            this.y = 0;
+        }
 
         public UByte(byte x, byte y) {
             this.x = x;
@@ -496,6 +506,11 @@ public abstract sealed class Vector2D<T extends Vector2D<T>> extends AbstractVec
         public final short x;
         public final short y;
 
+        public Short() {
+            this.x = 0;
+            this.y = 0;
+        }
+
         public Short(short x, short y) {
             this.x = x;
             this.y = y;
@@ -665,6 +680,11 @@ public abstract sealed class Vector2D<T extends Vector2D<T>> extends AbstractVec
 
         public final short x;
         public final short y;
+
+        public UShort() {
+            this.x = 0;
+            this.y = 0;
+        }
 
         public UShort(short x, short y) {
             this.x = x;
@@ -836,6 +856,11 @@ public abstract sealed class Vector2D<T extends Vector2D<T>> extends AbstractVec
         public final int x;
         public final int y;
 
+        public Int() {
+            this.x = 0;
+            this.y = 0;
+        }
+
         public Int(int x, int y) {
             this.x = x;
             this.y = y;
@@ -1005,6 +1030,11 @@ public abstract sealed class Vector2D<T extends Vector2D<T>> extends AbstractVec
 
         public final int x;
         public final int y;
+
+        public UInt() {
+            this.x = 0;
+            this.y = 0;
+        }
 
         public UInt(int x, int y) {
             this.x = x;
@@ -1176,6 +1206,11 @@ public abstract sealed class Vector2D<T extends Vector2D<T>> extends AbstractVec
         public final long x;
         public final long y;
 
+        public Long() {
+            this.x = 0;
+            this.y = 0;
+        }
+
         public Long(long x, long y) {
             this.x = x;
             this.y = y;
@@ -1345,6 +1380,11 @@ public abstract sealed class Vector2D<T extends Vector2D<T>> extends AbstractVec
 
         public final float x;
         public final float y;
+
+        public Float() {
+            this.x = 0;
+            this.y = 0;
+        }
 
         public Float(float x, float y) {
             this.x = x;
@@ -1552,6 +1592,11 @@ public abstract sealed class Vector2D<T extends Vector2D<T>> extends AbstractVec
 
         public final double x;
         public final double y;
+
+        public Double() {
+            this.x = 0;
+            this.y = 0;
+        }
 
         public Double(double x, double y) {
             this.x = x;

@@ -14,10 +14,14 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.sis.services;
+package org.apache.sis.web.jakarta;
 
+import java.util.Set;
+import jakarta.servlet.ServletContext;
 import jakarta.servlet.ServletContextEvent;
 import jakarta.servlet.ServletContextListener;
+import jakarta.servlet.ServletContainerInitializer;
+import jakarta.servlet.annotation.HandlesTypes;
 import jakarta.servlet.annotation.WebListener;
 import org.apache.sis.system.Shutdown;
 
@@ -29,21 +33,23 @@ import org.apache.sis.system.Shutdown;
  * @author  Martin Desruisseaux (Geomatys)
  */
 @WebListener("Apache SIS shutdown hook")
-public final class ServletListener implements ServletContextListener {
+public final class ServletListener implements ServletContainerInitializer, ServletContextListener {
     /**
-     * Invoked by reflection by the container.
+     * Invoked by reflection by the service loader.
      */
     public ServletListener() {
     }
 
     /**
-     * Receives notification that the web application initialization process is starting.
+     * Notifies Apache <abbr>SIS</abbr> that the application is initializing.
      *
-     * @param  event  the context of the servlet being initialized.
+     * @param handled  classes declared by {@link HandlesTypes}, or {@code null} if none.
+     * @param context  context of the web application in which the classes were discovered.
      */
     @Override
-    public void contextInitialized(final ServletContextEvent event) {
-        final String env = event.getServletContext().getServerInfo();
+    public void onStartup(final Set<Class<?>> handled, final ServletContext context) {
+        context.addListener(this);
+        final String env = context.getServerInfo();
         Shutdown.setContainer(env != null ? env : "Servlet");
     }
 

@@ -21,11 +21,17 @@ import org.opengis.referencing.operation.MathTransform;
 import org.opengis.referencing.operation.TransformException;
 import org.opengis.util.FactoryException;
 import org.apache.sis.geometries.Geometry;
+import org.apache.sis.geometries.GeometryCollection;
+import org.apache.sis.geometries.GeometryFactory;
+import org.apache.sis.geometries.Point;
+import org.apache.sis.geometries.curve.LineString;
+import org.apache.sis.geometries.curve.LinearRing;
 import org.apache.sis.geometries.mesh.MeshPrimitive;
-import org.apache.sis.geometries.mesh.MultiMeshPrimitive;
 import org.apache.sis.maths.NDArrays;
 import org.apache.sis.referencing.CRS;
 import org.apache.sis.referencing.CommonCRS;
+import org.apache.sis.referencing.operation.matrix.Matrix3;
+import org.apache.sis.referencing.operation.transform.MathTransforms;
 
 // Test dependencies
 import static org.junit.jupiter.api.Assertions.*;
@@ -122,8 +128,8 @@ public class TransformTest extends AbstractD9IMTest {
 
     @Test
     public void MultiPrimitive() throws FactoryException, TransformException {
-        final MultiMeshPrimitive mp = new MultiMeshPrimitive(createPrimitive());
-        final MultiMeshPrimitive result = (MultiMeshPrimitive) new GeometryProcessor().transform(mp, CRS_TARGET, TRANSFORM);
+        final GeometryCollection<MeshPrimitive> mp = GeometryFactory.DEFAULT.createGeometryCollection(createPrimitive());
+        final GeometryCollection<?> result = (GeometryCollection<?>) new GeometryProcessor().transform(mp, CRS_TARGET, TRANSFORM);
         assertEquals(1, result.getNumGeometries());
         testPrimitive((MeshPrimitive) result.getGeometryN(0));
     }
@@ -148,14 +154,46 @@ public class TransformTest extends AbstractD9IMTest {
      */
     private static final TestCase[] ENTRIES = {
         /*
-         * TODO: `GeometryProcessor.transform(...)` handles only the mesh primitives and the
-         * surfaces built on linear rings. The transform of an empty geometry should be that
-         * geometry in the target reference system, and the transform of a point should be its
-         * position converted to that system.
+         * TODO: the transform of an empty geometry should be that geometry in the target reference system.
          */
-        new TestCase(EMPTY_1, CRS_TARGET, null, UnsupportedOperationException.class),
-        new TestCase(POINT_A, CRS_TARGET, null, UnsupportedOperationException.class)
+        new TestCase(EMPTY_1, CRS_TARGET, null, UnsupportedOperationException.class)
     };
+
+    /**
+     * Tests the transform of a point when no math transform is given:
+     * the operation from the point CRS to the target CRS must be used.
+     */
+    @Test
+    public void testPointWithoutMathTransform() {
+        final CoordinateReferenceSystem target = CommonCRS.WGS84.normalizedGeographic();
+        final Geometry result = new GeometryProcessor().transform(POINT_A, target, null);
+        final Point pt = assertInstanceOf(Point.class, result);
+        assertEquals(target, pt.getCoordinateReferenceSystem());
+        assertEquals(5.0,  pt.getPosition().get(0), 1e-9);
+        assertEquals(10.0, pt.getPosition().get(1), 1e-9);
+    }
+
+    /**
+     * Tests the transform of a line string with an explicit math transform.
+     */
+    @Test
+    public void testLineString() {
+        final CoordinateReferenceSystem crs = CommonCRS.WGS84.normalizedGeographic();
+        final LineString line = GeometryFactory.DEFAULT.createLineString(
+                GeometryFactory.DEFAULT.createDataPoints(crs, 1.0, 2.0,  3.0, 4.0,  5.0, 6.0));
+        final MathTransform mt = MathTransforms.linear(new Matrix3(2, 0, 10,
+                                                                   0, 3, 20,
+                                                                   0, 0,  1));
+        final Geometry result = new GeometryProcessor().transform(line, crs, mt);
+        final LineString ls = assertInstanceOf(LineString.class, result);
+        assertFalse(ls instanceof LinearRing);
+        assertEquals(3, ls.getNumPoints());
+        final double[] expected = {12, 26,  16, 32,  20, 38};
+        for (int i = 0; i < 3; i++) {
+            assertEquals(expected[i*2],   ls.getPointN(i).getPosition().get(0), 1e-9);
+            assertEquals(expected[i*2+1], ls.getPointN(i).getPosition().get(1), 1e-9);
+        }
+    }
 
     /**
      * Tests {@code transform(Geometry, CoordinateReferenceSystem, MathTransform)} on all declared test cases.

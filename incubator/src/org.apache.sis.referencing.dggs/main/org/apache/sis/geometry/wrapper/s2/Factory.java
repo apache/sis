@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.sis.storage.rs.internal.shared.s2;
+package org.apache.sis.geometry.wrapper.s2;
 
 import java.nio.ByteBuffer;
 import java.nio.DoubleBuffer;
@@ -58,8 +58,7 @@ public final class Factory extends Geometries<S2Region> {
      * Creates the singleton instance.
      */
     private Factory() {
-        /** TODO this should be S2, not GEOAPI, need a sis update */
-        super(GeometryLibrary.GEOAPI, S2Region.class, S2Point.class);
+        super(GeometryLibrary.S2, S2Region.class, S2Point.class);
     }
 
     /**

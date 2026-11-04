@@ -29,6 +29,7 @@ import static org.opengis.annotation.Specification.ISO_19107;
 import org.opengis.annotation.UML;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import org.opengis.referencing.operation.MathTransform;
+import org.opengis.util.FactoryException;
 import org.apache.sis.geometries.Curve;
 import org.apache.sis.geometries.DE9IM;
 import org.apache.sis.geometries.DataPointsType;
@@ -47,7 +48,6 @@ import org.apache.sis.geometries.internal.shared.ArrayDataPoints;
 import org.apache.sis.geometries.internal.shared.Vertex;
 import org.apache.sis.geometries.mesh.MeshPrimitive;
 import org.apache.sis.geometries.mesh.MeshPrimitiveVisitor;
-import org.apache.sis.geometries.mesh.MultiMeshPrimitive;
 import org.apache.sis.geometries.solid.Polyhedron;
 import org.apache.sis.geometries.surface.Polygon;
 import org.apache.sis.geometries.surface.PolyhedralSurface;
@@ -59,6 +59,7 @@ import org.apache.sis.maths.NDArrays;
 import org.apache.sis.maths.SampleSystem;
 import org.apache.sis.maths.Vector;
 import org.apache.sis.measure.Quantities;
+import org.apache.sis.referencing.CRS;
 import org.apache.sis.measure.Units;
 import org.apache.sis.util.ArgumentChecks;
 
@@ -506,8 +507,8 @@ public final class GeometryProcessor {
     public Geometry compute(Geometry geom, String attributeName, SampleSystem attributeSystem, DataType attributeType, Function<Point,Vector> valueGenerator) {
         if (geom instanceof MeshPrimitive mp) {
             return ComputeAttribute.compute(mp, attributeName, attributeSystem, attributeType, valueGenerator);
-        } else if (geom instanceof MultiMeshPrimitive<?> mp) {
-            return ComputeAttribute.compute(mp, attributeName, attributeSystem, attributeType, valueGenerator);
+        } else if (geom instanceof GeometryCollection<?> c) {
+            return ComputeAttribute.compute(c, attributeName, attributeSystem, attributeType, valueGenerator);
         }
         throw new UnsupportedOperationException();
     }
@@ -528,8 +529,9 @@ public final class GeometryProcessor {
      *  can be a Primitive or MultiPrimitive
      */
     public Geometry toPrimitive(Geometry geom, Quantity<?> spacing, Quantity<?> offset) {
-        if (geom instanceof MeshPrimitive || geom instanceof MultiMeshPrimitive) {
+        if (geom instanceof MeshPrimitive) {
             //Does nothing, geometry is already a Primitive.
+            //Collections of primitives are handled by the collection case below.
             return geom;
         } else if (geom instanceof Point cdt) {
             return ToPrimitive.toPrimitive(cdt);
@@ -571,20 +573,30 @@ public final class GeometryProcessor {
         if (crs == null) {
             crs = geom.getCoordinateReferenceSystem();
         }
-
-        if (geom instanceof LinearRing cdt) {
-            return Transform.transform(cdt, crs, transform);
-        } else if (geom instanceof Triangle cdt) {
-            return Transform.transform(cdt, crs, transform);
-        } else if (geom instanceof Polygon cdt) {
-            return Transform.transform(cdt, crs, transform);
-        } else if (geom instanceof MultiMeshPrimitive<?> cdt) {
-            return Transform.transform(cdt, crs, transform);
-        } else if (geom instanceof MeshPrimitive cdt) {
-            return Transform.transform(cdt, crs, transform);
+        if (transform == null) {
+            try {
+                transform = CRS.findOperation(geom.getCoordinateReferenceSystem(), crs, null).getMathTransform();
+            } catch (FactoryException ex) {
+                throw new OperationException(ex.getMessage(), ex);
+            }
         }
 
-        throw new UnsupportedOperationException();
+        /*
+         * Case order matters: the first matching case is selected.
+         * Mesh primitives are checked before line strings and collections
+         * because the points and lines primitives are also of those types.
+         */
+        return switch (geom) {
+            case LinearRing            cdt -> Transform.transform(cdt, crs, transform);
+            case Triangle              cdt -> Transform.transform(cdt, crs, transform);
+            case Polygon               cdt -> Transform.transform(cdt, crs, transform);
+            case MeshPrimitive         cdt -> Transform.transform(cdt, crs, transform);
+            case LineString            cdt -> Transform.transform(cdt, crs, transform);
+            case Point                 cdt -> Transform.transform(cdt, crs, transform);
+            case GeometryCollection<?> cdt -> Transform.transform(cdt, crs, transform);
+            default -> throw new UnsupportedOperationException(
+                    "Transform of " + geom.getGeometryType() + " geometries is not supported yet.");
+        };
     }
 
     /**
