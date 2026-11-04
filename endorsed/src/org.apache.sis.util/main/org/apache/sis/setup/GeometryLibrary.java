@@ -17,19 +17,18 @@
 package org.apache.sis.setup;
 
 import org.opengis.metadata.acquisition.GeometryType;
-import org.apache.sis.util.internal.shared.Constants;
 
 
 /**
  * Some libraries providing geometric objects or topological operations.
- * Apache SIS uses its own implementation for the most basic objects like
+ * Apache <abbr>SIS</abbr> uses its own implementation for the most basic objects like
  * {@linkplain org.apache.sis.geometry.GeneralDirectPosition direct positions} and
  * {@linkplain org.apache.sis.geometry.GeneralEnvelope envelopes},
  * and can delegate to one of the enumerated libraries for more complex geometries.
  * All those libraries are optional.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.5
+ * @version 1.8
  *
  * @see org.apache.sis.storage.OptionKey#GEOMETRY_LIBRARY
  * @see org.apache.sis.feature.builder.FeatureTypeBuilder#addAttribute(GeometryType)
@@ -38,8 +37,9 @@ import org.apache.sis.util.internal.shared.Constants;
  */
 public enum GeometryLibrary {
     /**
-     * The Java 2D Graphics and Imaging library. This library does not provide as many topological operations
-     * than other libraries, but is available on most standard Java environments and constitute a reliable
+     * The Java 2D Graphics and Imaging library.
+     * This library does not provide as many topological operations as other libraries,
+     * but is available on most standard Java environments and constitutes a reliable
      * fallback when no other library is available.
      *
      * <table class="sis">
@@ -50,14 +50,15 @@ public enum GeometryLibrary {
      *   <tr><td>{@link GeometryType#AREAL}</td>  <td>{@code java.awt.Shape}</td></tr>
      * </table>
      *
-     * Note that contrary to JTS and ESRI libraries,
+     * Note that contrary to <abbr>JTS</abbr> and <abbr>ESRI</abbr> libraries,
      * a point does not extend any root geometry class in Java2D.
      */
-    JAVA2D("Java2D"),
+    JAVA2D,
 
     /**
-     * The ESRI geometry API library. This library can be used for spatial vector data processing.
-     * It is used in ESRI GIS Tools for Hadoop and has an Android port.
+     * The <abbr>ESRI</abbr> geometry <abbr>API</abbr> library.
+     * This library can be used for spatial vector data processing.
+     * It is used in <abbr>ESRI</abbr> <abbr>GIS</abbr> Tools for Hadoop and has an Android port.
      * The library is available under Apache 2 license.
      *
      * <table class="sis">
@@ -69,13 +70,14 @@ public enum GeometryLibrary {
      *   <tr><td>{@link GeometryType#AREAL}</td>  <td>{@code com.esri.core.geometry.Polygon}</td></tr>
      * </table>
      *
-     * @see <a href="https://github.com/Esri/geometry-api-java/wiki">API wiki page</a>
+     * @see <a href="https://github.com/Esri/geometry-api-java/wiki"><abbr>API</abbr> wiki page</a>
      */
-    ESRI(Constants.ESRI),
+    ESRI,
 
     /**
-     * The Java Topology Suite (JTS) library. This open source library provides an object model
-     * for Euclidean planar geometry together with a set of fundamental geometric functions.
+     * The Java Topology Suite (<abbr>JTS</abbr>) library.
+     * This open source library provides an object model for Euclidean planar geometry
+     * together with a set of fundamental geometric functions.
      * The library is licensed under Eclipse Distribution License.
      *
      * <table class="sis">
@@ -87,16 +89,16 @@ public enum GeometryLibrary {
      *   <tr><td>{@link GeometryType#AREAL}</td>  <td>{@code org.locationtech.jts.geom.Polygon}</td></tr>
      * </table>
      *
-     * @see <a href="http://locationtech.github.io/jts/">JTS home page</a>
+     * @see <a href="http://locationtech.github.io/jts/"><abbr>JTS</abbr> home page</a>
      *
      * @since 1.0
      */
-    JTS("JTS"),
+    JTS,
 
     /**
      * The GeoAPI geometry interfaces.
      * Since GeoAPI interfaces are implementation neutral, the actual implementation is currently unspecified
-     * (a future Apache SIS version may provide some control on that).
+     * (a future Apache <abbr>SIS</abbr> version may provide some control on that).
      *
      * <table class="sis">
      *   <caption>Implementation classes</caption>
@@ -112,21 +114,7 @@ public enum GeometryLibrary {
      *
      * @since 1.4
      */
-    GEOAPI("GeoAPI");
-
-    /**
-     * Human-readable name of this library.
-     */
-    private final String name;
-
-    /**
-     * Creates a new enumeration value.
-     *
-     * @param  name  human-readable name of this library.
-     */
-    private GeometryLibrary(final String name) {
-        this.name = name;
-    }
+    GEOAPI;
 
     /**
      * Returns the name of this geometry library in a way suitable for user interfaces.
@@ -137,7 +125,12 @@ public enum GeometryLibrary {
      *
      * @since 1.5
      */
+    @Override
     public String toString() {
-        return name;
+        switch (this) {
+            case JAVA2D: return "Java2D";
+            case GEOAPI: return "GeoAPI";
+            default: return name();
+        }
     }
 }

@@ -14,13 +14,10 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.sis.services;
-
 
 /**
- * Place-holder for future web services.
+ * All classes having a dependencies to OSGi ({@code org.osgi.framework} packages).
+ *
+ * @author  Martin Desruisseaux (Geomatys)
  */
-public final class Servlet {
-    private Servlet() {
-    }
-}
+package org.apache.sis.web.osgi;

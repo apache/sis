@@ -77,7 +77,7 @@ public final class Dependency {
         Map.entry("storage.gdal",             "storage:sis-gdal"),
         Map.entry("storage.geopackage",       "storage:sis-geopackage"),
         Map.entry("storage.json",             "storage:sis-json"),
-        Map.entry("webapp",                   "application:sis-webapp")
+        Map.entry("web",                      "application:sis-web")
     );
 
     /**

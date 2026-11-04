@@ -15,13 +15,11 @@
  * limitations under the License.
  */
 
-/**
- * Place-holder for future web services.
- */
-module org.apache.sis.webapp {
-    requires transitive org.apache.sis.storage;
-    requires static jakarta.servlet;
-    requires static osgi.core;
 
-    exports org.apache.sis.services;
-}
+/**
+ * All classes having a dependencies to Jakarta ({@code jakarta.servlet} packages).
+ * This is the replacement of JavaEE ({@code javax.servlet} packages).
+ *
+ * @author  Martin Desruisseaux (Geomatys)
+ */
+package org.apache.sis.web.jakarta;

@@ -1025,7 +1025,7 @@ public final class EPSGFactoryTest extends TestCaseWithLogs {
 
     /**
      * Tests {@link EPSGFactory#newIdentifiedObjectFinder()} method in a way that requires collation support.
-     * This test reproduces the * <a href="https://sis.apache.org/command-line.html#identifier">Getting a verified
+     * This test reproduces the <a href="https://sis.apache.org/command-line.html#identifier">Getting a verified
      * EPSG identifier from a Coordinate Reference System</a> example with {@code MissingIdentifier.wkt} sample file.
      *
      * @throws FactoryException if an error occurred while querying the factory.

@@ -20,7 +20,7 @@
  * System-wide information are provided by the {@link org.apache.sis.setup.About} class.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.7
+ * @version 1.8
  * @since   0.3
  */
 package org.apache.sis.setup;

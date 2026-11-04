@@ -103,11 +103,6 @@ public abstract class Geometries<G> implements Serializable {
      * This is set by {@link GeometryFactories} and should not change after initialization.
      * We do not synchronize the accesses to this field because we keep the field value stable
      * after {@link GeometryFactories} class initialization.
-     *
-     * <h4>Temporarily permitted change</h4>
-     * {@link GeometryFactories#setStandard(Geometries)} temporarily permits a change of this field,
-     * but only for {@link GeometryLibrary#GEOAPI}. This is internal API and a temporary flexibility
-     * for experimenting different GeoAPI implementations.
      */
     transient Geometries<?> fallback;
 
