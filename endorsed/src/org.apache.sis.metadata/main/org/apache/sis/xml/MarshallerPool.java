@@ -66,7 +66,7 @@ import org.apache.sis.util.internal.shared.Constants;
  * @see XML
  * @see <a href="http://jaxb.java.net/guide/Performance_and_thread_safety.html">JAXB Performance and thread-safety</a>
  *
- * @since 0.3
+ * @since SIS 0.3
  */
 public class MarshallerPool {
     /**
@@ -459,7 +459,7 @@ public class MarshallerPool {
      * Apache SIS version.
      *
      * @return a string representation for debugging purposes.
-     * @since 1.5
+     * @since SIS 1.5
      */
     @Override
     public String toString() {

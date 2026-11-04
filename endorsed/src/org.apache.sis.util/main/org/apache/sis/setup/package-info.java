@@ -21,6 +21,6 @@
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.8
- * @since   0.3
+ * @since SIS 0.3
  */
 package org.apache.sis.setup;

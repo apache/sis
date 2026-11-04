@@ -41,7 +41,7 @@ import org.apache.sis.referencing.internal.shared.IntervalRectangle;
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @version 1.1
- * @since   0.4
+ * @since SIS 0.4
  */
 public final class AffineTransforms2D {
     /**
@@ -116,7 +116,7 @@ public final class AffineTransforms2D {
      *
      * @see #castOrCopy(MathTransform)
      *
-     * @since 1.1
+     * @since SIS 1.1
      */
     public static LinearTransform toMathTransform(final AffineTransform transform) {
         if (transform == null || transform instanceof LinearTransform) {

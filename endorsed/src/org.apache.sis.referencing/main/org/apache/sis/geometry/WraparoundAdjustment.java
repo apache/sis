@@ -44,7 +44,7 @@ import org.apache.sis.util.logging.Logging;
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.4
- * @since   1.2
+ * @since SIS 1.2
  */
 public class WraparoundAdjustment {
     /**

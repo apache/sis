@@ -43,7 +43,7 @@ import org.apache.sis.storage.wkt.FirstKeywordPeek;
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.4
- * @since   1.1
+ * @since SIS 1.1
  */
 @StoreMetadata(formatName    = LandsatStoreProvider.NAME,
                capabilities  = Capability.READ,
@@ -177,7 +177,7 @@ public class LandsatStoreProvider extends DataStoreProvider {
      *
      * @return description of available parameters for opening a Landsat file.
      *
-     * @since 0.8
+     * @since SIS 0.8
      */
     @Override
     public ParameterDescriptorGroup getOpenParameters() {

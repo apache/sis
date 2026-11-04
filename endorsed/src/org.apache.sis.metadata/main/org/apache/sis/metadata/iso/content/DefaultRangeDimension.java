@@ -55,7 +55,7 @@ import org.opengis.metadata.content.SampleDimension;
  * @author  Rémi Maréchal (Geomatys)
  * @author  Cullen Rombach (Image Matters)
  * @version 1.4
- * @since   0.3
+ * @since SIS 0.3
  */
 @TitleProperty(name = "sequenceIdentifier")
 @XmlType(name = "MD_RangeDimension_Type", propOrder = {
@@ -172,7 +172,7 @@ public class DefaultRangeDimension extends ISOMetadata implements RangeDimension
      *
      * @return description of the attribute, or {@code null}.
      *
-     * @since 0.5
+     * @since SIS 0.5
      */
     @Override
     @XmlElement(name = "description")
@@ -186,7 +186,7 @@ public class DefaultRangeDimension extends ISOMetadata implements RangeDimension
      *
      * @param  newValue  the new description.
      *
-     * @since 0.5
+     * @since SIS 0.5
      */
     public void setDescription(final InternationalString newValue) {
         checkWritePermission(description);
@@ -228,7 +228,7 @@ public class DefaultRangeDimension extends ISOMetadata implements RangeDimension
      *
      * @return identifiers for each attribute included in the resource.
      *
-     * @since 0.5
+     * @since SIS 0.5
      */
     @Override
     // @XmlElement at the end of this class.
@@ -241,7 +241,7 @@ public class DefaultRangeDimension extends ISOMetadata implements RangeDimension
      *
      * @param  newValues  the new identifiers for each attribute.
      *
-     * @since 0.5
+     * @since SIS 0.5
      */
     public void setNames(final Collection<? extends Identifier> newValues) {
         names = writeCollection(newValues, names, Identifier.class);

@@ -35,7 +35,7 @@ import org.apache.sis.test.FailureDetailsReporter;
  * @author  Cédric Briançon (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.4
- * @since   1.1
+ * @since SIS 1.1
  */
 @ExtendWith(FailureDetailsReporter.class)
 public final class AuthorityFactoryTest extends org.opengis.test.referencing.AuthorityFactoryTest {

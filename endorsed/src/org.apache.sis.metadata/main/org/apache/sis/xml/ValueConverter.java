@@ -66,7 +66,7 @@ import org.apache.sis.measure.Units;
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.3
- * @since   0.3
+ * @since SIS 0.3
  */
 public class ValueConverter {
     /**
@@ -236,7 +236,7 @@ public class ValueConverter {
      *
      * @see Charset#name()
      *
-     * @since 0.5
+     * @since SIS 0.5
      */
     public String toCharsetCode(final MarshalContext context, final Charset value) {
         if (value != null) {
@@ -284,7 +284,7 @@ public class ValueConverter {
      *
      * @see Charset#forName(String)
      *
-     * @since 0.5
+     * @since SIS 0.5
      */
     public Charset toCharset(final MarshalContext context, String value) throws IllegalCharsetNameException {
         value = Strings.trimOrNull(value);

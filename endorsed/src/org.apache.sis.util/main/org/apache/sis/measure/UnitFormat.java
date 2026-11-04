@@ -80,7 +80,7 @@ import org.apache.sis.util.logging.Logging;
  *
  * @see Units#valueOf(String)
  *
- * @since 0.8
+ * @since SIS 0.8
  */
 public class UnitFormat extends Format implements javax.measure.format.UnitFormat, Localized {
     /**
@@ -143,7 +143,7 @@ public class UnitFormat extends Format implements javax.measure.format.UnitForma
      *
      * @author  Martin Desruisseaux (Geomatys)
      * @version 0.8
-     * @since   0.8
+     * @since SIS 0.8
      */
     public enum Style {
         /**

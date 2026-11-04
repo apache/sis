@@ -57,7 +57,7 @@ import org.apache.sis.metadata.sql.internal.shared.SQLUtilities;
  * @author  Johann Sorel (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.5
- * @since   1.5
+ * @since SIS 1.5
  */
 public class Content extends ResourceDefinition {
     /**

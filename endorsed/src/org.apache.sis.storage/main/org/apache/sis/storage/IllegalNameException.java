@@ -34,7 +34,7 @@ import org.apache.sis.util.resources.Vocabulary;
  * @see DataStore#findResource(String)
  *
  * @version 0.8
- * @since   0.8
+ * @since SIS 0.8
  */
 public class IllegalNameException extends NoSuchDataException {
     /**

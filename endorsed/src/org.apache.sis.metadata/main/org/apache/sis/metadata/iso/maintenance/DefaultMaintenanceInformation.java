@@ -71,7 +71,7 @@ import org.opengis.metadata.maintenance.Scope;
  * @author  Rémi Maréchal (Geomatys)
  * @author  Cullen Rombach (Image Matters)
  * @version 1.5
- * @since   0.3
+ * @since SIS 0.3
  */
 @XmlType(name = "MD_MaintenanceInformation_Type", propOrder = {
     "maintenanceAndUpdateFrequency",
@@ -218,7 +218,7 @@ public class DefaultMaintenanceInformation extends ISOMetadata implements Mainte
      *
      * @return date information associated with maintenance of resource.
      *
-     * @since 0.5
+     * @since SIS 0.5
      */
     @Override
     // @XmlElement at the end of this class.
@@ -231,7 +231,7 @@ public class DefaultMaintenanceInformation extends ISOMetadata implements Mainte
      *
      * @param  newValues  the new date information associated with maintenance of resource.
      *
-     * @since 0.5
+     * @since SIS 0.5
      */
     public void setMaintenanceDates(final Collection<? extends CitationDate> newValues) {
         maintenanceDates = writeCollection(newValues, maintenanceDates, CitationDate.class);
@@ -337,7 +337,7 @@ public class DefaultMaintenanceInformation extends ISOMetadata implements Mainte
      *
      * @return type of resource and / or extent to which the maintenance information applies.
      *
-     * @since 0.5
+     * @since SIS 0.5
      */
     @Override
     // @XmlElement at the end of this class.
@@ -350,7 +350,7 @@ public class DefaultMaintenanceInformation extends ISOMetadata implements Mainte
      *
      * @param  newValues  the types of resource and / or extents to which the maintenance information applies.
      *
-     * @since 0.5
+     * @since SIS 0.5
      */
     public void setMaintenanceScopes(final Collection<? extends Scope> newValues) {
         maintenanceScopes = writeCollection(newValues, maintenanceScopes, Scope.class);

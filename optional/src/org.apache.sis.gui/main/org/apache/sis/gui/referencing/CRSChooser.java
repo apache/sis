@@ -82,7 +82,7 @@ import org.opengis.referencing.ObjectDomain;
  * @author  Johann Sorel (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.5
- * @since   1.1
+ * @since SIS 1.1
  */
 public class CRSChooser extends Dialog<CoordinateReferenceSystem> {
     /**

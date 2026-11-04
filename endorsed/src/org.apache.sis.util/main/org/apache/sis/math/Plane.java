@@ -54,7 +54,7 @@ import org.opengis.coordinate.MismatchedDimensionException;
  * @see Line
  * @see org.apache.sis.referencing.operation.builder.LinearTransformBuilder
  *
- * @since 0.5
+ * @since SIS 0.5
  */
 public class Plane implements DoubleBinaryOperator, Cloneable, Serializable {
     /**
@@ -211,7 +211,7 @@ public class Plane implements DoubleBinaryOperator, Cloneable, Serializable {
      * @param  y  the second operand where to evaluate the function.
      * @return the function value for the given operands.
      *
-     * @since 1.0
+     * @since SIS 1.0
      */
     @Override
     public double applyAsDouble(double x, double y) {
@@ -241,7 +241,7 @@ public class Plane implements DoubleBinaryOperator, Cloneable, Serializable {
      * @param sy  the slope along the <var>y</var> values.
      * @param z0  the <var>z</var> value at (<var>x</var>,<var>y</var>) = (0,0).
      *
-     * @since 0.8
+     * @since SIS 0.8
      */
     public void setEquation(final Number sx, final Number sy, final Number z0) {
         setEquation(sx.doubleValue(), sy.doubleValue(), z0.doubleValue());
@@ -284,7 +284,7 @@ public class Plane implements DoubleBinaryOperator, Cloneable, Serializable {
      *         The closer this coefficient is to +1 or -1, the better the fit.
      * @throws IllegalArgumentException if <var>x</var>, <var>y</var> and <var>z</var> do not have the same length.
      *
-     * @since 0.8
+     * @since SIS 0.8
      */
     public double fit(final Vector x, final Vector y, final Vector z) {
         ArgumentChecks.ensureNonNull("x", x);
@@ -335,7 +335,7 @@ public class Plane implements DoubleBinaryOperator, Cloneable, Serializable {
      * @throws IllegalArgumentException if <var>z</var> does not have the expected length or if a <var>z</var>
      *         value is {@link Double#NaN}.
      *
-     * @since 0.8
+     * @since SIS 0.8
      */
     public double fit(final int nx, final int ny, final Vector z) {
         ArgumentChecks.ensureStrictlyPositive("nx", nx);

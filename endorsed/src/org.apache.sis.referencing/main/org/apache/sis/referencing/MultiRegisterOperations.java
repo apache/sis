@@ -74,7 +74,7 @@ import org.apache.sis.referencing.datum.DatumOrEnsemble;
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.5
- * @since   1.5
+ * @since SIS 1.5
  */
 public class MultiRegisterOperations extends AbstractFactory implements RegisterOperations {
     /**

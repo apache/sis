@@ -22,7 +22,7 @@ package org.apache.sis.console;
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @version 0.3
- * @since   0.3
+ * @since SIS 0.3
  */
 public class InvalidOptionException extends Exception {
     /**

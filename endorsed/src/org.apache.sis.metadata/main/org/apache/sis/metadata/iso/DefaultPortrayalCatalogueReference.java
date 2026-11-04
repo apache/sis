@@ -47,7 +47,7 @@ import org.apache.sis.xml.Namespaces;
  * @author  Touraïvane (IRD)
  * @author  Cédric Briançon (Geomatys)
  * @version 1.4
- * @since   0.3
+ * @since SIS 0.3
  */
 @XmlType(name = "MD_PortrayalCatalogueReference_Type", namespace = Namespaces.MPC)
 @XmlRootElement(name = "MD_PortrayalCatalogueReference", namespace = Namespaces.MPC)

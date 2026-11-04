@@ -21,7 +21,7 @@
  * @author  Johann Sorel (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.7
- * @since   1.2
+ * @since SIS 1.2
  */
 module org.apache.sis.portrayal {
     requires transitive org.apache.sis.storage;

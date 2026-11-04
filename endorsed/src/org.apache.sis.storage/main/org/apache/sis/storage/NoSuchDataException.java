@@ -28,7 +28,7 @@ import org.apache.sis.storage.internal.Resources;
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.1
- * @since   1.1
+ * @since SIS 1.1
  */
 public class NoSuchDataException extends DataStoreException {
     /**

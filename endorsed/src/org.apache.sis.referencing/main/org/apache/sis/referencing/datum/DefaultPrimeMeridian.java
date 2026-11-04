@@ -90,7 +90,7 @@ import org.opengis.metadata.Identifier;
  * @see org.apache.sis.referencing.CommonCRS#primeMeridian()
  * @see org.apache.sis.referencing.factory.GeodeticAuthorityFactory#createPrimeMeridian(String)
  *
- * @since 0.4
+ * @since SIS 0.4
  */
 @XmlType(name = "PrimeMeridianType")
 @XmlRootElement(name = "PrimeMeridian")
@@ -199,7 +199,7 @@ public class DefaultPrimeMeridian extends AbstractIdentifiedObject implements Pr
      * This is the base type required by {@code equals(…)} methods for returning a potentially {@code true} value.
      *
      * @return {@code PrimeMeridian.class} or a user-defined sub-interface.
-     * @since 1.7
+     * @since SIS 1.7
      */
     @Override
     public Type getStandardType() {

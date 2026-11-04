@@ -56,7 +56,7 @@ import org.opengis.metadata.citation.Party;
  * @author  Rémi Maréchal (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.4
- * @since   0.5
+ * @since SIS 0.5
  */
 @TitleProperty(name = "name")
 @XmlType(name = "AbstractCI_Party_Type", propOrder = {
@@ -191,7 +191,7 @@ public class AbstractParty extends ISOMetadata implements Party {
      *
      * @return identifiers of the party, or an empty collection if none.
      *
-     * @since 1.3
+     * @since SIS 1.3
      */
     @Override
     @XmlElement(name = "partyIdentifier")
@@ -207,7 +207,7 @@ public class AbstractParty extends ISOMetadata implements Party {
      *
      * @param  newValues  the new identifiers values.
      *
-     * @since 1.3
+     * @since SIS 1.3
      */
     public void setIdentifiers(Collection<? extends Identifier> newValues) {
         newValues = NonMarshalledAuthority.setMarshallables(identifiers, newValues);

@@ -55,7 +55,7 @@ import org.opengis.referencing.datum.ParametricDatum;
  * @see org.apache.sis.referencing.crs.DefaultParametricCRS
  * @see org.apache.sis.referencing.factory.GeodeticAuthorityFactory#createParametricDatum(String)
  *
- * @since 0.7
+ * @since SIS 0.7
  */
 @XmlType(name = "ParametricDatumType")
 @XmlRootElement(name = "ParametricDatum")
@@ -150,7 +150,7 @@ public class DefaultParametricDatum extends AbstractDatum implements ParametricD
      * This is the base type required by {@code equals(…)} methods for returning a potentially {@code true} value.
      *
      * @return {@code ParametricDatum.class} or a user-defined sub-interface.
-     * @since 1.7
+     * @since SIS 1.7
      */
     @Override
     public Type getStandardType() {

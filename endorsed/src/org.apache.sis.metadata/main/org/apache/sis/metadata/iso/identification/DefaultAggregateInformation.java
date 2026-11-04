@@ -67,7 +67,7 @@ import org.opengis.metadata.identification.AssociatedResource;
  * @author  Martin Desruisseaux (Geomatys)
  * @author  Cullen Rombach (Image Matters)
  * @version 1.7
- * @since   0.3
+ * @since SIS 0.3
  *
  * @deprecated As of ISO 19115:2014, replaced by {@link DefaultAssociatedResource}.
  */

@@ -39,7 +39,7 @@ import org.opengis.metadata.quality.FullInspection;
  * @author  Alexis Gaillard (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.4
- * @since   1.3
+ * @since SIS 1.3
  */
 @XmlType(name = "DQ_FullInspection_Type")
 @XmlRootElement(name = "DQ_FullInspection")

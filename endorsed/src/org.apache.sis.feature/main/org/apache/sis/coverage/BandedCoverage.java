@@ -53,7 +53,7 @@ import org.opengis.coverage.PointOutsideCoverageException;
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @version 1.3
- * @since   1.1
+ * @since SIS 1.1
  */
 public abstract class BandedCoverage {
     /**
@@ -67,7 +67,7 @@ public abstract class BandedCoverage {
      *
      * @return the coordinate reference system to which the cells are referenced.
      *
-     * @since 1.2
+     * @since SIS 1.2
      */
     public abstract CoordinateReferenceSystem getCoordinateReferenceSystem();
 
@@ -95,7 +95,7 @@ public abstract class BandedCoverage {
      *
      * @return the bounding box for the coverage domain in CRS coordinates if available.
      *
-     * @since 1.2
+     * @since SIS 1.2
      */
     public abstract Optional<Envelope> getEnvelope();
 
@@ -137,7 +137,7 @@ public abstract class BandedCoverage {
      *
      * @see BandedCoverage#evaluator()
      *
-     * @since 1.1
+     * @since SIS 1.1
      */
     public interface Evaluator extends Function<DirectPosition, double[]> {
         /**
@@ -182,7 +182,7 @@ public abstract class BandedCoverage {
          *
          * @return {@code true} if this evaluator may wraparound coordinates that are outside the coverage.
          *
-         * @since 1.3
+         * @since SIS 1.3
          */
         boolean isWraparoundEnabled();
 
@@ -195,7 +195,7 @@ public abstract class BandedCoverage {
          *
          * @param  allow  whether to allow wraparound of coordinates that are outside the coverage.
          *
-         * @since 1.3
+         * @since SIS 1.3
          */
         void setWraparoundEnabled(final boolean allow);
 
@@ -253,7 +253,7 @@ public abstract class BandedCoverage {
          * @param  parallel {@code true} for a parallel stream, or {@code false} for a sequential stream.
          * @return a sequential or parallel stream of sample values at the specified positions.
          *
-         * @since 1.6
+         * @since SIS 1.6
          */
         default Stream<double[]> stream(Collection<? extends DirectPosition> points, boolean parallel) {
             // Ignore `parallel` because we don't know if `apply(DirectPosition)` is thread-safe.

@@ -125,7 +125,7 @@ import static org.apache.sis.referencing.operation.matrix.Matrix4.SIZE;
  * @see DefaultGeodeticDatum#getBursaWolfParameters()
  * @see <a href="https://en.wikipedia.org/wiki/Helmert_transformation">Wikipedia: Helmert transformation</a>
  *
- * @since 0.4
+ * @since SIS 0.4
  */
 public class BursaWolfParameters extends FormattableObject implements Cloneable, Serializable {
     /**
@@ -294,7 +294,7 @@ public class BursaWolfParameters extends FormattableObject implements Cloneable,
      *
      * @return the parameter values as an array of length 3, 6, 7 or 14.
      *
-     * @since 0.6
+     * @since SIS 0.6
      */
     @SuppressWarnings("fallthrough")
     public double[] getValues() {
@@ -326,7 +326,7 @@ public class BursaWolfParameters extends FormattableObject implements Cloneable,
      *
      * @param  elements  the new parameter values, as an array of any length.
      *
-     * @since 0.6
+     * @since SIS 0.6
      */
     @SuppressWarnings("fallthrough")
     public void setValues(final double... elements) {
@@ -479,7 +479,7 @@ public class BursaWolfParameters extends FormattableObject implements Cloneable,
      *
      * @see DefaultGeodeticDatum#getPositionVectorTransformation(GeodeticDatum, Extent)
      *
-     * @since 1.5
+     * @since SIS 1.5
      */
     public Matrix getPositionVectorTransformation(final Temporal time) {
         final DoubleDouble period = period(time);

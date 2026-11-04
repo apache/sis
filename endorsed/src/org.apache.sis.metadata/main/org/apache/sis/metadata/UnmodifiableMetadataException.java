@@ -33,7 +33,7 @@ package org.apache.sis.metadata;
  *
  * @see org.apache.sis.metadata.ModifiableMetadata.State#FINAL
  *
- * @since 0.3
+ * @since SIS 0.3
  */
 public class UnmodifiableMetadataException extends UnsupportedOperationException {
     /**

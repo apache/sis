@@ -175,7 +175,7 @@ import org.opengis.referencing.ReferenceIdentifier;
  *
  * @param <B>  the builder subclass.
  *
- * @since 0.4
+ * @since SIS 0.4
  */
 public abstract class Builder<B extends Builder<B>> {
     /**
@@ -270,7 +270,7 @@ public abstract class Builder<B extends Builder<B>> {
      *
      * @param object  the identified object from which to inherit properties, or {@code null}.
      *
-     * @since 0.6
+     * @since SIS 0.6
      */
     protected Builder(final IdentifiedObject object) {
         this();
@@ -692,7 +692,7 @@ public abstract class Builder<B extends Builder<B>> {
      * @param  object  the object from which to copy the names and identifiers.
      * @return {@code this}, for method call chaining.
      *
-     * @since 0.6
+     * @since SIS 0.6
      */
     public B addNamesAndIdentifiers(final IdentifiedObject object) {
         for (final ReferenceIdentifier id : object.getIdentifiers()) {
@@ -720,7 +720,7 @@ public abstract class Builder<B extends Builder<B>> {
      * @param  object     the object from which to copy the name and identifier.
      * @return {@code this}, for method call chaining.
      *
-     * @since 1.1
+     * @since SIS 1.1
      */
     public B addNameAndIdentifier(final Citation authority, final IdentifiedObject object) {
         ArgumentChecks.ensureNonNull("authority", authority);
@@ -768,7 +768,7 @@ public abstract class Builder<B extends Builder<B>> {
      *         or {@code null} or an empty array for removing all names associated with the given authority.
      * @return {@code this}, for method call chaining.
      *
-     * @since 0.6
+     * @since SIS 0.6
      */
     public B rename(final Citation authority, final CharSequence... replacements) {
         ArgumentChecks.ensureNonNull("authority", authority);
@@ -867,7 +867,7 @@ public abstract class Builder<B extends Builder<B>> {
      *         or {@code null} or an empty array for removing all names associated with the given authority.
      * @return {@code this}, for method call chaining.
      *
-     * @since 0.8
+     * @since SIS 0.8
      */
     public B reidentify(final Citation authority, final String... replacements) {
         ArgumentChecks.ensureNonNull("authority", authority);
@@ -990,7 +990,7 @@ public abstract class Builder<B extends Builder<B>> {
      *
      * @see AbstractIdentifiedObject#isDeprecated()
      *
-     * @since 0.6
+     * @since SIS 0.6
      */
     public B setDeprecated(final boolean deprecated) {
         properties.put(AbstractIdentifiedObject.DEPRECATED_KEY, deprecated);

@@ -33,7 +33,7 @@ import org.opengis.metadata.acquisition.GeometryType;
  * @see org.apache.sis.storage.OptionKey#GEOMETRY_LIBRARY
  * @see org.apache.sis.feature.builder.FeatureTypeBuilder#addAttribute(GeometryType)
  *
- * @since 0.8
+ * @since SIS 0.8
  */
 public enum GeometryLibrary {
     /**
@@ -91,7 +91,7 @@ public enum GeometryLibrary {
      *
      * @see <a href="http://locationtech.github.io/jts/"><abbr>JTS</abbr> home page</a>
      *
-     * @since 1.0
+     * @since SIS 1.0
      */
     JTS,
 
@@ -108,7 +108,7 @@ public enum GeometryLibrary {
      *
      * @see <a href="https://github.com/google/s2-geometry-library-java"><abbr>S2</abbr> repository</a>
      *
-     * @since 2.0 (temporary version number until the code in incubator is released)
+     * @since SIS 2.0 (temporary version number until the code in incubator is released)
      */
     S2,
 
@@ -126,7 +126,7 @@ public enum GeometryLibrary {
      *   <tr><td>{@link GeometryType#AREAL}</td>  <td>{@code org.apache.sis.geometries.Polygon}</td></tr>
      * </table>
      *
-     * @since 2.0 (temporary version number until the code in incubator is released)
+     * @since SIS 2.0 (temporary version number until the code in incubator is released)
      */
     SIS,
 
@@ -147,7 +147,7 @@ public enum GeometryLibrary {
      * and other methods throws {@link UnsupportedOperationException}.
      * Future GeoAPI version and Apache SIS implementation should provide more extensive support.
      *
-     * @since 1.4
+     * @since SIS 1.4
      */
     GEOAPI;
 
@@ -158,7 +158,7 @@ public enum GeometryLibrary {
      *
      * @return human-readable name of this library.
      *
-     * @since 1.5
+     * @since SIS 1.5
      */
     @Override
     public String toString() {

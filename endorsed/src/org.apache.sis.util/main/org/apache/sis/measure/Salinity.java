@@ -35,7 +35,7 @@ import javax.measure.Quantity;
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @version 0.8
- * @since   0.8
+ * @since SIS 0.8
  *
  * @see Units#PSU
  */

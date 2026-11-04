@@ -71,7 +71,7 @@ import java.lang.reflect.Array;
  *
  * @see Arrays
  *
- * @since 0.3
+ * @since SIS 0.3
  */
 @SuppressWarnings("ReturnOfCollectionOrArrayField")     // Array constants in this class are immutable empty arrays.
 public final class ArraysExt {
@@ -1203,7 +1203,7 @@ public final class ArraysExt {
      * @param  a2  the second array to concatenate, or {@code null}.
      * @return the concatenation of given arrays. May be one of the given arrays returned without copying.
      *
-     * @since 1.5
+     * @since SIS 1.5
      */
     public static byte[] concatenate(final byte[] a1, final byte[] a2) {
         if (a1 == null || a1.length == 0) return a2;
@@ -1221,7 +1221,7 @@ public final class ArraysExt {
      * @param  a2  the second array to concatenate, or {@code null}.
      * @return the concatenation of given arrays. May be one of the given arrays returned without copying.
      *
-     * @since 1.4
+     * @since SIS 1.4
      */
     public static int[] concatenate(final int[] a1, final int[] a2) {
         if (a1 == null || a1.length == 0) return a2;
@@ -1239,7 +1239,7 @@ public final class ArraysExt {
      * @param  a2  the second array to concatenate, or {@code null}.
      * @return the concatenation of given arrays. May be one of the given arrays returned without copying.
      *
-     * @since 1.4
+     * @since SIS 1.4
      */
     public static long[] concatenate(final long[] a1, final long[] a2) {
         if (a1 == null || a1.length == 0) return a2;
@@ -1257,7 +1257,7 @@ public final class ArraysExt {
      * @param  a2  the second array to concatenate, or {@code null}.
      * @return the concatenation of given arrays. May be one of the given arrays returned without copying.
      *
-     * @since 1.5
+     * @since SIS 1.5
      */
     public static double[] concatenate(final double[] a1, final double[] a2) {
         if (a1 == null || a1.length == 0) return a2;
@@ -1285,7 +1285,7 @@ public final class ArraysExt {
      * @param  array  array from which to remove null elements, or {@code null}.
      * @return the number of remaining elements in the given array, or 0 if the given {@code array} was null.
      *
-     * @since 1.5
+     * @since SIS 1.5
      */
     public static int removeNulls(final Object[] array) {
         if (array == null) {
@@ -1356,7 +1356,7 @@ public final class ArraysExt {
      * @return the number of remaining elements in the given array, or 0 if the given {@code array} was null.
      * @throws ArrayIndexOutOfBoundsException if {@code length} is negative or greater than {@code array.length}.
      *
-     * @since 1.5
+     * @since SIS 1.5
      */
     public static int removeDuplicated(final Object[] array, int length) {
         for (int i=length; --i>=0;) {
@@ -1433,7 +1433,7 @@ public final class ArraysExt {
      * @see java.util.stream.IntStream#range(int, int)
      * @see <a href="https://en.wikipedia.org/wiki/Arithmetic_progression">Arithmetic progression on Wikipedia</a>
      *
-     * @since 1.0
+     * @since SIS 1.0
      */
     public static int[] range(final int start, final int end) {
         if (end > start) {
@@ -1474,7 +1474,7 @@ public final class ArraysExt {
      *
      * @see #range(int, int)
      *
-     * @since 1.0
+     * @since SIS 1.0
      */
     public static boolean isRange(final int start, final int[] array) {
         if (array == null) {
@@ -1798,7 +1798,7 @@ public final class ArraysExt {
      * @param  i0    index of one element to be swapped.
      * @param  i1    index of the other element to be swapped.
      *
-     * @since 0.4
+     * @since SIS 0.4
      */
     public static void swap(final Object[] data, final int i0, final int i1) {
         final Object t = data[i0];
@@ -1817,7 +1817,7 @@ public final class ArraysExt {
      * @param  i0   index of one element to be swapped.
      * @param  i1   index of the other element to be swapped.
      *
-     * @since 0.4
+     * @since SIS 0.4
      */
     public static void swap(final double[] data, final int i0, final int i1) {
         final double t = data[i0];
@@ -1832,7 +1832,7 @@ public final class ArraysExt {
      * @param  i0   index of one element to be swapped.
      * @param  i1   index of the other element to be swapped.
      *
-     * @since 0.4
+     * @since SIS 0.4
      */
     public static void swap(final float[] data, final int i0, final int i1) {
         final float t = data[i0];
@@ -1847,7 +1847,7 @@ public final class ArraysExt {
      * @param  i0   index of one element to be swapped.
      * @param  i1   index of the other element to be swapped.
      *
-     * @since 0.4
+     * @since SIS 0.4
      */
     public static void swap(final long[] data, final int i0, final int i1) {
         final long t = data[i0];
@@ -1866,7 +1866,7 @@ public final class ArraysExt {
      * @param  i0   index of one element to be swapped.
      * @param  i1   index of the other element to be swapped.
      *
-     * @since 0.4
+     * @since SIS 0.4
      */
     public static void swap(final int[] data, final int i0, final int i1) {
         final int t = data[i0];
@@ -1881,7 +1881,7 @@ public final class ArraysExt {
      * @param  i0   index of one element to be swapped.
      * @param  i1   index of the other element to be swapped.
      *
-     * @since 0.4
+     * @since SIS 0.4
      */
     public static void swap(final short[] data, final int i0, final int i1) {
         final short t = data[i0];
@@ -1896,7 +1896,7 @@ public final class ArraysExt {
      * @param  i0   index of one element to be swapped.
      * @param  i1   index of the other element to be swapped.
      *
-     * @since 0.4
+     * @since SIS 0.4
      */
     public static void swap(final byte[] data, final int i0, final int i1) {
         final byte t = data[i0];
@@ -1911,7 +1911,7 @@ public final class ArraysExt {
      * @param  i0   index of one element to be swapped.
      * @param  i1   index of the other element to be swapped.
      *
-     * @since 0.4
+     * @since SIS 0.4
      */
     public static void swap(final char[] data, final int i0, final int i1) {
         final char t = data[i0];
@@ -1938,7 +1938,7 @@ public final class ArraysExt {
      * @param  search       the value to search.
      * @param  replacement  the replacement.
      *
-     * @since 1.0
+     * @since SIS 1.0
      */
     public static void replace(final double[] array, final double search, final double replacement) {
         if (array != null) {
@@ -1972,7 +1972,7 @@ public final class ArraysExt {
      * @param  search       the value to search.
      * @param  replacement  the replacement.
      *
-     * @since 1.0
+     * @since SIS 1.0
      */
     public static void replace(final float[] array, final float search, final float replacement) {
         if (array != null) {
@@ -1994,7 +1994,7 @@ public final class ArraysExt {
      * @return a copy of the given array with values cast to the {@code long} type,
      *         or {@code null} if the given array was null.
      *
-     * @since 1.1
+     * @since SIS 1.1
      */
     public static long[] copyAsLongs(final int[] data) {
         if (data == null) return null;
@@ -2013,7 +2013,7 @@ public final class ArraysExt {
      * @return a copy of the given array with values cast to the {@code double} type,
      *         or {@code null} if the given array was null.
      *
-     * @since 1.5
+     * @since SIS 1.5
      */
     public static double[] copyAsDoubles(final long[] data) {
         if (data == null) return null;
@@ -2032,7 +2032,7 @@ public final class ArraysExt {
      * @return a copy of the given array with values cast to the {@code float} type,
      *         or {@code null} if the given array was null.
      *
-     * @since 1.0
+     * @since SIS 1.0
      */
     public static float[] copyAsFloats(final double[] data) {
         if (data == null) return null;
@@ -2060,7 +2060,7 @@ public final class ArraysExt {
      * @return a copy of the given array with values cast to the {@code float} type, or
      *         {@code null} if the given array was null or if a cast would cause data lost.
      *
-     * @since 1.0
+     * @since SIS 1.0
      */
     public static float[] copyAsFloatsIfLossless(final double[] data) {
         if (data == null) return null;
@@ -2106,7 +2106,7 @@ public final class ArraysExt {
      * @param  values  the values to test for their precision, or {@code null}.
      * @return {@code true} if every values can be cast to the {@code float} type without data lost.
      *
-     * @since 1.0
+     * @since SIS 1.0
      */
     public static boolean isSinglePrecision(final double... values) {
         if (values != null) {
@@ -2161,7 +2161,7 @@ public final class ArraysExt {
      * @param  value  the expected value.
      * @return {@code true} if all elements in the given array are equal to the given value.
      *
-     * @since 0.8
+     * @since SIS 0.8
      */
     public static boolean allEquals(final Object[] array, final Object value) {
         if (value == null) {
@@ -2237,7 +2237,7 @@ public final class ArraysExt {
      * @param  value  the expected value.
      * @return {@code true} if all elements in the given array are equal to the given value.
      *
-     * @since 1.7
+     * @since SIS 1.7
      */
     public static boolean allEquals(final long[] array, final long value) {
         for (int i=0; i<array.length; i++) {
@@ -2255,7 +2255,7 @@ public final class ArraysExt {
      * @param  value  the expected value.
      * @return {@code true} if all elements in the given array are equal to the given value.
      *
-     * @since 1.2
+     * @since SIS 1.2
      */
     public static boolean allEquals(final int[] array, final int value) {
         for (int i=0; i<array.length; i++) {

@@ -56,7 +56,7 @@ import static org.apache.sis.metadata.internal.shared.ImplementationHelper.ensur
  * @author  Rémi Maréchal (Geomatys)
  * @author  Cullen Rombach (Image Matters)
  * @version 1.5
- * @since   0.3
+ * @since SIS 0.3
  */
 @TitleProperty(name = "dimensionName")
 @XmlType(name = "MD_Dimension_Type", propOrder = {
@@ -251,7 +251,7 @@ public class DefaultDimension extends ISOMetadata implements Dimension {
      *
      * @return the enhancement / modifier of the dimension name.
      *
-     * @since 0.5
+     * @since SIS 0.5
      */
     @Override
     @XmlElement(name = "dimensionTitle")
@@ -265,7 +265,7 @@ public class DefaultDimension extends ISOMetadata implements Dimension {
      *
      * @param  newValue  the new enhancement / modifier of the dimension name.
      *
-     * @since 0.5
+     * @since SIS 0.5
      */
     public void setDimensionTitle(final InternationalString newValue) {
         checkWritePermission(dimensionTitle);
@@ -277,7 +277,7 @@ public class DefaultDimension extends ISOMetadata implements Dimension {
      *
      * @return the axis dimension description.
      *
-     * @since 0.5
+     * @since SIS 0.5
      */
     @Override
     @XmlElement(name = "dimensionDescription")
@@ -291,7 +291,7 @@ public class DefaultDimension extends ISOMetadata implements Dimension {
      *
      * @param  newValue  the new axis dimension description.
      *
-     * @since 0.5
+     * @since SIS 0.5
      */
     public void setDimensionDescription(final InternationalString newValue) {
         checkWritePermission(dimensionDescription);

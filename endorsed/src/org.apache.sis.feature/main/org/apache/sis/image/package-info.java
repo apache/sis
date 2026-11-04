@@ -43,6 +43,6 @@
  * @author  Martin Desruisseaux (Geomatys)
  * @author  Johann Sorel (Geomatys)
  * @version 1.7
- * @since   1.0
+ * @since SIS 1.0
  */
 package org.apache.sis.image;

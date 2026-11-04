@@ -59,7 +59,7 @@ import org.apache.sis.temporal.TemporalDate;
  * @author  Cédric Briançon (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.7
- * @since   0.3
+ * @since SIS 0.3
  */
 @TitleProperty(name = "identifier")
 @XmlType(name = "MI_Event_Type", propOrder = {
@@ -286,7 +286,7 @@ public class DefaultEvent extends ISOMetadata implements Event {
      *
      * @return time the event occurred, or {@code null}.
      *
-     * @since 1.5
+     * @since SIS 1.5
      */
     @Override
     @XmlElement(name = "time", required = true)
@@ -299,7 +299,7 @@ public class DefaultEvent extends ISOMetadata implements Event {
      *
      * @param  newValue  the new time value.
      *
-     * @since 1.5
+     * @since SIS 1.5
      */
     public void setDateOfOccurrence(final Temporal newValue) {
         checkWritePermission(time);

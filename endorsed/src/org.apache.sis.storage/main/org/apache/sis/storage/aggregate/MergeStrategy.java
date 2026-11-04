@@ -57,13 +57,13 @@ import org.apache.sis.util.internal.shared.Strings;
  *
  * @see CoverageAggregator#setMergeStrategy(MergeStrategy)
  *
- * @since 1.3
+ * @since SIS 1.3
  */
 public abstract class MergeStrategy {
     /**
      * Creates a new merge strategy.
      *
-     * @since 1.5
+     * @since SIS 1.5
      */
     protected MergeStrategy() {
     }
@@ -77,7 +77,7 @@ public abstract class MergeStrategy {
      * @param  areaOfInterest  range of pixel coordinates, or {@code null} for the union of all images.
      * @return a merge strategy for building an overlay of all source images.
      *
-     * @since 1.5
+     * @since SIS 1.5
      */
     public static MergeStrategy opaqueOverlay(final Rectangle areaOfInterest) {
         Overlay strategy = Overlay.DEFAULT;
@@ -273,7 +273,7 @@ public abstract class MergeStrategy {
      * @param  candidates  grid geometry of all slices that intersect the request.
      * @return indexes of the slices to use according the heuristic rules of this {@code MergeStrategy}.
      *
-     * @since 1.5
+     * @since SIS 1.5
      */
     protected int[] filter(GridGeometry request, GridGeometry[] candidates) {
         return ArraysExt.range(0, candidates.length);
@@ -288,7 +288,7 @@ public abstract class MergeStrategy {
      * @param  sources  the images accepted by the filter.
      * @return the result of the aggregation.
      *
-     * @since 1.5
+     * @since SIS 1.5
      */
     protected abstract RenderedImage aggregate(RenderedImage[] sources);
 }

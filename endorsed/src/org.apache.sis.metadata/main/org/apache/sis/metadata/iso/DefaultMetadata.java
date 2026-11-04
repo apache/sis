@@ -146,7 +146,7 @@ import org.opengis.metadata.MetadataScope;
  *
  * @see org.apache.sis.storage.Resource#getMetadata()
  *
- * @since 0.3
+ * @since SIS 0.3
  */
 @XmlType(name = "MD_Metadata_Type", propOrder = {
     // Attributes new in ISO 19115:2014
@@ -354,7 +354,7 @@ public class DefaultMetadata extends ISOMetadata implements Metadata {
      * @param dateStamp           date that the metadata was created.
      * @param identificationInfo  basic information about the resource to which the metadata applies.
      *
-     * @since 1.5
+     * @since SIS 1.5
      */
     public DefaultMetadata(final ResponsibleParty contact,
                            final Temporal       dateStamp,
@@ -453,7 +453,7 @@ public class DefaultMetadata extends ISOMetadata implements Metadata {
      * @see #deepCopy(State)
      * @see State#EDITABLE
      *
-     * @since 1.1
+     * @since SIS 1.1
      */
     public static DefaultMetadata deepCopy(final Metadata object) {
         if (object == null) {
@@ -480,7 +480,7 @@ public class DefaultMetadata extends ISOMetadata implements Metadata {
      *
      * @return unique identifier for this metadata record, or {@code null}.
      *
-     * @since 0.5
+     * @since SIS 0.5
      */
     @Override
     @XmlElement(name = "metadataIdentifier")
@@ -494,7 +494,7 @@ public class DefaultMetadata extends ISOMetadata implements Metadata {
      *
      * @param  newValue  the new identifier, or {@code null} if none.
      *
-     * @since 0.5
+     * @since SIS 0.5
      */
     public void setMetadataIdentifier(final Identifier newValue) {
         super.setIdentifier(newValue);
@@ -559,7 +559,7 @@ public class DefaultMetadata extends ISOMetadata implements Metadata {
      *
      * @return language(s) and character set(s) used for documenting metadata.
      *
-     * @since 1.0
+     * @since SIS 1.0
      */
     @Override
     // @XmlElement at the end of this class.
@@ -576,7 +576,7 @@ public class DefaultMetadata extends ISOMetadata implements Metadata {
      *
      * @see org.apache.sis.xml.XML#LOCALE
      *
-     * @since 1.0
+     * @since SIS 1.0
      */
     public void setLocalesAndCharsets(final Map<? extends Locale, ? extends Charset> newValues) {
         locales = writeMap(newValues, locales, Locale.class);
@@ -714,7 +714,7 @@ public class DefaultMetadata extends ISOMetadata implements Metadata {
      *
      * @return identification of the parent metadata record, or {@code null} if none.
      *
-     * @since 0.5
+     * @since SIS 0.5
      */
     @Override
     @XmlElement(name = "parentMetadata")
@@ -728,7 +728,7 @@ public class DefaultMetadata extends ISOMetadata implements Metadata {
      *
      * @param  newValue  the new identification of the parent metadata record.
      *
-     * @since 0.5
+     * @since SIS 0.5
      */
     public void setParentMetadata(final Citation newValue) {
         checkWritePermission(parentMetadata);
@@ -788,7 +788,7 @@ public class DefaultMetadata extends ISOMetadata implements Metadata {
      *
      * @return scope or type of resource for which metadata is provided.
      *
-     * @since 0.5
+     * @since SIS 0.5
      */
     @Override
     // @XmlElement at the end of this class.
@@ -801,7 +801,7 @@ public class DefaultMetadata extends ISOMetadata implements Metadata {
      *
      * @param  newValues  the new scope or type of resource.
      *
-     * @since 0.5
+     * @since SIS 0.5
      */
     public void setMetadataScopes(final Collection<? extends MetadataScope> newValues) {
         metadataScopes = writeCollection(newValues, metadataScopes, MetadataScope.class);
@@ -940,7 +940,7 @@ public class DefaultMetadata extends ISOMetadata implements Metadata {
      *
      * @see Citation#getDates()
      *
-     * @since 0.5
+     * @since SIS 0.5
      */
     @Override
     // @XmlElement at the end of this class.
@@ -954,7 +954,7 @@ public class DefaultMetadata extends ISOMetadata implements Metadata {
      *
      * @param  newValues  new dates associated with the metadata.
      *
-     * @since 0.5
+     * @since SIS 0.5
      */
     public void setDateInfo(final Collection<? extends CitationDate> newValues) {
         dateInfo = writeCollection(newValues, dateInfo, CitationDate.class);
@@ -1032,7 +1032,7 @@ public class DefaultMetadata extends ISOMetadata implements Metadata {
      *
      * @see #getMetadataProfiles()
      *
-     * @since 0.5
+     * @since SIS 0.5
      */
     @Override
     // @XmlElement at the end of this class.
@@ -1046,7 +1046,7 @@ public class DefaultMetadata extends ISOMetadata implements Metadata {
      *
      * @param  newValues  the new standard(s) to which the metadata conform.
      *
-     * @since 0.5
+     * @since SIS 0.5
      */
     public void setMetadataStandards(final Collection<? extends Citation> newValues) {
         metadataStandards = writeCollection(newValues, metadataStandards, Citation.class);
@@ -1060,7 +1060,7 @@ public class DefaultMetadata extends ISOMetadata implements Metadata {
      * @see #getMetadataStandards()
      * @see #getMetadataExtensionInfo()
      *
-     * @since 0.5
+     * @since SIS 0.5
      */
     @Override
     // @XmlElement at the end of this class.
@@ -1074,7 +1074,7 @@ public class DefaultMetadata extends ISOMetadata implements Metadata {
      *
      * @param  newValues  the new profile(s) to which the metadata conform.
      *
-     * @since 0.5
+     * @since SIS 0.5
      */
     public void setMetadataProfiles(final Collection<? extends Citation> newValues) {
         metadataProfiles = writeCollection(newValues, metadataProfiles, Citation.class);
@@ -1085,7 +1085,7 @@ public class DefaultMetadata extends ISOMetadata implements Metadata {
      *
      * @return reference(s) to alternative metadata (e.g. Dublin core, FGDC).
      *
-     * @since 0.5
+     * @since SIS 0.5
      */
     @Override
     // @XmlElement at the end of this class.
@@ -1098,7 +1098,7 @@ public class DefaultMetadata extends ISOMetadata implements Metadata {
      *
      * @param  newValues  the new reference(s) to alternative metadata (e.g. Dublin core, FGDC).
      *
-     * @since 0.5
+     * @since SIS 0.5
      */
     public void setAlternativeMetadataReferences(final Collection<? extends Citation> newValues) {
         alternativeMetadataReferences = writeCollection(newValues, alternativeMetadataReferences, Citation.class);
@@ -1212,7 +1212,7 @@ public class DefaultMetadata extends ISOMetadata implements Metadata {
      *
      * @return online location(s) where the metadata is available.
      *
-     * @since 0.5
+     * @since SIS 0.5
      */
     @Override
     // @XmlElement at the end of this class.
@@ -1225,7 +1225,7 @@ public class DefaultMetadata extends ISOMetadata implements Metadata {
      *
      * @param  newValues  the new online location(s).
      *
-     * @since 0.5
+     * @since SIS 0.5
      */
     public void setMetadataLinkages(final Collection<? extends OnlineResource> newValues) {
         metadataLinkages = writeCollection(newValues, metadataLinkages, OnlineResource.class);
@@ -1578,7 +1578,7 @@ public class DefaultMetadata extends ISOMetadata implements Metadata {
      *
      * @return information about the provenance, sources and/or the production processes.
      *
-     * @since 0.5
+     * @since SIS 0.5
      */
     @Override
     // @XmlElement at the end of this class.
@@ -1591,7 +1591,7 @@ public class DefaultMetadata extends ISOMetadata implements Metadata {
      *
      * @param newValues new information about the provenance, sources and/or the production processes.
      *
-     * @since 0.5
+     * @since SIS 0.5
      */
     public void setResourceLineages(final Collection<? extends Lineage> newValues) {
         resourceLineages = writeCollection(newValues, resourceLineages, Lineage.class);

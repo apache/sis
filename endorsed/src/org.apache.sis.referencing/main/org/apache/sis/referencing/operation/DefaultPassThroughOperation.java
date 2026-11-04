@@ -54,7 +54,7 @@ import org.opengis.parameter.ParameterValueGroup;
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @version 1.7
- * @since   0.6
+ * @since SIS 0.6
  */
 @XmlType(name = "PassThroughOperationType", propOrder = {
     "indices",
@@ -187,7 +187,7 @@ public class DefaultPassThroughOperation extends AbstractCoordinateOperation imp
      * This is the base type required by {@code equals(…)} methods for returning a potentially {@code true} value.
      *
      * @return {@code PassThroughOperation.class} or a user-defined sub-interface.
-     * @since 1.7
+     * @since SIS 1.7
      */
     @Override
     public Type getStandardType() {
@@ -292,7 +292,7 @@ public class DefaultPassThroughOperation extends AbstractCoordinateOperation imp
      * @param  formatter  the formatter to use.
      * @return currently {@code "PassThroughOperation"} (may change in any future version).
      *
-     * @since 0.7
+     * @since SIS 0.7
      */
     @Override
     protected String formatTo(final Formatter formatter) {

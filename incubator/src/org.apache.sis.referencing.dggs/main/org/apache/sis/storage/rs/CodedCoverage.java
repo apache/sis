@@ -119,7 +119,7 @@ public abstract class CodedCoverage extends BandedCoverageExt {
          *
          * @return {@code true} if this evaluator may wraparound coordinates that are outside the coverage.
          *
-         * @since 1.3
+         * @since SIS 1.3
          */
         boolean isWraparoundEnabled();
 
@@ -132,7 +132,7 @@ public abstract class CodedCoverage extends BandedCoverageExt {
          *
          * @param  allow  whether to allow wraparound of coordinates that are outside the coverage.
          *
-         * @since 1.3
+         * @since SIS 1.3
          */
         void setWraparoundEnabled(final boolean allow);
 

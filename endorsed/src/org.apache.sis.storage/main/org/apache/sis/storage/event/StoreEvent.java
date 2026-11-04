@@ -34,7 +34,7 @@ import org.apache.sis.storage.base.StoreResource;
  *
  * @see StoreListener
  *
- * @since 1.0
+ * @since SIS 1.0
  */
 public abstract class StoreEvent extends EventObject implements Localized {
     /**
@@ -106,7 +106,7 @@ public abstract class StoreEvent extends EventObject implements Localized {
      *
      * @return {@code true} if this event has been consumed, {@code false} otherwise.
      *
-     * @since 1.3
+     * @since SIS 1.3
      */
     public final boolean isConsumed() {
         return consumed;
@@ -126,7 +126,7 @@ public abstract class StoreEvent extends EventObject implements Localized {
      *         registered on the {@linkplain #getSource() source} resource but before listeners registered
      *         on the parent resource or data store.
      *
-     * @since 1.3
+     * @since SIS 1.3
      */
     public void consume(final boolean later) {
         if (later) consumeLater = true;

@@ -58,7 +58,7 @@ import org.apache.sis.referencing.datum.DatumOrEnsemble;
  * @see org.apache.sis.referencing.cs.DefaultParametricCS
  * @see org.apache.sis.referencing.factory.GeodeticAuthorityFactory#createParametricCRS(String)
  *
- * @since 0.7
+ * @since SIS 0.7
  */
 @XmlType(name = "ParametricCRSType", propOrder = {
     "coordinateSystem",
@@ -115,7 +115,7 @@ public class DefaultParametricCRS extends AbstractSingleCRS<ParametricDatum> imp
      *
      * @see org.apache.sis.referencing.factory.GeodeticObjectFactory#createParametricCRS(Map, ParametricDatum, DatumEnsemble, ParametricCS)
      *
-     * @since 1.5
+     * @since SIS 1.5
      */
     public DefaultParametricCRS(final Map<String,?> properties,
                                 final ParametricDatum datum,
@@ -169,7 +169,7 @@ public class DefaultParametricCRS extends AbstractSingleCRS<ParametricDatum> imp
      * This is the base type required by {@code equals(…)} methods for returning a potentially {@code true} value.
      *
      * @return {@code ParametricCRS.class} or a user-defined sub-interface.
-     * @since 1.7
+     * @since SIS 1.7
      */
     @Override
     public Type getStandardType() {
@@ -199,7 +199,7 @@ public class DefaultParametricCRS extends AbstractSingleCRS<ParametricDatum> imp
      * @return the datum ensemble, or {@code null} if this <abbr>CRS</abbr> is related
      *         to an object identified only by a single {@linkplain #getDatum() datum}.
      *
-     * @since 1.5
+     * @since SIS 1.5
      */
     @Override
     public DatumEnsemble<ParametricDatum> getDatumEnsemble() {

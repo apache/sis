@@ -77,7 +77,7 @@ import org.opengis.metadata.maintenance.Scope;
  * @author  Rémi Maréchal (Geomatys)
  * @author  Cullen Rombach (Image Matters)
  * @version 1.7
- * @since   0.3
+ * @since SIS 0.3
  */
 @TitleProperty(name = "statement")
 @XmlType(name = "LI_Lineage_Type", propOrder = {
@@ -206,7 +206,7 @@ public class DefaultLineage extends ISOMetadata implements Lineage {
      *
      * @return type of resource and / or extents to which the lineage information applies.
      *
-     * @since 0.5
+     * @since SIS 0.5
      */
     @Override
     @XmlElement(name = "scope")
@@ -220,7 +220,7 @@ public class DefaultLineage extends ISOMetadata implements Lineage {
      *
      * @param  newValue  the new type of resource.
      *
-     * @since 0.5
+     * @since SIS 0.5
      */
     public void setScope(final Scope newValue) {
         checkWritePermission(scope);
@@ -232,7 +232,7 @@ public class DefaultLineage extends ISOMetadata implements Lineage {
      *
      * @return additional documentation.
      *
-     * @since 0.5
+     * @since SIS 0.5
      */
     @Override
     // @XmlElement at the end of this class.
@@ -245,7 +245,7 @@ public class DefaultLineage extends ISOMetadata implements Lineage {
      *
      * @param newValues Additional documentation.
      *
-     * @since 0.5
+     * @since SIS 0.5
      */
     public void setAdditionalDocumentation(final Collection<? extends Citation> newValues)  {
         additionalDocumentation = writeCollection(newValues, additionalDocumentation, Citation.class);

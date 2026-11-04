@@ -64,7 +64,7 @@ import org.apache.sis.gui.internal.ExceptionReporter;
  *
  * @see TileMatrixSetFormat
  *
- * @since 1.7
+ * @since SIS 1.7
  */
 public class TileMatrixSetPane extends Widget {
     /**

@@ -127,7 +127,7 @@ import org.opengis.coordinate.MismatchedDimensionException;
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.8
- * @since   1.1
+ * @since SIS 1.1
  */
 public class StatusBar extends Widget implements EventHandler<MouseEvent> {
     /**
@@ -400,7 +400,7 @@ public class StatusBar extends Widget implements EventHandler<MouseEvent> {
      * @see MapCanvas#positionalAccuracyProperty()
      * @see CoordinateFormat#setGroundAccuracy(Quantity)
      *
-     * @since 1.3
+     * @since SIS 1.3
      */
     public final ObjectProperty<Quantity<Length>> lowestAccuracy;
 
@@ -619,7 +619,7 @@ public class StatusBar extends Widget implements EventHandler<MouseEvent> {
      * @param  canvas  the canvas that this status bar is tracking.
      * @throws IllegalStateException if this method has already been invoked with another canvas.
      *
-     * @since 1.3
+     * @since SIS 1.3
      */
     public void track(final MapCanvas canvas) {
         if (this.canvas != null) {
@@ -747,7 +747,7 @@ public class StatusBar extends Widget implements EventHandler<MouseEvent> {
      * @param  xdim         the grid dimension where to assign the values of <var>x</var> pixel coordinates.
      * @param  ydim         the grid dimension where to assign the values of <var>y</var> pixel coordinates.
      *
-     * @since 1.3
+     * @since SIS 1.3
      */
     public void applyCanvasGeometry(GridGeometry geometry, GridExtent sliceExtent, final int xdim, final int ydim) {
         position.setText(null);
@@ -1331,7 +1331,7 @@ public class StatusBar extends Widget implements EventHandler<MouseEvent> {
      *
      * @return indices of <var>x</var> and <var>y</var> coordinate values in a grid coordinate tuple.
      *
-     * @since 1.3
+     * @since SIS 1.3
      */
     public final int[] getXYDimensions() {
         return new int[] {xDimension, yDimension};
@@ -1630,7 +1630,7 @@ public class StatusBar extends Widget implements EventHandler<MouseEvent> {
      * @return a property for the name of the reference system used by the coordinates.
      *
      * @see #positionReferenceSystem
-     * @since 1.7
+     * @since SIS 1.7
      */
     public ObservableStringValue getReferenceSystemName() {
         return positionReferenceSystemName.textProperty();
@@ -1646,7 +1646,7 @@ public class StatusBar extends Widget implements EventHandler<MouseEvent> {
      * @see #setErrorMessage(String, Throwable)
      * @see #setDefaultMessage(String, Tooltip)
      *
-     * @since 1.3
+     * @since SIS 1.3
      */
     public Optional<String> getMessage() {
         return Optional.ofNullable(message.getText());
@@ -1680,7 +1680,7 @@ public class StatusBar extends Widget implements EventHandler<MouseEvent> {
      * @param  text     message to show when there is no other kind of message, or {@code null} if none.
      * @param  tooltip  optional tool tip to show on the default message, or {@code null} if none.
      *
-     * @since 1.7
+     * @since SIS 1.7
      */
     public void setDefaultMessage(String text, final Tooltip tooltip) {
         text = Strings.trimOrNull(text);
@@ -1703,7 +1703,7 @@ public class StatusBar extends Widget implements EventHandler<MouseEvent> {
      *
      * @param  text  the message to show, or {@code null} for restoring the default message.
      *
-     * @since 1.7
+     * @since SIS 1.7
      */
     public void setProgressMessage(String text) {
         setMessage(Strings.trimOrNull(text), Styles.LOADING_TEXT);

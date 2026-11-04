@@ -112,7 +112,7 @@ import org.opengis.util.ControlledVocabulary;
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @version 1.3
- * @since   0.4
+ * @since SIS 0.4
  */
 public class ParameterFormat extends TabularFormat<Object> {
     /**
@@ -139,7 +139,7 @@ public class ParameterFormat extends TabularFormat<Object> {
      * <p>The enumeration value javadoc provide examples of formatting output.</p>
      *
      * @version 0.4
-     * @since   0.4
+     * @since SIS 0.4
      */
     public enum ContentLevel {
         /**

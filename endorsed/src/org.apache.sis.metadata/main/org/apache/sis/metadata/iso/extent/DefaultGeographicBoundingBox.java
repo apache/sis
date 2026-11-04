@@ -110,7 +110,7 @@ import org.apache.sis.metadata.internal.shared.ReferencingServices;
  *
  * @see org.apache.sis.geometry.GeneralEnvelope
  *
- * @since 0.3
+ * @since SIS 0.3
  */
 @XmlType(name = "EX_GeographicBoundingBox_Type", propOrder = {
     "westBoundLongitude",

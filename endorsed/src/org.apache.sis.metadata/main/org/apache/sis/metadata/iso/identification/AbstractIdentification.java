@@ -88,7 +88,7 @@ import org.opengis.metadata.identification.AssociatedResource;
  * @author  Cédric Briançon (Geomatys)
  * @author  Cullen Rombach (Image Matters)
  * @version 1.7
- * @since   0.3
+ * @since SIS 0.3
  */
 @TitleProperty(name = "citation")
 @XmlType(name = "AbstractMD_Identification_Type", propOrder = {
@@ -277,7 +277,7 @@ public class AbstractIdentification extends ISOMetadata implements Identificatio
      * @param abstracts      a brief narrative summary of the content of the resource(s), or {@code null} if none.
      * @param topicCategory  the main theme of the dataset, or {@code null} if none.
      *
-     * @since 1.5
+     * @since SIS 1.5
      */
     public AbstractIdentification(final Citation citation, final CharSequence abstracts, final TopicCategory topicCategory) {
         this.citation = citation;
@@ -506,7 +506,7 @@ public class AbstractIdentification extends ISOMetadata implements Identificatio
      *
      * @return methods used to spatially represent geographic information.
      *
-     * @since 0.5
+     * @since SIS 0.5
      */
     @Override
     @XmlElement(name = "spatialRepresentationType")
@@ -519,7 +519,7 @@ public class AbstractIdentification extends ISOMetadata implements Identificatio
      *
      * @param  newValues  the new spatial representation types.
      *
-     * @since 0.5
+     * @since SIS 0.5
      */
     public void setSpatialRepresentationTypes(final Collection<? extends SpatialRepresentationType> newValues) {
         spatialRepresentationTypes = writeCollection(newValues, spatialRepresentationTypes, SpatialRepresentationType.class);
@@ -531,7 +531,7 @@ public class AbstractIdentification extends ISOMetadata implements Identificatio
      *
      * @return factor which provides a general understanding of the density of spatial data.
      *
-     * @since 0.5
+     * @since SIS 0.5
      */
     @Override
     @XmlElement(name = "spatialResolution")
@@ -544,7 +544,7 @@ public class AbstractIdentification extends ISOMetadata implements Identificatio
      *
      * @param  newValues  the new spatial resolutions.
      *
-     * @since 0.5
+     * @since SIS 0.5
      */
     public void setSpatialResolutions(final Collection<? extends Resolution> newValues) {
         spatialResolutions = writeCollection(newValues, spatialResolutions, Resolution.class);
@@ -555,7 +555,7 @@ public class AbstractIdentification extends ISOMetadata implements Identificatio
      *
      * @return smallest resolvable temporal period in a resource.
      *
-     * @since 1.5
+     * @since SIS 1.5
      */
     @Override
     // @XmlElement at the end of this class.
@@ -568,7 +568,7 @@ public class AbstractIdentification extends ISOMetadata implements Identificatio
      *
      * @param  newValues  the new temporal resolutions.
      *
-     * @since 1.5
+     * @since SIS 1.5
      */
     public void setTemporalResolutions(final Collection<? extends TemporalAmount> newValues) {
         temporalResolutions = writeCollection(newValues, temporalResolutions, TemporalAmount.class);
@@ -579,7 +579,7 @@ public class AbstractIdentification extends ISOMetadata implements Identificatio
      *
      * @return main theme(s).
      *
-     * @since 0.5
+     * @since SIS 0.5
      */
     @Override
     @XmlElement(name = "topicCategory")
@@ -592,7 +592,7 @@ public class AbstractIdentification extends ISOMetadata implements Identificatio
      *
      * @param  newValues  the new topic categories.
      *
-     * @since 0.5
+     * @since SIS 0.5
      */
     public void setTopicCategories(final Collection<? extends TopicCategory> newValues) {
         topicCategories = writeCollection(newValues, topicCategories, TopicCategory.class);
@@ -603,7 +603,7 @@ public class AbstractIdentification extends ISOMetadata implements Identificatio
      *
      * @return spatial and temporal extent of the resource.
      *
-     * @since 0.5
+     * @since SIS 0.5
      */
     @Override
     @XmlElement(name = "extent")
@@ -616,7 +616,7 @@ public class AbstractIdentification extends ISOMetadata implements Identificatio
      *
      * @param  newValues  the new extents
      *
-     * @since 0.5
+     * @since SIS 0.5
      */
     public void setExtents(final Collection<? extends Extent> newValues) {
         extents = writeCollection(newValues, extents, Extent.class);
@@ -627,7 +627,7 @@ public class AbstractIdentification extends ISOMetadata implements Identificatio
      *
      * @return other documentation associated with the resource.
      *
-     * @since 0.5
+     * @since SIS 0.5
      */
     @Override
     // @XmlElement at the end of this class.
@@ -640,7 +640,7 @@ public class AbstractIdentification extends ISOMetadata implements Identificatio
      *
      * @param  newValues  the documentation to associate with the resource.
      *
-     * @since 0.5
+     * @since SIS 0.5
      */
     public void setAdditionalDocumentations(final Collection<? extends Citation> newValues) {
         additionalDocumentations = writeCollection(newValues, additionalDocumentations, Citation.class);
@@ -651,7 +651,7 @@ public class AbstractIdentification extends ISOMetadata implements Identificatio
      *
      * @return code(s) that identifies the level of processing in the producers coding system of a resource.
      *
-     * @since 0.5
+     * @since SIS 0.5
      */
     @Override
     @XmlElement(name = "processingLevel")
@@ -665,7 +665,7 @@ public class AbstractIdentification extends ISOMetadata implements Identificatio
      *
      * @param newValue New code that identifies the level of processing.
      *
-     * @since 0.5
+     * @since SIS 0.5
      */
     public void setProcessingLevel(final Identifier newValue) {
         checkWritePermission(processingLevel);
@@ -803,7 +803,7 @@ public class AbstractIdentification extends ISOMetadata implements Identificatio
      *
      * @return associated resource information.
      *
-     * @since 0.5
+     * @since SIS 0.5
      */
     @Override
     // @XmlElement at the end of this class.
@@ -816,7 +816,7 @@ public class AbstractIdentification extends ISOMetadata implements Identificatio
      *
      * @param  newValues  the new associated resources.
      *
-     * @since 0.5
+     * @since SIS 0.5
      */
     public void setAssociatedResources(final Collection<? extends AssociatedResource> newValues) {
         associatedResources = writeCollection(newValues, associatedResources, AssociatedResource.class);

@@ -101,7 +101,7 @@ import org.apache.sis.util.ArgumentChecks;
  *
  * @see TreeTable
  *
- * @since 0.3
+ * @since SIS 0.3
  */
 public final class TreeTables {
     /**
@@ -259,7 +259,7 @@ public final class TreeTables {
      * @param  source  source from which to remove children.
      * @param  target  where to add the children.
      *
-     * @since 1.5
+     * @since SIS 1.5
      */
     public static void moveChildren(final TreeTable.Node source, final TreeTable.Node target) {
         ArgumentChecks.ensureNonNull("source", source);

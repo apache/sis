@@ -28,7 +28,7 @@ package org.apache.sis.storage;
  *
  * @author  Johann Sorel (Geomatys)
  * @version 0.8
- * @since   0.8
+ * @since SIS 0.8
  *
  * @see WriteOnlyStorageException
  * @see ForwardOnlyStorageException

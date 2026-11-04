@@ -151,7 +151,7 @@ import org.apache.sis.measure.Units;
  *
  * @see org.apache.sis.referencing.operation.transform.DatumShiftTransform
  *
- * @since 0.7
+ * @since SIS 0.7
  */
 public abstract class DatumShiftGrid<C extends Quantity<C>, T extends Quantity<T>> implements Serializable {
     /**
@@ -173,7 +173,7 @@ public abstract class DatumShiftGrid<C extends Quantity<C>, T extends Quantity<T
      * may be deprecated or its value changed. That change would be accompanied by new methods with different
      * signature. This field can be used as a way to detect that such change occurred.
      *
-     * @since 1.0
+     * @since SIS 1.0
      */
     protected static final int INTERPOLATED_DIMENSIONS = 2;
 
@@ -294,7 +294,7 @@ public abstract class DatumShiftGrid<C extends Quantity<C>, T extends Quantity<T
      * @return the number of grid cells in the specified dimension.
      * @throws IndexOutOfBoundsException if the given index is out of bounds.
      *
-     * @since 1.1
+     * @since SIS 1.1
      */
     public int getGridSize(final int dimension) {
         return gridSize[dimension];
@@ -345,7 +345,7 @@ public abstract class DatumShiftGrid<C extends Quantity<C>, T extends Quantity<T
      * @return the domain covered by this grid, converted to the given unit of measurement.
      * @throws TransformException if an error occurred while computing the envelope.
      *
-     * @since 1.1
+     * @since SIS 1.1
      */
     public Envelope getDomainOfValidity(final Unit<C> unit) throws TransformException {
         final UnitConverter uc = getCoordinateUnit().getConverterTo(unit);
@@ -757,7 +757,7 @@ public abstract class DatumShiftGrid<C extends Quantity<C>, T extends Quantity<T
      *
      * @see #interpolateInCell(double, double, double[])
      *
-     * @since 1.0
+     * @since SIS 1.0
      */
     public boolean isCellInGrid(double gridX, double gridY) {
         final double xmax = gridSize[0] - 1;
@@ -810,7 +810,7 @@ public abstract class DatumShiftGrid<C extends Quantity<C>, T extends Quantity<T
      *
      * @see Math#IEEEremainder(double, double)
      *
-     * @since 1.1
+     * @since SIS 1.1
      */
     protected void replaceOutsideGridCoordinates(double[] gridCoordinates) {
     }
@@ -849,7 +849,7 @@ public abstract class DatumShiftGrid<C extends Quantity<C>, T extends Quantity<T
      *
      * @return a description of the values in this grid.
      *
-     * @since 1.0
+     * @since SIS 1.0
      */
     public abstract ParameterDescriptorGroup getParameterDescriptors();
 
@@ -864,7 +864,7 @@ public abstract class DatumShiftGrid<C extends Quantity<C>, T extends Quantity<T
      *
      * @param  parameters  the parameter group where to set the values.
      *
-     * @since 1.0
+     * @since SIS 1.0
      */
     public abstract void getParameterValues(Parameters parameters);
 
@@ -873,7 +873,7 @@ public abstract class DatumShiftGrid<C extends Quantity<C>, T extends Quantity<T
      *
      * @return a string representation of this datum shift grid.
      *
-     * @since 1.0
+     * @since SIS 1.0
      */
     @Override
     public String toString() {

@@ -37,7 +37,7 @@ import org.apache.sis.io.stream.IOUtilities;
  * @author  Johann Sorel (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.8
- * @since   0.3
+ * @since SIS 0.3
  */
 public class DataStoreException extends Exception implements Localized {
     /**
@@ -123,7 +123,7 @@ public class DataStoreException extends Exception implements Localized {
      *                  This can be a {@link java.io.LineNumberReader} or {@link javax.xml.stream.XMLStreamReader}
      *                  for example.
      *
-     * @since 0.8
+     * @since SIS 0.8
      */
     public DataStoreException(final Locale locale, final String format, final String filename, final Object store) {
         this(locale, IOUtilities.errorMessageParameters(format, filename, store));
@@ -188,7 +188,7 @@ public class DataStoreException extends Exception implements Localized {
      *
      * @see DataStore#setLocale(Locale)
      *
-     * @since 0.8
+     * @since SIS 0.8
      */
     @Override
     public String getLocalizedMessage() {
@@ -203,7 +203,7 @@ public class DataStoreException extends Exception implements Localized {
      *
      * @return the locale of the localized message, or {@code null} if not explicitly defined.
      *
-     * @since 1.8
+     * @since SIS 1.8
      */
     @Override
     public Locale getLocale() {
@@ -216,7 +216,7 @@ public class DataStoreException extends Exception implements Localized {
      * @param  cause  the cause saved for later retrieval by the {@link #getCause()} method.
      * @return a reference to this {@code DataStoreException} instance.
      *
-     * @since 0.8
+     * @since SIS 0.8
      */
     @Override
     public DataStoreException initCause(final Throwable cause) {

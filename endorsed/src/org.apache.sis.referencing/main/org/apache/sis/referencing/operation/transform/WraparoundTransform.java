@@ -71,7 +71,7 @@ import org.apache.sis.parameter.Parameters;
  *
  * @see org.apache.sis.geometry.Envelopes#transformWithWraparound(MathTransform, Envelope)
  *
- * @since 1.1
+ * @since SIS 1.1
  */
 public class WraparoundTransform extends AbstractMathTransform implements Serializable {
     /**

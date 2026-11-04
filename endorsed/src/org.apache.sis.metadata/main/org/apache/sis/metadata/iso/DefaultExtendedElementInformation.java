@@ -80,7 +80,7 @@ import java.util.Iterator;
  * @author  Cédric Briançon (Geomatys)
  * @author  Cullen Rombach (Image Matters)
  * @version 1.4
- * @since   0.3
+ * @since SIS 0.3
  */
 @TitleProperty(name = "name")
 @XmlType(name = "MD_ExtendedElementInformation_Type", namespace = Namespaces.MEX, propOrder = {
@@ -549,7 +549,7 @@ public class DefaultExtendedElementInformation extends ISOMetadata implements Ex
      *
      * @return reason for creating the extended element, or {@code null}.
      *
-     * @since 0.5
+     * @since SIS 0.5
      */
     @Override
     @XmlElement(name = "rationale")
@@ -563,7 +563,7 @@ public class DefaultExtendedElementInformation extends ISOMetadata implements Ex
      *
      * @param  newValue  the new rationale.
      *
-     * @since 0.5
+     * @since SIS 0.5
      */
     public void setRationale(final InternationalString newValue) {
         rationales = writeCollection(Containers.singletonOrEmpty(newValue), rationales, InternationalString.class);

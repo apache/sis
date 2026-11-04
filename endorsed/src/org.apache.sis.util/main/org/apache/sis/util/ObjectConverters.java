@@ -63,7 +63,7 @@ import org.apache.sis.converter.SystemRegistry;
  *
  * @see ObjectConverter
  *
- * @since 0.3
+ * @since SIS 0.3
  */
 public final class ObjectConverters {
     /**

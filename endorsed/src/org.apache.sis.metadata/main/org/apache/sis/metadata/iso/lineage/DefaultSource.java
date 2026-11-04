@@ -84,7 +84,7 @@ import org.opengis.metadata.maintenance.Scope;
  * @author  Rémi Maréchal (Geomatys)
  * @author  Cullen Rombach (Image Matters)
  * @version 1.4
- * @since   0.3
+ * @since SIS 0.3
  */
 @TitleProperty(name = "description")
 @XmlType(name = "LI_Source_Type", propOrder = {
@@ -252,7 +252,7 @@ public class DefaultSource extends ISOMetadata implements Source {
      *
      * @return spatial resolution expressed as a scale factor, an angle or a level of detail, or {@code null} if none.
      *
-     * @since 0.5
+     * @since SIS 0.5
      */
     @Override
     @XmlElement(name = "sourceSpatialResolution")
@@ -266,7 +266,7 @@ public class DefaultSource extends ISOMetadata implements Source {
      *
      * @param  newValue  the new spatial resolution.
      *
-     * @since 0.5
+     * @since SIS 0.5
      */
     public void setSourceSpatialResolution(final Resolution newValue) {
         checkWritePermission(sourceSpatialResolution);
@@ -374,7 +374,7 @@ public class DefaultSource extends ISOMetadata implements Source {
      *
      * @return references to metadata for the source.
      *
-     * @since 0.5
+     * @since SIS 0.5
      */
     @Override
     // @XmlElement at the end of this class.
@@ -387,7 +387,7 @@ public class DefaultSource extends ISOMetadata implements Source {
      *
      * @param  newValues  the new references.
      *
-     * @since 0.5
+     * @since SIS 0.5
      */
     public void setSourceMetadata(final Collection<? extends Citation> newValues) {
         sourceMetadata = writeCollection(newValues, sourceMetadata, Citation.class);
@@ -399,7 +399,7 @@ public class DefaultSource extends ISOMetadata implements Source {
      *
      * @return type and / or extent of the source, or {@code null} if none.
      *
-     * @since 0.5
+     * @since SIS 0.5
      */
     @Override
     @XmlElement(name = "scope")
@@ -413,7 +413,7 @@ public class DefaultSource extends ISOMetadata implements Source {
      *
      * @param  newValue  the new type and / or extent of the source.
      *
-     * @since 0.5
+     * @since SIS 0.5
      */
     public void setScope(final Scope newValue){
         checkWritePermission(scope);

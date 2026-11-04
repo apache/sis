@@ -84,7 +84,7 @@ import org.opengis.referencing.crs.ProjectedCRS;
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @version 1.8
- * @since   0.6
+ * @since SIS 0.6
  */
 public class DefaultCoordinateOperationFactory extends AbstractFactory implements CoordinateOperationFactory {
     /**
@@ -142,7 +142,7 @@ public class DefaultCoordinateOperationFactory extends AbstractFactory implement
      * @return the default provider of coordinate operations.
      *
      * @see java.util.ServiceLoader
-     * @since 1.4
+     * @since SIS 1.4
      */
     public static DefaultCoordinateOperationFactory provider() {
         return INSTANCE;
@@ -233,7 +233,7 @@ public class DefaultCoordinateOperationFactory extends AbstractFactory implement
      *
      * @return the underlying math transform factory.
      *
-     * @since 1.1
+     * @since SIS 1.1
      */
     public final MathTransformFactory getMathTransformFactory() {
         return mtFactory;
@@ -280,7 +280,7 @@ public class DefaultCoordinateOperationFactory extends AbstractFactory implement
      *
      * @see DefaultOperationMethod#DefaultOperationMethod(Map, ParameterDescriptorGroup)
      *
-     * @since 1.4
+     * @since SIS 1.4
      */
     @Override
     public OperationMethod createOperationMethod(final Map<String,?> properties,
@@ -573,7 +573,7 @@ next:   for (SingleCRS component : CRS.getSingleComponents(targetCRS)) {
      * @return the concatenated operation created from the given arguments.
      * @throws FactoryException if the object creation failed.
      *
-     * @since 1.5
+     * @since SIS 1.5
      */
     @Override
     public CoordinateOperation createConcatenatedOperation(
@@ -696,7 +696,7 @@ next:   for (SingleCRS component : CRS.getSingleComponents(targetCRS)) {
      *
      * @see CoordinateOperationFinder
      *
-     * @since 0.7
+     * @since SIS 0.7
      */
     public CoordinateOperation createOperation(final CoordinateReferenceSystem sourceCRS,
                                                final CoordinateReferenceSystem targetCRS,
@@ -766,7 +766,7 @@ next:   for (SingleCRS component : CRS.getSingleComponents(targetCRS)) {
      *
      * @see CoordinateOperationFinder
      *
-     * @since 1.0
+     * @since SIS 1.0
      */
     public List<CoordinateOperation> createOperations(final CoordinateReferenceSystem sourceCRS,
                                                       final CoordinateReferenceSystem targetCRS,
@@ -811,7 +811,7 @@ next:   for (SingleCRS component : CRS.getSingleComponents(targetCRS)) {
      * @return a finder of conversion or transformation path from a source CRS to a target CRS.
      * @throws FactoryException if an error occurred while initializing the {@code CoordinateOperationFinder}.
      *
-     * @since 0.8
+     * @since SIS 0.8
      */
     protected CoordinateOperationFinder createOperationFinder(
             final CoordinateOperationAuthorityFactory registry,

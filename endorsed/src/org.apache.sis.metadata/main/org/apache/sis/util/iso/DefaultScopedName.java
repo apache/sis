@@ -53,7 +53,7 @@ import org.apache.sis.util.collection.Containers;
  * @see DefaultNameSpace
  * @see DefaultLocalName
  *
- * @since 0.3
+ * @since SIS 0.3
  */
 
 /*
@@ -231,7 +231,7 @@ public class DefaultScopedName extends AbstractName implements ScopedName {
      *
      * @see Names#createScopedName(GenericName, String, CharSequence)
      *
-     * @since 0.8
+     * @since SIS 0.8
      */
     protected DefaultScopedName(final GenericName path, final String separator, final CharSequence tail) {
         /*

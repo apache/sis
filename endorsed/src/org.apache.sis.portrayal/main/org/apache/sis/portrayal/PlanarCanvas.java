@@ -44,7 +44,7 @@ import org.apache.sis.referencing.internal.shared.AffineTransform2D;
  * @author  Johann Sorel (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.7
- * @since   1.1
+ * @since SIS 1.1
  */
 public abstract class PlanarCanvas extends Canvas {
     /**
@@ -80,7 +80,7 @@ public abstract class PlanarCanvas extends Canvas {
      * while keeping this {@code PlanarCanvas} instance for showing new content later.
      *
      * @hidden because nothing new to said.
-     * @since 1.7
+     * @since SIS 1.7
      */
     @Override
     protected void clear() {

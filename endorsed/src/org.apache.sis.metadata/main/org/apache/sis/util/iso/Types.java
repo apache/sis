@@ -100,7 +100,7 @@ import org.opengis.util.ControlledVocabulary;
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @version 1.5
- * @since   0.3
+ * @since SIS 0.3
  */
 public final class Types {
     /**
@@ -568,7 +568,7 @@ public final class Types {
      *
      * @see Enum#valueOf(Class, String)
      *
-     * @since 0.5
+     * @since SIS 0.5
      */
     @OptionalCandidate
     public static <T extends Enum<T>> T forEnumName(final Class<T> enumType, String name) {
@@ -612,7 +612,7 @@ public final class Types {
      * @see #getCodeName(ControlledVocabulary)
      * @see CodeList#valueOf(Class, String, Function)
      *
-     * @since 1.5
+     * @since SIS 1.5
      */
     @OptionalCandidate
     public static <T extends CodeList<T>> T forCodeName(final Class<T> codeType, String name,
@@ -644,7 +644,7 @@ public final class Types {
      *
      * @see #getCodeTitle(ControlledVocabulary)
      *
-     * @since 0.7
+     * @since SIS 0.7
      */
     public static ControlledVocabulary forCodeTitle(final CharSequence title) {
         return (title instanceof CodeTitle) ? ((CodeTitle) title).code : null;
@@ -681,7 +681,7 @@ public final class Types {
      * @see Locales#parse(String, int)
      * @see DefaultInternationalString#DefaultInternationalString(Map)
      *
-     * @since 0.4
+     * @since SIS 0.4
      */
     @OptionalCandidate
     public static InternationalString toInternationalString(Map<String,?> properties, final String prefix)
@@ -832,7 +832,7 @@ public final class Types {
      * @param  locale  the desired locale, or {@code null} for the {@code i18n} default locale.
      * @return the localized string, or {@code null} if {@code i18n} is {@code null}.
      *
-     * @since 0.8
+     * @since SIS 0.8
      */
     public static String toString(final InternationalString i18n, final Locale locale) {
         return (i18n == null) ? null : (locale == null) ? i18n.toString() : i18n.toString(locale);

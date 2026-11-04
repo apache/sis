@@ -32,7 +32,7 @@ import org.opengis.referencing.operation.NoninvertibleTransformException;
  *
  * @see org.apache.sis.storage.InternalDataStoreException
  *
- * @since 1.7
+ * @since SIS 1.7
  */
 public class InternalFactoryException extends FactoryException {
     /**
@@ -60,7 +60,7 @@ public class InternalFactoryException extends FactoryException {
      *
      * @param cause  the cause, saved for later retrieval by the {@link #getCause()} method.
      *
-     * @since 1.2
+     * @since SIS 1.2
      */
     public InternalFactoryException(Throwable cause) {
         super(cause);

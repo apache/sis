@@ -121,7 +121,7 @@ import static org.apache.sis.referencing.internal.shared.WKTUtilities.LOGGER;
  *
  * @see AbstractMathTransform#getContextualParameters()
  *
- * @since 0.6
+ * @since SIS 0.6
  */
 public class ContextualParameters extends Parameters implements Serializable {
     /**
@@ -133,7 +133,7 @@ public class ContextualParameters extends Parameters implements Serializable {
      *
      * @see ContextualParameters#getMatrix(MatrixRole)
      *
-     * @since 0.7
+     * @since SIS 0.7
      */
     public enum MatrixRole {
         /**
@@ -244,7 +244,7 @@ public class ContextualParameters extends Parameters implements Serializable {
      * @param  srcDim      number of source dimensions.
      * @param  tgtDim      number of target dimensions.
      *
-     * @since 1.0
+     * @since SIS 1.0
      */
     public ContextualParameters(final ParameterDescriptorGroup descriptor, int srcDim, int tgtDim) {
         ArgumentChecks.ensureStrictlyPositive("srcDim", srcDim);
@@ -419,7 +419,7 @@ public class ContextualParameters extends Parameters implements Serializable {
      *               {@code INVERSE_*} for the inverse of the above-cited matrices.
      * @return the matrix for the requested normalization or denormalization affine transform.
      *
-     * @since 0.7
+     * @since SIS 0.7
      */
     public final MatrixSIS getMatrix(MatrixRole role) {
         @SuppressWarnings("LocalVariableHidesMemberVariable")
@@ -729,7 +729,7 @@ public class ContextualParameters extends Parameters implements Serializable {
      *
      * @see Matrices#resizeAffine(Matrix, int, int)
      *
-     * @since 1.5
+     * @since SIS 1.5
      */
     public synchronized ContextualParameters redimension(int srcDim, int tgtDim) {
         ArgumentChecks.ensureStrictlyPositive("srcDim", srcDim++);

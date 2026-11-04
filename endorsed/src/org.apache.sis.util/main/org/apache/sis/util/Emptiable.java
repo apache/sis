@@ -37,7 +37,7 @@ package org.apache.sis.util;
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @version 0.4
- * @since   0.4
+ * @since SIS 0.4
  */
 public interface Emptiable {
     /**

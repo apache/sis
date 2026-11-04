@@ -30,7 +30,7 @@ import org.opengis.util.FactoryException;
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @version 0.7
- * @since   0.7
+ * @since SIS 0.7
  */
 public class InvalidGeodeticParameterException extends FactoryException {
     /**

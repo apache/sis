@@ -43,7 +43,7 @@ import org.opengis.feature.FeatureAssociationRole;
  * @author  Johann Sorel (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.5
- * @since   0.8
+ * @since SIS 0.8
  */
 public abstract class PropertyTypeBuilder extends TypeBuilder {
     /**
@@ -340,7 +340,7 @@ public abstract class PropertyTypeBuilder extends TypeBuilder {
      * @throws IllegalArgumentException if the replacement has not been built by the same {@link FeatureTypeBuilder}
      *         than this property.
      *
-     * @since 1.5
+     * @since SIS 1.5
      */
     public void replaceBy(final PropertyTypeBuilder replacement) {
         @SuppressWarnings("LocalVariableHidesMemberVariable")

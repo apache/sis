@@ -59,7 +59,7 @@ import org.opengis.feature.FeatureAssociationRole;
  * @see DefaultFeatureType
  * @see AbstractAssociation
  *
- * @since 0.5
+ * @since SIS 0.5
  */
 public class DefaultAssociationRole extends FieldType implements FeatureAssociationRole {
     /**
@@ -185,7 +185,7 @@ public class DefaultAssociationRole extends FieldType implements FeatureAssociat
      *
      * @see #getValueType()
      *
-     * @since 0.8
+     * @since SIS 0.8
      */
     public final boolean isResolved() {
         final FeatureType type = valueType;

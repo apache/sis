@@ -79,7 +79,7 @@ import org.apache.sis.util.resources.Messages;
  * @see SQLTranslator
  * @see <a href="https://sis.apache.org/tables/CoordinateReferenceSystems.html">List of authority codes</a>
  *
- * @since 0.7
+ * @since SIS 0.7
  */
 public class EPSGFactory extends ConcurrentAuthorityFactory<EPSGDataAccess> implements CRSAuthorityFactory,
         CSAuthorityFactory, DatumAuthorityFactory, CoordinateOperationAuthorityFactory, Localized
@@ -545,7 +545,7 @@ public class EPSGFactory extends ConcurrentAuthorityFactory<EPSGDataAccess> impl
      * This method is invoked after {@link EPSGDataAccess} created a new object not previously in the cache.
      *
      * @hidden
-     * @since 0.8
+     * @since SIS 0.8
      */
     @Override
     protected boolean isCacheable(String code, Object object) {

@@ -121,7 +121,7 @@
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @author  Adrian Custer (Geomatys)
  * @version 1.8
- * @since   0.3
+ * @since SIS 0.3
  */
 @XmlAccessorType(XmlAccessType.NONE)
 package org.apache.sis.metadata;

@@ -34,7 +34,7 @@ import org.opengis.referencing.AuthorityFactory;
  *
  * @see ConcurrentAuthorityFactory#newDataAccess()
  *
- * @since 0.7
+ * @since SIS 0.7
  */
 public class UnavailableFactoryException extends MissingFactoryResourceException {
     /**

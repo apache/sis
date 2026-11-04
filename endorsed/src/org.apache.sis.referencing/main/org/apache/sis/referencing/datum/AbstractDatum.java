@@ -87,7 +87,7 @@ import org.opengis.referencing.datum.DynamicReferenceFrame;
  * @see org.apache.sis.referencing.cs.AbstractCS
  * @see org.apache.sis.referencing.crs.AbstractCRS
  *
- * @since 0.4
+ * @since SIS 0.4
  */
 @XmlType(name = "AbstractDatumType", propOrder = {
     "anchorPoint",
@@ -321,7 +321,7 @@ public class AbstractDatum extends AbstractIdentifiedObject implements Datum {
      *
      * @return description, possibly including coordinates, of the point or points used to anchor the datum to the Earth.
      *
-     * @since 1.5
+     * @since SIS 1.5
      */
     @Override
     public Optional<InternationalString> getAnchorDefinition() {
@@ -352,7 +352,7 @@ public class AbstractDatum extends AbstractIdentifiedObject implements Datum {
      * @see java.time.YearMonth
      * @see java.time.LocalDate
      *
-     * @since 1.5
+     * @since SIS 1.5
      */
     @Override
     public Optional<Temporal> getAnchorEpoch() {
@@ -390,7 +390,7 @@ public class AbstractDatum extends AbstractIdentifiedObject implements Datum {
      *
      * @return date on which the datum definition was published.
      *
-     * @since 1.5
+     * @since SIS 1.5
      */
     @Override
     public Optional<Temporal> getPublicationDate() {
@@ -404,7 +404,7 @@ public class AbstractDatum extends AbstractIdentifiedObject implements Datum {
      *
      * @return reference system realized by this reference frame.
      *
-     * @since 1.5
+     * @since SIS 1.5
      */
     @Override
     public Optional<IdentifiedObject> getConventionalRS() {

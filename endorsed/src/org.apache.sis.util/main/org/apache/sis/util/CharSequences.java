@@ -71,7 +71,7 @@ import org.opengis.referencing.IdentifiedObject;    // For javadoc
  *
  * @see StringBuilders
  *
- * @since 0.3
+ * @since SIS 0.3
  */
 public final class CharSequences {
     /**
@@ -1016,7 +1016,7 @@ search:     for (; fromIndex <= toIndex; fromIndex++) {
      *
      * @see Character#isIdentifierIgnorable(int)
      *
-     * @since 1.5
+     * @since SIS 1.5
      */
     public static CharSequence trimIgnorables(final CharSequence text) {
         if (text != null) {
@@ -1630,7 +1630,7 @@ cmp:    while (ia < lga) {
      *
      * @see String#toUpperCase()
      *
-     * @since 0.7
+     * @since SIS 0.7
      */
     public static boolean isUpperCase(final CharSequence text) {
         return isUpperCase(text, 0, length(text), false);
@@ -1874,7 +1874,7 @@ cmp:    while (ia < lga) {
      *
      * @see String#regionMatches(boolean, int, String, int, int)
      *
-     * @since 0.4
+     * @since SIS 0.4
      */
     public static boolean regionMatches(final CharSequence text, int fromIndex, final CharSequence part, final boolean ignoreCase) {
         if (!ignoreCase) {
@@ -2044,7 +2044,7 @@ cmp:    while (ia < lga) {
      * @param  s2  the second text, or {@code null}.
      * @return the common suffix of both texts (may be empty), or {@code null} if both texts are null.
      *
-     * @since 1.1
+     * @since SIS 1.1
      */
     public static CharSequence commonWords(final CharSequence s1, final CharSequence s2) {
         final int lg1 = length(s1);
@@ -2236,7 +2236,7 @@ cmp:    while (ia < lga) {
      * @see StringBuilders#replace(StringBuilder, String, String)
      * @see String#replace(CharSequence, CharSequence)
      *
-     * @since 0.4
+     * @since SIS 0.4
      */
     public static CharSequence replace(final CharSequence text, final CharSequence toSearch, final CharSequence replaceBy) {
         ArgumentChecks.ensureNonEmpty("toSearch",  toSearch);

@@ -37,7 +37,7 @@ import org.apache.sis.referencing.factory.FactoryDataException;
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.2
- * @since   1.2
+ * @since SIS 1.2
  */
 public class LocalizationGridException extends FactoryDataException {
     /**

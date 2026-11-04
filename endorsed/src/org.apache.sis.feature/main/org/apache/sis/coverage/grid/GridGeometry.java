@@ -146,7 +146,7 @@ import org.opengis.coordinate.MismatchedDimensionException;
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @author  Johann Sorel (Geomatys)
  * @version 1.8
- * @since   1.0
+ * @since SIS 1.0
  */
 public class GridGeometry implements LenientComparable, Serializable {
     /**
@@ -190,7 +190,7 @@ public class GridGeometry implements LenientComparable, Serializable {
      * A bitmask to specify the validity of the "real world" coordinates of cell at indices (0, 0, …, 0).
      *
      * @see #getOrigin()
-     * @since 1.5
+     * @since SIS 1.5
      */
     public static final int ORIGIN = 128;
 
@@ -264,7 +264,7 @@ public class GridGeometry implements LenientComparable, Serializable {
      * @see #GRID_TO_CRS
      * @see #getGridToCRS(PixelInCell)
      * @see PixelInCell#CELL_CORNER
-     * @since 1.6
+     * @since SIS 1.6
      */
     @SuppressWarnings("serial")         // Most SIS implementations are serializable.
     protected final MathTransform cornerToCRS;
@@ -380,7 +380,7 @@ public class GridGeometry implements LenientComparable, Serializable {
      *
      * @see GridDerivation#subgrid(Envelope, double...)
      *
-     * @since 1.2
+     * @since SIS 1.2
      */
     public GridGeometry(final GridGeometry other, final GridExtent extent, final MathTransform toOther) throws TransformException {
         final int dimension = other.getDimension();
@@ -657,7 +657,7 @@ public class GridGeometry implements LenientComparable, Serializable {
      *
      * @see <a href="https://en.wikipedia.org/wiki/Axis-aligned_object">Axis-aligned object on Wikipedia</a>
      *
-     * @since 1.1
+     * @since SIS 1.1
      */
     public GridGeometry(GridExtent extent, final Envelope envelope, final GridOrientation orientation) {
         nonLinears = 0;
@@ -763,7 +763,7 @@ public class GridGeometry implements LenientComparable, Serializable {
      * @param  envelope  the envelope together with CRS of the "real world" coordinates.
      * @throws IllegalArgumentException if the envelope has no CRS and only NaN coordinate values.
      *
-     * @since 1.4
+     * @since SIS 1.4
      */
     public GridGeometry(final Envelope envelope) {
         // Implicit null value check below.
@@ -813,7 +813,7 @@ public class GridGeometry implements LenientComparable, Serializable {
      *
      * @see #selectDimensions(int...)
      *
-     * @since 1.5
+     * @since SIS 1.5
      */
     public GridGeometry(final GridGeometry lower, final GridGeometry upper) throws FactoryException {
         /*
@@ -995,7 +995,7 @@ public class GridGeometry implements LenientComparable, Serializable {
      *         or if the transform is non-linear but this grid geometry has no extent.
      * @throws TransformException if an error occurred while computing the tangent.
      *
-     * @since 1.3
+     * @since SIS 1.3
      */
     public LinearTransform getLinearGridToCRS(final PixelInCell anchor) throws TransformException {
         final MathTransform tr = getGridToCRS(anchor);
@@ -1020,7 +1020,7 @@ public class GridGeometry implements LenientComparable, Serializable {
      * @throws IncompleteGridGeometryException if this grid geometry has no <abbr>CRS</abbr> —
      *         i.e. <code>{@linkplain #isDefined isDefined}({@linkplain #CRS})</code> returned {@code false}.
      *
-     * @since 1.6
+     * @since SIS 1.6
      */
     public CoordinateMetadata getCoordinateMetadata() {
         return new DefaultCoordinateMetadata(getCoordinateReferenceSystem(), null);
@@ -1086,7 +1086,7 @@ public class GridGeometry implements LenientComparable, Serializable {
      * @throws IncompleteGridGeometryException if this grid geometry has no extent and no envelope.
      * @throws TransformException if the envelope cannot be transformed to the specified CRS.
      *
-     * @since 1.2
+     * @since SIS 1.2
      */
     public Envelope getEnvelope(final CoordinateReferenceSystem crs) throws TransformException {
         ArgumentChecks.ensureNonNull("crs", crs);
@@ -1244,7 +1244,7 @@ public class GridGeometry implements LenientComparable, Serializable {
      *
      * @see #getGeographicExtent()
      * @see CoordinateOperationContext#getConstantCoordinates()
-     * @since 1.6
+     * @since SIS 1.6
      */
     public Optional<DirectPosition> getConstantCoordinates() {
         DirectPosition constants = constantCoordinates;
@@ -1299,7 +1299,7 @@ public class GridGeometry implements LenientComparable, Serializable {
      * @throws IncompleteGridGeometryException if this grid geometry has no origin —
      *         i.e. <code>{@linkplain #isDefined(int) isDefined}({@linkplain #ORIGIN})</code> returned {@code false}.
      *
-     * @since 1.5
+     * @since SIS 1.5
      */
     public double[] getOrigin() {
         if (cornerToCRS == null) {
@@ -1652,7 +1652,7 @@ public class GridGeometry implements LenientComparable, Serializable {
      * @throws IllegalArgumentException if a period is not greater than zero.
      *
      * @see GridExtent#upsample(long...)
-     * @since 1.5
+     * @since SIS 1.5
      */
     public GridGeometry upsample(final long... periods) {
         GridExtent newExtent = extent;
@@ -1718,7 +1718,7 @@ public class GridGeometry implements LenientComparable, Serializable {
      *
      * @see GridExtent#translate(long...)
      *
-     * @since 1.3
+     * @since SIS 1.3
      */
     public final GridGeometry shiftGrid(final long... translation) {
         return shiftGrid(translation, false);
@@ -1736,7 +1736,7 @@ public class GridGeometry implements LenientComparable, Serializable {
      *         If the given translation is a no-op (no value or only 0 ones), then this grid is returned as is.
      * @throws ArithmeticException if the translation results in coordinates that overflow 64-bits integer.
      *
-     * @since 1.5
+     * @since SIS 1.5
      */
     public GridGeometry shiftGrid(final long[] translation, final boolean negate) {
         ArgumentChecks.ensureNonNull("translation", translation);
@@ -1773,7 +1773,7 @@ public class GridGeometry implements LenientComparable, Serializable {
      * @return a grid geometry whose lower coordinates are zeros.
      * @throws ArithmeticException if the translation results in upper coordinates that overflow 64-bits integer.
      *
-     * @since 1.5
+     * @since SIS 1.5
      */
     public GridGeometry shiftGridToZeros() {
         if (extent == null || extent.startsAtZero()) {
@@ -1794,7 +1794,7 @@ public class GridGeometry implements LenientComparable, Serializable {
      * @return grid geometry with the given extent. May be {@code this} if there is no change.
      * @throws TransformException if the geospatial envelope cannot be recomputed with the new grid extent.
      *
-     * @since 1.3
+     * @since SIS 1.3
      */
     public GridGeometry relocate(final GridExtent newExtent) throws TransformException {
         if (newExtent.equals(extent)) {
@@ -1832,7 +1832,7 @@ public class GridGeometry implements LenientComparable, Serializable {
      * @see GridExtent#getSubspaceDimensions(int)
      * @see GridDerivation#selectAxes(int[])
      *
-     * @since 1.3
+     * @since SIS 1.3
      */
     public GridGeometry selectDimensions(int... indices) {
         indices = GridExtent.verifyDimensions(indices, getDimension());
@@ -1875,7 +1875,7 @@ public class GridGeometry implements LenientComparable, Serializable {
      * @param  datum  name of the engineering datum, or {@code null} for not creating a <abbr>CRS</abbr>.
      * @return a grid geometry with a resolution if possible.
      *
-     * @since 1.7
+     * @since SIS 1.7
      */
     public GridGeometry defaultToGridCRS(final Identifier datum) {
         if (resolution != null || gridToCRS != null || getCoordinateReferenceSystem(envelope) != null) {
@@ -1933,7 +1933,7 @@ public class GridGeometry implements LenientComparable, Serializable {
      * @see #createTransformTo(GridGeometry, PixelInCell)
      * @see GridExtent#toEnvelope(MathTransform, Identifier)
      *
-     * @since 1.7
+     * @since SIS 1.7
      */
     public CoordinateReferenceSystem createGridCRS(final Identifier name, final PixelInCell anchor) throws FactoryException {
         ArgumentChecks.ensureNonNull("name", name);
@@ -1954,7 +1954,7 @@ public class GridGeometry implements LenientComparable, Serializable {
      * @throws IncompleteGridGeometryException if this grid geometry does not have sufficient information.
      * @throws FactoryException if the coordinate operation cannot be found.
      *
-     * @since 1.7
+     * @since SIS 1.7
      */
     public CoordinateOperation createChangeOfCRS(final CoordinateReferenceSystem target) throws FactoryException {
         ArgumentChecks.ensureNonNull("target", target);
@@ -1979,7 +1979,7 @@ public class GridGeometry implements LenientComparable, Serializable {
      * @throws IncompleteGridGeometryException if there is not enough information in the two grid geometries.
      * @throws TransformException if the math transform cannot be created.
      *
-     * @since 1.1
+     * @since SIS 1.1
      */
     public MathTransform createTransformTo(final GridGeometry target, final PixelInCell anchor) throws TransformException {
         ArgumentChecks.ensureNonNull("target", target);
@@ -2029,7 +2029,7 @@ public class GridGeometry implements LenientComparable, Serializable {
      * @throws IncompleteGridGeometryException if there is not enough information in the two grid geometries.
      * @throws TransformException if the grid extent cannot be transformed to the units of this grid geometry.
      *
-     * @since 1.5
+     * @since SIS 1.5
      */
     public GridExtent extentOf(final GridGeometry other, final PixelInCell include, final GridRoundingMode rounding)
             throws TransformException
@@ -2065,7 +2065,7 @@ public class GridGeometry implements LenientComparable, Serializable {
      *
      * @see GridExtent#intersects(GridExtent)
      *
-     * @since 1.5
+     * @since SIS 1.5
      */
     public boolean intersects(final GridGeometry other) {
         return interacts(other, true);
@@ -2105,7 +2105,7 @@ public class GridGeometry implements LenientComparable, Serializable {
      *
      * @see GridExtent#contains(GridExtent)
      *
-     * @since 1.5
+     * @since SIS 1.5
      */
     public boolean contains(final GridGeometry other) {
         return interacts(other, false);
@@ -2154,7 +2154,7 @@ public class GridGeometry implements LenientComparable, Serializable {
      * @param  mode    the strictness level of the comparison.
      * @return {@code true} if the given object is equal to this grid geometry.
      *
-     * @since 1.1
+     * @since SIS 1.1
      */
     @Override
     public boolean equals(final Object object, final ComparisonMode mode) {

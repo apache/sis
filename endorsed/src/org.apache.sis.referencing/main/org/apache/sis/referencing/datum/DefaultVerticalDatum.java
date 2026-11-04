@@ -89,7 +89,7 @@ import org.opengis.metadata.Identifier;
  * @see org.apache.sis.referencing.crs.DefaultVerticalCRS
  * @see org.apache.sis.referencing.factory.GeodeticAuthorityFactory#createVerticalDatum(String)
  *
- * @since 0.4
+ * @since SIS 0.4
  */
 @XmlType(name = "VerticalDatumType")
 @XmlRootElement(name = "VerticalDatum")
@@ -159,7 +159,7 @@ public class DefaultVerticalDatum extends AbstractDatum implements VerticalDatum
      * @param  properties  the properties to be given to the identified object.
      * @param  method      the realization method (geoid, tidal, <i>etc.</i>), or {@code null} if unspecified.
      *
-     * @since 2.0 (temporary version number until this branch is released)
+     * @since SIS 2.0 (temporary version number until this branch is released)
      */
     @SuppressWarnings("this-escape")
     public DefaultVerticalDatum(final Map<String,?> properties, final RealizationMethod method) {
@@ -221,7 +221,7 @@ public class DefaultVerticalDatum extends AbstractDatum implements VerticalDatum
      * This is the base type required by {@code equals(…)} methods for returning a potentially {@code true} value.
      *
      * @return {@code VerticalDatum.class} or a user-defined sub-interface.
-     * @since 1.7
+     * @since SIS 1.7
      */
     @Override
     public Type getStandardType() {
@@ -233,7 +233,7 @@ public class DefaultVerticalDatum extends AbstractDatum implements VerticalDatum
      *
      * @return method through which this vertical reference frame is realized.
      *
-     * @since 2.0 (temporary version number until this branch is released)
+     * @since SIS 2.0 (temporary version number until this branch is released)
      */
     @Override
     public Optional<RealizationMethod> getRealizationMethod() {
@@ -286,7 +286,7 @@ public class DefaultVerticalDatum extends AbstractDatum implements VerticalDatum
      *
      * @author  Martin Desruisseaux (Geomatys)
      * @version 1.5
-     * @since   1.5
+     * @since SIS 1.5
      */
     public static class Dynamic extends DefaultVerticalDatum implements DynamicReferenceFrame {
         /**
@@ -308,7 +308,7 @@ public class DefaultVerticalDatum extends AbstractDatum implements VerticalDatum
          * @param  method      the realization method (geoid, tidal, <i>etc.</i>), or {@code null} if unspecified.
          * @param  epoch       the epoch to which the definition of the dynamic reference frame is referenced.
          *
-         * @since 2.0 (temporary version number until this branch is released)
+         * @since SIS 2.0 (temporary version number until this branch is released)
          */
         public Dynamic(Map<String,?> properties, RealizationMethod method, Temporal epoch) {
             super(properties, method);

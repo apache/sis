@@ -91,7 +91,7 @@ import org.opengis.referencing.datum.RealizationMethod;
  *
  * @param <D> the type of datum members contained in this ensemble.
  *
- * @since 1.5
+ * @since SIS 1.5
  */
 public class DefaultDatumEnsemble<D extends Datum> extends AbstractIdentifiedObject implements DatumEnsemble<D>, Datum {
     /**
@@ -314,7 +314,7 @@ public class DefaultDatumEnsemble<D extends Datum> extends AbstractIdentifiedObj
      * This is the base type required by {@code equals(…)} methods for returning a potentially {@code true} value.
      *
      * @return {@code DatumEnsemble.class} or a user-defined sub-interface.
-     * @since 1.7
+     * @since SIS 1.7
      */
     @Override
     public Type getStandardType() {

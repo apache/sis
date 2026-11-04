@@ -47,7 +47,7 @@ import org.opengis.metadata.quality.Description;
  * @author  Alexis Gaillard (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.4
- * @since   1.3
+ * @since SIS 1.3
  */
 @XmlType(name = "DQM_Description_Type", namespace = Namespaces.DQM, propOrder = {
     "textDescription",

@@ -40,7 +40,7 @@ import org.apache.sis.math.DecimalFunctions;
  * @see Units#converter(Number, Number)
  * @see Units#logarithm(Unit)
  *
- * @since 1.5
+ * @since SIS 1.5
  */
 public abstract class AbstractConverter implements UnitConverter, Serializable {
     /**
@@ -60,7 +60,7 @@ public abstract class AbstractConverter implements UnitConverter, Serializable {
      * the {@link org.apache.sis.util.LenientComparable} interface.
      *
      * @return {@code UnitConverter.class} or a user-defined sub-interface.
-     * @since 1.7
+     * @since SIS 1.7
      */
     public Type getStandardType() {
         return UnitConverter.class;

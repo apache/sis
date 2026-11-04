@@ -53,7 +53,7 @@ import org.apache.sis.measure.Units;
  * @see DefaultCylindricalCS
  * @see org.apache.sis.referencing.factory.GeodeticAuthorityFactory#createPolarCS(String)
  *
- * @since 0.4
+ * @since SIS 0.4
  */
 @XmlType(name = "PolarCSType")
 @XmlRootElement(name = "PolarCS")
@@ -170,7 +170,7 @@ public class DefaultPolarCS extends AbstractCS implements PolarCS {
      * This is the base type required by {@code equals(…)} methods for returning a potentially {@code true} value.
      *
      * @return {@code PolarCS.class} or a user-defined sub-interface.
-     * @since 1.7
+     * @since SIS 1.7
      */
     @Override
     public Class<? extends PolarCS> getStandardType() {

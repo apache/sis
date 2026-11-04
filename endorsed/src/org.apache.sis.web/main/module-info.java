@@ -32,7 +32,7 @@
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.8
- * @since   1.8
+ * @since SIS 1.8
  */
 module org.apache.sis.web {
     requires transitive org.apache.sis.util;

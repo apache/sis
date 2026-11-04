@@ -59,7 +59,7 @@ import org.apache.sis.referencing.internal.shared.ShapeUtilities;
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.2
- * @since   0.5
+ * @since SIS 0.5
  */
 public abstract class AbstractMathTransform2D extends AbstractMathTransform implements MathTransform2D {
     /**
@@ -70,7 +70,7 @@ public abstract class AbstractMathTransform2D extends AbstractMathTransform impl
      * @see #getSourceDimensions()
      * @see #getTargetDimensions()
      *
-     * @since 1.2
+     * @since SIS 1.2
      */
     protected static final int DIMENSION = 2;
 
@@ -347,7 +347,7 @@ public abstract class AbstractMathTransform2D extends AbstractMathTransform impl
      *
      * @author  Martin Desruisseaux (Geomatys)
      * @version 1.0
-     * @since   0.5
+     * @since SIS 0.5
      */
     protected abstract static class Inverse extends AbstractMathTransform.Inverse implements MathTransform2D {
         /**

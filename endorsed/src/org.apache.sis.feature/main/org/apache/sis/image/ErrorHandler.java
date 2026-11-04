@@ -33,7 +33,7 @@ import org.apache.sis.feature.internal.Resources;
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.1
- * @since   1.1
+ * @since SIS 1.1
  */
 public interface ErrorHandler {
     /**

@@ -20,7 +20,7 @@
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.4
- * @since   1.0
+ * @since SIS 1.0
  */
 module org.apache.sis.profile.japan {
     requires transitive org.apache.sis.storage.netcdf;

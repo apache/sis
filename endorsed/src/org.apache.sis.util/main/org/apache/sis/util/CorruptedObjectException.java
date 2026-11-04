@@ -59,7 +59,7 @@ import org.opengis.referencing.IdentifiedObject;
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.0
- * @since   0.5
+ * @since SIS 0.5
  */
 public class CorruptedObjectException extends RuntimeException {
     /**
@@ -88,7 +88,7 @@ public class CorruptedObjectException extends RuntimeException {
      *
      * @param cause  the cause, or {@code null} if none.
      *
-     * @since 1.0
+     * @since SIS 1.0
      */
     public CorruptedObjectException(final Exception cause) {
         super(cause);
@@ -99,7 +99,7 @@ public class CorruptedObjectException extends RuntimeException {
      *
      * @param  object  the corrupted object, or {@code null} if unknown.
      *
-     * @since 0.6
+     * @since SIS 0.6
      */
     public CorruptedObjectException(final IdentifiedObject object) {
         super(object != null ? String.valueOf(object.getName()) : null);

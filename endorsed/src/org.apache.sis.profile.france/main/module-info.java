@@ -21,7 +21,7 @@
  * @author  Cédric Briançon (Geomatys)
  * @author  Guilhem Legal (Geomatys)
  * @version 1.4
- * @since   0.4
+ * @since SIS 0.4
  */
 module org.apache.sis.profile.france {
     requires jakarta.xml.bind;

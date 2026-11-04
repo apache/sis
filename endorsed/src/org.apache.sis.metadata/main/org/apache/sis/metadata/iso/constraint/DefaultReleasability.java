@@ -44,7 +44,7 @@ import org.opengis.metadata.citation.Responsibility;
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.7
- * @since   0.5
+ * @since SIS 0.5
  */
 @TitleProperty(name = "statement")
 @XmlType(name = "MD_Releasability_Type", propOrder = {

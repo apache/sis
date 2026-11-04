@@ -52,7 +52,7 @@ import org.opengis.feature.PropertyType;
  * @author  Johann Sorel (Geomatys)
  * @author  Alexis Manin (Geomatys)
  * @version 1.6
- * @since   0.5
+ * @since SIS 0.5
  */
 public final class Features {
     /**
@@ -140,7 +140,7 @@ public final class Features {
      * @param  type  the data type to express as an attribute type, or {@code null}.
      * @return the attribute type, or empty if this method cannot find any.
      *
-     * @since 1.1
+     * @since SIS 1.1
      */
     @SuppressWarnings("unchecked")
     public static Optional<AttributeType<?>> toAttribute(IdentifiedType type) {
@@ -162,7 +162,7 @@ public final class Features {
      * @param  type  the data type to express as an attribute type, or {@code null}.
      * @return the association role, or empty if this method cannot find any.
      *
-     * @since 1.4
+     * @since SIS 1.4
      */
     public static Optional<FeatureAssociationRole> toAssociation(IdentifiedType type) {
         return toIdentifiedType(type, FeatureAssociationRole.class);
@@ -208,7 +208,7 @@ public final class Features {
      *
      * @see FeatureType#isAssignableFrom(FeatureType)
      *
-     * @since 1.0
+     * @since SIS 1.0
      */
     @OptionalCandidate
     public static FeatureType findCommonParent(final Iterable<? extends FeatureType> types) {
@@ -221,7 +221,7 @@ public final class Features {
      * @param  feature  the feature type from which to get the name of all properties.
      * @return name of all properties of the specified feature type.
      *
-     * @since 1.6
+     * @since SIS 1.6
      */
     public static List<String> getPropertyNames(final FeatureType feature) {
         return JDK16.toList(feature.getProperties(true).stream().map((p) -> p.getName().toString()));
@@ -240,7 +240,7 @@ public final class Features {
      *
      * @see AttributeType#getValueClass()
      *
-     * @since 1.0
+     * @since SIS 1.0
      */
     @OptionalCandidate
     public static Class<?> getValueClass(PropertyType type) {
@@ -282,7 +282,7 @@ public final class Features {
      * @param  property  the property for which to get the name of value type.
      * @return the name of value type, or {@code null} if none.
      *
-     * @since 0.8
+     * @since SIS 0.8
      */
     @OptionalCandidate
     public static GenericName getValueTypeName(final PropertyType property) {
@@ -311,7 +311,7 @@ public final class Features {
      *
      * @see FeatureOperations#link(Map, PropertyType)
      *
-     * @since 1.1
+     * @since SIS 1.1
      */
     public static Optional<String> getLinkTarget(final PropertyType property) {
         if (property instanceof LinkOperation) {
@@ -331,7 +331,7 @@ public final class Features {
      *
      * @see FeatureOperations#compound(Map, String, String, String, PropertyType...)
      *
-     * @since 1.5
+     * @since SIS 1.5
      */
     public static List<String> getLinkTargets(final PropertyType property) {
         return getLinkTarget(property).map(List::of).orElseGet(() -> {
@@ -358,7 +358,7 @@ public final class Features {
      * @param  feature  the feature to validate, or {@code null}.
      * @throws InvalidPropertyValueException if the given feature is non-null and does not pass validation.
      *
-     * @since 0.7
+     * @since SIS 0.7
      */
     public static void validate(final Feature feature) throws InvalidPropertyValueException {
         if (feature != null) {

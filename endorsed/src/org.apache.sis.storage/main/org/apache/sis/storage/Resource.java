@@ -58,7 +58,7 @@ import org.apache.sis.storage.event.StoreListener;
  *
  * @see Aggregate#components()
  *
- * @since 0.8
+ * @since SIS 0.8
  */
 public interface Resource {
     /**
@@ -82,7 +82,7 @@ public interface Resource {
      * @see DataStore#getIdentifier()
      * @see DataStore#findResource(String)
      *
-     * @since 1.0
+     * @since SIS 1.0
      */
     default Optional<GenericName> getIdentifier() throws DataStoreException {
         return Optional.empty();
@@ -166,7 +166,7 @@ public interface Resource {
      * @return files used by this resource.
      * @throws DataStoreException if an error occurred while preparing the set of files.
      *
-     * @since 1.5
+     * @since SIS 1.5
      */
     default Optional<FileSet> getFileSet() throws DataStoreException {
         return Optional.empty();
@@ -185,7 +185,7 @@ public interface Resource {
      * @author  Johann Sorel (Geomatys)
      * @author  Martin Desruisseaux (Geomatys)
      * @version 1.5
-     * @since   1.5
+     * @since SIS 1.5
      */
     public static class FileSet {
         /**

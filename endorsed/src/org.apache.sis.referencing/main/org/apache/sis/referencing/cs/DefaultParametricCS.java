@@ -51,7 +51,7 @@ import org.opengis.referencing.cs.ParametricCS;
  * @see org.apache.sis.referencing.datum.DefaultParametricDatum
  * @see org.apache.sis.referencing.factory.GeodeticAuthorityFactory#createParametricCS(String)
  *
- * @since 0.7
+ * @since SIS 0.7
  */
 @XmlType(name = "ParametricCSType")
 @XmlRootElement(name = "ParametricCS")
@@ -145,7 +145,7 @@ public class DefaultParametricCS extends AbstractCS implements ParametricCS {
      * This is the base type required by {@code equals(…)} methods for returning a potentially {@code true} value.
      *
      * @return {@code ParametricCS.class} or a user-defined sub-interface.
-     * @since 1.7
+     * @since SIS 1.7
      */
     @Override
     public Class<? extends ParametricCS> getStandardType() {

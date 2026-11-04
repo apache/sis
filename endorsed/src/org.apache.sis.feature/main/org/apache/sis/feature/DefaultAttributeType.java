@@ -100,7 +100,7 @@ import org.opengis.feature.AttributeType;
  * @see DefaultFeatureType
  * @see AbstractAttribute
  *
- * @since 0.5
+ * @since SIS 0.5
  */
 public class DefaultAttributeType<V> extends FieldType implements AttributeType<V> {
     /**

@@ -21,6 +21,6 @@
  *
  * @author  Johann Sorel (Geomatys)
  * @version 2.0
- * @since   2.0
+ * @since SIS 2.0
  */
 package org.apache.sis.gml;

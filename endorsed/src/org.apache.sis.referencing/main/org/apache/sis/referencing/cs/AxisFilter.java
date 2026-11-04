@@ -49,7 +49,7 @@ import org.opengis.referencing.cs.CoordinateSystemAxis;
  *
  * @see CoordinateSystems#replaceAxes(CoordinateSystem, AxisFilter)
  *
- * @since 0.6
+ * @since SIS 0.6
  */
 public interface AxisFilter {
     /**
@@ -85,7 +85,7 @@ public interface AxisFilter {
      * @param  direction  the original axis direction.
      * @return the new axis direction, or {@code direction} if there is no change.
      *
-     * @since 0.7
+     * @since SIS 0.7
      */
     default AxisDirection getDirectionReplacement(CoordinateSystemAxis axis, AxisDirection direction) {
         return direction;
@@ -113,7 +113,7 @@ public interface AxisFilter {
      * @param  unit  the original axis unit.
      * @return the new axis unit, or {@code unit} if there is no change.
      *
-     * @since 0.7
+     * @since SIS 0.7
      */
     default Unit<?> getUnitReplacement(CoordinateSystemAxis axis, Unit<?> unit) {
         return unit;

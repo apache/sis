@@ -31,7 +31,7 @@ import org.apache.sis.util.Version;
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.5
- * @since   0.3
+ * @since SIS 0.3
  */
 public abstract class MarshalContext implements Localized {
     /**
@@ -47,7 +47,7 @@ public abstract class MarshalContext implements Localized {
      *
      * @return the marshaller pool that produced the marshaller or unmarshaller in use.
      *
-     * @since 1.5
+     * @since SIS 1.5
      */
     public abstract MarshallerPool getPool();
 
@@ -85,7 +85,7 @@ public abstract class MarshalContext implements Localized {
      *
      * @return the timezone for the <abbr>XML</abbr> fragment being (un)marshalled, or {@code null} if unspecified.
      *
-     * @since 1.5
+     * @since SIS 1.5
      */
     public abstract ZoneId getZoneId();
 
@@ -123,7 +123,7 @@ public abstract class MarshalContext implements Localized {
      *
      * @return the URI of the document being marshalled or unmarshalled.
      *
-     * @since 1.5
+     * @since SIS 1.5
      */
     public abstract Optional<URI> getDocumentURI();
 }

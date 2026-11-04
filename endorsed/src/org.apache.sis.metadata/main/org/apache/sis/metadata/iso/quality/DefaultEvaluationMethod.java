@@ -60,7 +60,7 @@ import org.opengis.metadata.quality.AggregationDerivation;
  * @author  Alexis Gaillard (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.7
- * @since   1.3
+ * @since SIS 1.3
  */
 @TitleProperty(name = "evaluationMethodDescription")
 @XmlType(name = "DQ_EvaluationMethod_Type", propOrder = {
@@ -291,7 +291,7 @@ public class DefaultEvaluationMethod extends ISOMetadata implements EvaluationMe
      * @param type         the method type, or {@code null} if none.
      * @param description  the method description as a {@link String} or an {@link InternationalString} object,
      *                     or {@code null} if none.
-     * @since 1.5
+     * @since SIS 1.5
      */
     public DefaultEvaluationMethod(final EvaluationMethodType type, final CharSequence description) {
         evaluationMethodType = type;

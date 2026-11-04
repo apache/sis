@@ -69,7 +69,7 @@ import org.apache.sis.referencing.legacy.DefaultUserDefinedCS;
  * @see org.apache.sis.referencing.datum.DefaultEngineeringDatum
  * @see org.apache.sis.referencing.factory.GeodeticAuthorityFactory#createEngineeringCRS(String)
  *
- * @since 0.4
+ * @since SIS 0.4
  */
 @XmlType(name = "EngineeringCRSType", propOrder = {
     "abstractCS",
@@ -133,7 +133,7 @@ public class DefaultEngineeringCRS extends AbstractSingleCRS<EngineeringDatum> i
      *
      * @see org.apache.sis.referencing.factory.GeodeticObjectFactory#createEngineeringCRS(Map, EngineeringDatum, DatumEnsemble, CoordinateSystem)
      *
-     * @since 1.5
+     * @since SIS 1.5
      */
     public DefaultEngineeringCRS(final Map<String,?> properties,
                                  final EngineeringDatum datum,
@@ -186,7 +186,7 @@ public class DefaultEngineeringCRS extends AbstractSingleCRS<EngineeringDatum> i
      * This is the base type required by {@code equals(…)} methods for returning a potentially {@code true} value.
      *
      * @return {@code EngineeringCRS.class} or a user-defined sub-interface.
-     * @since 1.7
+     * @since SIS 1.7
      */
     @Override
     public Type getStandardType() {
@@ -216,7 +216,7 @@ public class DefaultEngineeringCRS extends AbstractSingleCRS<EngineeringDatum> i
      * @return the datum ensemble, or {@code null} if this <abbr>CRS</abbr> is related
      *         to an object identified only by a single {@linkplain #getDatum() datum}.
      *
-     * @since 1.5
+     * @since SIS 1.5
      */
     @Override
     public DatumEnsemble<EngineeringDatum> getDatumEnsemble() {

@@ -58,7 +58,7 @@ import org.opengis.util.LocalName;
  * @author  Martin Desruisseaux (Geomatys)
  * @author  Cullen Rombach (Image Matters)
  * @version 1.7
- * @since   0.3
+ * @since SIS 0.3
  */
 @TitleProperty(name = "fileName")
 @XmlType(name = "MX_DataFile_Type", namespace = Namespaces.MDT, propOrder = {
@@ -167,7 +167,7 @@ public class DefaultDataFile extends ISOMetadata implements DataFile {
      * @return file name, or {@code null}.
      *
      * @see org.apache.sis.metadata.iso.identification.DefaultBrowseGraphic#getFileName()
-     * @since 1.0
+     * @since SIS 1.0
      */
     @Override
     @XmlElement(name = "fileName", required = true)
@@ -180,7 +180,7 @@ public class DefaultDataFile extends ISOMetadata implements DataFile {
      *
      * @param  newValue  the new filename or path.
      *
-     * @since 1.0
+     * @since SIS 1.0
      */
     public void setFileName(final URI newValue) {
         checkWritePermission(fileName);
@@ -193,7 +193,7 @@ public class DefaultDataFile extends ISOMetadata implements DataFile {
      * @return text description of the file, or {@code null}.
      *
      * @see org.apache.sis.metadata.iso.identification.DefaultBrowseGraphic#getFileDescription()
-     * @since 1.0
+     * @since SIS 1.0
      */
     @Override
     @XmlElement(name = "fileDescription", required = true)
@@ -206,7 +206,7 @@ public class DefaultDataFile extends ISOMetadata implements DataFile {
      *
      * @param  newValue  the new file description.
      *
-     * @since 1.0
+     * @since SIS 1.0
      */
     public void setFileDescription(final InternationalString newValue)  {
         checkWritePermission(fileDescription);
@@ -219,7 +219,7 @@ public class DefaultDataFile extends ISOMetadata implements DataFile {
      * @return format in which the file is encoded, or {@code null}.
      *
      * @see org.apache.sis.metadata.iso.identification.DefaultBrowseGraphic#getFileType()
-     * @since 1.0
+     * @since SIS 1.0
      */
     @Override
     @XmlElement(name = "fileType", required = true)

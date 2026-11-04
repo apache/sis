@@ -72,7 +72,7 @@ import java.util.Iterator;
  * @author  Cédric Briançon (Geomatys)
  * @author  Cullen Rombach (Image Matters)
  * @version 1.7
- * @since   0.3
+ * @since SIS 0.3
  */
 @TitleProperty(name = "name")
 @XmlType(name = "MD_Medium_Type", propOrder = {
@@ -224,7 +224,7 @@ public class DefaultMedium extends ISOMetadata implements Medium {
      *
      * @return density at which the data is recorded, or {@code null}.
      *
-     * @since 0.5
+     * @since SIS 0.5
      */
     @Override
     @XmlElement(name = "density")
@@ -241,7 +241,7 @@ public class DefaultMedium extends ISOMetadata implements Medium {
      * @param  newValue  the new density.
      * @throws IllegalArgumentException if the given value is NaN, zero or negative.
      *
-     * @since 0.5
+     * @since SIS 0.5
      */
     public void setDensity(final Double newValue) {
         checkWritePermission(density);
@@ -387,7 +387,7 @@ public class DefaultMedium extends ISOMetadata implements Medium {
      *
      * @return unique identifier, or {@code null} if none.
      *
-     * @since 0.5
+     * @since SIS 0.5
      */
     @Override
     @XmlElement(name = "identifier")
@@ -401,7 +401,7 @@ public class DefaultMedium extends ISOMetadata implements Medium {
      *
      * @param  newValue  the new identifier.
      *
-     * @since 0.5
+     * @since SIS 0.5
      */
     @Override
     public void setIdentifier(final Identifier newValue) {

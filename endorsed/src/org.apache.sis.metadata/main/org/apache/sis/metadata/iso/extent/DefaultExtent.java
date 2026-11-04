@@ -87,7 +87,7 @@ import org.apache.sis.xml.NilReason;
  * @see Extents#getGeographicBoundingBox(Extent)
  * @see org.apache.sis.referencing.DefaultObjectDomain#getDomainOfValidity()
  *
- * @since 0.3
+ * @since SIS 0.3
  */
 @TitleProperty(name = "description")
 @XmlType(name = "EX_Extent_Type", propOrder = {
@@ -325,7 +325,7 @@ public class DefaultExtent extends ISOMetadata implements Extent {
      * @see Extents#intersection(Extent, Extent)
      * @see org.apache.sis.geometry.GeneralEnvelope#intersect(Envelope)
      *
-     * @since 0.8
+     * @since SIS 0.8
      */
     public void intersect(final Extent other) {
         checkWritePermission(isNonEmpty());

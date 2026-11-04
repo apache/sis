@@ -103,7 +103,7 @@ import java.lang.reflect.ParameterizedType;
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.7
- * @since   0.3
+ * @since SIS 0.3
  */
 public interface LenientComparable {
     /**
@@ -127,7 +127,7 @@ public interface LenientComparable {
      * @see Classes#getRawClass(Type)
      * @see Classes#getStandardClass(Object, Class)
      *
-     * @since 1.7
+     * @since SIS 1.7
      */
     default Type getStandardType() {
         return getClass();

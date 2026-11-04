@@ -31,7 +31,7 @@ import org.apache.sis.util.ArraysExt;
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.7
- * @since   1.5
+ * @since SIS 1.5
  */
 public abstract class Observable {
     /**

@@ -51,7 +51,7 @@ import org.apache.sis.util.collection.BackingStoreException;
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @version 1.8
- * @since   0.3
+ * @since SIS 0.3
  */
 public final class Exceptions {
     /**
@@ -106,7 +106,7 @@ public final class Exceptions {
      * @return {@code true} if both exceptions are {@code null}, or both exceptions are non-null,
      *         of the same class and with the same {@linkplain Throwable#getMessage() message}.
      *
-     * @since 1.0
+     * @since SIS 1.0
      */
     public static boolean messageEquals(final Throwable first, final Throwable second) {
         if (first == second) {
@@ -217,7 +217,7 @@ public final class Exceptions {
      * @param  exception  the exception to unwrap (may be {@code null}).
      * @return the unwrapped exception (may be the given argument itself).
      *
-     * @since 0.8
+     * @since SIS 0.8
      */
     public static Exception unwrap(Exception exception) {
         if (exception != null) {

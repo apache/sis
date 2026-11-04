@@ -124,7 +124,7 @@ public class Matrix2D extends AbstractMatrix<Matrix2D> {
      *        └                  ┘</pre>
      *
      * @param θ  arithmetic rotation angle in radians.
-     * @since 1.5
+     * @since SIS 1.5
      */
     public Matrix2D setToRotation(double θ) {
         m00 =  (m11 = Math.cos(θ));

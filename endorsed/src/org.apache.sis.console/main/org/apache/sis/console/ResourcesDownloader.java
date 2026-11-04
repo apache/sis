@@ -45,7 +45,7 @@ import org.apache.sis.pending.jdk.JDK22;
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.5
- * @since   0.7
+ * @since SIS 0.7
  */
 @Fallback
 public class ResourcesDownloader extends OptionalInstallations {

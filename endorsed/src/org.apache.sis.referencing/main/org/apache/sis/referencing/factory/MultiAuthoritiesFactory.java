@@ -155,7 +155,7 @@ import org.apache.sis.util.resources.Errors;
  *
  * @see org.apache.sis.referencing.CRS#getAuthorityFactory(String)
  *
- * @since 0.7
+ * @since SIS 0.7
  */
 public class MultiAuthoritiesFactory extends GeodeticAuthorityFactory implements CRSAuthorityFactory,
         CSAuthorityFactory, DatumAuthorityFactory, CoordinateOperationAuthorityFactory
@@ -898,7 +898,7 @@ public class MultiAuthoritiesFactory extends GeodeticAuthorityFactory implements
      * @return a description of the object, or empty if the object corresponding to the specified code has no description.
      * @throws FactoryException if an error occurred while fetching the description.
      *
-     * @since 1.5
+     * @since SIS 1.5
      */
     @Override
     public Optional<InternationalString> getDescriptionText(Class<? extends IdentifiedObject> type, String code)
@@ -982,7 +982,7 @@ public class MultiAuthoritiesFactory extends GeodeticAuthorityFactory implements
      * @return the coordinate reference system for the given code.
      * @throws FactoryException if the object creation failed.
      *
-     * @since 1.5
+     * @since SIS 1.5
      */
     @Override
     public GeodeticCRS createGeodeticCRS(final String code) throws FactoryException {

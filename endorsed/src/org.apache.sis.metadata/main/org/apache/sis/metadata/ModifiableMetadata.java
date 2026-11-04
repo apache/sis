@@ -83,7 +83,7 @@ import static org.apache.sis.metadata.internal.shared.ImplementationHelper.value
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.7
- * @since   0.3
+ * @since SIS 0.3
  */
 @XmlTransient
 public abstract class ModifiableMetadata extends AbstractMetadata {
@@ -141,7 +141,7 @@ public abstract class ModifiableMetadata extends AbstractMetadata {
      *
      * @param  source  the metadata from which to copy nil reasons, or {@code null} if none.
      *
-     * @since 1.5
+     * @since SIS 1.5
      */
     protected ModifiableMetadata(final Object source) {
         super(source);
@@ -183,7 +183,7 @@ public abstract class ModifiableMetadata extends AbstractMetadata {
      *         for example because the source class is a more specialized type than this metadata class.
      * @throws IllegalArgumentException if this method detects a cross-reference between source and this metadata.
      *
-     * @since 1.7
+     * @since SIS 1.7
      */
     public void merge(final Object source) {
         new Merger(null).copy(source, this);
@@ -203,7 +203,7 @@ public abstract class ModifiableMetadata extends AbstractMetadata {
      *
      * @see ModifiableMetadata#state()
      *
-     * @since 1.0
+     * @since SIS 1.0
      */
     public enum State {
         /**
@@ -281,7 +281,7 @@ public abstract class ModifiableMetadata extends AbstractMetadata {
      *
      * @return the state (editable, completable or final) of this {@code ModifiableMetadata} instance.
      *
-     * @since 1.0
+     * @since SIS 1.0
      */
     public State state() {
         return State.VALUES[state];
@@ -325,7 +325,7 @@ public abstract class ModifiableMetadata extends AbstractMetadata {
      * @throws UnmodifiableMetadataException if a transition to a less restrictive state
      *         (e.g. from {@link State#FINAL} to {@link State#EDITABLE}) was attempted.
      *
-     * @since 1.0
+     * @since SIS 1.0
      */
     public boolean transitionTo(final State target) {
         if (target.code < state) {
@@ -384,7 +384,7 @@ public abstract class ModifiableMetadata extends AbstractMetadata {
      * @see MetadataCopier
      * @see org.apache.sis.metadata.iso.DefaultMetadata#deepCopy(Metadata)
      *
-     * @since 1.1
+     * @since SIS 1.1
      */
     public ModifiableMetadata deepCopy(final State target) {
         final MetadataCopier copier;
@@ -413,7 +413,7 @@ public abstract class ModifiableMetadata extends AbstractMetadata {
      *
      * @see #state()
      *
-     * @since 1.0
+     * @since SIS 1.0
      */
     protected void checkWritePermission(final Object current) throws UnmodifiableMetadataException {
         if (state != COMPLETABLE) {
@@ -599,7 +599,7 @@ public abstract class ModifiableMetadata extends AbstractMetadata {
      *
      * @see #nonNullMap(Map, Class)
      *
-     * @since 1.0
+     * @since SIS 1.0
      */
     @SuppressWarnings("unchecked")
     protected final <K,V> Map<K,V> writeMap(final Map<? extends K, ? extends V> source, Map<K,V> target,
@@ -695,7 +695,7 @@ public abstract class ModifiableMetadata extends AbstractMetadata {
      * @return a map containing the {@code source} entries,
      *         or {@code null} if the source was null or empty.
      *
-     * @since 1.0
+     * @since SIS 1.0
      */
     protected static <K,V> Map<K,V> copyMap(final Map<? extends K, ? extends V> source, final Class<K> keyType) {
         if (isNullOrEmpty(source)) {
@@ -830,7 +830,7 @@ public abstract class ModifiableMetadata extends AbstractMetadata {
      * @param  keyType  the key type (used only if {@code current} is null).
      * @return {@code current}, or a new map if {@code current} is null.
      *
-     * @since 1.0
+     * @since SIS 1.0
      */
     protected final <K,V> Map<K,V> nonNullMap(final Map<K,V> current, final Class<K> keyType) {
         if (current != null) {

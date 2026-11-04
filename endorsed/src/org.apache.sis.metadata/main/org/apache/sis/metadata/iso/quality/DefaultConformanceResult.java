@@ -51,7 +51,7 @@ import org.apache.sis.xml.bind.gco.GO_Boolean;
  * @author  Touraïvane (IRD)
  * @author  Guilhem Legal (Geomatys)
  * @version 1.7
- * @since   0.3
+ * @since SIS 0.3
  */
 @TitleProperty(name = "specification")
 @XmlType(name = "DQ_ConformanceResult_Type", propOrder = {

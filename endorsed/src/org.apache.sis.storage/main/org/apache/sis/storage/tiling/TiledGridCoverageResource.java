@@ -88,7 +88,7 @@ import org.opengis.coverage.CannotEvaluateException;
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.7
- * @since   1.7
+ * @since SIS 1.7
  */
 public abstract class TiledGridCoverageResource extends AbstractGridCoverageResource implements TiledResource {
     /**
@@ -1596,7 +1596,7 @@ check:  if (dataType.isInteger()) {
      *
      * @author  Martin Desruisseaux (Geomatys)
      * @version 1.7
-     * @since   1.7
+     * @since SIS 1.7
      */
     public static interface Pyramid {
         /**

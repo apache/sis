@@ -94,7 +94,7 @@ import org.apache.sis.util.OptionalCandidate;
  *
  * @see org.apache.sis.util.Characters#isValidWKT(int)
  *
- * @since 0.6
+ * @since SIS 0.6
  */
 public abstract class Transliterator implements Serializable {
     /**

@@ -46,6 +46,6 @@
  *
  * @see org.apache.sis.referencing.factory.sql
  *
- * @since 0.8
+ * @since SIS 0.8
  */
 package org.apache.sis.metadata.sql;

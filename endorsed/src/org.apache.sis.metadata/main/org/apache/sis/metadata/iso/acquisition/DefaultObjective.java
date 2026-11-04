@@ -60,7 +60,7 @@ import org.apache.sis.xml.bind.NonMarshalledAuthority;
  * @author  Cédric Briançon (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.4
- * @since   0.3
+ * @since SIS 0.3
  */
 @XmlType(name = "MI_Objective_Type", propOrder = {
     "identifiers",
@@ -297,7 +297,7 @@ public class DefaultObjective extends ISOMetadata implements Objective {
      *
      * @return events associated with objective completion.
      *
-     * @since 1.0
+     * @since SIS 1.0
      */
     @XmlElement(name = "objectiveOccurence", required = true)
     public Collection<Event> getObjectiveOccurrences() {
@@ -320,7 +320,7 @@ public class DefaultObjective extends ISOMetadata implements Objective {
      *
      * @param  newValues  the new objective occurrences values.
      *
-     * @since 1.0
+     * @since SIS 1.0
      */
     public void setObjectiveOccurrences(final Collection<? extends Event> newValues) {
         objectiveOccurrences = writeCollection(newValues, objectiveOccurrences, Event.class);

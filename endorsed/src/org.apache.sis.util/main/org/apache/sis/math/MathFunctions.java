@@ -74,7 +74,7 @@ import static org.apache.sis.pending.jdk.JDK19.DOUBLE_PRECISION;
  * @see DecimalFunctions
  * @see org.apache.sis.util.Numbers
  *
- * @since 0.3
+ * @since SIS 0.3
  */
 public final class MathFunctions {
     /**
@@ -95,7 +95,7 @@ public final class MathFunctions {
      * @see Math#log10(double)
      * @see #getExponent(double)
      *
-     * @since 0.4
+     * @since SIS 0.4
      */
     public static final double LOG10_2 = 0.3010299956639812;
 
@@ -103,7 +103,7 @@ public final class MathFunctions {
      * The minimal ordinal value for {@code NaN} numbers created by {@link #toNanFloat(int)}.
      * The current value is {@value}.
      *
-     * @since 1.0
+     * @since SIS 1.0
      */
     public static final int MIN_NAN_ORDINAL = -0x200000;
 
@@ -111,7 +111,7 @@ public final class MathFunctions {
      * The maximal ordinal value for {@code NaN} numbers created by {@link #toNanFloat(int)}.
      * The current value is {@value}.
      *
-     * @since 1.0
+     * @since SIS 1.0
      */
     public static final int MAX_NAN_ORDINAL =  0x1FFFFF;
 
@@ -204,7 +204,7 @@ public final class MathFunctions {
      * @param  y  the second value to average.
      * @return average of given values without integer overflow.
      *
-     * @since 1.1
+     * @since SIS 1.1
      */
     public static double average(final long x, final long y) {
         final long xor = (x ^ y);
@@ -314,7 +314,7 @@ public final class MathFunctions {
      * @see Math#getExponent(double)
      * @see Math#scalb(double, int)
      *
-     * @since 0.4
+     * @since SIS 0.4
      */
     public static int getExponent(final double value) {
         final long bits = doubleToRawLongBits(value);
@@ -357,7 +357,7 @@ public final class MathFunctions {
      *
      * @see Math#pow(double, double)
      *
-     * @since 1.0
+     * @since SIS 1.0
      */
     public static long pow(long base, int exponent) {
         long result = 1;
@@ -435,7 +435,7 @@ public final class MathFunctions {
      *
      * @see Math#sinh(double)
      *
-     * @since 0.6
+     * @since SIS 0.6
      */
     public static double asinh(final double x) {
         return Math.log(x + sqrt(x*x + 1));
@@ -450,7 +450,7 @@ public final class MathFunctions {
      *
      * @see Math#cosh(double)
      *
-     * @since 0.6
+     * @since SIS 0.6
      */
     public static double acosh(final double x) {
         return Math.log(x + sqrt(x*x - 1));
@@ -522,7 +522,7 @@ public final class MathFunctions {
      * @see #isPositive(double)
      * @see #isNegativeZero(double)
      *
-     * @since 0.4
+     * @since SIS 0.4
      */
     public static boolean isPositiveZero(final double value) {
         return doubleToRawLongBits(value) == 0L;
@@ -567,7 +567,7 @@ public final class MathFunctions {
      * @see #isNegative(double)
      * @see #isPositiveZero(double)
      *
-     * @since 0.4
+     * @since SIS 0.4
      */
     public static boolean isNegativeZero(final double value) {
         return doubleToRawLongBits(value) == SIGN_BIT_MASK;
@@ -746,7 +746,7 @@ public final class MathFunctions {
      *
      * @see <a href="https://en.wikipedia.org/wiki/Quadruple-precision_floating-point_format">Quadruple-precision floating-point format on Wikipedia</a>
      *
-     * @since 0.7
+     * @since SIS 0.7
      */
     public static double quadrupleToDouble(long l0, long l1) {
         // Build double
@@ -1007,7 +1007,7 @@ testNextNumber:         while (true) {      // Simulate a "goto" statement (usua
      * @see java.awt.geom.QuadCurve2D#solveQuadratic(double[])
      * @see java.awt.geom.CubicCurve2D#solveCubic(double[])
      *
-     * @since 1.0
+     * @since SIS 1.0
      */
     public static double[] polynomialRoots(final double... coefficients) {
         int upper = coefficients.length;

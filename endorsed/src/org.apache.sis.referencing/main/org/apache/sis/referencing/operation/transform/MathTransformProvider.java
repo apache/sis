@@ -103,7 +103,7 @@ import org.opengis.referencing.operation.OperationMethod;
  * @see DefaultMathTransformFactory
  * @see AbstractMathTransform
  *
- * @since 0.6
+ * @since SIS 0.6
  */
 @FunctionalInterface
 public interface MathTransformProvider {
@@ -163,7 +163,7 @@ public interface MathTransformProvider {
      *
      * @author  Martin Desruisseaux (Geomatys)
      * @version 1.6
-     * @since   1.5
+     * @since SIS 1.5
      */
     public interface Context {
         /**
@@ -242,7 +242,7 @@ public interface MathTransformProvider {
          *
          * @return the ellipsoid which is used together with the source coordinate system, or empty if none.
          *
-         * @since 1.6
+         * @since SIS 1.6
          */
         default Optional<Ellipsoid> getSourceEllipsoid() {
             return Optional.empty();
@@ -253,7 +253,7 @@ public interface MathTransformProvider {
          *
          * @return the ellipsoid which is used together with the target coordinate system, or empty if none.
          *
-         * @since 1.6
+         * @since SIS 1.6
          */
         default Optional<Ellipsoid> getTargetEllipsoid() {
             return Optional.empty();
@@ -325,7 +325,7 @@ public interface MathTransformProvider {
      * @throws FactoryException if the math transform cannot be created for some other reason
      *         (for example a required file was not found).
      *
-     * @since 1.5
+     * @since SIS 1.5
      */
     MathTransform createMathTransform(Context context)
             throws InvalidParameterNameException, ParameterNotFoundException,

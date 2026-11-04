@@ -92,7 +92,7 @@ import org.opengis.coverage.PointOutsideCoverageException;
  * @see GridGeometry#derive()
  * @see GridGeometry#selectDimensions(int[])
  *
- * @since 1.0
+ * @since SIS 1.0
  */
 public class GridDerivation {
     /**
@@ -288,7 +288,7 @@ public class GridDerivation {
      *
      * @see GridGeometry#extentOf(GridGeometry, PixelInCell, GridRoundingMode)
      *
-     * @since 1.5
+     * @since SIS 1.5
      */
     public GridDerivation pointsToInclude(final PixelInCell include) {
         ensureSubgridNotSet();
@@ -327,7 +327,7 @@ public class GridDerivation {
      * @return {@code this} for method call chaining.
      * @throws IllegalStateException if a {@code subgrid(…)} or {@code slice(…)} method has already been invoked.
      *
-     * @since 1.1
+     * @since SIS 1.1
      */
     public GridDerivation clipping(final GridClippingMode mode) {
         ensureSubgridNotSet();
@@ -396,7 +396,7 @@ public class GridDerivation {
      * @throws IllegalArgumentException if a value is zero or negative.
      * @throws IllegalStateException if a {@code subgrid(…)} or {@code slice(…)} method has already been invoked.
      *
-     * @since 1.1
+     * @since SIS 1.1
      */
     public GridDerivation chunkSize(final int... cellCounts) {
         ensureSubgridNotSet();
@@ -450,7 +450,7 @@ public class GridDerivation {
      * @throws IllegalArgumentException if a value is zero or negative.
      * @throws IllegalStateException if a {@code subgrid(…)} or {@code slice(…)} method has already been invoked.
      *
-     * @since 1.5
+     * @since SIS 1.5
      */
     public GridDerivation maximumSubsampling(final long... subsampling) {
         ensureSubgridNotSet();
@@ -1034,7 +1034,7 @@ public class GridDerivation {
      * @see #getIntersection()
      * @see #getSubsampling()
      *
-     * @since 1.5
+     * @since SIS 1.5
      */
     public GridDerivation subgrid(final GridExtent areaOfInterest, long... subsampling) {
         ensureSubgridNotSet();
@@ -1267,7 +1267,7 @@ public class GridDerivation {
      * @see GridGeometry#selectDimensions(int...)
      * @see CRS#selectDimensions(CoordinateReferenceSystem, int[])
      *
-     * @since 1.6
+     * @since SIS 1.6
      */
     public GridDerivation selectAxes(int... indices) {
         CoordinateSystem cs = base.getCoordinateReferenceSystem().getCoordinateSystem();
@@ -1301,7 +1301,7 @@ public class GridDerivation {
      *
      * @see MissingSourceDimensionsException#getMissingAxes()
      *
-     * @since 1.6
+     * @since SIS 1.6
      */
     public GridDerivation excludeAxes(final Collection<AxisDirection> exclusion) {
         final CoordinateSystem cs = base.getCoordinateReferenceSystem().getCoordinateSystem();
@@ -1449,7 +1449,7 @@ public class GridDerivation {
      * @see #getSubsampling()
      * @see #getSubsamplingOffsets()
      *
-     * @since 1.5
+     * @since SIS 1.5
      */
     public LinearTransform getGridTransform(final PixelInCell anchor) {
         LinearTransform tr = toBase;
@@ -1475,7 +1475,7 @@ public class GridDerivation {
      *
      * @return whether the conversion from the base grid to the derived grid contains a scale factor.
      *
-     * @since 1.5
+     * @since SIS 1.5
      */
     public boolean hasSubsampling() {
         return (toBase != null) && !toBase.isIdentity();
@@ -1514,7 +1514,7 @@ public class GridDerivation {
      * @see #subgrid(GridGeometry)
      * @see #subgrid(GridExtent, long...)
      *
-     * @since 1.1
+     * @since SIS 1.1
      */
     public long[] getSubsampling() {
         final long[] subsampling;
@@ -1638,7 +1638,7 @@ public class GridDerivation {
      * @see #subgrid(GridGeometry)
      * @see #subgrid(GridExtent, long...)
      *
-     * @since 1.1
+     * @since SIS 1.1
      */
     public long[] getSubsamplingOffsets() {
         final long[] offsets;

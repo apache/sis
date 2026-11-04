@@ -29,7 +29,7 @@ package org.apache.sis.util;
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.3
- * @since   0.5
+ * @since SIS 0.5
  */
 public class UnknownNameException extends IllegalArgumentException {
     /**

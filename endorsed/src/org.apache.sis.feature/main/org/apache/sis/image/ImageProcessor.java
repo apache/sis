@@ -140,7 +140,7 @@ import org.apache.sis.measure.Units;
  *
  * @see org.apache.sis.coverage.grid.GridCoverageProcessor
  *
- * @since 1.1
+ * @since SIS 1.1
  */
 public class ImageProcessor implements Cloneable {
     /**
@@ -273,7 +273,7 @@ public class ImageProcessor implements Cloneable {
      * of destination images.
      *
      * @return preferences about the tiling of an image in relationship with a given image size.
-     * @since 1.5
+     * @since SIS 1.5
      */
     public synchronized ImageLayout getImageLayout() {
         return layout;
@@ -283,7 +283,7 @@ public class ImageProcessor implements Cloneable {
      * Sets the preferences (size, tile size, sample model, <i>etc.</i>) of destination images.
      *
      * @param layout  new preferences about the tiling of an image in relationship with a given image size.
-     * @since 1.5
+     * @since SIS 1.5
      */
     public synchronized void setImageLayout(final ImageLayout layout) {
         this.layout = Objects.requireNonNull(layout);
@@ -340,7 +340,7 @@ public class ImageProcessor implements Cloneable {
      *
      * @return colorization algorithm to apply on computed image, or {@code null} for default.
      *
-     * @since 1.4
+     * @since SIS 1.4
      */
     public synchronized Colorizer getColorizer() {
         return colorizer;
@@ -363,7 +363,7 @@ public class ImageProcessor implements Cloneable {
      *
      * @param colorizer colorization algorithm to apply on computed image, or {@code null} for default.
      *
-     * @since 1.4
+     * @since SIS 1.4
      */
     public synchronized void setColorizer(final Colorizer colorizer) {
         this.colorizer = colorizer;
@@ -521,7 +521,7 @@ public class ImageProcessor implements Cloneable {
      * @see #statistics(RenderedImage, Shape, DoubleUnaryOperator[])
      * @see SampleDimension#getTransferFunction()
      *
-     * @since 1.2
+     * @since SIS 1.2
      */
     public static DoubleUnaryOperator filterNodataValues(final Number... values) {
         return (values != null) ? StatisticsCalculator.filterNodataValues(values) : null;
@@ -814,7 +814,7 @@ public class ImageProcessor implements Cloneable {
      * @see RenderedImage#getPropertyNames()
      * @see RenderedImage#getProperty(String)
      *
-     * @since 1.4
+     * @since SIS 1.4
      */
     public RenderedImage addUserProperties(final RenderedImage source, final Map<String,Object> properties) {
         return unique(new UserProperties(source, properties));
@@ -866,7 +866,7 @@ public class ImageProcessor implements Cloneable {
      *
      * @see #aggregateBands(RenderedImage[], int[][])
      *
-     * @since 1.4
+     * @since SIS 1.4
      */
     public RenderedImage aggregateBands(final RenderedImage... sources) {
         return aggregateBands(sources, (int[][]) null);
@@ -917,7 +917,7 @@ public class ImageProcessor implements Cloneable {
      * @throws IllegalArgumentException if there is an incompatibility between some source images
      *         or if some band indices are duplicated or outside their range of validity.
      *
-     * @since 1.4
+     * @since SIS 1.4
      */
     @SuppressWarnings("LocalVariableHidesMemberVariable")
     public RenderedImage aggregateBands(final RenderedImage[] sources, final int[][] bandsPerSource) {
@@ -969,7 +969,7 @@ public class ImageProcessor implements Cloneable {
      *
      * @see ImageCombiner
      *
-     * @since 1.5
+     * @since SIS 1.5
      */
     @SuppressWarnings("LocalVariableHidesMemberVariable")
     public RenderedImage overlay(final RenderedImage[] sources, final Rectangle bounds) {
@@ -1010,7 +1010,7 @@ public class ImageProcessor implements Cloneable {
      *         Can be null only if a default sample model is specified by {@link ImageLayout#sampleModel}.
      * @return the reformatted image.
      *
-     * @since 1.5
+     * @since SIS 1.5
      */
     @SuppressWarnings("LocalVariableHidesMemberVariable")
     public RenderedImage reformat(final RenderedImage source, SampleModel sampleModel) {
@@ -1047,7 +1047,7 @@ public class ImageProcessor implements Cloneable {
      *
      * @see GridCoverageProcessor#mask(GridCoverage, RegionOfInterest, boolean)
      *
-     * @since 1.2
+     * @since SIS 1.2
      */
     @SuppressWarnings("LocalVariableHidesMemberVariable")
     public RenderedImage mask(final RenderedImage source, final Shape mask, final boolean maskInside) {
@@ -1100,7 +1100,7 @@ public class ImageProcessor implements Cloneable {
      *
      * @see GridCoverageProcessor#convert(GridCoverage, MathTransform1D[], Function)
      *
-     * @since 1.4
+     * @since SIS 1.4
      */
     @SuppressWarnings("LocalVariableHidesMemberVariable")
     public RenderedImage convert(final RenderedImage source, final NumberRange<?>[] sourceRanges,
@@ -1259,7 +1259,7 @@ public class ImageProcessor implements Cloneable {
      * @param  source  the image for which to compute an overview.
      * @return image overview.
      *
-     * @since 1.7
+     * @since SIS 1.7
      */
     public RenderedImage overview(final RenderedImage source) {
         ArgumentChecks.ensureNonNull("source", source);
@@ -1385,7 +1385,7 @@ public class ImageProcessor implements Cloneable {
      * @see Colorizer#forCategories(Function)
      * @see PlanarImage#SAMPLE_DIMENSIONS_KEY
      *
-     * @since 1.4
+     * @since SIS 1.4
      */
     public RenderedImage visualize(final RenderedImage source) {
         ArgumentChecks.ensureNonNull("source", source);
@@ -1430,7 +1430,7 @@ public class ImageProcessor implements Cloneable {
      *
      * @see #resample(RenderedImage, Rectangle, MathTransform)
      *
-     * @since 1.4
+     * @since SIS 1.4
      */
     public RenderedImage visualize(final RenderedImage source, final Rectangle bounds, final MathTransform toSource) {
         ArgumentChecks.ensureNonNull("source",   source);

@@ -51,7 +51,7 @@ import org.opengis.referencing.ObjectDomain;
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.7
- * @since   1.4
+ * @since SIS 1.4
  */
 public class DefaultObjectDomain extends FormattableObject implements ObjectDomain, LenientComparable, Serializable {
     /**
@@ -227,7 +227,7 @@ public class DefaultObjectDomain extends FormattableObject implements ObjectDoma
      * This is the base type required by {@code equals(…)} methods for returning a potentially {@code true} value.
      *
      * @return {@code ObjectDomain.class} or a user-defined sub-interface.
-     * @since 1.7
+     * @since SIS 1.7
      */
     @Override
     public Type getStandardType() {

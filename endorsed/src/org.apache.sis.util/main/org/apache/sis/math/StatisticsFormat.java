@@ -60,7 +60,7 @@ import org.apache.sis.util.internal.shared.Numerics;
  *
  * @see Statistics#toString()
  *
- * @since 0.3
+ * @since SIS 0.3
  */
 public class StatisticsFormat extends TabularFormat<Statistics> {
     /**
@@ -139,7 +139,7 @@ public class StatisticsFormat extends TabularFormat<Statistics> {
      * @param  category  the category for which a locale is desired.
      * @return the locale for the given category (never {@code null}).
      *
-     * @since 0.4
+     * @since SIS 0.4
      */
     @Override
     public Locale getLocale(final Locale.Category category) {

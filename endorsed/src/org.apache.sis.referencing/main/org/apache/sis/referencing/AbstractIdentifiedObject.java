@@ -125,7 +125,7 @@ import org.opengis.referencing.ObjectDomain;
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @version 1.7
- * @since   0.4
+ * @since SIS 0.4
  */
 @XmlType(name = "IdentifiedObjectType", propOrder = {
     "descriptionGML",
@@ -172,7 +172,7 @@ public class AbstractIdentifiedObject extends FormattableObject implements Ident
      * <h4>Example</h4>
      * "superseded by code XYZ".
      *
-     * @since 0.6
+     * @since SIS 0.6
      */
     public static final String DEPRECATED_KEY = "deprecated";
 
@@ -529,7 +529,7 @@ public class AbstractIdentifiedObject extends FormattableObject implements Ident
      * </ul>
      *
      * @return the GeoAPI interface implemented by this class.
-     * @since 1.7
+     * @since SIS 1.7
      */
     @Override
     public Type getStandardType() {
@@ -580,7 +580,7 @@ public class AbstractIdentifiedObject extends FormattableObject implements Ident
      *
      * @return scopes and domains of validity of this object.
      *
-     * @since 1.4
+     * @since SIS 1.4
      */
     @Override
     public Collection<ObjectDomain> getDomains() {
@@ -598,7 +598,7 @@ public class AbstractIdentifiedObject extends FormattableObject implements Ident
      *
      * @see ImmutableIdentifier#getDescription()
      *
-     * @since 0.6
+     * @since SIS 0.6
      */
     public Optional<InternationalString> getDescription() {
         return Optional.ofNullable((name != null) ? name.getDescription() : null);
@@ -980,7 +980,7 @@ public class AbstractIdentifiedObject extends FormattableObject implements Ident
      * @see IdentifiedObjects#getName(IdentifiedObject, Citation)
      * @see IdentifiedObjects#getIdentifierOrName(IdentifiedObject)
      *
-     * @since 1.1
+     * @since SIS 1.1
      */
     @Override
     public void formatTo(final java.util.Formatter formatter, final int flags, final int width, final int precision) {

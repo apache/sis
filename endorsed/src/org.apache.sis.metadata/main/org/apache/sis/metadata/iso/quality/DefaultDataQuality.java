@@ -56,7 +56,7 @@ import org.opengis.metadata.quality.StandaloneQualityReportInformation;
  * @author  Touraïvane (IRD)
  * @author  Alexis Gaillard (Geomatys)
  * @version 1.4
- * @since   0.3
+ * @since SIS 0.3
  */
 @XmlType(name = "DQ_DataQuality_Type", propOrder = {
     "scope",
@@ -111,7 +111,7 @@ public class DefaultDataQuality extends ISOMetadata implements DataQuality {
      *
      * @param level  the hierarchical level of the data to which the quality information applies, or {@code null}.
      *
-     * @since 0.5
+     * @since SIS 0.5
      */
     public DefaultDataQuality(final ScopeCode level) {
         if (level != null) {
@@ -220,7 +220,7 @@ public class DefaultDataQuality extends ISOMetadata implements DataQuality {
      *
      * @return reference to an external standalone quality report, or {@code null} if none.
      *
-     * @since 1.3
+     * @since SIS 1.3
      */
     @Override
     @XmlElement(name = "standaloneQualityReport")
@@ -233,7 +233,7 @@ public class DefaultDataQuality extends ISOMetadata implements DataQuality {
      *
      * @param  newValue  the new quality information.
      *
-     * @since 1.3
+     * @since SIS 1.3
      */
     public void setStandaloneQualityReport(final StandaloneQualityReportInformation newValue) {
         checkWritePermission(standaloneQualityReport);

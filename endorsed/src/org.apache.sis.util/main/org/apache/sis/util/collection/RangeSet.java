@@ -107,7 +107,7 @@ import org.apache.sis.util.resources.Errors;
  *
  * @see Range
  *
- * @since 0.3
+ * @since SIS 0.3
  */
 public class RangeSet<E extends Comparable<? super E>> extends AbstractSet<Range<E>>
         implements CheckedContainer<Range<E>>, SortedSet<Range<E>>, Cloneable, Serializable
@@ -306,7 +306,7 @@ public class RangeSet<E extends Comparable<? super E>> extends AbstractSet<Range
      * Indicates that this collection is modifiable (at least by default).
      *
      * @return {@link Mutability#MODIFIABLE} by default.
-     * @since 1.6
+     * @since SIS 1.6
      */
     @Override
     public Mutability getMutability() {
@@ -1420,7 +1420,7 @@ public class RangeSet<E extends Comparable<? super E>> extends AbstractSet<Range
      * @param  value  the minimum value to search, ignoring inclusiveness/exclusiveness.
      * @return index of the range having a minimum value equal or lower than the specified value. May be -1.
      *
-     * @since 1.4
+     * @since SIS 1.4
      */
     public int indexOfMin(final E value) {
         int index = binarySearch(value, 0, length);
@@ -1437,7 +1437,7 @@ public class RangeSet<E extends Comparable<? super E>> extends AbstractSet<Range
      * @return index of the range having a maximum value equal or greater than the specified value.
      *         May be {@link #size()}.
      *
-     * @since 1.4
+     * @since SIS 1.4
      */
     public int indexOfMax(final E value) {
         int index = binarySearch(value, 0, length);

@@ -34,7 +34,7 @@ import javafx.event.EventType;
  * @see ResourceTree#onResourceLoaded
  * @see ResourceTree#onResourceClosed
  *
- * @since 1.2
+ * @since SIS 1.2
  */
 @SuppressWarnings("CloneableImplementsClone")
 public class ResourceEvent extends Event {
@@ -85,7 +85,7 @@ public class ResourceEvent extends Event {
      *
      * @return path to the resource being opened or closed.
      *
-     * @since 1.4
+     * @since SIS 1.4
      */
     public Optional<File> getResourceFile() {
         return Optional.ofNullable(file);

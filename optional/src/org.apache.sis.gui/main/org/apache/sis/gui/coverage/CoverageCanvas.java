@@ -102,7 +102,7 @@ import static org.apache.sis.gui.internal.LogHandler.LOGGER;
  *
  * @see CoverageExplorer
  *
- * @since 1.1
+ * @since SIS 1.1
  */
 @DefaultProperty("coverage")
 public class CoverageCanvas extends MapCanvasAWT {
@@ -158,7 +158,7 @@ public class CoverageCanvas extends MapCanvasAWT {
      * @see #setResource(GridCoverageResource)
      * @see CoverageExplorer#resourceProperty
      *
-     * @since 1.2
+     * @since SIS 1.2
      */
     public final ObjectProperty<GridCoverageResource> resourceProperty;
 
@@ -347,7 +347,7 @@ public class CoverageCanvas extends MapCanvasAWT {
      * It may happen randomly depending on thread execution order.
      *
      * @return an identifier of the rendered coverage.
-     * @since 1.7
+     * @since SIS 1.7
      */
     @Override
     public Optional<Identifier> getContentIdentifier() {
@@ -370,7 +370,7 @@ public class CoverageCanvas extends MapCanvasAWT {
      *
      * @see #resourceProperty
      *
-     * @since 1.2
+     * @since SIS 1.2
      */
     public final GridCoverageResource getResource() {
         return resourceProperty.get();
@@ -386,7 +386,7 @@ public class CoverageCanvas extends MapCanvasAWT {
      *
      * @see #resourceProperty
      *
-     * @since 1.2
+     * @since SIS 1.2
      */
     public final void setResource(final GridCoverageResource resource) {
         resourceProperty.set(resource);

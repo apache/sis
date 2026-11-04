@@ -46,7 +46,7 @@ import org.apache.sis.util.Utilities;
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.7
- * @since   1.5
+ * @since SIS 1.5
  */
 public class DefaultCoordinateMetadata extends FormattableObject
         implements CoordinateMetadata, LenientComparable, Serializable
@@ -195,7 +195,7 @@ public class DefaultCoordinateMetadata extends FormattableObject
      * This is the base type required by {@code equals(…)} methods for returning a potentially {@code true} value.
      *
      * @return {@code CoordinateMetadata.class} or a user-defined sub-interface.
-     * @since 1.7
+     * @since SIS 1.7
      */
     @Override
     public Type getStandardType() {

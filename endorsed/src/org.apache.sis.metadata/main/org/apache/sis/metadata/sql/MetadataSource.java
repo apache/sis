@@ -114,7 +114,7 @@ import org.opengis.util.ControlledVocabulary;
  * @author  Touraïvane (IRD)
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @version 1.7
- * @since   0.8
+ * @since SIS 0.8
  */
 public class MetadataSource implements AutoCloseable {
     /**
@@ -1167,7 +1167,7 @@ public class MetadataSource implements AutoCloseable {
      * @param  filter  the filter to set, or {@code null} for removing the filter.
      * @return the previous filter, or {@code null} if none.
      *
-     * @since 1.1
+     * @since SIS 1.1
      */
     public Filter setWarningFilter(final Filter filter) {
         Filter p = logFilter;
@@ -1180,7 +1180,7 @@ public class MetadataSource implements AutoCloseable {
      *
      * @return the current filter, or {@code null} if none.
      *
-     * @since 1.1
+     * @since SIS 1.1
      */
     public Filter getWarningFilter() {
         return logFilter;

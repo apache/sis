@@ -48,7 +48,7 @@ import org.apache.sis.util.internal.shared.Numerics;
  *
  * @see org.apache.sis.math.Vector
  *
- * @since 0.7
+ * @since SIS 0.7
  */
 public class IntegerList extends AbstractList<Integer> implements RandomAccess, Serializable, Cloneable {
     /**
@@ -279,7 +279,7 @@ public class IntegerList extends AbstractList<Integer> implements RandomAccess, 
      *
      * @return the first element.
      * @throws NoSuchElementException if this collection is empty.
-     * @since 1.5
+     * @since SIS 1.5
      */
     public Integer getFirst() {
         if (size != 0) {
@@ -293,7 +293,7 @@ public class IntegerList extends AbstractList<Integer> implements RandomAccess, 
      *
      * @return the last element.
      * @throws NoSuchElementException if this collection is empty.
-     * @since 1.5
+     * @since SIS 1.5
      */
     public Integer getLast() {
         if (size != 0) {
@@ -410,7 +410,7 @@ public class IntegerList extends AbstractList<Integer> implements RandomAccess, 
      * @return the head of this list.
      * @throws NoSuchElementException if this list is empty.
      *
-     * @since 1.5
+     * @since SIS 1.5
      */
     public Integer removeFirst() throws NoSuchElementException {
         if (size != 0) {
@@ -493,7 +493,7 @@ public class IntegerList extends AbstractList<Integer> implements RandomAccess, 
      *
      * @return iterator over the integer values in this list.
      *
-     * @since 1.0
+     * @since SIS 1.0
      */
     @Override
     public PrimitiveIterator.OfInt iterator() {
@@ -506,7 +506,7 @@ public class IntegerList extends AbstractList<Integer> implements RandomAccess, 
      *
      * @return spliterator over the integer values in this list.
      *
-     * @since 1.0
+     * @since SIS 1.0
      */
     @Override
     public Spliterator.OfInt spliterator() {
@@ -524,7 +524,7 @@ public class IntegerList extends AbstractList<Integer> implements RandomAccess, 
      * @param parallel  {@code true} for a parallel stream, or {@code false} for a sequential stream.
      * @return a stream of values in this list as primitive types.
      *
-     * @since 1.0
+     * @since SIS 1.0
      */
     public IntStream stream(boolean parallel) {
         return StreamSupport.intStream(spliterator(), parallel);
@@ -727,7 +727,7 @@ public class IntegerList extends AbstractList<Integer> implements RandomAccess, 
      * @param  other  the other object to compare with this list.
      * @return {@code true} if both object are equal.
      *
-     * @since 1.1
+     * @since SIS 1.1
      */
     @Override
     public boolean equals(final Object other) {

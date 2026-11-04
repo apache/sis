@@ -74,7 +74,7 @@ import org.opengis.feature.MultiValuedPropertyException;
  * @see AbstractFeature
  * @see DefaultAttributeType
  *
- * @since 0.5
+ * @since SIS 0.5
  */
 public abstract class AbstractAttribute<V> extends Field<V> implements Attribute<V>, Serializable {
     /**

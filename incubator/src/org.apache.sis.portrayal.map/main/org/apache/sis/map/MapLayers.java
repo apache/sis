@@ -46,7 +46,7 @@ import org.apache.sis.storage.DataStoreException;
  *
  * @author  Johann Sorel (Geomatys)
  * @version 1.2
- * @since   1.2
+ * @since SIS 1.2
  */
 public class MapLayers extends MapItem {
     /**

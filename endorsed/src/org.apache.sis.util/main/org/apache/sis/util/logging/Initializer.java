@@ -73,7 +73,7 @@ import java.nio.file.Path;
  *
  * @see FileHandler
  *
- * @since 1.3
+ * @since SIS 1.3
  */
 public class Initializer {
     /*
@@ -85,7 +85,7 @@ public class Initializer {
      * The system property for the logging configuration file.
      * The value is defined by {@link LogManager} to {@value}.
      *
-     * @since 1.5
+     * @since SIS 1.5
      */
     public static final String CONFIG_FILE_PROPERTY = "java.util.logging.config.file";
 
@@ -128,7 +128,7 @@ public class Initializer {
      *
      * @see LogManager#readConfiguration(InputStream)
      *
-     * @since 1.5
+     * @since SIS 1.5
      */
     public static void reload(Path path) throws IOException {
         path = path.normalize();

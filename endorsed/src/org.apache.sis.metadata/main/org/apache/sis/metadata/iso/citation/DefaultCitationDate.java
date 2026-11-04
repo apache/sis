@@ -48,7 +48,7 @@ import org.apache.sis.temporal.TemporalDate;
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @author  Cédric Briançon (Geomatys)
  * @version 1.5
- * @since   0.3
+ * @since SIS 0.3
  */
 @TitleProperty(name = "referenceDate")
 @XmlType(name = "CI_Date_Type", propOrder = {
@@ -85,7 +85,7 @@ public class DefaultCitationDate extends ISOMetadata implements CitationDate {
      * @param date      the reference date for the cited resource, or {@code null} if unknown.
      * @param dateType  the event used for reference date, or {@code null} if unknown.
      *
-     * @since 1.5
+     * @since SIS 1.5
      */
     public DefaultCitationDate(final Temporal date, final DateType dateType) {
         this.date = date;
@@ -164,7 +164,7 @@ public class DefaultCitationDate extends ISOMetadata implements CitationDate {
      *
      * @return reference date for the cited resource, or {@code null}.
      *
-     * @since 1.5
+     * @since SIS 1.5
      */
     @Override
     @XmlElement(name = "date", required = true)
@@ -181,7 +181,7 @@ public class DefaultCitationDate extends ISOMetadata implements CitationDate {
      *
      * @param  newValue  the new date.
      *
-     * @since 1.5
+     * @since SIS 1.5
      */
     public void setReferenceDate(final Temporal newValue) {
         checkWritePermission(date);

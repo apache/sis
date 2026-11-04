@@ -23,7 +23,7 @@
  * @author  Martin Desruisseaux (MPO, IRD, Geomatys)
  * @author  Alexis Manin (Geomatys)
  * @version 1.8
- * @since   0.3
+ * @since SIS 0.3
  */
 module org.apache.sis.util {
     requires java.management;

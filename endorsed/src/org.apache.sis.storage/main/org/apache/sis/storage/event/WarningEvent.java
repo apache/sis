@@ -32,7 +32,7 @@ import org.apache.sis.util.internal.shared.Strings;
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.7
- * @since   1.0
+ * @since SIS 1.0
  */
 public class WarningEvent extends StoreEvent {
     /**
@@ -74,7 +74,7 @@ public class WarningEvent extends StoreEvent {
      *
      * @param  locale  the desired locale, or {@code null} for the default locale.
      * @return the warning message, preferably in the given locale.
-     * @since 1.7
+     * @since SIS 1.7
      */
     public String getMessage(final Locale locale) {
         return Strings.formatMessage(description, locale, null, null, null);

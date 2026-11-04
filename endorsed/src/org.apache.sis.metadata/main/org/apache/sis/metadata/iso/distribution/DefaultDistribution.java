@@ -56,7 +56,7 @@ import org.apache.sis.xml.bind.gco.InternationalStringAdapter;
  * @author  Cédric Briançon (Geomatys)
  * @author  Cullen Rombach (Image Matters)
  * @version 1.4
- * @since   0.3
+ * @since SIS 0.3
  */
 @TitleProperty(name = "description")
 @XmlType(name = "MD_Distribution_Type", propOrder = {
@@ -152,7 +152,7 @@ public class DefaultDistribution extends ISOMetadata implements Distribution {
      *
      * @return brief description of a set of distribution options.
      *
-     * @since 0.5
+     * @since SIS 0.5
      */
     @Override
     @XmlElement(name = "description")
@@ -166,7 +166,7 @@ public class DefaultDistribution extends ISOMetadata implements Distribution {
      *
      * @param  newValue  the new description.
      *
-     * @since 0.5
+     * @since SIS 0.5
      */
     public void setDescription(final InternationalString newValue) {
         checkWritePermission(description);

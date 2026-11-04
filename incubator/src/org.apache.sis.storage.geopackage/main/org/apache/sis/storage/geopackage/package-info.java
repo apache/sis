@@ -28,6 +28,6 @@
  *
  * @see <a href="https://www.opengeospatial.org/standards/geopackage">OGC® GeoPackage Encoding Standard</a>
  *
- * @since 1.5
+ * @since SIS 1.5
  */
 package org.apache.sis.storage.geopackage;

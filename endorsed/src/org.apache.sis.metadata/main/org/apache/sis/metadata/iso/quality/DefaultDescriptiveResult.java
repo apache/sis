@@ -46,7 +46,7 @@ import org.opengis.metadata.quality.DescriptiveResult;
  * @author  Alexis Gaillard (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.4
- * @since   1.3
+ * @since SIS 1.3
  */
 @XmlType(name = "DQ_DescriptiveResult_Type", propOrder = {
     "statement"

@@ -65,7 +65,7 @@ import org.opengis.referencing.gazetteer.LocationType;
  * @see ReferencingByIdentifiers
  * @see LocationFormat
  *
- * @since 0.8
+ * @since SIS 0.8
  */
 public abstract class AbstractLocation implements Location {
     /**

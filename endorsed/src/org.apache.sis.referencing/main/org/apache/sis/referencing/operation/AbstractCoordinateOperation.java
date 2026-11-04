@@ -110,7 +110,7 @@ import org.opengis.coordinate.CoordinateSet;
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @version 1.7
- * @since   0.6
+ * @since SIS 0.6
  */
 @XmlType(name = "AbstractCoordinateOperationType", propOrder = {
     "operationVersion",
@@ -485,7 +485,7 @@ check:      for (int isTarget=0; ; isTarget++) {        // 0 == source check; 1 
      * Subclasses implementing a more specific GeoAPI interface shall override this method.
      *
      * @return the coordinate operation interface implemented by this class.
-     * @since 1.7
+     * @since SIS 1.7
      */
     @Override
     public Type getStandardType() {
@@ -669,7 +669,7 @@ check:      for (int isTarget=0; ; isTarget++) {        // 0 == source check; 1 
      *         this method call is not a guarantee that the coordinate changes succeeded, because other errors can
      *         occur during the stream execution.
      *
-     * @since 1.5
+     * @since SIS 1.5
      */
     @Override
     public CoordinateSet transform(final CoordinateSet data) throws TransformException {
@@ -790,7 +790,7 @@ check:      for (int isTarget=0; ; isTarget++) {        // 0 == source check; 1 
      *
      * @return indices of target dimensions where "wrap around" may happen as a result of this coordinate operation.
      *
-     * @since 0.8
+     * @since SIS 0.8
      */
     @SuppressWarnings("ReturnOfCollectionOrArrayField")
     public Set<Integer> getWrapAroundChanges() {

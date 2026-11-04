@@ -110,7 +110,7 @@ import org.apache.sis.util.ArgumentChecks;
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @version 0.6
- * @since   0.4
+ * @since SIS 0.4
  */
 public class ParameterBuilder extends Builder<ParameterBuilder> {
     /**
@@ -131,7 +131,7 @@ public class ParameterBuilder extends Builder<ParameterBuilder> {
      *
      * @param descriptor  the descriptor from which to inherit properties, or {@code null}.
      *
-     * @since 0.6
+     * @since SIS 0.6
      */
     public ParameterBuilder(final GeneralParameterDescriptor descriptor) {
         super(descriptor);
@@ -387,7 +387,7 @@ public class ParameterBuilder extends Builder<ParameterBuilder> {
      * @param  parameters  the existing group from which to copy the parameters.
      * @return the parameter descriptor group.
      *
-     * @since 0.7
+     * @since SIS 0.7
      */
     public ParameterDescriptorGroup createGroupWithSameParameters(final ParameterDescriptorGroup parameters) {
         final ParameterDescriptorGroup group;
@@ -440,7 +440,7 @@ public class ParameterBuilder extends Builder<ParameterBuilder> {
      *         for the group to create.
      * @return the parameter descriptor group for a map projection.
      *
-     * @since 0.6
+     * @since SIS 0.6
      */
     public ParameterDescriptorGroup createGroupForMapProjection(final ParameterDescriptor<?>... parameters) {
         final ParameterDescriptorGroup group;

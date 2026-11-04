@@ -22,7 +22,7 @@ package org.apache.sis.metadata;
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @version 0.8
- * @since   0.3
+ * @since SIS 0.3
  */
 public class InvalidMetadataException extends IllegalStateException {
     /**
@@ -45,7 +45,7 @@ public class InvalidMetadataException extends IllegalStateException {
      *
      * @param  cause  the cause, or {@code null} if none.
      *
-     * @since 0.8
+     * @since SIS 0.8
      */
     public InvalidMetadataException(final Throwable cause) {
         super(cause);
@@ -57,7 +57,7 @@ public class InvalidMetadataException extends IllegalStateException {
      * @param  message  the details message, or {@code null} if none.
      * @param  cause    the cause, or {@code null} if none.
      *
-     * @since 0.8
+     * @since SIS 0.8
      */
     public InvalidMetadataException(final String message, final Throwable cause) {
         super(message, cause);

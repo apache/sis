@@ -65,7 +65,7 @@ import org.apache.sis.util.resources.Errors;
  * @see RangeFormat
  * @see org.apache.sis.util.collection.RangeSet
  *
- * @since 0.3
+ * @since SIS 0.3
  */
 @SuppressWarnings("EqualsAndHashcode")
 public class MeasurementRange<E extends Number & Comparable<? super E>> extends NumberRange<E> {
@@ -138,7 +138,7 @@ public class MeasurementRange<E extends Number & Comparable<? super E>> extends 
      * @return the new range of numeric values greater than the given value.
      * @throws IllegalArgumentException if {@link Double#isNaN(double)} is {@code true} for the given value.
      *
-     * @since 0.6
+     * @since SIS 0.6
      */
     public static MeasurementRange<Double> createGreaterThan(final double minValue, final Unit<?> unit) {
         // No need to test isCacheable(Number) because the type is known and valueOf(…) disallows NaN values.
@@ -482,7 +482,7 @@ public class MeasurementRange<E extends Number & Comparable<? super E>> extends 
      *
      * @return {@inheritDoc}
      *
-     * @since 1.7
+     * @since SIS 1.7
      */
     @Override
     public boolean equals(final Object object, final ComparisonMode mode) {

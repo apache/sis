@@ -45,7 +45,7 @@ import org.opengis.util.FactoryException;
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @version 0.6
- * @since   0.6
+ * @since SIS 0.6
  */
 public interface Parser {
     /**

@@ -54,7 +54,7 @@ import org.opengis.coordinate.MismatchedDimensionException;
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @version 0.5
- * @since   0.5
+ * @since SIS 0.5
  */
 public abstract class AbstractMathTransform1D extends AbstractMathTransform implements MathTransform1D {
     /**
@@ -65,7 +65,7 @@ public abstract class AbstractMathTransform1D extends AbstractMathTransform impl
      * @see #getSourceDimensions()
      * @see #getTargetDimensions()
      *
-     * @since 1.5
+     * @since SIS 1.5
      */
     protected static final int DIMENSION = 1;
 
@@ -175,7 +175,7 @@ public abstract class AbstractMathTransform1D extends AbstractMathTransform impl
      *
      * @author  Martin Desruisseaux (Geomatys)
      * @version 1.0
-     * @since   0.7
+     * @since SIS 0.7
      */
     protected abstract static class Inverse extends AbstractMathTransform.Inverse implements MathTransform1D {
         /**

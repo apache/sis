@@ -93,7 +93,7 @@ import org.opengis.metadata.Identifier;
  * @see AbstractCS
  * @see org.apache.sis.referencing.datum.AbstractDatum
  *
- * @since 0.4
+ * @since SIS 0.4
  */
 @XmlType(name = "AbstractCRSType")
 @XmlRootElement(name = "AbstractCRS")
@@ -283,7 +283,7 @@ public class AbstractCRS extends AbstractReferenceSystem implements CoordinateRe
      * Subclasses implementing a more specific GeoAPI interface shall override this method.
      *
      * @return the coordinate reference system interface implemented by this class.
-     * @since 1.7
+     * @since SIS 1.7
      */
     @Override
     public Type getStandardType() {

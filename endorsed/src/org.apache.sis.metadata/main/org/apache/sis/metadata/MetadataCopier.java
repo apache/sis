@@ -62,7 +62,7 @@ import org.apache.sis.metadata.internal.Resources;
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.7
- * @since   0.8
+ * @since SIS 0.8
 */
 public class MetadataCopier extends MetadataVisitor<Object> {
     /**
@@ -107,7 +107,7 @@ public class MetadataCopier extends MetadataVisitor<Object> {
      *                   or {@code null} if none.
      * @return a metadata copier which skip the copy of unmodifiable metadata.
      *
-     * @since 1.0
+     * @since SIS 1.0
      */
     public static MetadataCopier forModifiable(final MetadataStandard standard) {
         return new MetadataCopier(standard) {
@@ -280,7 +280,7 @@ public class MetadataCopier extends MetadataVisitor<Object> {
      *
      * @return the path to the currently copied property.
      *
-     * @since 1.0
+     * @since SIS 1.0
      */
     @Override
     protected List<String> getCurrentPropertyPath() {

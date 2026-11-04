@@ -114,7 +114,7 @@ import org.apache.sis.measure.Units;
  * @see AbstractCS#forConvention(AxesConvention)
  * @see org.apache.sis.referencing.crs.AbstractCRS#forConvention(AxesConvention)
  *
- * @since 0.4
+ * @since SIS 0.4
  */
 public enum AxesConvention implements AxisFilter {
     /**
@@ -123,7 +123,7 @@ public enum AxesConvention implements AxisFilter {
      * a reference to that original CS is associated with this enumeration value and can be retrieved from
      * any derived object.
      *
-     * @since 1.5
+     * @since SIS 1.5
      */
     ORIGINAL,
 
@@ -223,7 +223,7 @@ public enum AxesConvention implements AxisFilter {
      * If a more stable definition is needed, consider using {@link #RIGHT_HANDED} instead since
      * <i>right-handed</i> coordinate systems have a more precise meaning in Apache SIS.
      *
-     * @since 1.0
+     * @since SIS 1.0
      */
     DISPLAY_ORIENTED {
         @Override public AxisDirection getDirectionReplacement(CoordinateSystemAxis axis, AxisDirection direction) {
@@ -300,7 +300,7 @@ public enum AxesConvention implements AxisFilter {
      *
      * @return the conventions that only change axis order.
      *
-     * @since 1.5
+     * @since SIS 1.5
      */
     public static AxesConvention[] valuesForOrder() {
         return new AxesConvention[] {RIGHT_HANDED, DISPLAY_ORIENTED};

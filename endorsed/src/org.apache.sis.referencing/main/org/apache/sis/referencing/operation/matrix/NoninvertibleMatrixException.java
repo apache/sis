@@ -30,7 +30,7 @@ import org.opengis.referencing.operation.NoninvertibleTransformException;
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @version 0.4
- * @since   0.4
+ * @since SIS 0.4
  */
 public class NoninvertibleMatrixException extends NoninvertibleTransformException {
     /**

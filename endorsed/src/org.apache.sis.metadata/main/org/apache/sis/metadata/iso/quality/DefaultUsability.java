@@ -28,7 +28,7 @@ import org.apache.sis.xml.internal.shared.LegacyNamespaces;
  * @author  Cédric Briançon (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.4
- * @since   0.3
+ * @since SIS 0.3
  *
  * @deprecated Removed from latest ISO 19157 standard.
  */

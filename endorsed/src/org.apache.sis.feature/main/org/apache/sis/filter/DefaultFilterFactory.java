@@ -56,7 +56,7 @@ import org.opengis.filter.capability.FilterCapabilities;
  *              {@link org.locationtech.jts.geom.Geometry} or ESRI {@link com.esri.core.geometry.Geometry}.
  * @param  <T>  base class of temporal objects.
  *
- * @since 1.1
+ * @since SIS 1.1
  */
 public abstract class DefaultFilterFactory<R,G,T> extends AbstractFactory implements FilterFactory<R,G,T> {
     /**
@@ -149,7 +149,7 @@ public abstract class DefaultFilterFactory<R,G,T> extends AbstractFactory implem
      * @param  <R>   compile-time value of the {@code type} argument.
      * @param  type  type of resources that the factory shall accept.
      * @return factory operating on resource instances of the given class.
-     * @since 1.5
+     * @since SIS 1.5
      */
     @SuppressWarnings("unchecked")
     public static <R> Optional<FilterFactory<R, Object, Object>> forResources(final Class<R> type) {
@@ -1078,7 +1078,7 @@ public abstract class DefaultFilterFactory<R,G,T> extends AbstractFactory implem
      *
      * @return a string representation for debugging purposes.
      *
-     * @since 1.5
+     * @since SIS 1.5
      */
     @Override
     public String toString() {

@@ -91,7 +91,7 @@ import org.opengis.feature.Operation;
  *
  * @see DefaultFeatureType#newInstance()
  *
- * @since 0.5
+ * @since SIS 0.5
  */
 public abstract class AbstractFeature implements Feature, Serializable {
     /**
@@ -390,7 +390,7 @@ public abstract class AbstractFeature implements Feature, Serializable {
      *               property type for that name is an instance of {@link Operation}.
      * @return the result value of the given operation, or {@code null} if none.
      *
-     * @since 0.8
+     * @since SIS 0.8
      */
     protected Object getOperationValue(final String name) {
         final Operation operation = (Operation) type.getProperty(name);
@@ -421,7 +421,7 @@ public abstract class AbstractFeature implements Feature, Serializable {
      * @param  value  the value to assign to the result of the named operation.
      * @throws IllegalStateException if the operation of the given name does not accept assignment.
      *
-     * @since 0.8
+     * @since SIS 0.8
      */
     protected void setOperationValue(final String name, final Object value) {
         final Operation operation = (Operation) type.getProperty(name);
@@ -878,7 +878,7 @@ public abstract class AbstractFeature implements Feature, Serializable {
      *
      * @return a hash code value.
      *
-     * @since 0.8
+     * @since SIS 0.8
      */
     @Override
     public int hashCode() {
@@ -919,7 +919,7 @@ public abstract class AbstractFeature implements Feature, Serializable {
      *
      * @return {@code true} if both objects are equal.
      *
-     * @since 0.8
+     * @since SIS 0.8
      */
     @Override
     public boolean equals(final Object obj) {

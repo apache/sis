@@ -136,7 +136,7 @@ import org.apache.sis.util.resources.Errors;
  * @param <E>  the type of matrix element values.
  *
  * @see org.apache.sis.referencing.operation.matrix.Matrices
- * @since 1.5
+ * @since SIS 1.5
  */
 public class MatrixParameters<E> implements CheckedContainer<E>, Serializable {
     /**
@@ -492,7 +492,7 @@ public class MatrixParameters<E> implements CheckedContainer<E>, Serializable {
      * Indicates that this collection is modifiable (at least by default).
      *
      * @return {@link Mutability#MODIFIABLE} by default.
-     * @since 1.6
+     * @since SIS 1.6
      */
     @Override
     public Mutability getMutability() {

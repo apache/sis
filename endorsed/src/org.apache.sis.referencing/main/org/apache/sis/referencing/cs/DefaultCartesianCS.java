@@ -57,7 +57,7 @@ import org.apache.sis.measure.Angle;
  *
  * @see org.apache.sis.referencing.factory.GeodeticAuthorityFactory#createCartesianCS(String)
  *
- * @since 0.4
+ * @since SIS 0.4
  */
 @XmlType(name = "CartesianCSType")
 @XmlRootElement(name = "CartesianCS")
@@ -204,7 +204,7 @@ public class DefaultCartesianCS extends DefaultAffineCS implements CartesianCS {
      * This is the base type required by {@code equals(…)} methods for returning a potentially {@code true} value.
      *
      * @return {@code CartesianCS.class} or a user-defined sub-interface.
-     * @since 1.7
+     * @since SIS 1.7
      */
     @Override
     public Class<? extends CartesianCS> getStandardType() {

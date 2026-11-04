@@ -73,7 +73,7 @@
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @version 1.8
- * @since   0.6
+ * @since SIS 0.6
  */
 @XmlSchema(location = "http://schemas.opengis.net/gml/3.2.1/coordinateOperations.xsd",
            elementFormDefault = XmlNsForm.QUALIFIED, namespace = Namespaces.GML, xmlns =

@@ -41,7 +41,7 @@ import static org.apache.sis.storage.sql.feature.Database.WILDCARD;
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.5
- * @since   1.1
+ * @since SIS 1.1
  */
 public class ResourceDefinition {
     /**
@@ -85,7 +85,7 @@ public class ResourceDefinition {
      * @see #table(String, String, String)
      * @see #query(String, String)
      *
-     * @since 1.5
+     * @since SIS 1.5
      */
     protected ResourceDefinition(final GenericName name, final String query) {
         this.name  = Objects.requireNonNull(name);

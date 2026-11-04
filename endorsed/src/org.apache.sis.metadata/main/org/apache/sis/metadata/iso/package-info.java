@@ -83,7 +83,7 @@
  * @author  Cédric Briançon (Geomatys)
  * @author  Cullen Rombach (Image Matters)
  * @version 1.7
- * @since   0.3
+ * @since SIS 0.3
  */
 @XmlSchema(location="https://schemas.isotc211.org/19115/-3/mdb/1.0/mdb.xsd",
            elementFormDefault=XmlNsForm.QUALIFIED, namespace=Namespaces.MDB,

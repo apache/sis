@@ -59,7 +59,7 @@ import org.apache.sis.math.MathFunctions;
  *
  * @see NilObject
  *
- * @since 0.3
+ * @since SIS 0.3
  */
 public final class NilReason implements Serializable {
     /**
@@ -537,7 +537,7 @@ public final class NilReason implements Serializable {
      *
      * @see NilObject#getNilReason()
      *
-     * @since 0.4
+     * @since SIS 0.4
      */
     public static NilReason forObject(final Object object) {
         if (object != null) {

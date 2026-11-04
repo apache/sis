@@ -62,7 +62,7 @@ import org.opengis.metadata.content.FeatureTypeInfo;
  * @author  Cédric Briançon (Geomatys)
  * @author  Cullen Rombach (Image Matters)
  * @version 1.4
- * @since   0.3
+ * @since SIS 0.3
  */
 @XmlType(name = "MD_FeatureCatalogueDescription_Type", propOrder = {
     "compliant",
@@ -188,7 +188,7 @@ public class DefaultFeatureCatalogueDescription extends AbstractContentInformati
      *
      * @return language(s) and character set(s) used within the catalogue.
      *
-     * @since 1.0
+     * @since SIS 1.0
      */
     @Override
     // @XmlElement at the end of this class.
@@ -201,7 +201,7 @@ public class DefaultFeatureCatalogueDescription extends AbstractContentInformati
      *
      * @param  newValues  the new language(s) and character set(s) used within the catalogue.
      *
-     * @since 1.0
+     * @since SIS 1.0
      */
     public void setLocalesAndCharsets(final Map<? extends Locale, ? extends Charset> newValues) {
         locales = writeMap(newValues, locales, Locale.class);
@@ -261,7 +261,7 @@ public class DefaultFeatureCatalogueDescription extends AbstractContentInformati
      *
      * @return subset of feature types occurring in resource.
      *
-     * @since 0.5
+     * @since SIS 0.5
      */
     @Override
     // @XmlElement at the end of this class.
@@ -274,7 +274,7 @@ public class DefaultFeatureCatalogueDescription extends AbstractContentInformati
      *
      * @param  newValues  the new feature types.
      *
-     * @since 0.5
+     * @since SIS 0.5
      */
     public void setFeatureTypeInfo(final Collection<? extends FeatureTypeInfo> newValues) {
         featureTypes = writeCollection(newValues, featureTypes, FeatureTypeInfo.class);

@@ -63,7 +63,7 @@ import org.apache.sis.measure.Longitude;
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.7
- * @since   0.7
+ * @since SIS 0.7
  *
  * @todo Should also take the country of a {@link java.util.Locale}. The EPSG database contains ISO2 and ISO3
  *       identifiers that we can use.
@@ -137,7 +137,7 @@ public class CoordinateOperationContext implements Localized {
      * @return the operation context, or {@code null} if the given bounding box was null, undefined
      *         or covers the whole world (in which case Apache SIS does not need that we specify a context).
      *
-     * @since 1.0
+     * @since SIS 1.0
      */
     public static CoordinateOperationContext fromBoundingBox(final GeographicBoundingBox areaOfInterest) {
         if (areaOfInterest != null) {
@@ -198,7 +198,7 @@ public class CoordinateOperationContext implements Localized {
      * will use the union of all elements.
      *
      * @param  area  the geographic area of interest to add, or {@code null} if none.
-     * @since 1.6
+     * @since SIS 1.6
      */
     public void addAreaOfInterest(final GeographicBoundingBox area) {
         if (area != null) {
@@ -218,7 +218,7 @@ public class CoordinateOperationContext implements Localized {
      * {@linkplain #getLogFilter() log filter} and eventually logged.
      *
      * @param area  the envelope to add as an area of interest, or {@code null} if none.
-     * @since 1.6
+     * @since SIS 1.6
      */
     public void addAreaOfInterest(final Envelope area) {
         if (area != null) try {
@@ -299,7 +299,7 @@ public class CoordinateOperationContext implements Localized {
      * not recognized, the returned position may be ignored.
      *
      * @return coordinates to take as constants, or {@code null} if none.
-     * @since 1.6
+     * @since SIS 1.6
      */
     public DirectPosition getConstantCoordinates() {
         return constantCoordinates;
@@ -318,7 +318,7 @@ public class CoordinateOperationContext implements Localized {
      * If this condition does not hold, the position may be ignored (it will not be transformed).
      *
      * @param coordinates  coordinate values that may be considered as constant, or {@code null} if none.
-     * @since 1.6
+     * @since SIS 1.6
      */
     public void setConstantCoordinates(final DirectPosition coordinates) {
         constantCoordinates = coordinates;
@@ -339,7 +339,7 @@ public class CoordinateOperationContext implements Localized {
      * In particular, this locale does not determine a geographic area.
      *
      * @return the locale for error messages.
-     * @since 1.6
+     * @since SIS 1.6
      */
     @Override
     public Locale getLocale() {
@@ -353,7 +353,7 @@ public class CoordinateOperationContext implements Localized {
      * In particular, this locale does not determine a geographic area.
      *
      * @param  locale  the locale for error messages, or {@code null} for the <abbr>JVM</abbr> default locale.
-     * @since 1.6
+     * @since SIS 1.6
      */
     public void setLocale(final Locale locale) {
         this.locale = locale;
@@ -365,7 +365,7 @@ public class CoordinateOperationContext implements Localized {
      * record will not be logged by {@link CoordinateOperationFinder}.
      *
      * @return a filter which will receive warnings, or {@code null} if none.
-     * @since 1.6
+     * @since SIS 1.6
      */
     public Filter getLogFilter() {
         return logFilter;
@@ -383,7 +383,7 @@ public class CoordinateOperationContext implements Localized {
      * logged with the usual loggers.
      *
      * @param logFilter  a filter which will receive warnings, or {@code null} if none.
-     * @since 1.6
+     * @since SIS 1.6
      */
     public void setLogFilter(final Filter logFilter) {
         this.logFilter = logFilter;
@@ -438,7 +438,7 @@ public class CoordinateOperationContext implements Localized {
      *
      * @return whether the coordinate operation created with this context depends on the context values.
      *
-     * @since 1.7
+     * @since SIS 1.7
      */
     public boolean resultWasContextSensitive() {
         return resultWasContextSensitive;

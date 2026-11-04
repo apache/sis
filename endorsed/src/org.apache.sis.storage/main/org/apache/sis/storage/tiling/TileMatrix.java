@@ -40,7 +40,7 @@ import org.apache.sis.storage.metadata.MetadataBuilder;
  * @author  Johann Sorel (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.5
- * @since   1.2
+ * @since SIS 1.2
  */
 public interface TileMatrix {
     /**
@@ -96,7 +96,7 @@ public interface TileMatrix {
      *
      * @return information about this tile matrix.
      *
-     * @since 1.5
+     * @since SIS 1.5
      */
     default Metadata getMetadata() {
         final var mb = new MetadataBuilder();

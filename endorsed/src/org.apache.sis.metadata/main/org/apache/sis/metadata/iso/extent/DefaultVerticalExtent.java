@@ -68,7 +68,7 @@ import org.opengis.coordinate.MismatchedCoordinateMetadataException;
  * @author  Touraïvane (IRD)
  * @author  Cédric Briançon (Geomatys)
  * @version 1.4
- * @since   0.3
+ * @since SIS 0.3
  */
 @XmlType(name = "EX_VerticalExtent_Type", propOrder = {
     "minimumValue",
@@ -283,7 +283,7 @@ public class DefaultVerticalExtent extends ISOMetadata implements VerticalExtent
      * @see Extents#intersection(VerticalExtent, VerticalExtent)
      * @see org.apache.sis.geometry.GeneralEnvelope#intersect(Envelope)
      *
-     * @since 0.8
+     * @since SIS 0.8
      */
     public void intersect(final VerticalExtent other) throws MismatchedCoordinateMetadataException {
         checkWritePermission(value());

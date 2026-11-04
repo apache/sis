@@ -61,7 +61,7 @@ import org.opengis.metadata.spatial.GeolocationInformation;
  * @author  Cédric Briançon (Geomatys)
  * @author  Cullen Rombach (Image Matters)
  * @version 1.4
- * @since   0.3
+ * @since SIS 0.3
  */
 @XmlType(name = "MD_Georeferenceable_Type", propOrder = {
     "controlPointAvailable",

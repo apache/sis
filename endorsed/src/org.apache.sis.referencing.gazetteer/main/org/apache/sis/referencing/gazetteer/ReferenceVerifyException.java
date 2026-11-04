@@ -31,7 +31,7 @@ package org.apache.sis.referencing.gazetteer;
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @version 0.8
- * @since   0.8
+ * @since SIS 0.8
  */
 public class ReferenceVerifyException extends GazetteerException {
     /**

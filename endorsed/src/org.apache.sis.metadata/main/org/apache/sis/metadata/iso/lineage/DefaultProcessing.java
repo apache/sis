@@ -50,7 +50,7 @@ import org.apache.sis.metadata.iso.ISOMetadata;
  * @author  Guilhem Legal (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.7
- * @since   0.3
+ * @since SIS 0.3
  */
 @TitleProperty(name = "identifier")
 @XmlType(name = "LE_Processing_Type", propOrder = {

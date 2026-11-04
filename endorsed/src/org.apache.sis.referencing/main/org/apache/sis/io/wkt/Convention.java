@@ -53,7 +53,7 @@ import org.apache.sis.metadata.iso.citation.Citations;
  * @see WKTFormat#getConvention()
  * @see WKTFormat#setConvention(Convention)
  *
- * @since 0.4
+ * @since SIS 0.4
  */
 public enum Convention {
     /*
@@ -110,7 +110,7 @@ public enum Convention {
      * and parameters formatted with this convention will use the {@linkplain Citations#EPSG EPSG}
      * names when available.</p>
      *
-     * @since 1.5
+     * @since SIS 1.5
      */
     WKT2_2019(true),
 
@@ -122,7 +122,7 @@ public enum Convention {
      * <p>This was the default convention used by {@link FormattableObject#toWKT()}
      * in Apache <abbr>SIS</abbr> versions prior to version 1.5.</p>
      *
-     * @since 1.5
+     * @since SIS 1.5
      */
     WKT2_2015(true),
 
@@ -194,7 +194,7 @@ public enum Convention {
      * <p>This convention may be useful for compatibility with some other software products that do not handle axis order correctly.
      * But except when imposed by such compatibility reasons, this convention should be avoided as much as possible.</p>
      *
-     * @since 0.6
+     * @since SIS 0.6
      */
     WKT1_IGNORE_AXES(true),
 
@@ -249,7 +249,7 @@ public enum Convention {
      * @param  base  the base version which is required.
      * @return whether this convention is the given base version or a more recent version.
      *
-     * @since 1.5
+     * @since SIS 1.5
      */
     public boolean supports(final Convention base) {
         return compareTo(base) <= 0 || this == INTERNAL;

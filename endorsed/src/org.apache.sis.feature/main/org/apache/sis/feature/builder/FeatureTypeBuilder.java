@@ -106,7 +106,7 @@ import org.opengis.feature.Operation;
  *
  * @see org.apache.sis.parameter.ParameterBuilder
  *
- * @since 0.8
+ * @since SIS 0.8
  */
 public class FeatureTypeBuilder extends TypeBuilder {
     /**
@@ -566,7 +566,7 @@ public class FeatureTypeBuilder extends TypeBuilder {
      * @see PropertyTypeBuilder#setMinimumOccurs(int)
      * @see PropertyTypeBuilder#setMaximumOccurs(int)
      *
-     * @since 1.0
+     * @since SIS 1.0
      */
     public FeatureTypeBuilder setDefaultMultiplicity(final int minimumOccurs, final int maximumOccurs) {
         if (minimumOccurs < 0 || maximumOccurs < minimumOccurs) {
@@ -637,7 +637,7 @@ public class FeatureTypeBuilder extends TypeBuilder {
      * @param  name  the name to test.
      * @return {@code true} if the given name is used by another property or is ambiguous.
      *
-     * @since 1.0
+     * @since SIS 1.0
      */
     public boolean isNameUsed(final String name) {
         return forName(properties, name, false) != null;

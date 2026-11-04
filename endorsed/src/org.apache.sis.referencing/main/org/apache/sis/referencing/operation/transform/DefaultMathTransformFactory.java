@@ -141,7 +141,7 @@ import org.apache.sis.referencing.operation.matrix.Matrices;
  * @see MathTransformProvider
  * @see AbstractMathTransform
  *
- * @since 0.6
+ * @since SIS 0.6
  */
 public class DefaultMathTransformFactory extends AbstractFactory implements MathTransformFactory, Parser {
     /*
@@ -227,7 +227,7 @@ public class DefaultMathTransformFactory extends AbstractFactory implements Math
      * @return the default provider of math transforms.
      *
      * @see java.util.ServiceLoader
-     * @since 1.4
+     * @since SIS 1.4
      */
     public static DefaultMathTransformFactory provider() {
         return INSTANCE;
@@ -321,7 +321,7 @@ public class DefaultMathTransformFactory extends AbstractFactory implements Math
      * @param  enabled  whether caching should be enabled.
      * @return a factory for the given caching policy.
      *
-     * @since 1.1
+     * @since SIS 1.1
      */
     public DefaultMathTransformFactory caching(final boolean enabled) {
         if (enabled) {
@@ -482,7 +482,7 @@ public class DefaultMathTransformFactory extends AbstractFactory implements Math
      * @throws NoSuchIdentifierException if there is no supported method for the given name or identifier.
      *
      * @see #getAvailableMethods(Class)
-     * @since 1.5
+     * @since SIS 1.5
      */
     @Override
     public MathTransform.Builder builder(final String method) throws NoSuchIdentifierException {
@@ -630,7 +630,7 @@ public class DefaultMathTransformFactory extends AbstractFactory implements Math
      * @return a new matrix of the given size.
      * @throws FactoryException if the matrix creation failed.
      *
-     * @since 2.0 (temporary version number until this branch is released)
+     * @since SIS 2.0 (temporary version number until this branch is released)
      */
     @Override
     public Matrix createMatrix(int numRow, int numCol) throws FactoryException {

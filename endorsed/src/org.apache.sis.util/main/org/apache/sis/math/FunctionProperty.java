@@ -60,7 +60,7 @@ import java.util.EnumSet;
  *
  * @see org.apache.sis.util.ObjectConverter#properties()
  *
- * @since 0.3
+ * @since SIS 0.3
  */
 public enum FunctionProperty {
     /**
@@ -144,7 +144,7 @@ public enum FunctionProperty {
      * A function is volatile if the computed value changes each time that the function is evaluated.
      * It may be for example a random number generator, or a function returning the current date and time.
      *
-     * @since 1.4
+     * @since SIS 1.4
      */
     VOLATILE;
 
@@ -209,7 +209,7 @@ public enum FunctionProperty {
      * @param  properties  the properties of the function to test.
      * @return {@code true} if the function can only return a constant value.
      *
-     * @since 1.4
+     * @since SIS 1.4
      */
     public static boolean isConstant(final Set<FunctionProperty> properties) {
         return properties.containsAll(CONSTANT);
@@ -236,7 +236,7 @@ public enum FunctionProperty {
      * @param  step2  properties of the second function.
      * @return properties of the concatenated function as a new and modifiable set.
      *
-     * @since 1.4
+     * @since SIS 1.4
      */
     public static EnumSet<FunctionProperty> concatenate(final Set<FunctionProperty> step1, final Set<FunctionProperty> step2) {
         final var properties = EnumSet.noneOf(FunctionProperty.class);

@@ -78,7 +78,7 @@ import org.opengis.coordinate.MismatchedDimensionException;
  *
  * @see org.apache.sis.parameter.MatrixParameters
  *
- * @since 0.4
+ * @since SIS 0.4
  */
 public final class Matrices {
     /**
@@ -734,7 +734,7 @@ public final class Matrices {
      * @see MathTransforms#derivativeAndTransform(MathTransform, double[], int, double[], int)
      * @see MathTransforms#tangent(MathTransform, DirectPosition)
      *
-     * @since 1.1
+     * @since SIS 1.1
      */
     public static MatrixSIS createAffine(final Matrix derivative, final DirectPosition translation) {
         final int numRow, numCol;
@@ -854,7 +854,7 @@ public final class Matrices {
      * @param  anchor    point to keep at fixed position in target coordinates, or {@code null} if none.
      * @return {@code true} if the given matrix changed as a result of this method call.
      *
-     * @since 1.1
+     * @since SIS 1.1
      */
     public static boolean forceUniformScale(final Matrix matrix, final double selector, final double[] anchor) {
         ArgumentChecks.ensureNonNull("matrix", matrix);
@@ -913,7 +913,7 @@ public final class Matrices {
      * @return {@code true} on success (including when this method does nothing), or
      *         {@code false} if this method cannot complete the operation.
      *
-     * @since 1.5
+     * @since SIS 1.5
      */
     public static boolean forceNonZeroScales(final Matrix matrix, final double defaultValue) {
         final int numCol = matrix.getNumCol() - 1;
@@ -992,7 +992,7 @@ search:     while (freeColumn < numCol) {
      * @param  matrix  the matrix for which to get an unmodifiable view, or {@code null}.
      * @return an unmodifiable view of the given matrix, or {@code null} if the given matrix was null.
      *
-     * @since 0.6
+     * @since SIS 0.6
      */
     public static MatrixSIS unmodifiable(final Matrix matrix) {
         if (matrix == null || matrix instanceof UnmodifiableMatrix) {
@@ -1014,7 +1014,7 @@ search:     while (freeColumn < numCol) {
      *
      * @see MatrixSIS#multiply(Matrix)
      *
-     * @since 0.6
+     * @since SIS 0.6
      */
     public static MatrixSIS multiply(final Matrix m1, final Matrix m2) throws MismatchedMatrixSizeException {
         if (m1 instanceof MatrixSIS) {
@@ -1036,7 +1036,7 @@ search:     while (freeColumn < numCol) {
      *
      * @see MatrixSIS#inverse()
      *
-     * @since 0.6
+     * @since SIS 0.6
      */
     public static MatrixSIS inverse(final Matrix matrix) throws NoninvertibleMatrixException {
         if (matrix == null) {
@@ -1082,7 +1082,7 @@ search:     while (freeColumn < numCol) {
      * @param  matrix  the matrix to test, or {@code null}.
      * @return {@code true} if the given matrix is non-null and represents a translation.
      *
-     * @since 0.7
+     * @since SIS 0.7
      */
     public static boolean isTranslation(final Matrix matrix) {
         if (!isAffine(matrix)) {
@@ -1146,7 +1146,7 @@ search:     while (freeColumn < numCol) {
      * @param  matrix  the matrix to test, or {@code null}.
      * @return {@code true} if at least one matrix element is NaN.
      *
-     * @since 1.6
+     * @since SIS 1.6
      */
     public static boolean hasNaN(final Matrix matrix) {
         if (matrix != null) {

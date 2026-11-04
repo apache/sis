@@ -191,7 +191,7 @@ public final class LocalizedParseException extends ParseException implements Loc
      *
      * @return the locale of the localized message, or {@code null} if not explicitly defined.
      *
-     * @since 1.8
+     * @since SIS 1.8
      */
     @Override
     public Locale getLocale() {

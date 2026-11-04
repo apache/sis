@@ -40,7 +40,7 @@ import org.apache.sis.style.Style;
  *
  * @author  Johann Sorel (Geomatys)
  * @version 1.2
- * @since   1.2
+ * @since SIS 1.2
  */
 public class MapLayer extends MapItem {
     /**

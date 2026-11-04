@@ -74,7 +74,7 @@ import org.opengis.metadata.citation.TelephoneType;
  *
  * @see DefaultContact#getPhones()
  *
- * @since 0.5
+ * @since SIS 0.5
  */
 @TitleProperty(name = "number")
 @XmlType(name = "CI_Telephone_Type", propOrder = {
@@ -112,7 +112,7 @@ public class DefaultTelephone extends ISOMetadata implements Telephone {
      * @param number      the telephone number, or {@code null}.
      * @param numberType  the type of telephone number, or {@code null}.
      *
-     * @since 0.5
+     * @since SIS 0.5
      */
     public DefaultTelephone(final String number, final TelephoneType numberType) {
         this.number     = number;
@@ -166,7 +166,7 @@ public class DefaultTelephone extends ISOMetadata implements Telephone {
      *
      * @return telephone number by which individuals can contact responsible organization or individual.
      *
-     * @since 0.5
+     * @since SIS 0.5
      */
     @Override
     @XmlElement(name = "number", required = true)
@@ -180,7 +180,7 @@ public class DefaultTelephone extends ISOMetadata implements Telephone {
      *
      * @param  newValue  the new telephone number by which individuals can contact responsible organization or individual.
      *
-     * @since 0.5
+     * @since SIS 0.5
      */
     public void setNumber(final String newValue) {
         checkWritePermission(number);
@@ -192,7 +192,7 @@ public class DefaultTelephone extends ISOMetadata implements Telephone {
      *
      * @return type of telephone number, or {@code null} if none.
      *
-     * @since 0.5
+     * @since SIS 0.5
      */
     @Override
     @XmlElement(name = "numberType")
@@ -206,7 +206,7 @@ public class DefaultTelephone extends ISOMetadata implements Telephone {
      *
      * @param  newValue  the new type of telephone number.
      *
-     * @since 0.5
+     * @since SIS 0.5
      */
     public void setNumberType(final TelephoneType newValue) {
         checkWritePermission(numberType);

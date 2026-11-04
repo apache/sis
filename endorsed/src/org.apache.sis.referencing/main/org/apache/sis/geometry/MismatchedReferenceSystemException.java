@@ -25,7 +25,7 @@ import org.opengis.coordinate.MismatchedCoordinateMetadataException;
  * reference systems of components.
  *
  * @author  Martin Desruisseaux (IRD)
- * @since   0.3
+ * @since SIS 0.3
  * @version 0.3
  *
  * @deprecated Replaced by {@link MismatchedCoordinateMetadataException}.

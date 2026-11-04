@@ -151,7 +151,7 @@ import org.opengis.coordinate.CoordinateMetadata;
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @author  Alexis Manin (Geomatys)
  * @version 1.8
- * @since   0.3
+ * @since SIS 0.3
  */
 public final class CRS {
     /**
@@ -362,7 +362,7 @@ public final class CRS {
      * @see org.apache.sis.geometry.Envelopes#fromWKT(CharSequence)
      * @see <a href="https://www.ogc.org/standards/wkt-crs/">WKT 2 specification</a>
      *
-     * @since 0.6
+     * @since SIS 0.6
      */
     public static CoordinateReferenceSystem fromWKT(final String wkt) throws FactoryException {
         final CoordinateReferenceSystem crs = GeodeticObjectFactory.provider().createFromWKT(wkt);
@@ -391,7 +391,7 @@ public final class CRS {
      * @see GeodeticObjectFactory#createFromXML(String)
      * @see org.apache.sis.xml.XML#unmarshal(String)
      *
-     * @since 0.7
+     * @since SIS 0.7
      */
     public static CoordinateReferenceSystem fromXML(final String xml) throws FactoryException {
         ArgumentChecks.ensureNonNull("text", xml);
@@ -467,7 +467,7 @@ public final class CRS {
      * @return the suggested CRS to use (may be the {@code crs} argument itself), or {@code null} if the given CRS was null.
      * @throws FactoryException if an error occurred while querying the authority factory.
      *
-     * @since 1.0
+     * @since SIS 1.0
      */
     public static CoordinateReferenceSystem fromAuthority(CoordinateReferenceSystem crs,
             final CRSAuthorityFactory factory, final Filter warningFilter) throws FactoryException
@@ -510,7 +510,7 @@ public final class CRS {
      * @see EquivalenceProperty#COMPONENT
      * @see Utilities#equalsIgnoreMetadata(Object, Object)
      *
-     * @since 1.5
+     * @since SIS 1.5
      */
     public static boolean equivalent(final CoordinateReferenceSystem crs1, final CoordinateReferenceSystem crs2) {
         if (crs1 == crs2) {
@@ -552,7 +552,7 @@ public final class CRS {
      *         or {@code null} if this method did not find a common target CRS. The returned CRS may be different than
      *         all given CRS.
      *
-     * @since 0.8
+     * @since SIS 0.8
      */
     @OptionalCandidate
     public static CoordinateReferenceSystem suggestCommonTarget(GeographicBoundingBox regionOfInterest,
@@ -733,7 +733,7 @@ public final class CRS {
      *
      * @see Envelopes#findOperation(Envelope, Envelope)
      *
-     * @since 0.7
+     * @since SIS 0.7
      */
     public static CoordinateOperation findOperation(final CoordinateReferenceSystem sourceCRS,
                                                     final CoordinateReferenceSystem targetCRS,
@@ -787,7 +787,7 @@ public final class CRS {
      *
      * @see DefaultCoordinateOperationFactory#createOperation(CoordinateReferenceSystem, CoordinateReferenceSystem, CoordinateOperationContext)
      *
-     * @since 1.6
+     * @since SIS 1.6
      */
     public static CoordinateOperation findOperation(final CoordinateMetadata source,
                                                     final CoordinateMetadata target,
@@ -840,7 +840,7 @@ public final class CRS {
      * @throws OperationNotFoundException if no operation was found between the given pair of <abbr>CRS</abbr>s.
      * @throws FactoryException if the operation cannot be created for another reason.
      *
-     * @since 1.0
+     * @since SIS 1.0
      */
     public static List<CoordinateOperation> findOperations(final CoordinateReferenceSystem sourceCRS,
                                                            final CoordinateReferenceSystem targetCRS,
@@ -870,7 +870,7 @@ public final class CRS {
      *
      * @see DefaultCoordinateOperationFactory#createOperations(CoordinateReferenceSystem, CoordinateReferenceSystem, CoordinateOperationContext)
      *
-     * @since 1.6
+     * @since SIS 1.6
      */
     public static List<CoordinateOperation> findOperations(final CoordinateMetadata source,
                                                            final CoordinateMetadata target,
@@ -928,7 +928,7 @@ public final class CRS {
      * @see #findOperation(CoordinateReferenceSystem, CoordinateReferenceSystem, GeographicBoundingBox)
      * @see DatumOrEnsemble#getAccuracy(IdentifiedObject)
      *
-     * @since 0.7
+     * @since SIS 0.7
      */
     @OptionalCandidate
     public static double getLinearAccuracy(final CoordinateOperation operation) {
@@ -959,7 +959,7 @@ public final class CRS {
      *
      * @category information
      *
-     * @since 0.7
+     * @since SIS 0.7
      */
     @OptionalCandidate
     public static GeographicBoundingBox getGeographicBoundingBox(final CoordinateOperation operation) {
@@ -1012,7 +1012,7 @@ public final class CRS {
      * @see #getGeographicBoundingBox(CoordinateReferenceSystem)
      *
      * @category information
-     * @since 0.8
+     * @since SIS 0.8
      */
     @OptionalCandidate
     public static Envelope getDomainOfValidity(final CoordinateReferenceSystem crs) {
@@ -1093,7 +1093,7 @@ public final class CRS {
      * @return epoch to which the coordinates of stations defining the dynamic CRS frame are referenced.
      * @throws GeodeticException if some <abbr>CRS</abbr> components have different epochs.
      *
-     * @since 1.5
+     * @since SIS 1.5
      */
     public static Optional<Temporal> getFrameReferenceEpoch(final CoordinateReferenceSystem crs) {
         Temporal epoch = null;
@@ -1135,7 +1135,7 @@ public final class CRS {
      * @see DatumOrEnsemble#getPrimeMeridian(CoordinateReferenceSystem)
      * @see #getGreenwichLongitude(GeodeticCRS)
      *
-     * @since 1.6
+     * @since SIS 1.6
      */
     public static Optional<GeodeticDatum> getGeodeticReferenceFrame(CoordinateReferenceSystem crs) {
         if (crs instanceof CompoundCRS) {
@@ -1174,7 +1174,7 @@ public final class CRS {
      * @param  crs  the <abbr>CRS</abbr> from which to get the number of dimensions, or {@code null}.
      * @return the number of dimensions, or 0 if the given <abbr>CRS</abbr> or its coordinate system is null.
      *
-     * @since 1.6
+     * @since SIS 1.6
      */
     public static int getDimensionOrZero(final CoordinateReferenceSystem crs) {
         if (crs != null) {
@@ -1215,7 +1215,7 @@ public final class CRS {
      * @throws IllegalArgumentException if the given array is empty or if the array contains incompatible components.
      * @throws FactoryException if the geodetic factory failed to create the compound CRS.
      *
-     * @since 0.8
+     * @since SIS 0.8
      *
      * @see org.apache.sis.referencing.crs.DefaultCompoundCRS
      * @see GeodeticObjectFactory#createCompoundCRS(Map, CoordinateReferenceSystem...)
@@ -1244,7 +1244,7 @@ public final class CRS {
      *
      * @see ComparisonMode#COMPATIBILITY
      *
-     * @since 1.8
+     * @since SIS 1.8
      */
     public enum EquivalenceProperty implements BiPredicate<SingleCRS, SingleCRS> {
         /**
@@ -1436,7 +1436,7 @@ public final class CRS {
      *
      * @see #selectDimensions(CoordinateReferenceSystem, BitSet, SeparationMode)
      *
-     * @since 1.6
+     * @since SIS 1.6
      */
     public static BitSet locateDimensions(final CoordinateReferenceSystem crs, final SingleCRS... search) {
         return EquivalenceProperty.COMPONENT.locateDimensions(getSingleComponents(crs), search, false);
@@ -1456,7 +1456,7 @@ public final class CRS {
      *
      * @see #locateDimensions(CoordinateReferenceSystem, SingleCRS...)
      *
-     * @since 1.8
+     * @since SIS 1.8
      */
     public static BitSet locateDimensions(final CoordinateReferenceSystem crs,
                                           final CoordinateReferenceSystem search,
@@ -1501,7 +1501,7 @@ public final class CRS {
      * @see #locateDimensions(CoordinateReferenceSystem, SingleCRS...)
      * @see #compound(CoordinateReferenceSystem...)
      *
-     * @since 1.6
+     * @since SIS 1.6
      */
     public static CoordinateReferenceSystem selectDimensions(final CoordinateReferenceSystem crs, final BitSet mask, final SeparationMode mode)
             throws FactoryException
@@ -1532,7 +1532,7 @@ public final class CRS {
      * @see #getComponentAt(CoordinateReferenceSystem, int, int)
      * @see #compound(CoordinateReferenceSystem...)
      *
-     * @since 1.3
+     * @since SIS 1.3
      */
     public static CoordinateReferenceSystem selectDimensions(final CoordinateReferenceSystem crs, final int... dimensions)
             throws FactoryException
@@ -1556,7 +1556,7 @@ public final class CRS {
      *
      * @see #selectDimensions(CoordinateReferenceSystem, BitSet, SeparationMode)
      *
-     * @since 1.6
+     * @since SIS 1.6
      */
     public static List<CoordinateReferenceSystem> selectComponents(final CoordinateReferenceSystem crs,
             final BitSet mask, final SeparationMode mode) throws FactoryException
@@ -1580,7 +1580,7 @@ public final class CRS {
      *
      * @see #selectDimensions(CoordinateReferenceSystem, int...)
      *
-     * @since 1.4
+     * @since SIS 1.4
      */
     public static List<CoordinateReferenceSystem> selectComponents(final CoordinateReferenceSystem crs, final int... dimensions)
             throws FactoryException
@@ -1602,7 +1602,7 @@ public final class CRS {
      *
      * @see #selectDimensions(CoordinateReferenceSystem, BitSet, SeparationMode)
      *
-     * @since 1.6
+     * @since SIS 1.6
      */
     public enum SeparationMode {
         /**
@@ -1897,7 +1897,7 @@ public final class CRS {
      *
      * @category information
      *
-     * @since 1.5
+     * @since SIS 1.5
      */
     public static boolean hasHorizontalComponent(final CoordinateReferenceSystem crs) {
         if (horizontalCode(crs) != 0) {
@@ -2059,7 +2059,7 @@ public final class CRS {
      * @param  crs  the coordinate reference system, or {@code null}.
      * @return the first geospatial CRS, or {@code null} if none.
      *
-     * @since 1.8
+     * @since SIS 1.8
      */
     @OptionalCandidate
     public static CoordinateReferenceSystem getGeospatialComponent(final CoordinateReferenceSystem crs) {
@@ -2185,7 +2185,7 @@ public final class CRS {
      * @see #selectDimensions(CoordinateReferenceSystem, int...)
      * @see org.apache.sis.geometry.GeneralEnvelope#subEnvelope(int, int)
      *
-     * @since 0.5
+     * @since SIS 0.5
      */
     @OptionalCandidate
     public static CoordinateReferenceSystem getComponentAt(CoordinateReferenceSystem crs, int lower, int upper) {
@@ -2227,7 +2227,7 @@ check:  while (lower != 0 || upper != dimension) {
      * @see DefaultPrimeMeridian#getGreenwichLongitude(Unit)
      * @see DatumOrEnsemble#getPrimeMeridian(CoordinateReferenceSystem)
      *
-     * @since 0.5
+     * @since SIS 0.5
      */
     public static double getGreenwichLongitude(final GeodeticCRS crs) {
         return ReferencingUtilities.getGreenwichLongitude(DatumOrEnsemble.getPrimeMeridian(crs).orElse(null), Units.DEGREE);
@@ -2260,7 +2260,7 @@ check:  while (lower != 0 || upper != dimension) {
      *
      * @see MultiRegisterOperations
      *
-     * @since 0.7
+     * @since SIS 0.7
      */
     public static CRSAuthorityFactory getAuthorityFactory(final String authority) throws FactoryException {
         if (authority == null) {

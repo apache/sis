@@ -53,7 +53,7 @@ import org.apache.sis.util.resources.Errors;
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @version 1.7
- * @since   0.3
+ * @since SIS 0.3
  */
 public final class Containers {
     /**
@@ -70,7 +70,7 @@ public final class Containers {
      *
      * @see Collections#emptyList()
      * @see Collections#emptySet()
-     * @since 1.6
+     * @since SIS 1.6
      */
     @SuppressWarnings("unchecked")
     public static <E> Queue<E> emptyQueue() {
@@ -139,7 +139,7 @@ public final class Containers {
      * @param  collection  the collection, or {@code null}.
      * @return the given collection, or an empty collection if the given collection was null.
      *
-     * @since 1.6
+     * @since SIS 1.6
      */
     public static <E> Collection<E> nonNull(final Collection<E> collection) {
         return (collection != null) ? collection : Collections.emptySet();
@@ -155,7 +155,7 @@ public final class Containers {
      * @param  set  the collection, or {@code null}.
      * @return the given collection, or an empty set if the given collection was null.
      *
-     * @since 1.6
+     * @since SIS 1.6
      */
     public static <E> Set<E> nonNull(final Set<E> set) {
         return (set != null) ? set : Collections.emptySet();
@@ -176,7 +176,7 @@ public final class Containers {
      * @return the first element, or {@code null} if the given iterable is null or empty.
      *
      * @see Deque#peekFirst()
-     * @since 1.6
+     * @since SIS 1.6
      */
     public static <T> T peekFirst(final Iterable<T> collection) {
         if (collection != null) {
@@ -198,7 +198,7 @@ public final class Containers {
      * @return the singleton element, or {@code null} if the given iterable is null or does not
      *         contain exactly one non-null element.
      *
-     * @since 1.6
+     * @since SIS 1.6
      */
     public static <T> T peekIfSingleton(final Iterable<T> collection) {
         if (collection != null) {
@@ -229,7 +229,7 @@ public final class Containers {
      *
      * @see Collections#emptySet()
      * @see Collections#singleton(Object)
-     * @since 1.6
+     * @since SIS 1.6
      */
     public static <E> Set<E> singletonOrEmpty(final E element) {
         return (element != null) ? Collections.singleton(element) : Collections.emptySet();
@@ -244,7 +244,7 @@ public final class Containers {
      * @return an immutable set containing the non-null array elements, or {@code null} if the given array was null.
      *
      * @see Set#of(Object...)
-     * @since 1.6
+     * @since SIS 1.6
      */
     @SafeVarargs
     @SuppressWarnings("varargs")
@@ -268,7 +268,7 @@ public final class Containers {
      * @return an immutable set containing the array elements, or {@code null} if the given array was null.
      *
      * @see Set#of(Object...)
-     * @since 1.6
+     * @since SIS 1.6
      */
     @SafeVarargs
     @SuppressWarnings("varargs")
@@ -327,7 +327,7 @@ public final class Containers {
      * @return an immutable list containing the collection elements, or {@code null} if the given collection was null.
      *
      * @see List#of(Object...)
-     * @since 1.6
+     * @since SIS 1.6
      */
     @SuppressWarnings("unchecked")
     public static <E> List<E> copyToImmutableList(final Collection<? extends E> collection, final Class<E> elementType) {
@@ -351,7 +351,7 @@ public final class Containers {
      *
      * @see Arrays#asList(Object[])
      * @see Collections#unmodifiableList(List)
-     * @since 1.6
+     * @since SIS 1.6
      */
     @SafeVarargs
     @SuppressWarnings("varargs")
@@ -375,7 +375,7 @@ public final class Containers {
      * @return the given array wrapped in an unmodifiable list.
      * @throws IndexOutOfBoundsException if the lower or upper value are out of bounds.
      *
-     * @since 1.6
+     * @since SIS 1.6
      */
     public static <E> List<E> viewAsUnmodifiableList(final E[] array, final int lower, final int upper) {
         Objects.checkFromToIndex(lower, upper, array.length);
@@ -408,7 +408,7 @@ public final class Containers {
      * @param  list  the list to make unmodifiable, or {@code null}.
      * @return an unmodifiable view or copy of the given list, or {@code null} if the given list was null.
      *
-     * @since 1.6
+     * @since SIS 1.6
      */
     public static <E> List<E> unmodifiable(List<E> list) {
         if (list != null) {
@@ -455,7 +455,7 @@ public final class Containers {
      * @param  set  the set to make unmodifiable, or {@code null}.
      * @return an unmodifiable view or copy of the given set, or {@code null} if the given set was null.
      *
-     * @since 1.6
+     * @since SIS 1.6
      */
     public static <E> Set<E> unmodifiable(final Set<E> set) {
         if (isUnmodifiable(set)) {
@@ -491,7 +491,7 @@ public final class Containers {
      * @param  map  the map to make unmodifiable, or {@code null}.
      * @return an unmodifiable view or copy of the given map, or {@code null} if the given map was null.
      *
-     * @since 1.6
+     * @since SIS 1.6
      */
     public static <K,V> Map<K,V> unmodifiable(final Map<K,V> map) {
         if (map == null) {
@@ -523,7 +523,7 @@ public final class Containers {
      * @throws ClassCastException if the given collection is non-null and contains elements not assignable to {@code elementType}.
      *
      * @see Collections#checkedSet(Set, Class)
-     * @since 1.6
+     * @since SIS 1.6
      */
     @SuppressWarnings({"unchecked","rawtypes"})
     public static <E> Set<E> newCheckedSet(final Collection<? extends E> collection, final Class<E> elementType) {
@@ -560,7 +560,7 @@ public final class Containers {
      * @throws ClassCastException if the given collection is non-null and contains elements not assignable to {@code elementType}.
      *
      * @see Collections#checkedList(List, Class)
-     * @since 1.6
+     * @since SIS 1.6
      */
     @SuppressWarnings({"unchecked","rawtypes"})
     public static <E> List<E> newCheckedList(final Collection<? extends E> collection, final Class<E> elementType) {
@@ -589,7 +589,7 @@ public final class Containers {
      * @return a view over the {@code storage} list containing all elements converted by the given converter,
      *         or {@code null} if {@code storage} was null.
      *
-     * @since 1.6
+     * @since SIS 1.6
      */
     public static <S,E> List<E> derivedList(final List<S> storage, final Function<S,E> converter) {
         ArgumentChecks.ensureNonNull("converter", converter);
@@ -612,7 +612,7 @@ public final class Containers {
      * @return a view over the {@code storage} list containing all elements converted by the given converter,
      *         or {@code null} if {@code storage} was null.
      *
-     * @since 1.7
+     * @since SIS 1.7
      */
     public static <S,E> List<E> derivedList(final List<S> storage, final ObjectConverter<S,E> converter) {
         ArgumentChecks.ensureNonNull("converter", converter);
@@ -728,7 +728,7 @@ public final class Containers {
      * @param  object  the object to return as a collection, or {@code null}.
      * @return the object cast as a collection or wrapped in a collection (never {@code null}).
      *
-     * @since 1.6
+     * @since SIS 1.6
      */
     public static Collection<?> toCollection(final Object object) {
         if (object == null) {
@@ -837,7 +837,7 @@ public final class Containers {
      * @return -1 if the content given by the first iterator is considered "before" the content given by the second
      *         iterator, +1 if considered "after", or 0 if considered equal.
      *
-     * @since 1.0
+     * @since SIS 1.0
      */
     public static <E extends Comparable<E>> int compare(final Iterator<E> it1, final Iterator<? extends E> it2) {
         while (it1.hasNext()) {

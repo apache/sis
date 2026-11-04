@@ -72,7 +72,7 @@ import static org.apache.sis.util.Characters.isLineOrParagraphSeparator;
  *
  * @see org.apache.sis.util.collection.TreeTableFormat
  *
- * @since 0.3
+ * @since SIS 0.3
  */
 public class TableAppender extends Appender implements Flushable {
     /**
@@ -234,7 +234,7 @@ public class TableAppender extends Appender implements Flushable {
      * @param separator    string to write between columns.
      * @param rightBorder  string to write on the right side of the table.
      *
-     * @since 1.7
+     * @since SIS 1.7
      */
     public TableAppender(final String leftBorder, final String separator, final String rightBorder) {
         this(new StringBuilder(256), leftBorder, separator, rightBorder);
@@ -284,7 +284,7 @@ public class TableAppender extends Appender implements Flushable {
      * @param separator    string to write between columns.
      * @param rightBorder  string to write on the right side of the table.
      *
-     * @since 0.8
+     * @since SIS 0.8
      */
     public TableAppender(final Appendable out, final String leftBorder, final String separator, final String rightBorder) {
         super(out);
@@ -420,7 +420,7 @@ public class TableAppender extends Appender implements Flushable {
      *
      * @return the line separator between table rows.
      *
-     * @since 1.0
+     * @since SIS 1.0
      */
     public String getLineSeparator() {
         if (lineSeparator == null) {

@@ -58,7 +58,7 @@ import org.opengis.coverage.grid.SequenceType;
  * @author  Rémi Maréchal (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.7
- * @since   1.0
+ * @since SIS 1.0
  */
 public class WritablePixelIterator extends PixelIterator implements Closeable {
     /**
@@ -279,7 +279,7 @@ public class WritablePixelIterator extends PixelIterator implements Closeable {
      * @throws IllegalArgumentException if the number of functions is not equal
      *         to the {@linkplain #getNumBands() number of bands}.
      *
-     * @since 1.7
+     * @since SIS 1.7
      */
     public void setRemainingPixels(IntBinaryOperator[] bands) {
         bands = validate(bands);
@@ -310,7 +310,7 @@ public class WritablePixelIterator extends PixelIterator implements Closeable {
      * @throws IllegalArgumentException if the number of functions is not equal
      *         to the {@linkplain #getNumBands() number of bands}.
      *
-     * @since 1.7
+     * @since SIS 1.7
      */
     public void setRemainingPixels(DoubleBinaryOperator[] bands) {
         bands = validate(bands);
@@ -341,7 +341,7 @@ public class WritablePixelIterator extends PixelIterator implements Closeable {
      * @see WritableRaster#setDataElements(int, int, Object)
      * @see #getDataElements(Object)
      *
-     * @since 1.1
+     * @since SIS 1.1
      */
     public void setDataElements(final Object values) {
         destRaster.setDataElements(x, y, values);

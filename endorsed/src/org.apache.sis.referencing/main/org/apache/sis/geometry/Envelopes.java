@@ -109,7 +109,7 @@ import static org.apache.sis.util.StringBuilders.trimFractionalPart;
  * @see org.apache.sis.metadata.iso.extent.Extents
  * @see CRS
  *
- * @since 0.3
+ * @since SIS 0.3
  */
 public final class Envelopes {
     /**
@@ -148,7 +148,7 @@ public final class Envelopes {
      * @see org.apache.sis.referencing.CRS#compound(CoordinateReferenceSystem...)
      * @see org.apache.sis.referencing.operation.transform.MathTransforms#compound(MathTransform...)
      *
-     * @since 1.0
+     * @since SIS 1.0
      */
     public static Envelope compound(final Envelope... components) throws FactoryException {
         ArgumentChecks.ensureNonNull("components", components);
@@ -201,7 +201,7 @@ public final class Envelopes {
      *
      * @see GeneralEnvelope#add(Envelope)
      *
-     * @since 1.0
+     * @since SIS 1.0
      */
     public static GeneralEnvelope union(final Envelope... envelopes) throws TransformException {
         return EnvelopeReducer.UNION.reduce(envelopes);
@@ -221,7 +221,7 @@ public final class Envelopes {
      *
      * @see GeneralEnvelope#intersect(Envelope)
      *
-     * @since 1.0
+     * @since SIS 1.0
      */
     public static GeneralEnvelope intersect(final Envelope... envelopes) throws TransformException {
         return EnvelopeReducer.INTERSECT.reduce(envelopes);
@@ -247,7 +247,7 @@ public final class Envelopes {
      *
      * @see CRS#findOperation(CoordinateReferenceSystem, CoordinateReferenceSystem, GeographicBoundingBox)
      *
-     * @since 1.0
+     * @since SIS 1.0
      */
     public static CoordinateOperation findOperation(final Envelope source, final Envelope target) throws FactoryException {
         if (source != null && target != null) {
@@ -319,7 +319,7 @@ public final class Envelopes {
      * @return a new transformed envelope, or directly {@code envelope} if no change was required.
      * @throws TransformException if a transformation was required and failed.
      *
-     * @since 0.5
+     * @since SIS 0.5
      */
     public static Envelope transform(Envelope envelope, final CoordinateReferenceSystem targetCRS)
             throws TransformException
@@ -597,7 +597,7 @@ nextPoint:  for (int pointIndex = 0;;) {                // Break condition at th
      *
      * @see #transform(MathTransform, Envelope)
      *
-     * @since 0.5
+     * @since SIS 0.5
      */
     public static GeneralEnvelope transform(final CoordinateOperation operation, final Envelope envelope)
             throws TransformException
@@ -958,7 +958,7 @@ poles:  for (int i=0; i<dimension; i++) {
      *
      * @see #transform(CoordinateOperation, Envelope)
      *
-     * @since 0.5
+     * @since SIS 0.5
      */
     public static GeneralEnvelope transform(final MathTransform transform, final Envelope envelope)
             throws TransformException
@@ -1012,7 +1012,7 @@ poles:  for (int i=0; i<dimension; i++) {
      * @see #transform(MathTransform, Envelope)
      * @see WraparoundTransform
      *
-     * @since 1.5
+     * @since SIS 1.5
      */
     public static Map<Parameters, GeneralEnvelope> transformWithWraparound(
             final MathTransform transform, final Envelope envelope) throws TransformException
@@ -1158,7 +1158,7 @@ poles:  for (int i=0; i<dimension; i++) {
      * @see AbstractEnvelope#getTimeRange()
      * @see GeneralEnvelope#setTimeRange(Instant, Instant)
      *
-     * @since 1.1
+     * @since SIS 1.1
      */
     public static Optional<Range<Instant>> toTimeRange(final Envelope envelope) {
         if (envelope != null) {

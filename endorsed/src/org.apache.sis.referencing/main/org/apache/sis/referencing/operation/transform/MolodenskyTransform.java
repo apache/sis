@@ -89,7 +89,7 @@ import org.apache.sis.util.internal.shared.Numerics;
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @author  Rémi Maréchal (Geomatys)
  * @version 1.5
- * @since   0.7
+ * @since SIS 0.7
  */
 public class MolodenskyTransform extends DatumShiftTransform {
     /**
@@ -453,7 +453,7 @@ public class MolodenskyTransform extends DatumShiftTransform {
      * @param  context  information about the neighbor transforms, and the object where to set the result.
      * @throws FactoryException if an error occurred while combining the transforms.
      *
-     * @since 1.5
+     * @since SIS 1.5
      */
     @Override
     protected void tryConcatenate(final TransformJoiner context) throws FactoryException {

@@ -30,7 +30,7 @@ import org.apache.sis.util.resources.Errors;
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.2
- * @since   0.3
+ * @since SIS 0.3
  */
 public final class Characters {
     /**
@@ -92,7 +92,7 @@ public final class Characters {
      *
      * @see org.apache.sis.io.wkt.Transliterator
      *
-     * @since 0.6
+     * @since SIS 0.6
      */
     public static boolean isValidWKT(final int c) {
         switch (c) {
@@ -134,7 +134,7 @@ public final class Characters {
      * @param  c  the character to test.
      * @return {@code true} if the given character is an hexadecimal digit.
      *
-     * @since 0.5
+     * @since SIS 0.5
      */
     public static boolean isHexadecimal(int c) {
         /*
@@ -262,7 +262,7 @@ public final class Characters {
      * @return the given character as a normal script, or {@code c} if the
      *         given character was not a superscript or a subscript.
      *
-     * @since 1.0
+     * @since SIS 1.0
      */
     public static int toNormalScript(int c) {
         switch (c) {
@@ -326,7 +326,7 @@ public final class Characters {
      * @see java.lang.Character.Subset
      * @see Character#getType(int)
      *
-     * @since 0.3
+     * @since SIS 0.3
      */
     public static class Filter extends Character.Subset {
         /*

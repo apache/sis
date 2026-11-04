@@ -56,7 +56,7 @@ import org.apache.sis.metadata.iso.DefaultIdentifier;
  * @author  Touraïvane (IRD)
  * @author  Cédric Briançon (Geomatys)
  * @version 1.7
- * @since   0.3
+ * @since SIS 0.3
  */
 @TitleProperty(name = "geographicIdentifier")
 @XmlType(name = "EX_GeographicDescription_Type")
@@ -86,7 +86,7 @@ public class DefaultGeographicDescription extends AbstractGeographicExtent imple
      *
      * @see #setGeographicIdentifier(Identifier)
      *
-     * @since 1.5
+     * @since SIS 1.5
      */
     public DefaultGeographicDescription(final Identifier value) {
         geographicIdentifier = value;

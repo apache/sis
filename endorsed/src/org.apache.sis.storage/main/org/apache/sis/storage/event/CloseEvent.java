@@ -26,7 +26,7 @@ import org.apache.sis.storage.Resource;
  * See {@link CascadedStoreEvent} javadoc for more information.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @since 1.3
+ * @since SIS 1.3
  *
  * @see StoreListeners#close()
  *

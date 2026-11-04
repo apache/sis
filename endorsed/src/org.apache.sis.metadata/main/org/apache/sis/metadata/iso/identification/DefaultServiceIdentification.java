@@ -72,7 +72,7 @@ import org.opengis.metadata.identification.OperationMetadata;
  * @author  Rémi Maréchal (Geomatys)
  * @author  Cullen Rombach (Image Matters)
  * @version 1.4
- * @since   0.5
+ * @since SIS 0.5
  */
 @XmlType(name = "SV_ServiceIdentification_Type", namespace = Namespaces.SRV, propOrder = {
     "serviceType",
@@ -280,7 +280,7 @@ public class DefaultServiceIdentification extends AbstractIdentification impleme
      *
      * @return information about the availability of the service, or {@code null} if none.
      *
-     * @since 0.5
+     * @since SIS 0.5
      */
     @Override
     @XmlElement(name = "accessProperties")
@@ -294,7 +294,7 @@ public class DefaultServiceIdentification extends AbstractIdentification impleme
      *
      * @param  newValue  the new information about the availability of the service.
      *
-     * @since 0.5
+     * @since SIS 0.5
      */
     public void setAccessProperties(final StandardOrderProcess newValue) {
         checkWritePermission(accessProperties);
@@ -347,7 +347,7 @@ public class DefaultServiceIdentification extends AbstractIdentification impleme
      *
      * @return reference(s) to the resource on which the service operates.
      *
-     * @since 0.5
+     * @since SIS 0.5
      */
     @Override
     // @XmlElement at the end of this class.
@@ -360,7 +360,7 @@ public class DefaultServiceIdentification extends AbstractIdentification impleme
      *
      * @param  newValues  the new reference(s) to the resource on which the service operates.
      *
-     * @since 0.5
+     * @since SIS 0.5
      */
     public void setOperatedDatasets(final Collection<? extends Citation> newValues) {
         operatedDatasets = writeCollection(newValues, operatedDatasets, Citation.class);
@@ -371,7 +371,7 @@ public class DefaultServiceIdentification extends AbstractIdentification impleme
      *
      * @return profile(s) to which the service adheres.
      *
-     * @since 0.5
+     * @since SIS 0.5
      */
     @Override
     // @XmlElement at the end of this class.
@@ -393,7 +393,7 @@ public class DefaultServiceIdentification extends AbstractIdentification impleme
      *
      * @return standard(s) to which the service adheres.
      *
-     * @since 0.5
+     * @since SIS 0.5
      */
     @Override
     // @XmlElement at the end of this class.
@@ -406,7 +406,7 @@ public class DefaultServiceIdentification extends AbstractIdentification impleme
      *
      * @param  newValues  the new standard(s) to which the service adheres.
      *
-     * @since 0.5
+     * @since SIS 0.5
      */
     public void setServiceStandards(final Collection<? extends Citation> newValues) {
         serviceStandards = writeCollection(newValues, serviceStandards, Citation.class);
@@ -457,7 +457,7 @@ public class DefaultServiceIdentification extends AbstractIdentification impleme
      *
      * @return information about the chain applied by the service.
      *
-     * @since 0.5
+     * @since SIS 0.5
      */
     @Override
     // @XmlElement at the end of this class.
@@ -470,7 +470,7 @@ public class DefaultServiceIdentification extends AbstractIdentification impleme
      *
      * @param  newValues  the new information about the chain applied by the service.
      *
-     * @since 0.5
+     * @since SIS 0.5
      */
     public void setContainsChain(final Collection<? extends OperationChainMetadata>  newValues) {
         containsChain = writeCollection(newValues, containsChain, OperationChainMetadata.class);

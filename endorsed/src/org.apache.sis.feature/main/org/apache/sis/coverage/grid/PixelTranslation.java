@@ -67,7 +67,7 @@ import org.apache.sis.referencing.operation.transform.MathTransforms;
  * @see PixelInCell
  * @see PixelOrientation
  *
- * @since 1.0
+ * @since SIS 1.0
  */
 public final class PixelTranslation implements Serializable {
     /**

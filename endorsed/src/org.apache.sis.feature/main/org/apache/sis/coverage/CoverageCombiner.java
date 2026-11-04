@@ -81,7 +81,7 @@ import org.opengis.coverage.CannotEvaluateException;
  *
  * @see ImageCombiner
  *
- * @since 1.4
+ * @since SIS 1.4
  */
 public class CoverageCombiner {
     /**
