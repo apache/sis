@@ -115,7 +115,7 @@ import org.apache.sis.util.internal.shared.Numerics;
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.5
- * @since   1.3
+ * @since SIS 1.3
  */
 @SuppressWarnings("exports")    // There is no public method using `GroupBySample`.
 public final class CoverageAggregator extends Group<GroupBySample> {
@@ -146,7 +146,7 @@ public final class CoverageAggregator extends Group<GroupBySample> {
     /**
      * Creates an initially empty aggregator with no listeners.
      *
-     * @since 1.4
+     * @since SIS 1.4
      */
     public CoverageAggregator() {
         this(null);
@@ -200,7 +200,7 @@ public final class CoverageAggregator extends Group<GroupBySample> {
      *
      * @param  coverage  coverage to add.
      *
-     * @since 1.4
+     * @since SIS 1.4
      */
     public void add(final GridCoverage coverage) {
         try {
@@ -233,7 +233,7 @@ public final class CoverageAggregator extends Group<GroupBySample> {
      *
      * @see GridCoverageProcessor#appendDimensions(GridCoverage, GridGeometry)
      *
-     * @since 1.5
+     * @since SIS 1.5
      */
     public void add(GridCoverage coverage, GridGeometry dimToAdd) {
         add(processor.appendDimensions(coverage, dimToAdd));
@@ -251,7 +251,7 @@ public final class CoverageAggregator extends Group<GroupBySample> {
      *
      * @see GridCoverageProcessor#appendDimension(GridCoverage, double, double, SingleCRS)
      *
-     * @since 1.5
+     * @since SIS 1.5
      */
     public void add(GridCoverage coverage, double lower, double span, SingleCRS crs) {
         add(processor.appendDimension(coverage, lower, span, crs));
@@ -271,7 +271,7 @@ public final class CoverageAggregator extends Group<GroupBySample> {
      *
      * @see GridCoverageProcessor#appendDimension(GridCoverage, Instant, Duration)
      *
-     * @since 1.5
+     * @since SIS 1.5
      */
     public void add(GridCoverage coverage, Instant lower, Duration span) {
         add(processor.appendDimension(coverage, lower, span));
@@ -319,7 +319,7 @@ search: synchronized (members) {
      * @throws IllegalGridGeometryException if the compound CRS or compound extent cannot be created.
      * @throws DataStoreException if the resource cannot be used.
      *
-     * @since 1.5
+     * @since SIS 1.5
      */
     public void add(GridCoverageResource resource, GridGeometry dimToAdd) throws DataStoreException {
         add(DimensionAppender.create(processor, resource, dimToAdd));
@@ -336,7 +336,7 @@ search: synchronized (members) {
      * @throws IllegalGridGeometryException if the compound CRS or compound extent cannot be created.
      * @throws DataStoreException if the resource cannot be used.
      *
-     * @since 1.5
+     * @since SIS 1.5
      */
     public void add(final GridCoverageResource resource, final double lower, final double span, final SingleCRS crs)
             throws DataStoreException
@@ -369,7 +369,7 @@ search: synchronized (members) {
      * @throws IllegalGridGeometryException if the compound CRS or compound extent cannot be created.
      * @throws DataStoreException if the resource cannot be used.
      *
-     * @since 1.5
+     * @since SIS 1.5
      */
     public void add(final GridCoverageResource resource, final Instant lower, final Duration span) throws DataStoreException {
         /*
@@ -487,7 +487,7 @@ search: synchronized (members) {
      * @see #getColorizer()
      * @see GridCoverageProcessor#aggregateRanges(GridCoverage...)
      *
-     * @since 1.4
+     * @since SIS 1.4
      */
     public void addRangeAggregate(final GridCoverageResource... sources) throws DataStoreException {
         addRangeAggregate(sources, null);
@@ -523,7 +523,7 @@ search: synchronized (members) {
      * @see #getColorizer()
      * @see GridCoverageProcessor#aggregateRanges(GridCoverage[], int[][])
      *
-     * @since 1.4
+     * @since SIS 1.4
      */
     public void addRangeAggregate(final GridCoverageResource[] sources, final int[][] bandsPerSource) throws DataStoreException {
         if (sources.length != 0) {
@@ -537,7 +537,7 @@ search: synchronized (members) {
      *
      * @return colorization algorithm to apply on computed image, or {@code null} for default.
      *
-     * @since 1.4
+     * @since SIS 1.4
      */
     public Colorizer getColorizer() {
         return processor.getColorizer();
@@ -551,7 +551,7 @@ search: synchronized (members) {
      *
      * @param  colorizer  colorization algorithm to apply on computed image, or {@code null} for default.
      *
-     * @since 1.4
+     * @since SIS 1.4
      */
     public void setColorizer(final Colorizer colorizer) {
         processor.setColorizer(colorizer);
@@ -610,7 +610,7 @@ search: synchronized (members) {
      * @param  identifier  identifier to assign to the aggregated resource, or {@code null} if none.
      * @return the aggregation or concatenation of all components added to this aggregator.
      *
-     * @since 1.4
+     * @since SIS 1.4
      */
     public synchronized Resource build(final GenericName identifier) {
         final GroupAggregate aggregate = prepareAggregate(listeners);

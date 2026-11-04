@@ -60,7 +60,7 @@ import org.opengis.coverage.CannotEvaluateException;
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @author  Johann Sorel (Geomatys)
  * @version 1.7
- * @since   1.0
+ * @since SIS 1.0
  */
 public abstract class GridCoverage extends BandedCoverage {
     /**
@@ -69,7 +69,7 @@ public abstract class GridCoverage extends BandedCoverage {
      *
      * @see #render(GridExtent)
      *
-     * @since 1.7
+     * @since SIS 1.7
      */
     protected static final int BIDIMENSIONAL = 2;
 
@@ -160,7 +160,7 @@ public abstract class GridCoverage extends BandedCoverage {
      *
      * @return the bounding box for the coverage domain in CRS coordinates.
      *
-     * @since 1.2
+     * @since SIS 1.2
      */
     @Override
     public Optional<Envelope> getEnvelope() {
@@ -301,7 +301,7 @@ public abstract class GridCoverage extends BandedCoverage {
      *         May be {@code this} but never {@code null}.
      * @throws CannotEvaluateException if an error occurred while conversion the values.
      *
-     * @since 1.3
+     * @since SIS 1.3
      */
     protected GridCoverage createConvertedValues(final boolean converted) {
         try {
@@ -347,7 +347,7 @@ public abstract class GridCoverage extends BandedCoverage {
      *
      * @return a new function for computing or interpolating sample values.
      *
-     * @since 1.1
+     * @since SIS 1.1
      */
     @Override
     public Evaluator evaluator() {
@@ -374,7 +374,7 @@ public abstract class GridCoverage extends BandedCoverage {
      *
      * @see GridCoverage#evaluator()
      *
-     * @since 1.3
+     * @since SIS 1.3
      */
     public interface Evaluator extends BandedCoverage.Evaluator {
         /**
@@ -531,7 +531,7 @@ public abstract class GridCoverage extends BandedCoverage {
      *
      * @return a coordinate format configured for the domain of this grid coverage.
      *
-     * @since 1.6
+     * @since SIS 1.6
      */
     public CoordinateFormat createCoordinateFormat() {
         final var cf = new CoordinateFormat();

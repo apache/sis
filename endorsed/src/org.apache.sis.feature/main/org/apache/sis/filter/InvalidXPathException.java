@@ -36,7 +36,7 @@ import org.opengis.filter.InvalidFilterValueException;
  *
  * @see javax.xml.xpath.XPathException
  *
- * @since 1.5
+ * @since SIS 1.5
  */
 public class InvalidXPathException extends InvalidFilterValueException {
     /**

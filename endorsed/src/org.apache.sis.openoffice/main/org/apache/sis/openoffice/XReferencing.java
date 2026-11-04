@@ -33,7 +33,7 @@ import com.sun.star.lang.IllegalArgumentException;
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @version 0.8
- * @since   0.8
+ * @since SIS 0.8
  */
 public interface XReferencing extends XInterface {
     /**

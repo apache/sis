@@ -37,7 +37,7 @@ import org.apache.sis.util.resources.Vocabulary;
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.7
- * @since   1.7
+ * @since SIS 1.7
  */
 public class MapWindows implements AutoCloseable {
     /**

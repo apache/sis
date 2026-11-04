@@ -58,7 +58,7 @@ import org.apache.sis.referencing.IdentifiedObjects;
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.7
- * @since   1.1
+ * @since SIS 1.1
  */
 public class MapMenu extends ContextMenu {
     /**

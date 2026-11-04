@@ -42,7 +42,7 @@ import org.apache.sis.xml.NilReason;
  *
  * @see MetadataStandard#asValueMap(Object, Class, KeyNamePolicy, ValueExistencePolicy)
  *
- * @since 0.3
+ * @since SIS 0.3
  */
 public enum ValueExistencePolicy {
     /*
@@ -92,7 +92,7 @@ public enum ValueExistencePolicy {
      *
      * <p>The set of {@code NON_NIL} properties is a subset of {@link #NON_NULL} properties.</p>
      *
-     * @since 0.4
+     * @since SIS 0.4
      */
     NON_NIL {
         /** Skips all null or nil values. */
@@ -143,7 +143,7 @@ public enum ValueExistencePolicy {
      * @see TitleProperty
      * @see MetadataStandard#getTitle(Object)
      *
-     * @since 1.7
+     * @since SIS 1.7
      */
     TITLED,
 
@@ -192,7 +192,7 @@ public enum ValueExistencePolicy {
      *
      * @see TitleProperty
      *
-     * @since 0.8
+     * @since SIS 0.8
      */
     COMPACT;
 

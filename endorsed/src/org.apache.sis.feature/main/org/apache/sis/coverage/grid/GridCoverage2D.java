@@ -90,7 +90,7 @@ import org.opengis.coverage.CannotEvaluateException;
  * @author  Johann Sorel (Geomatys)
  * @author  Alexis Manin (Geomatys)
  * @version 1.7
- * @since   1.1
+ * @since SIS 1.1
  */
 public class GridCoverage2D extends GridCoverage {
     /**
@@ -174,7 +174,7 @@ public class GridCoverage2D extends GridCoverage {
      * @throws IllegalGridGeometryException if the image size is not consistent with the grid geometry.
      * @throws IllegalArgumentException if the image number of bands is not the same as the number of sample dimensions.
      *
-     * @since 1.2
+     * @since SIS 1.2
      */
     @SuppressWarnings("this-escape")    // The invoked method does not store `this` and is not overrideable.
     public GridCoverage2D(final GridCoverage source, RenderedImage data) {
@@ -452,7 +452,7 @@ public class GridCoverage2D extends GridCoverage {
      *
      * @see #render(GridExtent)
      *
-     * @since 1.7
+     * @since SIS 1.7
      */
     public static Optional<GridCoverage2D> castOrRender(final GridCoverage other) {
         if (other != null) {
@@ -523,7 +523,7 @@ public class GridCoverage2D extends GridCoverage {
      * {@code Evaluator}s are not thread-safe. For computing sample values concurrently,
      * a new {@code Evaluator} instance should be created for each thread.
      *
-     * @since 1.1
+     * @since SIS 1.1
      */
     @Override
     public Evaluator evaluator() {

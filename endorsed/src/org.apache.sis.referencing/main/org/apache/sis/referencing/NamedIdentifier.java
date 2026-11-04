@@ -89,7 +89,7 @@ import org.apache.sis.util.iso.DefaultNameFactory;
  * @see org.apache.sis.util.iso.AbstractName
  * @see AbstractIdentifiedObject#getName()
  *
- * @since 0.4
+ * @since SIS 0.4
  */
 public class NamedIdentifier extends ImmutableIdentifier implements GenericName {
     /**
@@ -345,7 +345,7 @@ public class NamedIdentifier extends ImmutableIdentifier implements GenericName 
      *
      * @see #toGenericName(Identifier)
      *
-     * @since 1.0
+     * @since SIS 1.0
      */
     public static NamedIdentifier castOrCopy(final Identifier object) {
         if (object == null || object instanceof NamedIdentifier) {
@@ -374,7 +374,7 @@ public class NamedIdentifier extends ImmutableIdentifier implements GenericName 
      *
      * @see #toIdentifier(GenericName)
      *
-     * @since 1.0
+     * @since SIS 1.0
      */
     public static NamedIdentifier castOrCopy(final GenericName object) {
         if (object == null || object instanceof NamedIdentifier) {
@@ -389,7 +389,7 @@ public class NamedIdentifier extends ImmutableIdentifier implements GenericName 
      *
      * @param  object  the object to get as a name, or {@code nulk}.
      * @return the given object as a name, or {@code null} if the argument was null.
-     * @since  1.7
+     * @since SIS 1.7
      */
     public static GenericName toGenericName(final Identifier object) {
         if (object == null || object instanceof GenericName) {
@@ -404,7 +404,7 @@ public class NamedIdentifier extends ImmutableIdentifier implements GenericName 
      *
      * @param  object  the object to get as an identifier, or {@code nulk}.
      * @return the given object as an identifier, or {@code null} if the argument was null.
-     * @since  1.7
+     * @since SIS 1.7
      */
     public static Identifier toIdentifier(final GenericName object) {
         if (object == null || object instanceof Identifier) {

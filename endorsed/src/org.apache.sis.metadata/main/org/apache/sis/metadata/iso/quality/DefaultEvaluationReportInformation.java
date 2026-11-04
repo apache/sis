@@ -48,7 +48,7 @@ import org.opengis.metadata.quality.StandaloneQualityReportInformation;
  * @author  Alexis Gaillard (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.7
- * @since   1.3
+ * @since SIS 1.3
  */
 @TitleProperty(name = "reportReference")
 @XmlType(name = "DQ_StandaloneQualityReportInformation_Type", propOrder = {

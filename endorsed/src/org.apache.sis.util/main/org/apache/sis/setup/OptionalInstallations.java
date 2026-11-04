@@ -95,7 +95,7 @@ import static org.apache.sis.util.internal.shared.Constants.EPSG;
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.7
- * @since   1.1
+ * @since SIS 1.1
  */
 public abstract class OptionalInstallations extends InstallationResources implements Localized {
     /**

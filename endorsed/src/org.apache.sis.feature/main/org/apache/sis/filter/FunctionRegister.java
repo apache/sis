@@ -31,7 +31,7 @@ import org.opengis.filter.capability.AvailableFunction;
  *
  * @author  Johann Sorel (Geomatys)
  * @version 1.6
- * @since   1.5
+ * @since SIS 1.5
  *
  * @see DefaultFilterFactory#function(String, Expression[])
  */

@@ -33,7 +33,7 @@ import org.apache.sis.util.collection.CheckedContainer;
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @version 1.5
- * @since   0.3
+ * @since SIS 0.3
  */
 public final class Utilities {
     /**

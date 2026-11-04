@@ -47,7 +47,7 @@ import org.apache.sis.util.ArraysExt;
  *
  * @param <E>  the type of elements in the set.
  *
- * @since 1.6
+ * @since SIS 1.6
  */
 @SuppressWarnings("EqualsAndHashcode")
 public abstract class SetOfUnknownSize<E> extends AbstractSet<E> {

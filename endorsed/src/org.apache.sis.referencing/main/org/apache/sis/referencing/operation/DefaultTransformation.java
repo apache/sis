@@ -52,7 +52,7 @@ import org.apache.sis.util.ArgumentChecks;
  *
  * @see DefaultConversion
  *
- * @since 0.6
+ * @since SIS 0.6
  */
 @XmlType(name = "TransformationType")
 @XmlRootElement(name = "Transformation")
@@ -150,7 +150,7 @@ public class DefaultTransformation extends AbstractSingleOperation implements Tr
      * This is the base type required by {@code equals(…)} methods for returning a potentially {@code true} value.
      *
      * @return {@code Transformation.class} or a user-defined sub-interface.
-     * @since 1.7
+     * @since SIS 1.7
      */
     @Override
     public Type getStandardType() {

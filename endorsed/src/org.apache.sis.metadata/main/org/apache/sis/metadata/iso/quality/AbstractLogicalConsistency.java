@@ -46,7 +46,7 @@ import org.opengis.metadata.quality.ConceptualConsistency;
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @author  Touraïvane (IRD)
  * @version 1.4
- * @since   0.3
+ * @since SIS 0.3
  */
 @XmlType(name = "AbstractDQ_LogicalConsistency_Type")
 @XmlRootElement(name = "AbstractDQ_LogicalConsistency")

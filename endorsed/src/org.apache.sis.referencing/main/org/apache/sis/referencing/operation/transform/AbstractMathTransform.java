@@ -90,7 +90,7 @@ import org.opengis.coordinate.MismatchedDimensionException;
  * @see DefaultMathTransformFactory
  * @see org.apache.sis.referencing.operation.AbstractCoordinateOperation
  *
- * @since 0.5
+ * @since SIS 0.5
  */
 public abstract class AbstractMathTransform extends FormattableObject
         implements MathTransform, Parameterized, LenientComparable
@@ -187,7 +187,7 @@ public abstract class AbstractMathTransform extends FormattableObject
      * @see MathTransforms#getDomain(MathTransform)
      * @see org.opengis.referencing.ObjectDomain#getDomainOfValidity()
      *
-     * @since 1.3
+     * @since SIS 1.3
      */
     public Optional<Envelope> getDomain(DomainDefinition criteria) throws TransformException {
         ArgumentChecks.ensureNonNull("criteria", criteria);
@@ -258,7 +258,7 @@ public abstract class AbstractMathTransform extends FormattableObject
      *         Callers should not modify the returned parameters, since modifications (if allowed)
      *         will generally not be reflected back in this {@code MathTransform}.
      *
-     * @since 0.6
+     * @since SIS 0.6
      */
     @OptionalCandidate
     protected ContextualParameters getContextualParameters() {
@@ -860,7 +860,7 @@ public abstract class AbstractMathTransform extends FormattableObject
      *
      * @see DefaultMathTransformFactory#createConcatenatedTransform(MathTransform, MathTransform)
      *
-     * @since 1.5
+     * @since SIS 1.5
      */
     protected void tryConcatenate(final TransformJoiner context) throws FactoryException {
     }
@@ -982,7 +982,7 @@ public abstract class AbstractMathTransform extends FormattableObject
      * including {@code equals(…)}, can produce the same results with the generic {@code MathTransform} type.</p>
      *
      * @return {@code MathTransform.class}.
-     * @since 1.7
+     * @since SIS 1.7
      */
     @Override
     public final Type getStandardType() {
@@ -1055,7 +1055,7 @@ public abstract class AbstractMathTransform extends FormattableObject
      *
      * @author  Martin Desruisseaux (IRD, Geomatys)
      * @version 1.0
-     * @since   0.5
+     * @since SIS 0.5
      */
     protected abstract static class Inverse extends AbstractMathTransform {
         /**
@@ -1097,7 +1097,7 @@ public abstract class AbstractMathTransform extends FormattableObject
          * @return estimation of a domain where this transform is considered numerically applicable.
          * @throws TransformException if the domain cannot be estimated.
          *
-         * @since 1.3
+         * @since SIS 1.3
          */
         @Override
         public Optional<Envelope> getDomain(final DomainDefinition criteria) throws TransformException {

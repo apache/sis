@@ -39,7 +39,7 @@
  *
  * @see <a href="https://www.opengeospatial.org/standards/geopackage">OGC® GeoPackage Encoding Standard</a>
  *
- * @since 1.5
+ * @since SIS 1.5
  */
 module org.apache.sis.storage.geopackage {
     requires transitive org.apache.sis.referencing;

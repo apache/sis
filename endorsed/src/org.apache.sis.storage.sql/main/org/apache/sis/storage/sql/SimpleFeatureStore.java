@@ -54,7 +54,7 @@ import org.apache.sis.util.ArgumentChecks;
  *
  * @see <a href="https://www.ogc.org/standards/sfs">OGC Simple feature access - Part 2: SQL option</a>
  *
- * @since 1.5
+ * @since SIS 1.5
  */
 public class SimpleFeatureStore extends SQLStore {
     /**

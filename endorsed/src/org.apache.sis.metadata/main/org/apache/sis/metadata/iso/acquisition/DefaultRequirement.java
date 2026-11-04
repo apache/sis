@@ -65,7 +65,7 @@ import org.opengis.metadata.citation.Responsibility;
  * @author  Cédric Briançon (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
  * @version 2.0
- * @since   0.3
+ * @since SIS 0.3
  */
 @TitleProperty(name = "identifier")
 @XmlType(name = "MI_Requirement_Type", propOrder = {
@@ -325,7 +325,7 @@ public class DefaultRequirement extends ISOMetadata implements Requirement {
      *
      * @param  newValue  the new expiry date.
      *
-     * @since 1.5
+     * @since SIS 1.5
      */
     public void setExpiryDate(final Temporal newValue) {
         checkWritePermission(expiryDate);

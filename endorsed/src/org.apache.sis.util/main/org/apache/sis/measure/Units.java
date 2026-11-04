@@ -77,7 +77,7 @@ import static org.apache.sis.util.internal.shared.Constants.MILLIS_PER_TROPICAL_
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @author  Alexis Manin (Geomatys)
  * @version 1.5
- * @since   0.3
+ * @since SIS 0.3
  */
 public final class Units {
     /**
@@ -95,7 +95,7 @@ public final class Units {
      *
      * @see org.apache.sis.metadata.iso.content.DefaultBand#getBoundUnits()
      *
-     * @since 0.8
+     * @since SIS 0.8
      */
     public static final Unit<Length> NANOMETRE;
 
@@ -111,7 +111,7 @@ public final class Units {
      *   <tr><td>Derived units:</td>   <td style="word-spacing:1em">{@link #SQUARE_METRE}, {@link #CUBIC_METRE}, {@link #METRES_PER_SECOND}.</td></tr>
      * </table>
      *
-     * @since 0.8
+     * @since SIS 0.8
      */
     public static final Unit<Length> MILLIMETRE;
 
@@ -127,7 +127,7 @@ public final class Units {
      *   <tr><td>Derived units:</td>   <td style="word-spacing:1em">{@link #SQUARE_METRE}, {@link #CUBIC_METRE}, {@link #METRES_PER_SECOND}.</td></tr>
      * </table>
      *
-     * @since 0.8
+     * @since SIS 0.8
      */
     public static final Unit<Length> CENTIMETRE;
 
@@ -143,7 +143,7 @@ public final class Units {
      *   <tr><td>Derived units:</td>   <td style="word-spacing:1em">{@link #SQUARE_METRE}, {@link #CUBIC_METRE}, {@link #METRES_PER_SECOND}.</td></tr>
      * </table>
      *
-     * @since 0.8
+     * @since SIS 0.8
      */
     public static final Unit<Length> METRE;
 
@@ -159,7 +159,7 @@ public final class Units {
      *   <tr><td>Derived units:</td>   <td style="word-spacing:1em">{@link #SQUARE_METRE}, {@link #CUBIC_METRE}, {@link #KILOMETRES_PER_HOUR}.</td></tr>
      * </table>
      *
-     * @since 0.8
+     * @since SIS 0.8
      */
     public static final Unit<Length> KILOMETRE;
 
@@ -181,7 +181,7 @@ public final class Units {
      *   <tr><td>Derived units:</td>   <td style="word-spacing:1em">{@link #SQUARE_METRE}, {@link #CUBIC_METRE}, {@link #KILOMETRES_PER_HOUR}.</td></tr>
      * </table>
      *
-     * @since 0.8
+     * @since SIS 0.8
      */
     public static final Unit<Length> NAUTICAL_MILE;
 
@@ -201,7 +201,7 @@ public final class Units {
      *   <tr><td>Derived units:</td>   <td style="word-spacing:1em">{@link #SQUARE_METRE}, {@link #CUBIC_METRE}, {@link #KILOMETRES_PER_HOUR}.</td></tr>
      * </table>
      *
-     * @since 0.8
+     * @since SIS 0.8
      */
     public static final Unit<Length> STATUTE_MILE;
 
@@ -218,7 +218,7 @@ public final class Units {
      *   <tr><td>Derived units:</td>   <td style="word-spacing:1em">{@link #SQUARE_METRE}, {@link #CUBIC_METRE}, {@link #METRES_PER_SECOND}.</td></tr>
      * </table>
      *
-     * @since 0.8
+     * @since SIS 0.8
      */
     public static final Unit<Length> US_SURVEY_FOOT;
 
@@ -234,7 +234,7 @@ public final class Units {
      *   <tr><td>Derived units:</td>   <td style="word-spacing:1em">{@link #SQUARE_METRE}, {@link #CUBIC_METRE}, {@link #METRES_PER_SECOND}.</td></tr>
      * </table>
      *
-     * @since 0.8
+     * @since SIS 0.8
      */
     public static final Unit<Length> CLARKE_FOOT;
 
@@ -250,7 +250,7 @@ public final class Units {
      *   <tr><td>Derived units:</td>   <td style="word-spacing:1em">{@link #SQUARE_METRE}, {@link #CUBIC_METRE}, {@link #METRES_PER_SECOND}.</td></tr>
      * </table>
      *
-     * @since 0.8
+     * @since SIS 0.8
      */
     public static final Unit<Length> FOOT;
 
@@ -266,7 +266,7 @@ public final class Units {
      *   <tr><td>Derived units:</td>   <td style="word-spacing:1em">{@link #SQUARE_METRE}, {@link #CUBIC_METRE}, {@link #METRES_PER_SECOND}.</td></tr>
      * </table>
      *
-     * @since 0.8
+     * @since SIS 0.8
      */
     public static final Unit<Length> INCH;
 
@@ -283,7 +283,7 @@ public final class Units {
      *   <tr><td>Derived units:</td>   <td style="word-spacing:1em">{@link #SQUARE_METRE}, {@link #CUBIC_METRE}, {@link #METRES_PER_SECOND}.</td></tr>
      * </table>
      *
-     * @since 0.8
+     * @since SIS 0.8
      */
     public static final Unit<Length> POINT;
 
@@ -297,7 +297,7 @@ public final class Units {
      *   <tr><td>Derived units:</td> <td style="word-spacing:1em">{@link #CUBIC_METRE}.</td></tr>
      * </table>
      *
-     * @since 0.8
+     * @since SIS 0.8
      */
     public static final Unit<Area> SQUARE_METRE;
 
@@ -313,7 +313,7 @@ public final class Units {
      *   <tr><td>Derived units:</td> <td style="word-spacing:1em">{@link #CUBIC_METRE}.</td></tr>
      * </table>
      *
-     * @since 0.8
+     * @since SIS 0.8
      */
     public static final Unit<Area> HECTARE;
 
@@ -321,7 +321,7 @@ public final class Units {
      * The SI derived unit for volume (m³).
      * The unlocalized name is “cubic metre”.
      *
-     * @since 0.8
+     * @since SIS 0.8
      */
     public static final Unit<Volume> CUBIC_METRE;
 
@@ -329,7 +329,7 @@ public final class Units {
      * The unit for litre volume (L, l or ℓ).
      * The unlocalized name is “litre”.
      *
-     * @since 0.8
+     * @since SIS 0.8
      */
     public static final Unit<Volume> LITRE;
 
@@ -337,7 +337,7 @@ public final class Units {
      * The SI unit for solid angles (sr).
      * The unlocalized name is “steradian”.
      *
-     * @since 0.8
+     * @since SIS 0.8
      */
     public static final Unit<SolidAngle> STERADIAN;
 
@@ -354,7 +354,7 @@ public final class Units {
      *   <tr><td>Derived units:</td>  <td style="word-spacing:1em">{@link #STERADIAN}.</td></tr>
      * </table>
      *
-     * @since 0.8
+     * @since SIS 0.8
      */
     public static final Unit<Angle> MICRORADIAN;
 
@@ -371,7 +371,7 @@ public final class Units {
      *   <tr><td>Derived units:</td>  <td style="word-spacing:1em">{@link #STERADIAN}, {@link #RADIANS_PER_SECOND}.</td></tr>
      * </table>
      *
-     * @since 0.8
+     * @since SIS 0.8
      */
     public static final Unit<Angle> RADIAN;
 
@@ -388,7 +388,7 @@ public final class Units {
      *   <tr><td>Derived units:</td>  <td style="word-spacing:1em">{@link #STERADIAN}.</td></tr>
      * </table>
      *
-     * @since 0.8
+     * @since SIS 0.8
      */
     public static final Unit<Angle> DEGREE;
 
@@ -406,7 +406,7 @@ public final class Units {
      *   <tr><td>Derived units:</td>  <td style="word-spacing:1em">{@link #STERADIAN}.</td></tr>
      * </table>
      *
-     * @since 0.8
+     * @since SIS 0.8
      */
     public static final Unit<Angle> ARC_MINUTE;
 
@@ -425,7 +425,7 @@ public final class Units {
      *   <tr><td>Derived units:</td>  <td style="word-spacing:1em">{@link #STERADIAN}.</td></tr>
      * </table>
      *
-     * @since 0.8
+     * @since SIS 0.8
      */
     public static final Unit<Angle> ARC_SECOND;
 
@@ -443,7 +443,7 @@ public final class Units {
      *   <tr><td>Derived units:</td>  <td style="word-spacing:1em">{@link #STERADIAN}.</td></tr>
      * </table>
      *
-     * @since 0.8
+     * @since SIS 0.8
      */
     public static final Unit<Angle> GRAD;
 
@@ -462,7 +462,7 @@ public final class Units {
      *
      * @see java.util.concurrent.TimeUnit#NANOSECONDS
      *
-     * @since 1.5
+     * @since SIS 1.5
      */
     public static final Unit<Time> NANOSECOND;
 
@@ -481,7 +481,7 @@ public final class Units {
      *
      * @see java.util.concurrent.TimeUnit#MILLISECONDS
      *
-     * @since 0.3
+     * @since SIS 0.3
      */
     public static final Unit<Time> MILLISECOND;
 
@@ -497,7 +497,7 @@ public final class Units {
      *   <tr><td>Derived units:</td> <td style="word-spacing:1em">{@link #METRES_PER_SECOND}, {@link #HERTZ}, {@link #BECQUEREL}.</td></tr>
      * </table>
      *
-     * @since 0.8
+     * @since SIS 0.8
      */
     public static final Unit<Time> SECOND;
 
@@ -513,7 +513,7 @@ public final class Units {
      *   <tr><td>Derived units:</td> <td style="word-spacing:1em">{@link #METRES_PER_SECOND}, {@link #HERTZ}, {@link #BECQUEREL}.</td></tr>
      * </table>
      *
-     * @since 0.8
+     * @since SIS 0.8
      */
     public static final Unit<Time> MINUTE;
 
@@ -529,7 +529,7 @@ public final class Units {
      *   <tr><td>Derived units:</td> <td style="word-spacing:1em">{@link #KILOMETRES_PER_HOUR}, {@link #HERTZ}, {@link #BECQUEREL}.</td></tr>
      * </table>
      *
-     * @since 0.8
+     * @since SIS 0.8
      */
     public static final Unit<Time> HOUR;
 
@@ -545,7 +545,7 @@ public final class Units {
      *   <tr><td>Derived units:</td> <td style="word-spacing:1em">{@link #KILOMETRES_PER_HOUR}, {@link #HERTZ}, {@link #BECQUEREL}.</td></tr>
      * </table>
      *
-     * @since 0.8
+     * @since SIS 0.8
      */
     public static final Unit<Time> DAY;
 
@@ -561,7 +561,7 @@ public final class Units {
      *   <tr><td>Derived units:</td> <td style="word-spacing:1em">{@link #KILOMETRES_PER_HOUR}, {@link #HERTZ}, {@link #BECQUEREL}.</td></tr>
      * </table>
      *
-     * @since 0.8
+     * @since SIS 0.8
      */
     public static final Unit<Time> WEEK;
 
@@ -579,7 +579,7 @@ public final class Units {
      *   <tr><td>Derived units:</td> <td style="word-spacing:1em">{@link #KILOMETRES_PER_HOUR}, {@link #HERTZ}, {@link #BECQUEREL}.</td></tr>
      * </table>
      *
-     * @since 0.8
+     * @since SIS 0.8
      */
     public static final Unit<Time> TROPICAL_YEAR;
 
@@ -593,7 +593,7 @@ public final class Units {
      *   <tr><td>Components:</td><td style="word-spacing:0.5em">{@link #SECOND}<sup>-1</sup></td></tr>
      * </table>
      *
-     * @since 0.8
+     * @since SIS 0.8
      */
     public static final Unit<Frequency> HERTZ;
 
@@ -606,7 +606,7 @@ public final class Units {
      *   <tr><td>Components:</td> <td style="word-spacing:0.5em">{@link #RADIAN} ∕ {@link #SECOND}</td></tr>
      * </table>
      *
-     * @since 0.8
+     * @since SIS 0.8
      */
     public static final Unit<AngularVelocity> RADIANS_PER_SECOND;
 
@@ -621,7 +621,7 @@ public final class Units {
      *   <tr><td>Components:</td>     <td style="word-spacing:0.5em">{@link #METRE} ∕ {@link #SECOND}</td></tr>
      * </table>
      *
-     * @since 0.8
+     * @since SIS 0.8
      */
     public static final Unit<Speed> METRES_PER_SECOND;
 
@@ -637,7 +637,7 @@ public final class Units {
      *   <tr><td>Components:</td>     <td style="word-spacing:0.5em">{@link #KILOMETRE} ∕ {@link #HOUR}</td></tr>
      * </table>
      *
-     * @since 0.8
+     * @since SIS 0.8
      */
     public static final Unit<Speed> KILOMETRES_PER_HOUR;
 
@@ -653,7 +653,7 @@ public final class Units {
      *   <tr><td>Components:</td>     <td style="word-spacing:0.5em">{@link #KILOMETRE} ∕ {@link #HOUR}</td></tr>
      * </table>
      *
-     * @since 1.5
+     * @since SIS 1.5
      */
     public static final Unit<Speed> KNOT;
 
@@ -668,7 +668,7 @@ public final class Units {
      *   <tr><td>Components:</td>            <td style="word-spacing:0.5em">{@link #METRES_PER_SECOND} ∕ {@link #SECOND}</td></tr>
      * </table>
      *
-     * @since 1.2
+     * @since SIS 1.2
      */
     public static final Unit<Acceleration> METRES_PER_SECOND_SQUARED;
 
@@ -685,7 +685,7 @@ public final class Units {
      *   <tr><td>Components:</td>            <td style="word-spacing:0.5em">{@link #CENTIMETRE} ∕ {@link #SECOND}²</td></tr>
      * </table>
      *
-     * @since 1.2
+     * @since SIS 1.2
      */
     public static final Unit<Acceleration> GAL;
 
@@ -703,7 +703,7 @@ public final class Units {
      *   <tr><td>Components:</td>        <td style="word-spacing:0.5em">{@link #NEWTON} ∕ {@link #SQUARE_METRE}</td></tr>
      * </table>
      *
-     * @since 0.8
+     * @since SIS 0.8
      */
     public static final Unit<Pressure> PASCAL;
 
@@ -721,7 +721,7 @@ public final class Units {
      *   <tr><td>Components:</td>        <td style="word-spacing:0.5em">{@link #NEWTON} ∕ {@link #SQUARE_METRE}</td></tr>
      * </table>
      *
-     * @since 0.8
+     * @since SIS 0.8
      */
     public static final Unit<Pressure> HECTOPASCAL;
 
@@ -739,7 +739,7 @@ public final class Units {
      *   <tr><td>Components:</td>        <td style="word-spacing:0.5em">{@link #NEWTON} ∕ {@link #SQUARE_METRE}</td></tr>
      * </table>
      *
-     * @since 0.8
+     * @since SIS 0.8
      */
     public static final Unit<Pressure> DECIBAR;
 
@@ -757,7 +757,7 @@ public final class Units {
      *   <tr><td>Components:</td>        <td style="word-spacing:0.5em">{@link #NEWTON} ∕ {@link #SQUARE_METRE}</td></tr>
      * </table>
      *
-     * @since 0.8
+     * @since SIS 0.8
      */
     public static final Unit<Pressure> BAR;
 
@@ -774,7 +774,7 @@ public final class Units {
      *   <tr><td>Components:</td>        <td style="word-spacing:0.5em">{@link #NEWTON} ∕ {@link #SQUARE_METRE}</td></tr>
      * </table>
      *
-     * @since 0.8
+     * @since SIS 0.8
      */
     public static final Unit<Pressure> ATMOSPHERE;
 
@@ -789,7 +789,7 @@ public final class Units {
      *   <tr><td>Derived units:</td> <td style="word-spacing:1em">{@link #PASCAL}, {@link #JOULE}, {@link #WATT}.</td></tr>
      * </table>
      *
-     * @since 0.8
+     * @since SIS 0.8
      */
     public static final Unit<Force> NEWTON;
 
@@ -803,7 +803,7 @@ public final class Units {
      *   <tr><td>Derived units:</td> <td style="word-spacing:1em">{@link #WATT}.</td></tr>
      * </table>
      *
-     * @since 0.8
+     * @since SIS 0.8
      */
     public static final Unit<Energy> JOULE;
 
@@ -818,7 +818,7 @@ public final class Units {
      *   <tr><td>Derived units:</td> <td style="word-spacing:1em">{@link #VOLT}.</td></tr>
      * </table>
      *
-     * @since 0.8
+     * @since SIS 0.8
      */
     public static final Unit<Power> WATT;
 
@@ -832,7 +832,7 @@ public final class Units {
      *   <tr><td>Derived units:</td> <td style="word-spacing:1em">{@link #FARAD}, {@link #OHM}, {@link #SIEMENS}, {@link #WEBER}.</td></tr>
      * </table>
      *
-     * @since 0.8
+     * @since SIS 0.8
      */
     public static final Unit<ElectricPotential> VOLT;
 
@@ -845,7 +845,7 @@ public final class Units {
      *   <tr><td>Derived units:</td> <td style="word-spacing:1em">{@link #COULOMB}, {@link #VOLT}, {@link #OHM}, {@link #SIEMENS}, {@link #HENRY}.</td></tr>
      * </table>
      *
-     * @since 0.8
+     * @since SIS 0.8
      */
     public static final Unit<ElectricCurrent> AMPERE;
 
@@ -860,7 +860,7 @@ public final class Units {
      *   <tr><td>Derived units:</td> <td style="word-spacing:1em">{@link #FARAD}.</td></tr>
      * </table>
      *
-     * @since 0.8
+     * @since SIS 0.8
      */
     public static final Unit<ElectricCharge> COULOMB;
 
@@ -873,7 +873,7 @@ public final class Units {
      *   <tr><td>Components:</td> <td style="word-spacing:0.5em">{@link #COULOMB} ∕ {@link #VOLT}</td></tr>
      * </table>
      *
-     * @since 0.8
+     * @since SIS 0.8
      */
     public static final Unit<ElectricCapacitance> FARAD;
 
@@ -888,7 +888,7 @@ public final class Units {
      *   <tr><td>Derived units:</td> <td style="word-spacing:1em">{@link #SIEMENS}.</td></tr>
      * </table>
      *
-     * @since 0.8
+     * @since SIS 0.8
      */
     public static final Unit<ElectricResistance> OHM;
 
@@ -903,7 +903,7 @@ public final class Units {
      *   <tr><td>Derived units:</td> <td style="word-spacing:1em">{@link #OHM}.</td></tr>
      * </table>
      *
-     * @since 0.8
+     * @since SIS 0.8
      */
     public static final Unit<ElectricConductance> SIEMENS;
 
@@ -917,7 +917,7 @@ public final class Units {
      *   <tr><td>Derived units:</td> <td style="word-spacing:1em">{@link #TESLA}, {@link #HENRY}.</td></tr>
      * </table>
      *
-     * @since 0.8
+     * @since SIS 0.8
      */
     public static final Unit<MagneticFlux> WEBER;
 
@@ -930,7 +930,7 @@ public final class Units {
      *   <tr><td>Components:</td> <td style="word-spacing:0.5em">{@link #WEBER} ∕ {@link #SQUARE_METRE}</td></tr>
      * </table>
      *
-     * @since 0.8
+     * @since SIS 0.8
      */
     public static final Unit<MagneticFluxDensity> TESLA;
 
@@ -943,7 +943,7 @@ public final class Units {
      *   <tr><td>Components:</td> <td style="word-spacing:0.5em">{@link #WEBER} ∕ {@link #AMPERE}</td></tr>
      * </table>
      *
-     * @since 0.8
+     * @since SIS 0.8
      */
     public static final Unit<ElectricInductance> HENRY;
 
@@ -957,7 +957,7 @@ public final class Units {
      *   <tr><td>Non-SI units:</td>         <td style="word-spacing:1em">{@link #CELSIUS}, {@link #FAHRENHEIT}.</td></tr>
      * </table>
      *
-     * @since 0.8
+     * @since SIS 0.8
      */
     public static final Unit<Temperature> KELVIN;
 
@@ -972,7 +972,7 @@ public final class Units {
      *   <tr><td>Non-SI units:</td>         <td style="word-spacing:1em"><u>{@code CELSIUS}</u>, {@link #FAHRENHEIT}.</td></tr>
      * </table>
      *
-     * @since 0.8
+     * @since SIS 0.8
      */
     public static final Unit<Temperature> CELSIUS;
 
@@ -987,7 +987,7 @@ public final class Units {
      *   <tr><td>Non-SI units:</td>         <td style="word-spacing:1em">{@link #CELSIUS}, <u>{@code FAHRENHEIT}</u>.</td></tr>
      * </table>
      *
-     * @since 0.8
+     * @since SIS 0.8
      */
     public static final Unit<Temperature> FAHRENHEIT;
 
@@ -1000,7 +1000,7 @@ public final class Units {
      *   <tr><td>Derived units:</td> <td style="word-spacing:1em">{@link #LUMEN}, {@link #LUX}.</td></tr>
      * </table>
      *
-     * @since 0.8
+     * @since SIS 0.8
      */
     public static final Unit<LuminousIntensity> CANDELA;
 
@@ -1014,7 +1014,7 @@ public final class Units {
      *   <tr><td>Derived units:</td> <td style="word-spacing:1em">{@link #LUX}.</td></tr>
      * </table>
      *
-     * @since 0.8
+     * @since SIS 0.8
      */
     public static final Unit<LuminousFlux> LUMEN;
 
@@ -1027,7 +1027,7 @@ public final class Units {
      *   <tr><td>Components:</td> <td style="word-spacing:0.5em">{@link #LUX} ∕ {@link #SQUARE_METRE}</td></tr>
      * </table>
      *
-     * @since 0.8
+     * @since SIS 0.8
      */
     public static final Unit<Illuminance> LUX;
 
@@ -1041,7 +1041,7 @@ public final class Units {
      *   <tr><td>Non-SI units:</td>  <td style="word-spacing:1em">{@link #TONNE}.</td></tr>
      * </table>
      *
-     * @since 0.8
+     * @since SIS 0.8
      */
     public static final Unit<Mass> GRAM;
 
@@ -1055,7 +1055,7 @@ public final class Units {
      *   <tr><td>Non-SI units:</td>  <td style="word-spacing:1em">{@link #TONNE}.</td></tr>
      * </table>
      *
-     * @since 0.8
+     * @since SIS 0.8
      */
     public static final Unit<Mass> KILOGRAM;
 
@@ -1069,7 +1069,7 @@ public final class Units {
      *   <tr><td>Non-SI units:</td>  <td style="word-spacing:1em"><u>{@code TONNE}</u>.</td></tr>
      * </table>
      *
-     * @since 1.5
+     * @since SIS 1.5
      */
     public static final Unit<Mass> TONNE;
 
@@ -1077,7 +1077,7 @@ public final class Units {
      * The SI base unit for amount of substance (mol).
      * The unlocalized name is “mole”.
      *
-     * @since 0.8
+     * @since SIS 0.8
      */
     public static final Unit<AmountOfSubstance> MOLE;
 
@@ -1091,7 +1091,7 @@ public final class Units {
      *   <tr><td>Non-SI units:</td> <td style="word-spacing:1em">{@link #CURIE}.</td></tr>
      * </table>
      *
-     * @since 1.4
+     * @since SIS 1.4
      */
     public static final Unit<Radioactivity> BECQUEREL;
 
@@ -1105,7 +1105,7 @@ public final class Units {
      *   <tr><td>SI radioactivity units:</td> <td style="word-spacing:1em"><b>{@link #BECQUEREL}</b>.</td></tr>
      * </table>
      *
-     * @since 1.4
+     * @since SIS 1.4
      */
     public static final Unit<Radioactivity> CURIE;
 
@@ -1119,7 +1119,7 @@ public final class Units {
      * {@link #PIXEL} (px)
      * among others.
      *
-     * @since 0.8
+     * @since SIS 0.8
      */
     public static final Unit<Dimensionless> UNITY;
 
@@ -1131,7 +1131,7 @@ public final class Units {
      * @see #UNITY
      * @see #PPM
      *
-     * @since 0.8
+     * @since SIS 0.8
      */
     public static final Unit<Dimensionless> PERCENT;
 
@@ -1143,14 +1143,14 @@ public final class Units {
      * @see #UNITY
      * @see #PERCENT
      *
-     * @since 0.3
+     * @since SIS 0.3
      */
     public static final Unit<Dimensionless> PPM;
 
     /**
      * Sub-division of logarithm of ratio of the measured quantity to a reference quantity (dB).
      *
-     * @since 1.0
+     * @since SIS 1.0
      */
     public static final Unit<Dimensionless> DECIBEL;
 
@@ -1158,7 +1158,7 @@ public final class Units {
      * Salinity measured using PSS-78. While this is a dimensionless measurement, the {@code "psu"} symbol
      * is sometimes added to PSS-78 measurement. However, this is officially discouraged.
      *
-     * @since 0.8
+     * @since SIS 0.8
      */
     public static final Unit<Salinity> PSU;
 
@@ -1636,7 +1636,7 @@ public final class Units {
      * @param  denominator  the denominator of the multiplication factor.
      * @return the unit multiplied by the given factor.
      *
-     * @since 0.8
+     * @since SIS 0.8
      */
     public static <Q extends Quantity<Q>> Unit<Q> multiply(Unit<Q> unit, double numerator, double denominator) {
         return unit.transform(LinearConverter.scale(numerator, denominator));
@@ -1659,7 +1659,7 @@ public final class Units {
      * @param  unit  the unit from which to convert.
      * @return an unit which is the logarithm in base 10 of the given unit.
      *
-     * @since 1.5
+     * @since SIS 1.5
      */
     public static <Q extends Quantity<Q>> Unit<Q> logarithm(final Unit<Q> unit) {
         return unit.transform(PowerOf10.INSTANCE);
@@ -1696,7 +1696,7 @@ public final class Units {
      *
      * @see org.apache.sis.referencing.operation.transform.MathTransforms#linear(double, double)
      *
-     * @since 1.0
+     * @since SIS 1.0
      */
     public static UnitConverter converter(final Number scale, final Number offset) {
         return LinearConverter.create(scale, offset);
@@ -1720,7 +1720,7 @@ public final class Units {
      * @return the polynomial equation coefficients (may be any length, including zero), or {@code null} if the given
      *         converter is {@code null} or if this method cannot get the coefficients.
      *
-     * @since 0.8
+     * @since SIS 0.8
      */
     @OptionalCandidate
     @SuppressWarnings("fallthrough")
@@ -1906,7 +1906,7 @@ public final class Units {
      *
      * @see org.apache.sis.referencing.cs.CoordinateSystems#getEpsgCode(Unit, AxisDirection...)
      *
-     * @since 0.4
+     * @since SIS 0.4
      */
     @OptionalCandidate
     public static Integer getEpsgCode(Unit<?> unit, final boolean inAxis) {

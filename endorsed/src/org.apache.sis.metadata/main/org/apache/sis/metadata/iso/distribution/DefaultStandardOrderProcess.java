@@ -51,7 +51,7 @@ import org.apache.sis.temporal.TemporalDate;
  * @author  Cédric Briançon (Geomatys)
  * @author  Cullen Rombach (Image Matters)
  * @version 1.5
- * @since   0.3
+ * @since SIS 0.3
  */
 @XmlType(name = "MD_StandardOrderProcess_Type", propOrder = {
     "fees",
@@ -201,7 +201,7 @@ public class DefaultStandardOrderProcess extends ISOMetadata implements Standard
      *
      * @return the fees monetary units, or {@code null} if none or unknown.
      *
-     * @since 0.5
+     * @since SIS 0.5
      *
      * @see #getFees()
      */
@@ -219,7 +219,7 @@ public class DefaultStandardOrderProcess extends ISOMetadata implements Standard
      *
      * @see #setFees(InternationalString)
      *
-     * @since 0.5
+     * @since SIS 0.5
      */
     public void setCurrency(final Currency newValue) {
         checkWritePermission(currency);
@@ -256,7 +256,7 @@ public class DefaultStandardOrderProcess extends ISOMetadata implements Standard
      *
      * @return date and time when the dataset will be available, or {@code null}.
      *
-     * @since 1.5
+     * @since SIS 1.5
      */
     @Override
     @XmlElement(name = "plannedAvailableDateTime")
@@ -272,7 +272,7 @@ public class DefaultStandardOrderProcess extends ISOMetadata implements Standard
      *
      * @param  newValue  the new planned available time.
      *
-     * @since 1.5
+     * @since SIS 1.5
      */
     public void setPlannedAvailableDate(final Temporal newValue) {
         checkWritePermission(plannedAvailableDateTime);
@@ -326,7 +326,7 @@ public class DefaultStandardOrderProcess extends ISOMetadata implements Standard
      *
      * @return description of the order options record, or {@code null} if none.
      *
-     * @since 1.0
+     * @since SIS 1.0
      *
      * @see org.apache.sis.util.iso.DefaultRecord#getRecordType()
      */
@@ -342,7 +342,7 @@ public class DefaultStandardOrderProcess extends ISOMetadata implements Standard
      *
      * @param  newValue  new description of the order options record.
      *
-     * @since 1.0
+     * @since SIS 1.0
      */
     public void setOrderOptionsType(final RecordType newValue) {
         checkWritePermission(orderOptionsType);
@@ -354,7 +354,7 @@ public class DefaultStandardOrderProcess extends ISOMetadata implements Standard
      *
      * @return request/purchase choices.
      *
-     * @since 0.5
+     * @since SIS 0.5
      *
      * @todo We presume that this record is filled by the vendor for describing the options chosen by the client
      *       when he ordered the resource. We presume that this is not a record to be filled by the user for new
@@ -372,7 +372,7 @@ public class DefaultStandardOrderProcess extends ISOMetadata implements Standard
      *
      * @param newValue the new request/purchase choices.
      *
-     * @since 0.5
+     * @since SIS 0.5
      */
     public void setOrderOptions(final Record newValue) {
         checkWritePermission(orderOptions);

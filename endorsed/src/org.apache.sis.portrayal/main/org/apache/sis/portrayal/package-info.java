@@ -30,6 +30,6 @@
  *
  * @author  Johann Sorel (Geomatys)
  * @version 1.7
- * @since   1.1
+ * @since SIS 1.1
  */
 package org.apache.sis.portrayal;

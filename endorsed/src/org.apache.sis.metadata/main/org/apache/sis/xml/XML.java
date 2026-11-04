@@ -88,7 +88,7 @@ import static org.apache.sis.util.ArgumentChecks.ensureNonNull;
  * @author  Martin Desruisseaux (Geomatys)
  * @author  Cullen Rombach (Image Matters)
  * @version 1.5
- * @since   0.3
+ * @since SIS 0.3
  */
 public final class XML {
     /**
@@ -225,7 +225,7 @@ public final class XML {
      * SIS can write legacy ISO 19139:2007 documents if this property is set to a value less than "2014".
      * Both versions can be read without the need to specify this property.
      *
-     * @since 1.0
+     * @since SIS 1.0
      */
     public static final String METADATA_VERSION = "org.apache.sis.xml.version.metadata";
 
@@ -246,7 +246,7 @@ public final class XML {
      * this {@code LENIENT_UNMARSHAL} property to {@code true} if the version to unmarshal is not known
      * in advance.</p>
      *
-     * @since 1.0
+     * @since SIS 1.0
      */
     public static final String LENIENT_UNMARSHAL = "org.apache.sis.xml.lenient";
 
@@ -375,7 +375,7 @@ public final class XML {
      * property is set for this key, then the {@link Filter#isLoggable(LogRecord)} method will be invoked.
      * If that method returns {@code false}, then the warning will not be logged by the (un)marshaller.</p>
      *
-     * @since 1.0
+     * @since SIS 1.0
      */
     public static final String WARNING_FILTER = "org.apache.sis.xml.warningFilter";
 
@@ -515,7 +515,7 @@ public final class XML {
      * @param  properties  an optional map of properties to give to the marshaller, or {@code null} if none.
      * @throws JAXBException if a property has an illegal value, or if an error occurred during the marshalling.
      *
-     * @since 0.4
+     * @since SIS 0.4
      */
     public static void marshal(final Object object, final Result output, final Map<String,?> properties) throws JAXBException {
         ensureNonNull("object", object);
@@ -645,7 +645,7 @@ public final class XML {
      * @return the object unmarshalled from the given input.
      * @throws JAXBException if a property has an illegal value, or if an error occurred during the unmarshalling.
      *
-     * @since 0.4
+     * @since SIS 0.4
      */
     public static Object unmarshal(final Source input, final Map<String,?> properties) throws JAXBException {
         ensureNonNull("input", input);
@@ -689,7 +689,7 @@ public final class XML {
      * @return the object unmarshalled from the given input, wrapped in a JAXB element.
      * @throws JAXBException if a property has an illegal value, or if an error occurred during the unmarshalling.
      *
-     * @since 0.8
+     * @since SIS 0.8
      */
     public static <T> JAXBElement<T> unmarshal(final Source input, final Class<T> declaredType, final Map<String,?> properties)
             throws JAXBException

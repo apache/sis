@@ -112,7 +112,7 @@ import org.apache.sis.metadata.internal.shared.Identifiers;
  *
  * @see org.apache.sis.referencing.factory.GeodeticAuthorityFactory#createCompoundCRS(String)
  *
- * @since 0.4
+ * @since SIS 0.4
  */
 @XmlType(name = "CompoundCRSType")
 @XmlRootElement(name = "CompoundCRS")
@@ -298,7 +298,7 @@ public class DefaultCompoundCRS extends AbstractCRS implements CompoundCRS {
      * This is the base type required by {@code equals(…)} methods for returning a potentially {@code true} value.
      *
      * @return {@code CompoundCRS.class} or a user-defined sub-interface.
-     * @since 1.7
+     * @since SIS 1.7
      */
     @Override
     public Type getStandardType() {

@@ -32,7 +32,7 @@ import java.util.Locale;
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @version 0.3
- * @since   0.3
+ * @since SIS 0.3
  */
 public interface Localized {
     /**

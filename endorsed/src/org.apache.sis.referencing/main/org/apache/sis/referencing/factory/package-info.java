@@ -57,6 +57,6 @@
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @version 1.6
- * @since   0.6
+ * @since SIS 0.6
  */
 package org.apache.sis.referencing.factory;

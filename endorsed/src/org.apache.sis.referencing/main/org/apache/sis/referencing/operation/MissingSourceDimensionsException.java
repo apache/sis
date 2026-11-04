@@ -34,7 +34,7 @@ import org.apache.sis.util.collection.CodeListSet;
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.6
- * @since   1.6
+ * @since SIS 1.6
  */
 public class MissingSourceDimensionsException extends OperationNotFoundException {
     /**

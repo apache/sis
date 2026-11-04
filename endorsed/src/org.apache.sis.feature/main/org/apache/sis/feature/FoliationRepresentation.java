@@ -42,7 +42,7 @@ package org.apache.sis.feature;
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.0
- * @since   1.0
+ * @since SIS 1.0
  */
 public enum FoliationRepresentation {
     /**

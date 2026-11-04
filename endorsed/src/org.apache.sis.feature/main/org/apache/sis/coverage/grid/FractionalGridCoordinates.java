@@ -49,7 +49,7 @@ import org.opengis.coverage.grid.GridCoordinates;
  *
  * @see GridCoverage.Evaluator#toGridCoordinates(DirectPosition)
  *
- * @since 1.1
+ * @since SIS 1.1
  */
 public class FractionalGridCoordinates implements GridCoordinates, Serializable {
     /**

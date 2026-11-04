@@ -139,7 +139,7 @@ import org.apache.sis.util.resources.Errors;
  * @see DefaultMemberName
  * @see DefaultNameFactory
  *
- * @since 0.3
+ * @since SIS 0.3
  */
 @XmlType(name = "TypeName_Type")
 @XmlRootElement(name = "TypeName")
@@ -226,7 +226,7 @@ public class DefaultTypeName extends DefaultLocalName implements TypeName {
      *
      * @see DefaultNameFactory#createTypeName(NameSpace, CharSequence, Type)
      *
-     * @since 1.3
+     * @since SIS 1.3
      */
     protected DefaultTypeName(final NameSpace scope, final CharSequence name, final Type javaType) {
         super(scope, name);
@@ -249,7 +249,7 @@ public class DefaultTypeName extends DefaultLocalName implements TypeName {
      * @return a SIS implementation containing the values of the given object (may be the
      *         given object itself), or {@code null} if the argument was null.
      *
-     * @since 0.5
+     * @since SIS 0.5
      */
     public static DefaultTypeName castOrCopy(final TypeName object) {
         if (object == null || object instanceof DefaultTypeName) {
@@ -266,7 +266,7 @@ public class DefaultTypeName extends DefaultLocalName implements TypeName {
      *
      * @see Names#toClass(TypeName)
      *
-     * @since 1.3
+     * @since SIS 1.3
      */
     @Override
     public Optional<Type> toJavaType() {

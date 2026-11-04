@@ -48,7 +48,7 @@ import org.apache.sis.util.collection.Containers;
  *
  * @see org.apache.sis.util.iso.Types#toInternationalString(Map, String)
  *
- * @since 1.1
+ * @since SIS 1.1
  */
 public class DefaultInternationalString extends AbstractInternationalString implements Serializable {
     /**
@@ -94,7 +94,7 @@ public class DefaultInternationalString extends AbstractInternationalString impl
      * @param  locale  the locale for the {@code string} value.
      * @param  string  the localized string.
      *
-     * @since 1.5
+     * @since SIS 1.5
      */
     public DefaultInternationalString(final Locale locale, String string) {
         ArgumentChecks.ensureNonNull("locale", locale);

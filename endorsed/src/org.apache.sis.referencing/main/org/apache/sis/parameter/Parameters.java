@@ -108,7 +108,7 @@ import org.apache.sis.util.resources.Errors;
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.7
- * @since   0.4
+ * @since SIS 0.4
  */
 @XmlTransient
 public abstract class Parameters implements ParameterValueGroup, Cloneable, Printable {
@@ -124,7 +124,7 @@ public abstract class Parameters implements ParameterValueGroup, Cloneable, Prin
      * @param  parameters  the parameter group to test. Can be {@code null}.
      * @return whether the given parameters are non-null and unmodifiable.
      *
-     * @since 1.3
+     * @since SIS 1.3
      */
     public static boolean isUnmodifiable(final ParameterValueGroup parameters) {
         return (parameters instanceof UnmodifiableParameterValueGroup);
@@ -142,7 +142,7 @@ public abstract class Parameters implements ParameterValueGroup, Cloneable, Prin
      *
      * @see DefaultParameterValue#unmodifiable(ParameterValue)
      *
-     * @since 0.7
+     * @since SIS 0.7
      */
     public static Parameters unmodifiable(final ParameterValueGroup parameters) {
         return UnmodifiableParameterValueGroup.create(parameters);
@@ -168,7 +168,7 @@ public abstract class Parameters implements ParameterValueGroup, Cloneable, Prin
      * @return an unmodifiable group with the parameters of the given group to keep visible,
      *         or {@code null} if the {@code parameters} argument was null.
      *
-     * @since 1.3
+     * @since SIS 1.3
      */
     public static Parameters unmodifiable(final ParameterValueGroup parameters,
             final Predicate<? super GeneralParameterDescriptor> filter)
@@ -290,7 +290,7 @@ public abstract class Parameters implements ParameterValueGroup, Cloneable, Prin
      * @param  parameters  the parameter values from which to get the descriptors, or {@code null}.
      * @return the descriptors of the given parameter values, or {@code null} if the {@code parameters} argument was null.
      *
-     * @since 0.6
+     * @since SIS 0.6
      */
     public static GeneralParameterDescriptor[] getDescriptors(final GeneralParameterValue... parameters) {
         if (parameters == null) {
@@ -330,7 +330,7 @@ public abstract class Parameters implements ParameterValueGroup, Cloneable, Prin
      *
      * @see org.apache.sis.util.iso.Names#createMemberName(CharSequence, String, CharSequence, Class)
      *
-     * @since 0.5
+     * @since SIS 0.5
      */
     public static MemberName getMemberName(final ParameterDescriptor<?> parameter) {
         return ServiceParameter.getMemberName(parameter);
@@ -531,7 +531,7 @@ public abstract class Parameters implements ParameterValueGroup, Cloneable, Prin
      * @see org.apache.sis.xml.MarshalContext#getDocumentURI()
      * @see URI#resolve(URI)
      *
-     * @since 1.5
+     * @since SIS 1.5
      */
     public Optional<URI> getSourceFile(final ParameterDescriptor<?> parameter) throws ParameterNotFoundException {
         final ParameterValue<?> p = getParameter(parameter);
@@ -579,7 +579,7 @@ public abstract class Parameters implements ParameterValueGroup, Cloneable, Prin
      * @see DefaultParameterValueGroup#parameter(String)
      * @see DefaultParameterValue#getValue()
      *
-     * @since 0.6
+     * @since SIS 0.6
      */
     public <T> T getValue(final ParameterDescriptor<T> parameter) throws ParameterNotFoundException {
         final ParameterValue<?> p = getParameter(parameter);
@@ -616,7 +616,7 @@ public abstract class Parameters implements ParameterValueGroup, Cloneable, Prin
      * @see #getValue(ParameterDescriptor)
      * @see #getOrCreate(ParameterDescriptor)
      *
-     * @since 0.7
+     * @since SIS 0.7
      */
     public <T> T getMandatoryValue(final ParameterDescriptor<T> parameter) throws ParameterNotFoundException {
         final ParameterValue<?> p = getParameter(parameter);
@@ -673,7 +673,7 @@ public abstract class Parameters implements ParameterValueGroup, Cloneable, Prin
      *
      * @see DefaultParameterValue#booleanValue()
      *
-     * @since 0.6
+     * @since SIS 0.6
      */
     public boolean booleanValue(final ParameterDescriptor<Boolean> parameter) throws ParameterNotFoundException {
         final ParameterValue<?> value = getParameter(parameter);
@@ -693,7 +693,7 @@ public abstract class Parameters implements ParameterValueGroup, Cloneable, Prin
      *
      * @see DefaultParameterValue#intValue()
      *
-     * @since 0.6
+     * @since SIS 0.6
      */
     public int intValue(final ParameterDescriptor<? extends Number> parameter) throws ParameterNotFoundException {
         final ParameterValue<?> value = getParameter(parameter);
@@ -713,7 +713,7 @@ public abstract class Parameters implements ParameterValueGroup, Cloneable, Prin
      *
      * @see DefaultParameterValue#intValueList()
      *
-     * @since 0.6
+     * @since SIS 0.6
      */
     public int[] intValueList(final ParameterDescriptor<int[]> parameter) throws ParameterNotFoundException {
         final ParameterValue<?> value = getParameter(parameter);
@@ -736,7 +736,7 @@ public abstract class Parameters implements ParameterValueGroup, Cloneable, Prin
      *
      * @see DefaultParameterValue#doubleValue(Unit)
      *
-     * @since 0.6
+     * @since SIS 0.6
      */
     public double doubleValue(final ParameterDescriptor<? extends Number> parameter) throws ParameterNotFoundException {
         final ParameterValue<?> value = getParameter(parameter);
@@ -763,7 +763,7 @@ public abstract class Parameters implements ParameterValueGroup, Cloneable, Prin
      *
      * @see DefaultParameterValue#doubleValue(Unit)
      *
-     * @since 1.3
+     * @since SIS 1.3
      */
     public double doubleValue(final ParameterDescriptor<? extends Number> parameter, final Unit<?> unit) throws ParameterNotFoundException {
         ArgumentChecks.ensureNonNull("unit", unit);
@@ -798,7 +798,7 @@ public abstract class Parameters implements ParameterValueGroup, Cloneable, Prin
      *
      * @see DefaultParameterValue#doubleValueList(Unit)
      *
-     * @since 0.6
+     * @since SIS 0.6
      */
     public double[] doubleValueList(final ParameterDescriptor<double[]> parameter) throws ParameterNotFoundException {
         final ParameterValue<?> value = getParameter(parameter);
@@ -823,7 +823,7 @@ public abstract class Parameters implements ParameterValueGroup, Cloneable, Prin
      *
      * @see DefaultParameterValue#stringValue()
      *
-     * @since 0.6
+     * @since SIS 0.6
      */
     public String stringValue(final ParameterDescriptor<? extends CharSequence> parameter) throws ParameterNotFoundException {
         final ParameterValue<?> value = getParameter(parameter);
@@ -853,7 +853,7 @@ public abstract class Parameters implements ParameterValueGroup, Cloneable, Prin
      * @see #getMandatoryValue(ParameterDescriptor)
      * @see DefaultParameterValueGroup#parameter(String)
      *
-     * @since 0.6
+     * @since SIS 0.6
      */
     public <T> ParameterValue<T> getOrCreate(final ParameterDescriptor<T> parameter) throws ParameterNotFoundException {
         return cast(parameter(getName(parameter)), parameter.getValueClass());
@@ -865,7 +865,7 @@ public abstract class Parameters implements ParameterValueGroup, Cloneable, Prin
      * {@link org.apache.sis.util.LenientComparable} interface.
      *
      * @return {@code ParameterValueGroup.class} or a user-defined sub-interface.
-     * @since 1.7
+     * @since SIS 1.7
      */
     public Type getStandardType() {
         return ParameterValueGroup.class;
@@ -906,7 +906,7 @@ public abstract class Parameters implements ParameterValueGroup, Cloneable, Prin
      *
      * @see #clone()
      *
-     * @since 0.5
+     * @since SIS 0.5
      */
     public static void copy(final ParameterValueGroup values, final ParameterValueGroup destination)
             throws InvalidParameterNameException, InvalidParameterValueException
@@ -1004,7 +1004,7 @@ public abstract class Parameters implements ParameterValueGroup, Cloneable, Prin
      * <p>This method is for information purpose only and may change in future SIS version.</p>
      *
      * @return a string representation of this group.
-     * @since 0.7
+     * @since SIS 0.7
      */
     @Override
     public String toString() {
@@ -1019,7 +1019,7 @@ public abstract class Parameters implements ParameterValueGroup, Cloneable, Prin
      *
      * <p>This is a convenience method for debugging purpose and for console applications.</p>
      *
-     * @since 0.7
+     * @since SIS 0.7
      */
     @Debug
     @Override

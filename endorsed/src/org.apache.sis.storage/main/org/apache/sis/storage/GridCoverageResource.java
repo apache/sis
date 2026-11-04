@@ -43,7 +43,7 @@ import org.apache.sis.util.ArraysExt;
  * @author  Martin Desruisseaux (Geomatys)
  * @author  Johann Sorel (Geomatys)
  * @version 1.8
- * @since   1.0
+ * @since SIS 1.0
  */
 public interface GridCoverageResource extends DataSet {
     /**
@@ -154,7 +154,7 @@ public interface GridCoverageResource extends DataSet {
      * @see AbstractGridCoverageResource#convertResolutionOf(GridGeometry)
      * @see org.apache.sis.storage.tiling.TileMatrixSet#getTileMatrices()
      *
-     * @since 1.7
+     * @since SIS 1.7
      */
     default List<double[]> getAvailableResolutions() throws DataStoreException {
         final GridGeometry gg = getGridGeometry();
@@ -194,7 +194,7 @@ public interface GridCoverageResource extends DataSet {
      * @see FeatureSet#subset(Query)
      * @see CoverageQuery#execute(GridCoverageResource)
      *
-     * @since 1.1
+     * @since SIS 1.1
      */
     default GridCoverageResource subset(final Query query) throws UnsupportedQueryException, DataStoreException {
         if (Objects.requireNonNull(query) instanceof CoverageQuery) try {
@@ -241,7 +241,7 @@ public interface GridCoverageResource extends DataSet {
      * @return current raster data loading strategy for this resource.
      * @throws DataStoreException if an error occurred while fetching data store configuration.
      *
-     * @since 1.1
+     * @since SIS 1.1
      */
     default RasterLoadingStrategy getLoadingStrategy() throws DataStoreException {
         return RasterLoadingStrategy.AT_READ_TIME;
@@ -257,7 +257,7 @@ public interface GridCoverageResource extends DataSet {
      *         if this implementation replaced the given strategy by an alternative.
      * @throws DataStoreException if an error occurred while setting data store configuration.
      *
-     * @since 1.1
+     * @since SIS 1.1
      */
     default boolean setLoadingStrategy(final RasterLoadingStrategy strategy) throws DataStoreException {
         return Objects.requireNonNull(strategy) == getLoadingStrategy();

@@ -66,7 +66,7 @@ import org.opengis.feature.AttributeType;
  * @see DefaultRecordType
  * @see DefaultRecord
  *
- * @since 0.5
+ * @since SIS 0.5
  */
 @SuppressWarnings("deprecation")
 public final class DefaultRecordSchema implements RecordSchema, Serializable {
@@ -124,7 +124,7 @@ public final class DefaultRecordSchema implements RecordSchema, Serializable {
      *
      * @param schemaName  the name of the new schema.
      *
-     * @since 1.6
+     * @since SIS 1.6
      */
     public DefaultRecordSchema(final CharSequence schemaName) {
         final DefaultNameFactory nameFactory = DefaultNameFactory.provider();
@@ -149,7 +149,7 @@ public final class DefaultRecordSchema implements RecordSchema, Serializable {
      * @param  typeName  name of the record type to create.
      * @return name of a record type.
      *
-     * @since 1.3
+     * @since SIS 1.3
      */
     public TypeName createRecordTypeName(final CharSequence typeName) {
         final DefaultNameFactory nameFactory = DefaultNameFactory.provider();

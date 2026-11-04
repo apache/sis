@@ -56,7 +56,7 @@ import org.opengis.referencing.cs.CoordinateDataType;
  * @see org.apache.sis.referencing.datum.DefaultTemporalDatum
  * @see org.apache.sis.referencing.factory.GeodeticAuthorityFactory#createTimeCS(String)
  *
- * @since 0.4
+ * @since SIS 0.4
  */
 @XmlType(name = "TimeCSType")
 @XmlRootElement(name = "TimeCS")
@@ -171,7 +171,7 @@ public class DefaultTimeCS extends AbstractCS implements TimeCS {
      * This is the base type required by {@code equals(…)} methods for returning a potentially {@code true} value.
      *
      * @return {@code TimeCS.class} or a user-defined sub-interface.
-     * @since 1.7
+     * @since SIS 1.7
      */
     @Override
     public Class<? extends TimeCS> getStandardType() {
@@ -183,7 +183,7 @@ public class DefaultTimeCS extends AbstractCS implements TimeCS {
      *
      * @return the type of coordinate values.
      *
-     * @since 1.5
+     * @since SIS 1.5
      */
     @Override
     public CoordinateDataType getCoordinateType() {

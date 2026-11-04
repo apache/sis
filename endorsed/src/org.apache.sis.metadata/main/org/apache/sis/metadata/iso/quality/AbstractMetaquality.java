@@ -47,7 +47,7 @@ import org.opengis.metadata.quality.Homogeneity;
  * @author  Alexis Gaillard (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.4
- * @since   1.3
+ * @since SIS 1.3
  */
 @XmlType(name = "AbstractDQ_Metaquality_Type")
 @XmlRootElement(name = "AbstractDQ_Metaquality")

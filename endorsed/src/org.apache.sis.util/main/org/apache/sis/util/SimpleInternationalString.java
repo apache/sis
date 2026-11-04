@@ -41,7 +41,7 @@ import java.util.Objects;
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @version 1.1
- * @since   1.1
+ * @since SIS 1.1
  */
 public class SimpleInternationalString extends AbstractInternationalString implements Serializable {
     /**

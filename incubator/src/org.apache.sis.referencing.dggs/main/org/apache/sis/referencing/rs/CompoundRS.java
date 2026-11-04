@@ -115,7 +115,7 @@ public final class CompoundRS implements ReferenceSystem {
      *
      * @return the ordered list of components of this compound <abbr>CRS</abbr>, none of which itself compound.
      *
-     * @since 3.1
+     * @since SIS 3.1
      */
     public List<ReferenceSystem> getSingleComponents() {
         var singles = new ArrayList<ReferenceSystem>(5);

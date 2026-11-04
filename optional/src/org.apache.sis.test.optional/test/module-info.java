@@ -20,7 +20,7 @@
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.4
- * @since   1.4
+ * @since SIS 1.4
  */
 module org.apache.sis.test.optional {
     requires transitive org.junit.jupiter.api;

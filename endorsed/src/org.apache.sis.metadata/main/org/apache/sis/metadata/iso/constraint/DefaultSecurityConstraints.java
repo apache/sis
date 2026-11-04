@@ -45,7 +45,7 @@ import org.apache.sis.metadata.TitleProperty;
  * @author  Touraïvane (IRD)
  * @author  Cédric Briançon (Geomatys)
  * @version 1.7
- * @since   0.3
+ * @since SIS 0.3
  */
 @TitleProperty(name = "classification")
 @XmlType(name = "MD_SecurityConstraints_Type", propOrder = {

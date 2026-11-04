@@ -54,7 +54,7 @@ import org.apache.sis.xml.bind.gco.GO_Integer;
  *
  * @see DefaultGCP
  *
- * @since 0.3
+ * @since SIS 0.3
  */
 @TitleProperty(name = "collectionName")
 @XmlType(name = "MI_GCPCollection_Type", propOrder = {

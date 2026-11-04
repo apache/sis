@@ -50,7 +50,7 @@ import org.opengis.filter.QueryExpression;
  * @see FeatureSet#subset(Query)
  * @see GridCoverageResource#subset(Query)
  *
- * @since 0.8
+ * @since SIS 0.8
  */
 public abstract class Query implements QueryExpression {
     /**
@@ -70,7 +70,7 @@ public abstract class Query implements QueryExpression {
      *
      * @param  domain  the approximate area of interest, or {@code null} if none.
      *
-     * @since 1.1
+     * @since SIS 1.1
      */
     public abstract void setSelection(Envelope domain);
 
@@ -86,7 +86,7 @@ public abstract class Query implements QueryExpression {
      * @param  properties  properties to retrieve, or {@code null} to retrieve all properties.
      * @throws IllegalArgumentException if a property is duplicated.
      *
-     * @since 1.1
+     * @since SIS 1.1
      */
     public abstract void setProjection(String... properties);
 }

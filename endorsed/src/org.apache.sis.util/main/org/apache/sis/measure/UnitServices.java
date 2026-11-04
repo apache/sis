@@ -47,7 +47,7 @@ import org.apache.sis.util.logging.Logging;
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.6
- * @since   0.8
+ * @since SIS 0.8
  */
 public class UnitServices extends ServiceProvider implements SystemOfUnitsService, FormatService {
     /**
@@ -198,7 +198,7 @@ public class UnitServices extends ServiceProvider implements SystemOfUnitsServic
      * @param  name     the name of the desired format.
      * @param  variant  indicates a variation of a unit format.
      * @return the corresponding unit format, or {@code null} if none.
-     * @since  1.4
+     * @since SIS 1.4
      */
     @Override
     public UnitFormat getUnitFormat(final String name, final String variant) {
@@ -209,7 +209,7 @@ public class UnitServices extends ServiceProvider implements SystemOfUnitsServic
      * Returns a quantity format for the default locale.
      *
      * @return a {@link org.apache.sis.measure.QuantityFormat} instance for quantities.
-     * @since  1.4
+     * @since SIS 1.4
      */
     @Override
     public QuantityFormat getQuantityFormat() {
@@ -222,7 +222,7 @@ public class UnitServices extends ServiceProvider implements SystemOfUnitsServic
      *
      * @param  name  the name of the format.
      * @return the corresponding quantity format, or {@code null} if none.
-     * @since  1.4
+     * @since SIS 1.4
      */
     @Override
     public QuantityFormat getQuantityFormat(final String name) {

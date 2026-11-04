@@ -75,7 +75,7 @@ import org.apache.sis.gui.map.MapWindows;
  * @author  Johann Sorel (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.7
- * @since   1.1
+ * @since SIS 1.1
  */
 public class ResourceTree extends TreeView<Resource> {
     /**
@@ -101,7 +101,7 @@ public class ResourceTree extends TreeView<Resource> {
      * @see #removeAndClose(Resource)
      * @see ResourceEvent#CLOSED
      *
-     * @since 1.2
+     * @since SIS 1.2
      */
     public final ObjectProperty<EventHandler<ResourceEvent>> onResourceClosed;
 
@@ -123,7 +123,7 @@ public class ResourceTree extends TreeView<Resource> {
      * The manager of windows where to show the resources, or {@code null} if none.
      * If non-null, the contextual menu will contain a "Show in mosaic" item.
      *
-     * @since 1.7
+     * @since SIS 1.7
      */
     protected final MapWindows windows;
 
@@ -143,7 +143,7 @@ public class ResourceTree extends TreeView<Resource> {
      * If {@code windows} is non-null, the contextual menu will contain a "Show in mosaic" menu item.
      *
      * @param windows  manager of windows for map canvases, or {@code null} if none.
-     * @since 1.7
+     * @since SIS 1.7
      */
     @SuppressWarnings("this-escape")    // `this` appears in a cyclic graph.
     public ResourceTree(final MapWindows windows) {

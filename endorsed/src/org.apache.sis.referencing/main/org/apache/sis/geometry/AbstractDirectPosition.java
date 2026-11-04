@@ -59,7 +59,7 @@ import static org.apache.sis.util.ArgumentChecks.ensureDimensionMatches;
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @version 1.6
- * @since   0.3
+ * @since SIS 0.3
  */
 public abstract class AbstractDirectPosition extends FormattableObject implements DirectPosition {
     /**
@@ -77,7 +77,7 @@ public abstract class AbstractDirectPosition extends FormattableObject implement
      * @param  position  the position to cast or copy, or {@code null}.
      * @return the values of the given position as an {@code AbstractDirectPosition} instance.
      *
-     * @since 1.0
+     * @since SIS 1.0
      */
     public static AbstractDirectPosition castOrCopy(final DirectPosition position) {
         if (position == null || position instanceof AbstractDirectPosition) {
@@ -98,7 +98,7 @@ public abstract class AbstractDirectPosition extends FormattableObject implement
      *         than the {@linkplain #getDimension() position dimension}.
      * @throws UnsupportedOperationException if this direct position is immutable.
      *
-     * @since 1.5
+     * @since SIS 1.5
      */
     @Override
     public void setCoordinate(int dimension, double value) {
@@ -217,7 +217,7 @@ public abstract class AbstractDirectPosition extends FormattableObject implement
      * @param  formatter  the formatter where to format the inner content of this point.
      * @return the <abbr>WKT</abbr> keyword, which is {@code "Point"} for this element.
      *
-     * @since 1.0
+     * @since SIS 1.0
      */
     @Override
     protected String formatTo(final Formatter formatter) {

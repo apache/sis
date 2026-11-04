@@ -40,7 +40,7 @@ import org.apache.sis.util.collection.Containers;
  *
  * @see TileMatrix#getTiles(GridExtent, boolean)
  *
- * @since 1.2
+ * @since SIS 1.2
  */
 public interface Tile {
     /**
@@ -78,7 +78,7 @@ public interface Tile {
      *
      * @see Resource#getMetadata()
      *
-     * @since 1.5
+     * @since SIS 1.5
      */
     default Optional<Metadata> getMetadata() {
         return Optional.empty();
@@ -122,7 +122,7 @@ public interface Tile {
      * @return path to the tile content, or empty if none.
      * @throws DataStoreException if an error occurred while returning the content.
      *
-     * @since 1.5
+     * @since SIS 1.5
      */
     default Optional<Path> getContentPath() throws DataStoreException {
         return getResource().getFileSet().map((fs) -> Containers.peekFirst(fs.getPaths()));

@@ -59,7 +59,7 @@ import org.apache.sis.referencing.operation.transform.MathTransforms;
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.7
- * @since   1.3
+ * @since SIS 1.3
  */
 public class CanvasFollower implements PropertyChangeListener, Disposable {
     /**

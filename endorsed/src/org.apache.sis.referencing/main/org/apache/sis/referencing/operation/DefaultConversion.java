@@ -72,7 +72,7 @@ import org.opengis.referencing.crs.DerivedCRS;
  *
  * @see DefaultTransformation
  *
- * @since 0.6
+ * @since SIS 0.6
  */
 @XmlType(name = "ConversionType")
 @XmlRootElement(name = "Conversion")
@@ -292,7 +292,7 @@ public class DefaultConversion extends AbstractSingleOperation implements Conver
      * This is the base type required by {@code equals(…)} methods for returning a potentially {@code true} value.
      *
      * @return {@code Conversion.class} or a user-defined sub-interface.
-     * @since 1.7
+     * @since SIS 1.7
      */
     @Override
     public Type getStandardType() {
@@ -328,7 +328,7 @@ public class DefaultConversion extends AbstractSingleOperation implements Conver
      *         parameter values}, or a {@linkplain CoordinateSystems#swapAndScaleAxes change of axis order or units}
      *         failed.
      *
-     * @since 1.5
+     * @since SIS 1.5
      */
     public Conversion specialize(final CoordinateReferenceSystem sourceCRS,
                                  final CoordinateReferenceSystem targetCRS,

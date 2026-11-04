@@ -45,7 +45,7 @@ import org.opengis.feature.AttributeType;
  *
  * @see AttributeTypeBuilder#addCharacteristic(Class)
  *
- * @since 0.8
+ * @since SIS 0.8
  */
 public final class CharacteristicTypeBuilder<V> extends TypeBuilder {
     /**

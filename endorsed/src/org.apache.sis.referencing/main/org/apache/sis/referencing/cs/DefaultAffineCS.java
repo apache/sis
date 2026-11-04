@@ -49,7 +49,7 @@ import org.apache.sis.measure.Units;
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @version 1.7
- * @since   0.4
+ * @since SIS 0.4
  */
 @XmlType(name = "AffineCSType")
 @XmlRootElement(name = "AffineCS")
@@ -195,7 +195,7 @@ public class DefaultAffineCS extends AbstractCS implements AffineCS {
      * Subclasses implementing a more specific GeoAPI interface shall override this method.
      *
      * @return the affine coordinate system interface implemented by this class.
-     * @since 1.7
+     * @since SIS 1.7
      */
     @Override
     public Class<? extends AffineCS> getStandardType() {

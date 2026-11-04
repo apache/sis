@@ -51,7 +51,7 @@ import org.apache.sis.util.ArgumentChecks;
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @author  Johann Sorel (Geomatys)
  * @version 1.3
- * @since   0.8
+ * @since SIS 0.8
  */
 public final class Shapes2D {
     /**
@@ -156,7 +156,7 @@ public final class Shapes2D {
      * @param  xdim      dimension of <var>x</var> coordinates in the envelope. This is usually 0.
      * @param  ydim      dimension of <var>y</var> coordinates in the envelope. This is usually 1.
      *
-     * @since 1.3
+     * @since SIS 1.3
      */
     public static void intersect(final RectangularShape shape, final Envelope envelope, final int xdim, final int ydim) {
         final double xmin = Math.max(shape.getMinX(), envelope.getMinimum(xdim));

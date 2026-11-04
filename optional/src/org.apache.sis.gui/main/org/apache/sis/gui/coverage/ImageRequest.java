@@ -36,7 +36,7 @@ import org.apache.sis.storage.DataStoreException;
  * @see GridView#setImage(ImageRequest)
  * @see CoverageExplorer#setCoverage(ImageRequest)
  *
- * @since 1.1
+ * @since SIS 1.1
  */
 public class ImageRequest {
     /**

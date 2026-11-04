@@ -49,7 +49,7 @@ import org.apache.sis.util.resources.Errors;
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.7
- * @since   0.8
+ * @since SIS 0.8
  *
  * @see <a href="https://epsg.org/">https://epsg.org/</a>
  */

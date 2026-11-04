@@ -25,7 +25,7 @@ import org.apache.sis.xml.bind.fra.*;
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @version 0.4
- * @since   0.4
+ * @since SIS 0.4
  */
 public final class FrenchProfile {
     /**

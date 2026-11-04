@@ -82,7 +82,7 @@ import static org.apache.sis.util.collection.WeakEntry.*;
  * @see WeakHashSet
  * @see Cache
  *
- * @since 0.3
+ * @since SIS 0.3
  */
 public class WeakValueHashMap<K,V> extends AbstractMap<K,V> {
     /**
@@ -242,7 +242,7 @@ public class WeakValueHashMap<K,V> extends AbstractMap<K,V> {
      * @param  identity  {@code true} if the map shall use reference-equality in place of object-equality
      *                   when comparing keys, or {@code false} for the standard behavior.
      *
-     * @since 0.4
+     * @since SIS 0.4
      */
     @SuppressWarnings({"rawtypes", "unchecked"})    // Generic array creation.
     public WeakValueHashMap(final Class<K> keyType, final boolean identity) {
@@ -294,7 +294,7 @@ public class WeakValueHashMap<K,V> extends AbstractMap<K,V> {
      * @param hashFunction  the function to invoke for computing hash codes.
      * @param comparator    the function to invoke for comparing two objects.
      *
-     * @since 1.4
+     * @since SIS 1.4
      */
     @SuppressWarnings({"rawtypes", "unchecked"})    // Generic array creation.
     public WeakValueHashMap(final Class<K> keyType,
@@ -397,7 +397,7 @@ public class WeakValueHashMap<K,V> extends AbstractMap<K,V> {
      * @param  key  key to look for in this map.
      * @return the key instance in this map which is equal to the specified key, or {@code key} if none.
      *
-     * @since 1.4
+     * @since SIS 1.4
      */
     @SuppressWarnings("unchecked")
     public K intern(final K key) {
@@ -450,7 +450,7 @@ public class WeakValueHashMap<K,V> extends AbstractMap<K,V> {
      * @param  defaultValue  the default mapping of the key.
      * @return the value to which this map maps the specified key.
      *
-     * @since 1.4
+     * @since SIS 1.4
      */
     @Override
     public V getOrDefault(final Object key, final V defaultValue) {
@@ -560,7 +560,7 @@ public class WeakValueHashMap<K,V> extends AbstractMap<K,V> {
      * @return the current value associated with specified key, or {@code null} if there was no mapping for the key.
      * @throws NullPointerException if the key or the value is {@code null}.
      *
-     * @since 0.7
+     * @since SIS 0.7
      */
     @Override
     public V putIfAbsent(final K key, final V value) {
@@ -578,7 +578,7 @@ public class WeakValueHashMap<K,V> extends AbstractMap<K,V> {
      * @param  key      key of the value to get.
      * @param  creator  function to invoke for creating the value if it does not already exist.
      * @return value (potentially newly created) for the given key.
-     * @since 1.5
+     * @since SIS 1.5
      */
     @Override
     public V computeIfAbsent(final K key, final Function<? super K, ? extends V> creator) {
@@ -603,7 +603,7 @@ public class WeakValueHashMap<K,V> extends AbstractMap<K,V> {
      * @return the previous value associated with specified key, or {@code null} if there was no mapping for the key.
      * @throws NullPointerException if the value is {@code null}.
      *
-     * @since 1.2
+     * @since SIS 1.2
      */
     @Override
     public V replace(final K key, final V value) {
@@ -623,7 +623,7 @@ public class WeakValueHashMap<K,V> extends AbstractMap<K,V> {
      * @return {@code true} if the value was replaced.
      * @throws NullPointerException if the new value is {@code null}.
      *
-     * @since 1.2
+     * @since SIS 1.2
      */
     @Override
     public boolean replace(final K key, final V oldValue, final V newValue) {
@@ -652,7 +652,7 @@ public class WeakValueHashMap<K,V> extends AbstractMap<K,V> {
      * @param  value  value expected to be associated with the specified key.
      * @return {@code true} if the value was removed.
      *
-     * @since 1.2
+     * @since SIS 1.2
      */
     @Override
     public boolean remove(final Object key, final Object value) {

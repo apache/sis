@@ -179,7 +179,7 @@ import org.apache.sis.xml.XML;
  * @author  Guilhem Legal (Geomatys)
  * @author  Johann Sorel (Geomatys)
  * @version 1.5
- * @since   0.6
+ * @since SIS 0.6
  */
 public class GeodeticObjectFactory extends AbstractFactory implements CRSFactory, CSFactory, DatumFactory, Parser {
     /**
@@ -229,7 +229,7 @@ public class GeodeticObjectFactory extends AbstractFactory implements CRSFactory
      * @return the default provider of geodetic objects.
      *
      * @see java.util.ServiceLoader
-     * @since 1.4
+     * @since SIS 1.4
      */
     public static GeodeticObjectFactory provider() {
         return INSTANCE;
@@ -349,7 +349,7 @@ public class GeodeticObjectFactory extends AbstractFactory implements CRSFactory
      * @see DefaultGeocentricCRS#DefaultGeocentricCRS(Map, GeodeticDatum, DatumEnsemble, CartesianCS)
      * @see GeodeticAuthorityFactory#createGeodeticCRS(String)
      *
-     * @since 1.5
+     * @since SIS 1.5
      */
     @Override
     public GeodeticCRS createGeodeticCRS(final Map<String,?> properties,
@@ -439,7 +439,7 @@ public class GeodeticObjectFactory extends AbstractFactory implements CRSFactory
      * @see DefaultGeocentricCRS#DefaultGeocentricCRS(Map, GeodeticDatum, DatumEnsemble, SphericalCS)
      * @see GeodeticAuthorityFactory#createGeodeticCRS(String)
      *
-     * @since 1.5
+     * @since SIS 1.5
      */
     @Override
     public GeodeticCRS createGeodeticCRS(final Map<String,?> properties,
@@ -515,7 +515,7 @@ public class GeodeticObjectFactory extends AbstractFactory implements CRSFactory
      *
      * @see DefaultSphericalCS#DefaultSphericalCS(Map, CoordinateSystemAxis, CoordinateSystemAxis)
      *
-     * @since 1.4
+     * @since SIS 1.4
      */
     @Override
     public SphericalCS createSphericalCS(final Map<String,?> properties,
@@ -567,7 +567,7 @@ public class GeodeticObjectFactory extends AbstractFactory implements CRSFactory
      * @see DefaultGeographicCRS#DefaultGeographicCRS(Map, GeodeticDatum, DatumEnsemble, EllipsoidalCS)
      * @see GeodeticAuthorityFactory#createGeographicCRS(String)
      *
-     * @since 1.5
+     * @since SIS 1.5
      */
     @Override
     public GeographicCRS createGeographicCRS(final Map<String,?> properties,
@@ -616,7 +616,7 @@ public class GeodeticObjectFactory extends AbstractFactory implements CRSFactory
      * @return the datum ensemble for the given properties.
      * @throws FactoryException if the object creation failed.
      *
-     * @since 1.5
+     * @since SIS 1.5
      */
     @Override
     public <D extends Datum> DatumEnsemble<D> createDatumEnsemble(final Map<String,?> properties,
@@ -690,7 +690,7 @@ public class GeodeticObjectFactory extends AbstractFactory implements CRSFactory
      * @see DefaultGeodeticDatum.Dynamic#Dynamic(Map, Ellipsoid, PrimeMeridian, Temporal)
      * @see GeodeticAuthorityFactory#createGeodeticDatum(String)
      *
-     * @since 1.5
+     * @since SIS 1.5
      */
     @Override
     public GeodeticDatum createGeodeticDatum(final Map<String,?> properties,
@@ -1046,7 +1046,7 @@ public class GeodeticObjectFactory extends AbstractFactory implements CRSFactory
      * @see DefaultVerticalCRS#DefaultVerticalCRS(Map, VerticalDatum, DatumEnsemble, VerticalCS)
      * @see GeodeticAuthorityFactory#createVerticalCRS(String)
      *
-     * @since 1.5
+     * @since SIS 1.5
      */
     @Override
     public VerticalCRS createVerticalCRS(final Map<String,?> properties,
@@ -1097,7 +1097,7 @@ public class GeodeticObjectFactory extends AbstractFactory implements CRSFactory
      * @see DefaultVerticalDatum#DefaultVerticalDatum(Map, RealizationMethod)
      * @see GeodeticAuthorityFactory#createVerticalDatum(String)
      *
-     * @since 2.0 (temporary version number until this branch is released)
+     * @since SIS 2.0 (temporary version number until this branch is released)
      */
     @Override
     public VerticalDatum createVerticalDatum(final Map<String,?> properties,
@@ -1128,7 +1128,7 @@ public class GeodeticObjectFactory extends AbstractFactory implements CRSFactory
      * @see DefaultVerticalDatum.Dynamic#Dynamic(Map, RealizationMethod, Temporal)
      * @see GeodeticAuthorityFactory#createVerticalDatum(String)
      *
-     * @since 2.0 (temporary version number until this branch is released)
+     * @since SIS 2.0 (temporary version number until this branch is released)
      */
     @Override
     public VerticalDatum createVerticalDatum(final Map<String,?> properties,
@@ -1205,7 +1205,7 @@ public class GeodeticObjectFactory extends AbstractFactory implements CRSFactory
      * @see DefaultTemporalCRS#DefaultTemporalCRS(Map, TemporalDatum, DatumEnsemble, TimeCS)
      * @see GeodeticAuthorityFactory#createTemporalCRS(String)
      *
-     * @since 1.5
+     * @since SIS 1.5
      */
     @Override
     public TemporalCRS createTemporalCRS(final Map<String,?> properties,
@@ -1331,7 +1331,7 @@ public class GeodeticObjectFactory extends AbstractFactory implements CRSFactory
      * @see DefaultParametricCRS#DefaultParametricCRS(Map, ParametricDatum, DatumEnsemble, ParametricCS)
      * @see GeodeticAuthorityFactory#createParametricCRS(String)
      *
-     * @since 1.5
+     * @since SIS 1.5
      */
     @Override
     public ParametricCRS createParametricCRS(final Map<String,?> properties,
@@ -1531,7 +1531,7 @@ public class GeodeticObjectFactory extends AbstractFactory implements CRSFactory
      * @see DefaultEngineeringCRS#DefaultEngineeringCRS(Map, EngineeringDatum, CoordinateSystem)
      * @see GeodeticAuthorityFactory#createEngineeringCRS(String)
      *
-     * @since 1.5
+     * @since SIS 1.5
      */
     @Override
     public EngineeringCRS createEngineeringCRS(final Map<String,?> properties,

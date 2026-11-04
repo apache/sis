@@ -78,7 +78,7 @@ import static org.apache.sis.util.ArgumentChecks.*;
  * @see WKTFormat#getSymbols()
  * @see WKTFormat#setSymbols(Symbols)
  *
- * @since 0.4
+ * @since SIS 0.4
  */
 public class Symbols implements Localized, Cloneable, Serializable {
     /**

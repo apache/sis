@@ -92,7 +92,7 @@ import org.apache.sis.util.collection.CheckedContainer;
  * @see RangeFormat
  * @see org.apache.sis.util.collection.RangeSet
  *
- * @since 0.3
+ * @since SIS 0.3
  */
 public class Range<E extends Comparable<? super E>> implements CheckedContainer<E>, Formattable, Emptiable, LenientComparable, Serializable {
     /**
@@ -219,7 +219,7 @@ public class Range<E extends Comparable<? super E>> implements CheckedContainer<
      * Indicates that this range is immutable (at least by default).
      *
      * @return {@link Mutability#IMMUTABLE} by default.
-     * @since 1.6
+     * @since SIS 1.6
      */
     @Override
     public Mutability getMutability() {
@@ -332,7 +332,7 @@ public class Range<E extends Comparable<? super E>> implements CheckedContainer<
      *
      * @return whether this range is left- and right-bounded.
      *
-     * @since 1.0
+     * @since SIS 1.0
      */
     public boolean isBounded() {
         return minValue != null && maxValue != null;
@@ -667,7 +667,7 @@ public class Range<E extends Comparable<? super E>> implements CheckedContainer<
      * @param  mode    the strictness level of the comparison.
      * @return {@code true} if the given object is equal to this range at the given strictness level.
      *
-     * @since 1.7
+     * @since SIS 1.7
      */
     @Override
     public boolean equals(final Object object, final ComparisonMode mode) {

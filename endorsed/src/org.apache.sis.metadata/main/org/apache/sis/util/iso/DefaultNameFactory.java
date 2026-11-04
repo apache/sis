@@ -81,7 +81,7 @@ import org.apache.sis.util.internal.shared.Strings;
  * @see DefaultTypeName
  * @see DefaultMemberName
  *
- * @since 0.3
+ * @since SIS 0.3
  */
 public class DefaultNameFactory extends AbstractFactory implements NameFactory {
     /**
@@ -119,7 +119,7 @@ public class DefaultNameFactory extends AbstractFactory implements NameFactory {
      * @return the default provider of generic names.
      *
      * @see java.util.ServiceLoader
-     * @since 1.4
+     * @since SIS 1.4
      */
     public static DefaultNameFactory provider() {
         return INSTANCE;
@@ -254,7 +254,7 @@ public class DefaultNameFactory extends AbstractFactory implements NameFactory {
      * @see #toTypeName(Class)
      * @see DefaultTypeName#DefaultTypeName(NameSpace, CharSequence, Type)
      *
-     * @since 1.3
+     * @since SIS 1.3
      */
     @Override
     public TypeName createTypeName(final NameSpace scope, final CharSequence name, final Type javaType) {
@@ -388,7 +388,7 @@ public class DefaultNameFactory extends AbstractFactory implements NameFactory {
      *         Note that it may be the {@code value} reference itself cast to {@code GenericName[]}.
      * @throws ClassCastException if {@code value} cannot be cast.
      *
-     * @since 0.5
+     * @since SIS 0.5
      */
     public GenericName[] toGenericNames(Object value) throws ClassCastException {
         if (value == null) {
@@ -466,7 +466,7 @@ public class DefaultNameFactory extends AbstractFactory implements NameFactory {
      * @see Names#toClass(TypeName)
      * @see Names#createTypeName(Class)
      *
-     * @since 0.5
+     * @since SIS 0.5
      */
     public TypeName toTypeName(final Class<?> valueClass) {
         if (!TypeNames.isValid(valueClass)) {

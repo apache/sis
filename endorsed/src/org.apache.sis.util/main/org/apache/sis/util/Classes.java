@@ -56,7 +56,7 @@ import org.apache.sis.pending.jdk.JDK12;
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @version 1.8
- * @since   0.3
+ * @since SIS 0.3
  */
 public final class Classes {
     /**
@@ -223,7 +223,7 @@ public final class Classes {
      * @see #boundOfParameterizedProperty(Field)
      * @see #boundOfParameterizedProperty(Method)
      *
-     * @since 1.3
+     * @since SIS 1.3
      */
     public static Class<?> boundOfParameterizedDeclaration(final GenericDeclaration typeOrMethod) {
         final TypeVariable<?>[] parameters = typeOrMethod.getTypeParameters();
@@ -316,7 +316,7 @@ public final class Classes {
      *
      * @see ParameterizedType#getRawType()
      * @see LenientComparable#getStandardType()
-     * @since 1.7
+     * @since SIS 1.7
      */
     public static Class<?> getRawClass(Type type) {
         if (type instanceof ParameterizedType) {
@@ -371,7 +371,7 @@ public final class Classes {
      * @throws ClassCastException if the condition documented in {@link LenientComparable#getStandardType()} is violated,
      *         or if {@code object} is not an instance of {@code baseType} (violation of this method parameterized type).
      *
-     * @since 1.7
+     * @since SIS 1.7
      */
     public static <T> Class<? extends T> getStandardClass(final T object, final Class<T> baseType) {
         if (object instanceof LenientComparable) {
@@ -415,7 +415,7 @@ public final class Classes {
      * @param  type  the type for which to get the standard interface or class, or {@code null}.
      * @return the standard type assignable from {@code type}, or {@code type} (possibly null) if none.
      *
-     * @since 1.0
+     * @since SIS 1.0
      */
     public static <T> Class<? super T> getStandardType(final Class<T> type) {
         for (final Class<? super T> candidate : getAllInterfaces(type)) {
@@ -842,7 +842,7 @@ cmp:    for (final Class<?> c : c1) {
      * @see #boundOfParameterizedProperty(Field)
      * @see #boundOfParameterizedProperty(Method)
      *
-     * @since 1.5
+     * @since SIS 1.5
      */
     public static boolean isParameterizedProperty(final Class<?> type) {
         return type == Optional.class;
@@ -854,7 +854,7 @@ cmp:    for (final Class<?> c : c1) {
      * @param  type  the class to test, or {@code null}.
      * @return whether the given class is part of public API.
      *
-     * @since 1.5
+     * @since SIS 1.5
      */
     public static boolean isPublic(final Class<?> type) {
         return (type != null) && Modifier.isPublic(type.getModifiers())

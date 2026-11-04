@@ -26,6 +26,6 @@
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @version 1.5
- * @since   0.8
+ * @since SIS 0.8
  */
 package org.apache.sis.openoffice;

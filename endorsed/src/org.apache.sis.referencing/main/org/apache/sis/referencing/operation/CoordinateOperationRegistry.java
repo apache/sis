@@ -215,7 +215,7 @@ class CoordinateOperationRegistry {
      * Options such as initial area of interest, desired accuracy and coordinates that may be considered as constants.
      * This is null if no context has been specified.
      *
-     * @since 1.6
+     * @since SIS 1.6
      */
     protected final CoordinateOperationContext context;
 

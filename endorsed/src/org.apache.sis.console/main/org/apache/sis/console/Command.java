@@ -79,7 +79,7 @@ import org.apache.sis.system.Environment;
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.5
- * @since   0.3
+ * @since SIS 0.3
  */
 public final class Command {
     /**
@@ -196,7 +196,7 @@ public final class Command {
      *
      * @see MonolineFormatter#install()
      *
-     * @since 1.5
+     * @since SIS 1.5
      */
     public static void configureLogging() {
         final String value = System.getenv("SIS_HOME");
@@ -264,7 +264,7 @@ public final class Command {
      * @param  error  {@code true} for the error stream, or {@code false} for the standard output stream.
      * @return the stream where this command sends it output.
      *
-     * @since 1.5
+     * @since SIS 1.5
      */
     public PrintWriter writer(final boolean error) {
         return error ? command.err : command.out;

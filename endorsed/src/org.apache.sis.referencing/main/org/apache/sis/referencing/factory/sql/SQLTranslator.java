@@ -129,7 +129,7 @@ import org.apache.sis.referencing.internal.Resources;
  * @author  Didier Richard (IGN)
  * @author  John Grange
  * @version 1.5
- * @since   0.7
+ * @since SIS 0.7
  */
 public class SQLTranslator implements UnaryOperator<String> {
     /**
@@ -614,7 +614,7 @@ check:  for (;;) {
      * @param  name  the mixed-case table name, without quotes.
      * @return the name converted to the convention used by the database.
      *
-     * @since 1.5
+     * @since SIS 1.5
      */
     public final String toActualTableName(String name) {
         if (useMixedCaseTableNames) {

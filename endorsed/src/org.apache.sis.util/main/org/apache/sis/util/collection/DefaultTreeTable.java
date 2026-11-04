@@ -64,7 +64,7 @@ import static org.apache.sis.util.collection.Containers.isNullOrEmpty;
  * @see Node
  * @see TableColumn
  *
- * @since 0.3
+ * @since SIS 0.3
  */
 public class DefaultTreeTable implements TreeTable, Cloneable, Serializable {
     /**
@@ -228,7 +228,7 @@ public class DefaultTreeTable implements TreeTable, Cloneable, Serializable {
      *
      * @param  root  a newly created tree table root.
      *
-     * @since 1.2
+     * @since SIS 1.2
      */
     protected void initialize(final TreeTable.Node root) {
     }
@@ -320,7 +320,7 @@ public class DefaultTreeTable implements TreeTable, Cloneable, Serializable {
      *
      * @author  Martin Desruisseaux (Geomatys)
      * @version 0.3
-     * @since   0.3
+     * @since SIS 0.3
      *
      * @see DefaultTreeTable
      * @see TableColumn

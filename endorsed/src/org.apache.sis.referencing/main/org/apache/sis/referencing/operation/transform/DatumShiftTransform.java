@@ -73,7 +73,7 @@ import org.apache.sis.util.Debug;
  *
  * @see DatumShiftGrid
  *
- * @since 0.7
+ * @since SIS 0.7
  */
 public abstract class DatumShiftTransform extends AbstractMathTransform implements Serializable {
     /**

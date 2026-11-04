@@ -52,7 +52,7 @@ import org.apache.sis.util.resources.Errors;
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.6
- * @since   0.7
+ * @since SIS 0.7
  */
 public class TransformSeparator {
     /**
@@ -384,7 +384,7 @@ public class TransformSeparator {
      * @return whether {@code separate()} is allowed to add new source dimensions
      *         instead of throwing a {@link FactoryException}.
      *
-     * @since 1.1
+     * @since SIS 1.1
      */
     public boolean isSourceExpandable() {
         return isSourceExpandable;
@@ -400,7 +400,7 @@ public class TransformSeparator {
      *
      * @param  enabled  whether to allow source dimensions expansion.
      *
-     * @since 1.1
+     * @since SIS 1.1
      */
     public void setSourceExpandable(final boolean enabled) {
         isSourceExpandable = enabled;
@@ -508,7 +508,7 @@ public class TransformSeparator {
      * @return a transform with the replacement, or the transform specified at construction time if no change.
      * @throws FactoryException if the transform cannot be separated.
      *
-     * @since 1.6
+     * @since SIS 1.6
      */
     public MathTransform replace(final int lower, final int upper, final MathTransform replacement) throws FactoryException {
         final int limit = transform.getTargetDimensions();

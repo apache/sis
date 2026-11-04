@@ -80,7 +80,7 @@ import org.opengis.feature.FeatureAssociationRole;
  * @author  Smaniotto Enzo (GSoC)
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.4
- * @since   1.1
+ * @since SIS 1.1
  */
 @DefaultProperty("features")
 public class FeatureTable extends TableView<Feature> {

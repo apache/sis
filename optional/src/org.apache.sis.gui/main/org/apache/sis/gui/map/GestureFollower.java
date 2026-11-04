@@ -62,7 +62,7 @@ import org.apache.sis.gui.internal.LogHandler;
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.7
- * @since   1.3
+ * @since SIS 1.3
  */
 public class GestureFollower extends CanvasFollower implements EventHandler<MouseEvent> {
     /**

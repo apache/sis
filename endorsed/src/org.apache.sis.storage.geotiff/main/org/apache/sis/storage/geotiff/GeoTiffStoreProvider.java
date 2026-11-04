@@ -49,7 +49,7 @@ import org.apache.sis.parameter.Parameters;
  *
  * @see GeoTiffStore
  *
- * @since 0.8
+ * @since SIS 0.8
  */
 @StoreMetadata(formatName    = Constants.GEOTIFF,
                fileSuffixes  = {"tiff", "tif"},
@@ -125,7 +125,7 @@ public class GeoTiffStoreProvider extends DataStoreProvider {
      *
      * @return description of available parameters for opening a GeoTIFF file.
      *
-     * @since 0.8
+     * @since SIS 0.8
      */
     @Override
     public ParameterDescriptorGroup getOpenParameters() {
@@ -190,7 +190,7 @@ public class GeoTiffStoreProvider extends DataStoreProvider {
      * @return a data store instance associated with this provider for the given parameters.
      * @throws DataStoreException if an error occurred while creating the data store instance.
      *
-     * @since 1.5
+     * @since SIS 1.5
      */
     @Override
     public DataStore open(final ParameterValueGroup parameters) throws DataStoreException {

@@ -50,7 +50,7 @@ import org.opengis.coordinate.MismatchedDimensionException;
  * @see Plane
  * @see org.apache.sis.referencing.operation.builder.LinearTransformBuilder
  *
- * @since 0.5
+ * @since SIS 0.5
  */
 public class Line implements DoubleUnaryOperator, Cloneable, Serializable {
     /**
@@ -173,7 +173,7 @@ public class Line implements DoubleUnaryOperator, Cloneable, Serializable {
      * @param  x  the value where to evaluate the function.
      * @return the function value for the given operand.
      *
-     * @since 1.0
+     * @since SIS 1.0
      */
     @Override
     public double applyAsDouble(double x) {
@@ -221,7 +221,7 @@ public class Line implements DoubleUnaryOperator, Cloneable, Serializable {
      * @param  slope  the slope.
      * @param  y0     the <var>y</var> value at <var>x</var> = 0.
      *
-     * @since 0.8
+     * @since SIS 0.8
      */
     public void setEquation(final Number slope, final Number y0) {
         setEquation(slope.doubleValue(), y0.doubleValue());
@@ -284,7 +284,7 @@ public class Line implements DoubleUnaryOperator, Cloneable, Serializable {
      *
      * @throws IllegalArgumentException if <var>x</var> and <var>y</var> do not have the same length.
      *
-     * @since 0.8
+     * @since SIS 0.8
      */
     public double fit(final Vector x, final Vector y) {
         ArgumentChecks.ensureNonNull("x", x);

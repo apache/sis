@@ -61,7 +61,7 @@ import org.apache.sis.util.resources.Errors;
  *
  * @see Matrices
  *
- * @since 0.4
+ * @since SIS 0.4
  */
 public abstract class MatrixSIS implements Matrix, LenientComparable, Cloneable, Serializable {
     /**
@@ -211,7 +211,7 @@ public abstract class MatrixSIS implements Matrix, LenientComparable, Cloneable,
      *
      * @see #setElement(int, int, double)
      *
-     * @since 0.8
+     * @since SIS 0.8
      */
     public void setNumber(int row, int column, final Number value) {
         setElement(row, column, (value != null) ? value.doubleValue() : 0);
@@ -293,7 +293,7 @@ public abstract class MatrixSIS implements Matrix, LenientComparable, Cloneable,
      * @param  source  the matrix to copy.
      * @throws MismatchedMatrixSizeException if the given matrix has a different size than this matrix.
      *
-     * @since 0.7
+     * @since SIS 0.7
      */
     public void setMatrix(final Matrix source) throws MismatchedMatrixSizeException {
         Objects.requireNonNull(source);
@@ -444,7 +444,7 @@ public abstract class MatrixSIS implements Matrix, LenientComparable, Cloneable,
      *
      * @see AffineTransform#concatenate(AffineTransform)
      *
-     * @since 0.6
+     * @since SIS 0.6
      */
     public void convertBefore(final int srcDim, final Number scale, final Number offset) {
         final int lastCol = getNumCol() - 1;
@@ -474,7 +474,7 @@ public abstract class MatrixSIS implements Matrix, LenientComparable, Cloneable,
      *
      * @see AffineTransform#preConcatenate(AffineTransform)
      *
-     * @since 0.6
+     * @since SIS 0.6
      */
     public void convertAfter(final int tgtDim, final Number scale, final Number offset) {
         final int lastRow = getNumRow() - 1;
@@ -532,7 +532,7 @@ public abstract class MatrixSIS implements Matrix, LenientComparable, Cloneable,
      * @throws MismatchedMatrixSizeException if the length of the given vector is not equals to the
      *         number of columns in this matrix.
      *
-     * @since 0.8
+     * @since SIS 0.8
      */
     public double[] multiply(final double[] vector) {
         final int numCol = getNumCol();
@@ -574,7 +574,7 @@ public abstract class MatrixSIS implements Matrix, LenientComparable, Cloneable,
      *
      * @param  vector  a vector representing a translation to be applied before this matrix.
      *
-     * @since 1.0
+     * @since SIS 1.0
      *
      * @see AffineTransform#translate(double, double)
      */
@@ -630,7 +630,7 @@ public abstract class MatrixSIS implements Matrix, LenientComparable, Cloneable,
      * @param  upper  index after the last row to remove (exclusive).
      * @return a copy of this matrix with the specified rows removed.
      *
-     * @since 0.7
+     * @since SIS 0.7
      */
     public MatrixSIS removeRows(final int lower, final int upper) {
         final int numRow = getNumRow();
@@ -660,7 +660,7 @@ public abstract class MatrixSIS implements Matrix, LenientComparable, Cloneable,
      * @param  upper  index after the last column to remove (exclusive).
      * @return a copy of this matrix with the specified columns removed.
      *
-     * @since 0.7
+     * @since SIS 0.7
      */
     public MatrixSIS removeColumns(final int lower, final int upper) {
         final int numRow = getNumRow();
@@ -788,7 +788,7 @@ public abstract class MatrixSIS implements Matrix, LenientComparable, Cloneable,
      * This is the base type required by {@code equals(…)} methods for returning a potentially {@code true} value.
      *
      * @return {@code Matrix.class} or a user-defined sub-interface.
-     * @since 1.7
+     * @since SIS 1.7
      */
     @Override
     public final Type getStandardType() {

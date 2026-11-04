@@ -82,7 +82,7 @@ import org.apache.sis.storage.base.StoreUtilities;
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.7
- * @since   1.0
+ * @since SIS 1.0
  */
 public class StoreListeners implements Localized {
     /**
@@ -304,7 +304,7 @@ public class StoreListeners implements Localized {
      *
      * @return parent set of listeners that are notified in addition to this set of listeners.
      *
-     * @since 1.3
+     * @since SIS 1.3
      */
     public Optional<StoreListeners> getParent() {
         return Optional.ofNullable(parent);
@@ -397,7 +397,7 @@ public class StoreListeners implements Localized {
      *
      * @see DataStoreProvider#getLogger()
      *
-     * @since 1.1
+     * @since SIS 1.1
      */
     public Logger getLogger() {
         Resource src = source;
@@ -568,7 +568,7 @@ public class StoreListeners implements Localized {
      *         or {@code null} if none. This filter determines whether the record should be sent to the
      *         logger returned by {@link #getLogger()}.
      *
-     * @since 1.2
+     * @since SIS 1.2
      */
     @SuppressWarnings("unchecked")
     public void warning(final LogRecord description, final Filter onUnhandled) {
@@ -624,7 +624,7 @@ public class StoreListeners implements Localized {
      *
      * @see #close()
      *
-     * @since 1.3
+     * @since SIS 1.3
      */
     public <E extends StoreEvent> boolean fire(final Class<E> eventType, final E event) {
         ArgumentChecks.ensureNonNull("event", event);
@@ -817,7 +817,7 @@ public class StoreListeners implements Localized {
      * @param  listener   listener to check for registration.
      * @return {@code true} if this object contains the specified listener for given event type, {@code false} otherwise.
      *
-     * @since 1.3
+     * @since SIS 1.3
      */
     public <E extends StoreEvent> boolean hasListener(final Class<E> eventType, final StoreListener<? super E> listener) {
         // No need to synchronize this method.
@@ -887,7 +887,7 @@ public class StoreListeners implements Localized {
      *
      * @see #useReadOnlyEvents()
      *
-     * @since 1.2
+     * @since SIS 1.2
      */
     @SuppressWarnings({"unchecked", "element-type-mismatch"})
     public synchronized void setUsableEventTypes(final Class<?>... permitted) {
@@ -918,7 +918,7 @@ public class StoreListeners implements Localized {
      * @see WarningEvent
      * @see CloseEvent
      *
-     * @since 1.3
+     * @since SIS 1.3
      */
     public synchronized void useReadOnlyEvents() {
         final Set<Class<? extends StoreEvent>> current = permittedEventTypes;
@@ -945,7 +945,7 @@ public class StoreListeners implements Localized {
      * @see DataStore#close()
      * @see CloseEvent
      *
-     * @since 1.3
+     * @since SIS 1.3
      */
     @SuppressWarnings({"rawtypes","unchecked"})
     public void close() {

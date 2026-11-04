@@ -71,7 +71,7 @@ import org.opengis.filter.BinaryComparisonOperator;
  * @author  Johann Sorel (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.7
- * @since   1.0
+ * @since SIS 1.0
  */
 public class JoinFeatureSet extends AggregatedFeatureSet {
     /**
@@ -177,7 +177,7 @@ public class JoinFeatureSet extends AggregatedFeatureSet {
      * This condition specifies also if the comparison is {@linkplain BinaryComparisonOperator#isMatchingCase() case
      * sensitive} and {@linkplain BinaryComparisonOperator#getMatchAction() how to compare multi-values}.
      *
-     * @since 2.0 (temporary version number until this branch is released)
+     * @since SIS 2.0 (temporary version number until this branch is released)
      */
     public final BinaryComparisonOperator<Feature> condition;
 
@@ -324,7 +324,7 @@ public class JoinFeatureSet extends AggregatedFeatureSet {
      * returned by {@link #getType()}, with no sub-type.
      * Subclasses should override this method if they break this assertion.
      *
-     * @since 1.6
+     * @since SIS 1.6
      */
     @Override
     protected void prepareQueryOptimization(FeatureQuery query, Optimization optimizer) throws DataStoreException {

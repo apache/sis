@@ -45,7 +45,7 @@ import java.util.Optional;
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.5
- * @since   0.3
+ * @since SIS 0.3
  */
 public interface Deprecable {
     /**

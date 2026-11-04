@@ -28,7 +28,7 @@ import org.apache.sis.util.OptionalCandidate;
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @version 0.5
- * @since   0.5
+ * @since SIS 0.5
  */
 public interface Parameterized {
     /**

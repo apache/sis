@@ -54,7 +54,7 @@ import org.apache.sis.xml.NilReason;
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.6
- * @since   1.2
+ * @since SIS 1.2
  */
 public abstract class AbstractResource implements Resource {
     /**
@@ -81,7 +81,7 @@ public abstract class AbstractResource implements Resource {
      *
      * @param  parent  the parent resource, or {@code null} if none.
      *
-     * @since 1.4
+     * @since SIS 1.4
      */
     @SuppressWarnings("this-escape")
     protected AbstractResource(final Resource parent) {

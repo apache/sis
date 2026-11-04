@@ -67,7 +67,7 @@ import org.opengis.temporal.Period;
  * @author  Touraïvane (IRD)
  * @author  Cédric Briançon (Geomatys)
  * @version 1.6
- * @since   0.3
+ * @since SIS 0.3
  */
 @XmlType(name = "EX_TemporalExtent_Type")
 @XmlRootElement(name = "EX_TemporalExtent")
@@ -98,7 +98,7 @@ public class DefaultTemporalExtent extends ISOMetadata implements TemporalExtent
      *
      * @see #setBounds(Temporal, Temporal)
      *
-     * @since 1.5
+     * @since SIS 1.5
      */
     public DefaultTemporalExtent(final Temporal beginning, final Temporal ending) {
         extent = TemporalObjects.createPeriod(beginning, ending);
@@ -194,7 +194,7 @@ public class DefaultTemporalExtent extends ISOMetadata implements TemporalExtent
      *
      * @return the start of the temporal range.
      *
-     * @since 1.5
+     * @since SIS 1.5
      */
     public Optional<Temporal> getBeginning() {
         return Optional.ofNullable(getBound(extent, true));
@@ -207,7 +207,7 @@ public class DefaultTemporalExtent extends ISOMetadata implements TemporalExtent
      *
      * @return the end of the temporal range.
      *
-     * @since 1.5
+     * @since SIS 1.5
      */
     public Optional<Temporal> getEnding() {
         return Optional.ofNullable(getBound(extent, false));
@@ -220,7 +220,7 @@ public class DefaultTemporalExtent extends ISOMetadata implements TemporalExtent
      * @param  beginning  the start date and time for the content of the dataset, or {@code null} if none.
      * @param  ending     the end date and time for the content of the dataset, or {@code null} if none.
      *
-     * @since 1.5
+     * @since SIS 1.5
      */
     public void setBounds(final Temporal beginning, final Temporal ending) {
         setExtent(TemporalObjects.createPeriod(beginning, ending));
@@ -259,7 +259,7 @@ public class DefaultTemporalExtent extends ISOMetadata implements TemporalExtent
      * @see Extents#intersection(TemporalExtent, TemporalExtent)
      * @see org.apache.sis.geometry.GeneralEnvelope#intersect(Envelope)
      *
-     * @since 0.8
+     * @since SIS 0.8
      */
     public void intersect(final TemporalExtent other) {
         checkWritePermission(extent);

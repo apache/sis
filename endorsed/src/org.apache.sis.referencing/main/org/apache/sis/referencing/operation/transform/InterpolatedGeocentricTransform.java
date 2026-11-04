@@ -82,7 +82,7 @@ import org.opengis.coordinate.MismatchedDimensionException;
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.0
  *
- * @since 0.7
+ * @since SIS 0.7
  */
 public class InterpolatedGeocentricTransform extends DatumShiftTransform {
     /**

@@ -42,7 +42,7 @@ import org.apache.sis.util.internal.shared.Strings;
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.7
- * @since   1.5
+ * @since SIS 1.5
  */
 public abstract class MathTransformBuilder implements MathTransform.Builder {
     /**
@@ -117,7 +117,7 @@ public abstract class MathTransformBuilder implements MathTransform.Builder {
      *
      * @see org.apache.sis.setup.Configuration#isTrustedEnvironment()
      *
-     * @since 1.7
+     * @since SIS 1.7
      */
     public BiFunction<ParameterDescriptor<URI>, URI, Authorization> getAccessControl() {
         return accessControl;
@@ -129,7 +129,7 @@ public abstract class MathTransformBuilder implements MathTransform.Builder {
      *
      * @param  ac  function telling whether the <abbr>URI</abbr> can be opened.
      *
-     * @since 1.7
+     * @since SIS 1.7
      */
     public void setAccessControl(BiFunction<ParameterDescriptor<URI>, URI, Authorization> ac) {
         accessControl = Objects.requireNonNull(ac);

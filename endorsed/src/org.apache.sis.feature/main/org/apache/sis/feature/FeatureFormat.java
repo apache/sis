@@ -90,7 +90,7 @@ import org.opengis.feature.Operation;
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.4
- * @since   0.5
+ * @since SIS 0.5
  */
 public class FeatureFormat extends TabularFormat<Object> {
     /**
@@ -191,7 +191,7 @@ public class FeatureFormat extends TabularFormat<Object> {
      *
      * @return all columns that may be shown in the tables to format.
      *
-     * @since 0.8
+     * @since SIS 0.8
      */
     public Set<Column> getAllowedColumns() {
         return columns.clone();
@@ -204,7 +204,7 @@ public class FeatureFormat extends TabularFormat<Object> {
      *
      * @param inclusion  all columns that may be shown in the tables to format.
      *
-     * @since 0.8
+     * @since SIS 0.8
      */
     public void setAllowedColumns(final Set<Column> inclusion) {
         ArgumentChecks.ensureNonNull("inclusion", inclusion);
@@ -220,7 +220,7 @@ public class FeatureFormat extends TabularFormat<Object> {
      *
      * @see FeatureFormat#setAllowedColumns(Set)
      *
-     * @since 0.8
+     * @since SIS 0.8
      */
     public enum Column {
         /**

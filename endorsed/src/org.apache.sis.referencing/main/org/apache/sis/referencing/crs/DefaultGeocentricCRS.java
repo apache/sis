@@ -79,7 +79,7 @@ import org.opengis.referencing.datum.DatumEnsemble;
  *
  * @see org.apache.sis.referencing.factory.GeodeticAuthorityFactory#createGeodeticCRS(String)
  *
- * @since 0.4
+ * @since SIS 0.4
  */
 @XmlTransient
 public class DefaultGeocentricCRS extends DefaultGeodeticCRS {
@@ -132,7 +132,7 @@ public class DefaultGeocentricCRS extends DefaultGeodeticCRS {
      *
      * @see org.apache.sis.referencing.factory.GeodeticObjectFactory#createGeodeticCRS(Map, GeodeticDatum, DatumEnsemble, CartesianCS)
      *
-     * @since 1.5
+     * @since SIS 1.5
      */
     public DefaultGeocentricCRS(final Map<String,?> properties,
                                 final GeodeticDatum datum,
@@ -157,7 +157,7 @@ public class DefaultGeocentricCRS extends DefaultGeodeticCRS {
      *
      * @see org.apache.sis.referencing.factory.GeodeticObjectFactory#createGeodeticCRS(Map, GeodeticDatum, DatumEnsemble, SphericalCS)
      *
-     * @since 1.5
+     * @since SIS 1.5
      */
     public DefaultGeocentricCRS(final Map<String,?> properties,
                                 final GeodeticDatum datum,
@@ -222,7 +222,7 @@ public class DefaultGeocentricCRS extends DefaultGeodeticCRS {
      * This is the base type required by {@code equals(…)} methods for returning a potentially {@code true} value.
      *
      * @return {@code GeodeticCRS.class} or a user-defined sub-interface.
-     * @since 1.7
+     * @since SIS 1.7
      */
     @Override
     public Type getStandardType() {
@@ -251,7 +251,7 @@ public class DefaultGeocentricCRS extends DefaultGeodeticCRS {
      * @return the datum ensemble, or {@code null} if this <abbr>CRS</abbr> is related
      *         to an object identified only by a single {@linkplain #getDatum() datum}.
      *
-     * @since 1.5
+     * @since SIS 1.5
      */
     @Override
     public DatumEnsemble<GeodeticDatum> getDatumEnsemble() {

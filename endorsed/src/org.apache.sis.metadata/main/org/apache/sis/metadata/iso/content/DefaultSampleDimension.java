@@ -68,7 +68,7 @@ import org.opengis.metadata.content.SampleDimension;
  * @author  Martin Desruisseaux (Geomatys)
  * @author  Cullen Rombach (Image Matters)
  * @version 1.4
- * @since   0.5
+ * @since SIS 0.5
  */
 @XmlType(name = "MD_SampleDimension_Type", propOrder = {
     "maxValue",
@@ -490,7 +490,7 @@ public class DefaultSampleDimension extends DefaultRangeDimension implements Sam
      *
      * @return description and values of the specific range elements.
      *
-     * @since 1.3
+     * @since SIS 1.3
      */
     @Override
     @XmlElement(name = "rangeElementDescription")
@@ -504,7 +504,7 @@ public class DefaultSampleDimension extends DefaultRangeDimension implements Sam
      *
      * @param  newValues  the new range element description.
      *
-     * @since 1.3
+     * @since SIS 1.3
      */
     public void setRangeElementDescriptions(final Collection<? extends RangeElementDescription> newValues) {
         rangeElementDescriptions = writeCollection(newValues, rangeElementDescriptions, RangeElementDescription.class);

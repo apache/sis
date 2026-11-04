@@ -97,7 +97,7 @@ import org.opengis.coordinate.MismatchedCoordinateMetadataException;
  * @see GeneralEnvelope
  * @see org.apache.sis.metadata.iso.extent.DefaultGeographicBoundingBox
  *
- * @since 0.3
+ * @since SIS 0.3
  */
 public class Envelope2D extends Rectangle2D.Double implements Envelope, Emptiable, Cloneable {
     /**
@@ -283,7 +283,7 @@ public class Envelope2D extends Rectangle2D.Double implements Envelope, Emptiabl
      *
      * @param rect  the rectangle to copy coordinates from.
      *
-     * @since 0.8
+     * @since SIS 0.8
      */
     @Override
     public void setRect(final Rectangle2D rect) {
@@ -375,7 +375,7 @@ public class Envelope2D extends Rectangle2D.Double implements Envelope, Emptiabl
      *
      * @see #getMedian(int)
      *
-     * @since 1.1
+     * @since SIS 1.1
      */
     public DirectPosition2D getMedian() {
         return new DirectPosition2D(crs, getMedian(0), getMedian(1));
@@ -632,7 +632,7 @@ public class Envelope2D extends Rectangle2D.Double implements Envelope, Emptiabl
      *
      * @see GeneralEnvelope#toSimpleEnvelopes()
      *
-     * @since 0.4
+     * @since SIS 0.4
      */
     @SuppressWarnings("ReturnOfCollectionOrArrayField")
     public Rectangle2D.Double[] toRectangles() {

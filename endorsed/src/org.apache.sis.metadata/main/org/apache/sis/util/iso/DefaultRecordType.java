@@ -82,7 +82,7 @@ import org.opengis.util.NameFactory;
  * @see DefaultRecord
  * @see DefaultMemberName
  *
- * @since 0.3
+ * @since SIS 0.3
  */
 @XmlType(name = "RecordType")
 public class DefaultRecordType extends RecordDefinition implements RecordType, Serializable {
@@ -102,14 +102,14 @@ public class DefaultRecordType extends RecordDefinition implements RecordType, S
     /**
      * A type of record instances for holding a single {@link String} value.
      *
-     * @since 1.6
+     * @since SIS 1.6
      */
     public static final DefaultRecordType SINGLE_STRING;
 
     /**
      * A type of record instances for holding a single {@link Double} value.
      *
-     * @since 1.6
+     * @since SIS 1.6
      */
     public static final DefaultRecordType SINGLE_REAL;
     static {
@@ -171,7 +171,7 @@ public class DefaultRecordType extends RecordDefinition implements RecordType, S
      * @param typeName  the name that identifies this record type.
      * @param fields    the name and type of the fields to be included in this record type.
      *
-     * @since 1.5
+     * @since SIS 1.5
      */
     public DefaultRecordType(final TypeName typeName, final Map<? extends MemberName, ? extends Type> fields) {
         this(typeName, null, fields);

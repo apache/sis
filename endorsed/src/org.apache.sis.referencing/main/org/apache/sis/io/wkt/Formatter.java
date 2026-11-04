@@ -112,7 +112,7 @@ import org.opengis.referencing.ObjectDomain;
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @version 1.6
- * @since   0.4
+ * @since SIS 0.4
  */
 public class Formatter implements Localized {
     /**
@@ -470,7 +470,7 @@ public class Formatter implements Localized {
      *
      * @see WKTFormat#setTransliterator(Transliterator)
      *
-     * @since 0.6
+     * @since SIS 0.6
      */
     public final Transliterator getTransliterator() {
         return transliterator;
@@ -584,7 +584,7 @@ public class Formatter implements Localized {
      *
      * @see WKTFormat#setKeywordStyle(KeywordStyle)
      *
-     * @since 0.6
+     * @since SIS 0.6
      */
     public String shortOrLong(final String shortKeyword, final String longKeyword) {
         return (longKeywords != 0
@@ -651,7 +651,7 @@ public class Formatter implements Localized {
      * @param  object         the formattable object to append to the WKT, or {@code null} if none.
      * @param  toFormattable  the function to invoke for converting the given object to a formattable object.
      *
-     * @since 1.5
+     * @since SIS 1.5
      */
     public <T> void appendFormattable(final T object, final Function<T, FormattableObject> toFormattable) {
         append((object instanceof FormattableObject) ? (FormattableObject) object : toFormattable.apply(object));
@@ -940,7 +940,7 @@ public class Formatter implements Localized {
      * @param scope  description of domain of usage, or {@code null} if none.
      * @param area   area for which the object is valid, or {@code null} if none.
      *
-     * @since 1.4
+     * @since SIS 1.4
      */
     public void append(final InternationalString scope, final Extent area) {
         if (scope != null && !(scope instanceof NilObject)) {
@@ -1229,7 +1229,7 @@ public class Formatter implements Localized {
      *
      * @param  date  the date to append to the WKT, or {@code null} if none.
      *
-     * @since 1.5
+     * @since SIS 1.5
      */
     public void append(final Temporal date) {
         if (date != null) {
@@ -1316,7 +1316,7 @@ public class Formatter implements Localized {
      * @param  number          the floating point value to append to the WKT.
      * @param  fractionDigits  the number of fraction digits to use for formatting the number.
      *
-     * @since 1.5
+     * @since SIS 1.5
      */
     public void append(final double number, final int fractionDigits) {
         appendSeparator();
@@ -1340,7 +1340,7 @@ public class Formatter implements Localized {
      *         If a row contains more numbers than {@code fractionDigits.length},
      *         then the last value in this array is repeated for all remaining row numbers.
      *
-     * @since 1.0
+     * @since SIS 1.0
      */
     public void append(final Vector[] rows, int... fractionDigits) {
         if (rows == null || rows.length == 0) {
@@ -1710,7 +1710,7 @@ public class Formatter implements Localized {
      * @param   other  the object to format with this formatter.
      * @return  the value returned by {@link FormattableObject#formatTo(Formatter)}.
      *
-     * @since 0.5
+     * @since SIS 0.5
      */
     public String delegateTo(final Object other) throws UnformattableObjectException {
         ArgumentChecks.ensureNonNull("other", other);
@@ -1790,7 +1790,7 @@ public class Formatter implements Localized {
      * @param  previous  the value returned by {@code addContextualUnit(unit)} (can be {@code null}).
      * @throws IllegalStateException if this method has not been invoked in the pattern documented above.
      *
-     * @since 0.6
+     * @since SIS 0.6
      */
     public void restoreContextualUnit(final Unit<?> unit, final Unit<?> previous) {
         if (previous == null) {

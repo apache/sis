@@ -86,7 +86,7 @@ import org.apache.sis.util.internal.shared.Numerics;
  *
  * @see DefaultEllipsoid#getGeocentricRadius(double)
  *
- * @since 1.5
+ * @since SIS 1.5
  */
 public class EllipsoidToRadiusTransform extends AbstractMathTransform implements Serializable {
     /**

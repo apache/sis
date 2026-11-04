@@ -66,7 +66,7 @@ import org.apache.sis.util.resources.Errors;
  * @see org.apache.sis.feature.AbstractIdentifiedType#getName()
  * @see org.apache.sis.referencing.AbstractIdentifiedObject#getAlias()
  *
- * @since 0.3
+ * @since SIS 0.3
  */
 
 /*

@@ -46,7 +46,7 @@ import org.apache.sis.coverage.grid.PixelInCell;
  * @author  Martin Desruisseaux (Geomatys)
  *
  * @version 1.7
- * @since   1.6
+ * @since SIS 1.6
  */
 public class MemoryGridCoverageResource extends AbstractGridCoverageResource {
     /**
@@ -85,7 +85,7 @@ public class MemoryGridCoverageResource extends AbstractGridCoverageResource {
      * @param  coverage  the coverage to wrap in a in-memory resource.
      * @throws NullPointerException if {@code coverage} is null.
      *
-     * @since 1.7
+     * @since SIS 1.7
      */
     public MemoryGridCoverageResource(final GridCoverage coverage) {
         this(null, null, coverage, null);

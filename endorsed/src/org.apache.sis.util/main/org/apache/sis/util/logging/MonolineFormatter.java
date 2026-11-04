@@ -115,7 +115,7 @@ import static org.apache.sis.util.internal.shared.Constants.UTC;
  * @see SimpleFormatter
  * @see Handler#setFormatter(Formatter)
  *
- * @since 0.3
+ * @since SIS 0.3
  */
 public class MonolineFormatter extends Formatter {
     /** Do not format source class name.       */ private static final int NO_SOURCE    = 0;
@@ -282,7 +282,7 @@ public class MonolineFormatter extends Formatter {
      *     java.util.logging.ConsoleHandler.formatter = org.apache.sis.util.logging.MonolineFormatter
      *     }
      *
-     * @since 1.0
+     * @since SIS 1.0
      */
     public MonolineFormatter() {
         this(null);
@@ -644,7 +644,7 @@ loop:   for (int i=0; ; i++) {
      *
      * @return maximal number of columns in the records to format, or {@code null} if none.
      *
-     * @since 1.5
+     * @since SIS 1.5
      */
     public IntSupplier getMaximalLineLength() {
         synchronized (buffer) {
@@ -659,7 +659,7 @@ loop:   for (int i=0; ; i++) {
      *
      * @param  value  the provider of the maximal number of columns, or {@code null} if none.
      *
-     * @since 1.5
+     * @since SIS 1.5
      */
     public void setMaximalLineLength(final IntSupplier value) {
         synchronized (buffer) {

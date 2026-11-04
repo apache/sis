@@ -52,7 +52,7 @@ import org.opengis.metadata.identification.KeywordClass;
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.4
- * @since   0.5
+ * @since SIS 0.5
  */
 @TitleProperty(name = "className")
 @XmlType(name = "MD_KeywordClass_Type", propOrder = {

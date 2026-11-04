@@ -95,7 +95,7 @@ import org.opengis.metadata.Identifier;
  *
  * @see org.apache.sis.referencing.factory.GeodeticAuthorityFactory#createGeographicCRS(String)
  *
- * @since 0.4
+ * @since SIS 0.4
  */
 @XmlTransient
 public class DefaultGeographicCRS extends DefaultGeodeticCRS implements GeographicCRS {
@@ -159,7 +159,7 @@ public class DefaultGeographicCRS extends DefaultGeodeticCRS implements Geograph
      *
      * @see org.apache.sis.referencing.factory.GeodeticObjectFactory#createGeographicCRS(Map, GeodeticDatum, DatumEnsemble, EllipsoidalCS)
      *
-     * @since 1.5
+     * @since SIS 1.5
      */
     public DefaultGeographicCRS(final Map<String,?> properties,
                                 final GeodeticDatum datum,
@@ -229,7 +229,7 @@ public class DefaultGeographicCRS extends DefaultGeodeticCRS implements Geograph
      * This is the base type required by {@code equals(…)} methods for returning a potentially {@code true} value.
      *
      * @return {@code GeographicCRS.class} or a user-defined sub-interface.
-     * @since 1.7
+     * @since SIS 1.7
      */
     @Override
     public Type getStandardType() {
@@ -246,7 +246,7 @@ public class DefaultGeographicCRS extends DefaultGeodeticCRS implements Geograph
      * @throws NoSuchElementException if there is no datum and the ensemble does not contain at least one member.
      * @throws GeodeticException if the prime meridian is not the same for all members of the datum ensemble.
      *
-     * @since 1.5
+     * @since SIS 1.5
      */
     public PrimeMeridian getPrimeMeridian() {
         return DatumOrEnsemble.asDatum(this).getPrimeMeridian();
@@ -262,7 +262,7 @@ public class DefaultGeographicCRS extends DefaultGeodeticCRS implements Geograph
      * @throws NoSuchElementException if there is no datum and the ensemble does not contain at least one member.
      * @throws GeodeticException if the ellipsoid is not the same for all members of the datum ensemble.
      *
-     * @since 1.5
+     * @since SIS 1.5
      */
     public Ellipsoid getEllipsoid() {
         return DatumOrEnsemble.asDatum(this).getEllipsoid();
@@ -290,7 +290,7 @@ public class DefaultGeographicCRS extends DefaultGeodeticCRS implements Geograph
      * @return the datum ensemble, or {@code null} if this <abbr>CRS</abbr> is related
      *         to an object identified only by a single {@linkplain #getDatum() datum}.
      *
-     * @since 1.5
+     * @since SIS 1.5
      */
     @Override
     public DatumEnsemble<GeodeticDatum> getDatumEnsemble() {

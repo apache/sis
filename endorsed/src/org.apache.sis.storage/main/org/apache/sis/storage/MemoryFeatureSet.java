@@ -54,7 +54,7 @@ import org.opengis.feature.FeatureType;
  * @author  Johann Sorel (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
  *
- * @since 1.6
+ * @since SIS 1.6
  */
 public class MemoryFeatureSet extends AbstractFeatureSet {
     /**
@@ -201,7 +201,7 @@ public class MemoryFeatureSet extends AbstractFeatureSet {
      * This method is invoked indirectly when a {@linkplain #subset feature subset} is created from a query.
      * The optimization depends on the set of {@linkplain #allTypes all feature types} found in the collection.
      *
-     * @since 1.6
+     * @since SIS 1.6
      */
     @Override
     protected void prepareQueryOptimization(FeatureQuery query, Optimization optimizer) throws DataStoreException {

@@ -113,7 +113,7 @@ import org.apache.sis.pending.jdk.JDK23;
  * @see org.apache.sis.measure.UnitFormat
  * @see GeneralDirectPosition
  *
- * @since 0.8
+ * @since SIS 0.8
  */
 public class CoordinateFormat extends CompoundFormat<DirectPosition> {
     /**
@@ -747,7 +747,7 @@ public class CoordinateFormat extends CompoundFormat<DirectPosition> {
      * @see AngleFormat#getPrecision()
      * @see DecimalFormat#getMaximumFractionDigits()
      *
-     * @since 1.1
+     * @since SIS 1.1
      */
     public double[] getPrecisions() {
         configure(defaultCRS);
@@ -798,7 +798,7 @@ public class CoordinateFormat extends CompoundFormat<DirectPosition> {
      * @see AngleFormat#setPrecision(double, boolean)
      * @see DecimalFormat#setMaximumFractionDigits(int)
      *
-     * @since 1.1
+     * @since SIS 1.1
      */
     public void setPrecisions(final double... precisions) {
         /*
@@ -935,7 +935,7 @@ public class CoordinateFormat extends CompoundFormat<DirectPosition> {
      * @see AngleFormat#setPrecision(double, boolean)
      * @see Quantities#create(double, Unit)
      *
-     * @since 1.1
+     * @since SIS 1.1
      */
     public void setGroundPrecision(final Quantity<?> precision) {
         groundPrecision = Objects.requireNonNull(precision);
@@ -956,7 +956,7 @@ public class CoordinateFormat extends CompoundFormat<DirectPosition> {
      * @see #getGroundAccuracyText()
      * @see Quantities#create(double, Unit)
      *
-     * @since 1.1
+     * @since SIS 1.1
      */
     public void setGroundAccuracy(final Quantity<?> accuracy) {
         accuracyText = null;

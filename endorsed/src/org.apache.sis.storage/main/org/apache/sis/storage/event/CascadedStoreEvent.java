@@ -41,7 +41,7 @@ import org.apache.sis.storage.Resource;
  * their own {@link CloseEvent} declaring themselves as the {@linkplain CloseEvent#getSource() event source}.</p>
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @since 1.3
+ * @since SIS 1.3
  *
  * @param <E> the type of the event subclass.
  *

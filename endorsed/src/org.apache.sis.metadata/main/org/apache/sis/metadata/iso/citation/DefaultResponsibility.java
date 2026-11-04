@@ -56,7 +56,7 @@ import org.opengis.metadata.citation.Responsibility;
  * @author  Martin Desruisseaux (Geomatys)
  * @author  Cullen Rombach (Image Matters)
  * @version 1.4
- * @since   0.5
+ * @since SIS 0.5
  */
 @SuppressWarnings("deprecation")
 @XmlType(name = "CI_Responsibility_Type", propOrder = {

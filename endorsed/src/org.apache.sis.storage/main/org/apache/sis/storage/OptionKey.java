@@ -79,7 +79,7 @@ import org.apache.sis.system.Modules;
  *
  * @param <T>  the type of option values.
  *
- * @since 1.7
+ * @since SIS 1.7
  */
 public class OptionKey<T> implements Serializable {
     /**

@@ -137,7 +137,7 @@ import org.apache.sis.system.ReferenceQueueConsumer;
  * @param <K>  the type of key objects.
  * @param <V>  the type of value objects.
  *
- * @since 0.3
+ * @since SIS 0.3
  */
 public class Cache<K,V> extends AbstractMap<K,V> implements ConcurrentMap<K,V> {
     /**
@@ -354,7 +354,7 @@ public class Cache<K,V> extends AbstractMap<K,V> implements ConcurrentMap<K,V> {
      * @param  creator  a method for creating a value, to be invoked only if no value are cached for the given key.
      * @return the value already mapped to the key, or the newly computed value.
      *
-     * @since 1.0
+     * @since SIS 1.0
      *
      * @see #peek(Object)
      * @see #containsKey(Object)
@@ -470,7 +470,7 @@ public class Cache<K,V> extends AbstractMap<K,V> implements ConcurrentMap<K,V> {
      * @see #get(Object)
      * @see #computeIfAbsent(Object, Function)
      *
-     * @since 1.0
+     * @since SIS 1.0
      */
     @Override
     public V putIfAbsent(final K key, final V value) {
@@ -523,7 +523,7 @@ public class Cache<K,V> extends AbstractMap<K,V> implements ConcurrentMap<K,V> {
      *
      * @see #replace(Object, Object, Object)
      *
-     * @since 1.0
+     * @since SIS 1.0
      */
     @Override
     public V replace(final K key, final V value) {
@@ -546,7 +546,7 @@ public class Cache<K,V> extends AbstractMap<K,V> implements ConcurrentMap<K,V> {
      * @param  newValue  the new value to put if the condition matches, or {@code null} for removing the mapping.
      * @return {@code true} if the value has been replaced, {@code false} otherwise.
      *
-     * @since 1.0
+     * @since SIS 1.0
      */
     @Override
     public boolean replace(final K key, final V oldValue, final V newValue) {
@@ -571,7 +571,7 @@ public class Cache<K,V> extends AbstractMap<K,V> implements ConcurrentMap<K,V> {
      *
      * @param  remapping  the function computing new values from the old ones.
      *
-     * @since 1.0
+     * @since SIS 1.0
      */
     @Override
     public void replaceAll(final BiFunction<? super K, ? super V, ? extends V> remapping) {
@@ -592,7 +592,7 @@ public class Cache<K,V> extends AbstractMap<K,V> implements ConcurrentMap<K,V> {
      *
      * @see #computeIfAbsent(Object, Function)
      *
-     * @since 1.0
+     * @since SIS 1.0
      */
     @Override
     public V computeIfPresent(final K key, final BiFunction<? super K, ? super V, ? extends V> remapping) {
@@ -616,7 +616,7 @@ public class Cache<K,V> extends AbstractMap<K,V> implements ConcurrentMap<K,V> {
      *
      * @see #computeIfAbsent(Object, Function)
      *
-     * @since 1.0
+     * @since SIS 1.0
      */
     @Override
     public V compute(final K key, final BiFunction<? super K, ? super V, ? extends V> remapping) {
@@ -637,7 +637,7 @@ public class Cache<K,V> extends AbstractMap<K,V> implements ConcurrentMap<K,V> {
      *                    with the {@code value} argument given to this method.
      * @return the new value associated with the given key.
      *
-     * @since 1.0
+     * @since SIS 1.0
      */
     @Override
     public V merge(final K key, final V value, final BiFunction<? super V, ? super V, ? extends V> remapping) {
@@ -753,7 +753,7 @@ public class Cache<K,V> extends AbstractMap<K,V> implements ConcurrentMap<K,V> {
      *
      * @see #get(Object)
      *
-     * @since 1.0
+     * @since SIS 1.0
      */
     @Override
     @SuppressWarnings("unchecked")
@@ -991,7 +991,7 @@ public class Cache<K,V> extends AbstractMap<K,V> implements ConcurrentMap<K,V> {
      *
      * @author  Martin Desruisseaux (Geomatys)
      * @version 0.3
-     * @since   0.3
+     * @since SIS 0.3
      */
     public interface Handler<V> {
         /**
@@ -1378,7 +1378,7 @@ public class Cache<K,V> extends AbstractMap<K,V> implements ConcurrentMap<K,V> {
      *
      * @see #keySet()
      *
-     * @since 1.3
+     * @since SIS 1.3
      */
     public boolean flush() {
         boolean changed = map.values().removeIf(Cache::isNull);

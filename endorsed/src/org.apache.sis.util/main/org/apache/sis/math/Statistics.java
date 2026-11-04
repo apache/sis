@@ -88,7 +88,7 @@ import org.apache.sis.util.internal.shared.DoubleDouble;
  *
  * @author  Martin Desruisseaux (MPO, IRD, Geomatys)
  * @version 1.4
- * @since   0.3
+ * @since SIS 0.3
  */
 @SuppressWarnings("overloads")  // Ambiguous `andThen(…)`, but the two variants do the same work.
 public class Statistics implements DoubleConsumer, LongConsumer, Cloneable, Serializable {
@@ -194,7 +194,7 @@ public class Statistics implements DoubleConsumer, LongConsumer, Cloneable, Seri
      * @param  allPopulation      {@code true} if sample values were the totality of the population under study,
      *                            or {@code false} if they were only a sampling.
      *
-     * @since 1.2
+     * @since SIS 1.2
      */
     public Statistics(final CharSequence name, final int countNaN, final int count,
                       final double minimum, final double maximum, final double mean,

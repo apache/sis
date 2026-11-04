@@ -70,7 +70,7 @@ import org.opengis.referencing.gazetteer.ReferenceSystemUsingIdentifiers;
  * @see ModifiableLocationType
  * @see AbstractLocation
  *
- * @since 0.8
+ * @since SIS 0.8
  */
 @XmlTransient
 public abstract class ReferencingByIdentifiers extends AbstractReferenceSystem implements ReferenceSystemUsingIdentifiers {
@@ -202,7 +202,7 @@ public abstract class ReferencingByIdentifiers extends AbstractReferenceSystem i
      * The default implementation returns {@code ReferenceSystemUsingIdentifiers.class}.
      *
      * @return the GeoAPI interface implemented by this class.
-     * @since 1.7
+     * @since SIS 1.7
      */
     @Override
     public Type getStandardType() {
@@ -262,7 +262,7 @@ public abstract class ReferencingByIdentifiers extends AbstractReferenceSystem i
      *
      * @return a new object performing conversions between {@link DirectPosition} and identifiers.
      *
-     * @since 1.3
+     * @since SIS 1.3
      */
     public abstract Coder createCoder();
 
@@ -278,7 +278,7 @@ public abstract class ReferencingByIdentifiers extends AbstractReferenceSystem i
      *
      * @author  Martin Desruisseaux (Geomatys)
      * @version 1.4
-     * @since   1.3
+     * @since SIS 1.3
      */
     public abstract static class Coder {
         /**

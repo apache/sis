@@ -64,7 +64,7 @@ import org.apache.sis.util.internal.shared.Constants;
  *
  * @see NetcdfStoreProvider
  *
- * @since 0.3
+ * @since SIS 0.3
  */
 public class NetcdfStore extends DataStore implements Aggregate {
     /**
@@ -105,7 +105,7 @@ public class NetcdfStore extends DataStore implements Aggregate {
      * @param  connector  information about the storage (URL, stream, {@link ucar.nc2.NetcdfFile} instance, <i>etc</i>).
      * @throws DataStoreException if an error occurred while opening the netCDF file.
      *
-     * @since 1.5
+     * @since SIS 1.5
      */
     @SuppressWarnings("this-escape")        // The invoked method does not store `this` and is not overrideable.
     public NetcdfStore(final DataStoreProvider provider, final StorageConnector connector) throws DataStoreException {
@@ -144,7 +144,7 @@ public class NetcdfStore extends DataStore implements Aggregate {
      *
      * @return parameters used for opening this data store.
      *
-     * @since 0.8
+     * @since SIS 0.8
      */
     @Override
     public Optional<ParameterValueGroup> getOpenParameters() {
@@ -159,7 +159,7 @@ public class NetcdfStore extends DataStore implements Aggregate {
      * @return CF-convention version, or {@code null} if no information about CF convention has been found.
      * @throws DataStoreException if an error occurred while reading the data.
      *
-     * @since 0.8
+     * @since SIS 0.8
      */
     public synchronized Version getConventionVersion() throws DataStoreException {
         for (final CharSequence value : CharSequences.split(decoder().stringValue(CDM.CONVENTIONS), ',')) {
@@ -176,7 +176,7 @@ public class NetcdfStore extends DataStore implements Aggregate {
      * @return the identifier fetched from global attributes or the filename. May be absent.
      * @throws DataStoreException if an error occurred while fetching the identifier.
      *
-     * @since 1.0
+     * @since SIS 1.0
      */
     @Override
     public Optional<GenericName> getIdentifier() throws DataStoreException {
@@ -212,7 +212,7 @@ public class NetcdfStore extends DataStore implements Aggregate {
      * @return resources information structured in an implementation-specific way.
      * @throws DataStoreException if an error occurred while reading the metadata.
      *
-     * @since 1.1
+     * @since SIS 1.1
      */
     @Override
     public Optional<TreeTable> getNativeMetadata() throws DataStoreException {
@@ -229,7 +229,7 @@ public class NetcdfStore extends DataStore implements Aggregate {
      * @return children resources that are components of this netCDF store.
      * @throws DataStoreException if an error occurred while fetching the components.
      *
-     * @since 0.8
+     * @since SIS 0.8
      */
     @Override
     @SuppressWarnings("ReturnOfCollectionOrArrayField")

@@ -78,7 +78,7 @@ import org.opengis.referencing.datum.DatumEnsemble;
  * @see org.apache.sis.referencing.cs.DefaultTimeCS
  * @see org.apache.sis.referencing.factory.GeodeticAuthorityFactory#createTemporalCRS(String)
  *
- * @since 0.4
+ * @since SIS 0.4
  */
 @XmlType(name = "TemporalCRSType", propOrder = {
     "coordinateSystem",
@@ -151,7 +151,7 @@ public class DefaultTemporalCRS extends AbstractSingleCRS<TemporalDatum> impleme
      *
      * @see org.apache.sis.referencing.factory.GeodeticObjectFactory#createTemporalCRS(Map, TemporalDatum, DatumEnsemble, TimeCS)
      *
-     * @since 1.5
+     * @since SIS 1.5
      */
     @SuppressWarnings("this-escape")
     public DefaultTemporalCRS(final Map<String,?> properties,
@@ -241,7 +241,7 @@ public class DefaultTemporalCRS extends AbstractSingleCRS<TemporalDatum> impleme
      * This is the base type required by {@code equals(…)} methods for returning a potentially {@code true} value.
      *
      * @return {@code TemporalCRS.class} or a user-defined sub-interface.
-     * @since 1.7
+     * @since SIS 1.7
      */
     @Override
     public Type getStandardType() {
@@ -271,7 +271,7 @@ public class DefaultTemporalCRS extends AbstractSingleCRS<TemporalDatum> impleme
      * @return the datum ensemble, or {@code null} if this <abbr>CRS</abbr> is related
      *         to an object identified only by a single {@linkplain #getDatum() datum}.
      *
-     * @since 1.5
+     * @since SIS 1.5
      */
     @Override
     public DatumEnsemble<TemporalDatum> getDatumEnsemble() {
@@ -304,7 +304,7 @@ public class DefaultTemporalCRS extends AbstractSingleCRS<TemporalDatum> impleme
      *
      * @return the temporal unit of measurement of coordinates in this CRS.
      *
-     * @since 1.0
+     * @since SIS 1.0
      */
     public final Unit<Time> getUnit() {
         return super.getCoordinateSystem().getAxis(0).getUnit().asType(Time.class);
@@ -320,7 +320,7 @@ public class DefaultTemporalCRS extends AbstractSingleCRS<TemporalDatum> impleme
      * @throws NullPointerException if an origin, which are mandatory, is null.
      * @throws GeodeticException if the origin is not the same for all members of the datum ensemble.
      *
-     * @since 1.5
+     * @since SIS 1.5
      */
     public final Temporal getOrigin() {     // Must be final because invoked at construction time.
         return DatumOrEnsemble.asDatum(this).getOrigin();
@@ -352,7 +352,7 @@ public class DefaultTemporalCRS extends AbstractSingleCRS<TemporalDatum> impleme
      * @param  value  a value in this axis. Unit of measurement is given by {@link #getUnit()}.
      * @return the value as an instant, or {@code null} if the given value is NaN or infinite.
      *
-     * @since 1.0
+     * @since SIS 1.0
      */
     public Instant toInstant(double value) {
         if (Double.isFinite(value)) {
@@ -398,7 +398,7 @@ public class DefaultTemporalCRS extends AbstractSingleCRS<TemporalDatum> impleme
      * @param  delta  a difference of values in this axis. Unit of measurement is given by {@link #getUnit()}.
      * @return the value difference as a duration, or {@code null} if the duration cannot be computed.
      *
-     * @since 1.3
+     * @since SIS 1.3
      */
     public Duration toDuration(double delta) {
         delta *= Units.derivative(toSeconds, Double.NaN);
@@ -419,7 +419,7 @@ public class DefaultTemporalCRS extends AbstractSingleCRS<TemporalDatum> impleme
      * @return the value in this axis unit, or {@link Double#NaN} if the given instant is {@code null}.
      *         Unit of measurement is given by {@link #getUnit()}.
      *
-     * @since 1.0
+     * @since SIS 1.0
      */
     public double toValue(final Instant time) {
         if (time != null) {
@@ -465,7 +465,7 @@ public class DefaultTemporalCRS extends AbstractSingleCRS<TemporalDatum> impleme
      * @return the value difference in this axis unit, or {@link Double#NaN} if it cannot be computed.
      *         Unit of measurement is given by {@link #getUnit()}.
      *
-     * @since 1.3
+     * @since SIS 1.3
      */
     public double toValue(final Duration delta) {
         if (delta != null) {

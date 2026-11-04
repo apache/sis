@@ -34,6 +34,6 @@
  * @author  Cédric Briançon (Geomatys)
  * @author  Guilhem Legal (Geomatys)
  * @version 0.4
- * @since   0.4
+ * @since SIS 0.4
  */
 package org.apache.sis.profile.france;

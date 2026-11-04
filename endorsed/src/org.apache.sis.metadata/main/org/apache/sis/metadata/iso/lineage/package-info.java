@@ -67,7 +67,7 @@
  * @author  Cédric Briançon (Geomatys)
  * @author  Cullen Rombach (Image Matters)
  * @version 1.7
- * @since   0.3
+ * @since SIS 0.3
  */
 @XmlSchema(location="https://schemas.isotc211.org/19115/-3/mrl/1.0/mrl.xsd",
            elementFormDefault=XmlNsForm.QUALIFIED, namespace=Namespaces.MRL,

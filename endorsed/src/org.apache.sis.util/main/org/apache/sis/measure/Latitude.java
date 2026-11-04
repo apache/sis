@@ -55,7 +55,7 @@ import org.opengis.referencing.cs.AxisDirection;
  * @see AngleFormat
  * @see org.apache.sis.geometry.CoordinateFormat
  *
- * @since 0.3
+ * @since SIS 0.3
  */
 public final class Latitude extends Angle {
     /**
@@ -123,7 +123,7 @@ public final class Latitude extends Angle {
      *         or if no axis oriented toward North or South is found, or if that axis does
      *         not use {@linkplain Units#isAngular angular units}.
      *
-     * @since 0.8
+     * @since SIS 0.8
      */
     public Latitude(final DirectPosition position) throws IllegalArgumentException {
         super(valueOf(position, AxisDirection.NORTH, AxisDirection.SOUTH));
@@ -164,7 +164,7 @@ public final class Latitude extends Angle {
      *
      * @see Longitude#normalize(double)
      *
-     * @since 0.4
+     * @since SIS 0.4
      */
     public static double clamp(final double φ) {
         if (φ < MIN_VALUE) return MIN_VALUE;

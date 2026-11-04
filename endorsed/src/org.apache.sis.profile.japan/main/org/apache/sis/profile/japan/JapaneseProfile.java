@@ -29,7 +29,7 @@ package org.apache.sis.profile.japan;
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.0
- * @since   1.0
+ * @since SIS 1.0
  */
 public final class JapaneseProfile {
     /**

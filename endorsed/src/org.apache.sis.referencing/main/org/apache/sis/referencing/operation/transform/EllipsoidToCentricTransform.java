@@ -101,7 +101,7 @@ import static org.apache.sis.referencing.operation.provider.GeocentricAffineBetw
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @version 1.6
- * @since   0.7
+ * @since SIS 0.7
  */
 public class EllipsoidToCentricTransform extends AbstractMathTransform implements Serializable {
     /**
@@ -132,7 +132,7 @@ public class EllipsoidToCentricTransform extends AbstractMathTransform implement
      *
      * @author  Martin Desruisseaux (Geomatys)
      * @version 1.5
-     * @since   0.7
+     * @since SIS 0.7
      */
     public enum TargetType {
         /**
@@ -166,7 +166,7 @@ public class EllipsoidToCentricTransform extends AbstractMathTransform implement
          * @see org.opengis.referencing.cs.EllipsoidalCS
          * @see org.opengis.referencing.cs.SphericalCS
          *
-         * @since 1.5
+         * @since SIS 1.5
          */
         SPHERICAL;
 
@@ -178,7 +178,7 @@ public class EllipsoidToCentricTransform extends AbstractMathTransform implement
          * @param  csType  the coordinate system type.
          * @return enumeration value associated with the given type.
          * @throws IllegalArgumentException if the given {@code csType} is not one of the above-documented types.
-         * @since  1.5
+         * @since SIS 1.5
          */
         public static TargetType of(final Class<? extends CoordinateSystem> csType) {
             if (CartesianCS.class.isAssignableFrom(csType)) return CARTESIAN;
@@ -250,7 +250,7 @@ public class EllipsoidToCentricTransform extends AbstractMathTransform implement
      * and the ellipsoidal height is assumed to be 0.
      *
      * @see #getSourceDimensions()
-     * @since 1.5
+     * @since SIS 1.5
      */
     protected final boolean withHeight;
 
@@ -346,7 +346,7 @@ public class EllipsoidToCentricTransform extends AbstractMathTransform implement
      *
      * @see #createGeodeticConversion(MathTransformFactory, Ellipsoid, boolean, TargetType)
      *
-     * @since 1.5
+     * @since SIS 1.5
      */
     public EllipsoidToCentricTransform(final Ellipsoid source, final boolean withHeight, final TargetType csType) {
         ArgumentChecks.ensureNonNull("source", source);
@@ -433,7 +433,7 @@ public class EllipsoidToCentricTransform extends AbstractMathTransform implement
      * @return the conversion from geographic to geocentric coordinates.
      * @throws FactoryException if an error occurred while creating a transform.
      *
-     * @since 1.5
+     * @since SIS 1.5
      */
     public static MathTransform createGeodeticConversion(final MathTransformFactory factory,
             final Ellipsoid source, final boolean withHeight, final TargetType target) throws FactoryException

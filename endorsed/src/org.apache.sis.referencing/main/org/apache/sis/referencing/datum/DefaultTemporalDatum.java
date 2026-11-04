@@ -78,7 +78,7 @@ import org.opengis.metadata.Identifier;
  * @see org.apache.sis.referencing.crs.DefaultTemporalCRS
  * @see org.apache.sis.referencing.factory.GeodeticAuthorityFactory#createTemporalDatum(String)
  *
- * @since 0.4
+ * @since SIS 0.4
  */
 @XmlType(name = "TemporalDatumType")
 @XmlRootElement(name = "TemporalDatum")
@@ -149,7 +149,7 @@ public class DefaultTemporalDatum extends AbstractDatum implements TemporalDatum
      *
      * @see org.apache.sis.referencing.factory.GeodeticObjectFactory#createTemporalDatum(Map, Temporal)
      *
-     * @since 1.5
+     * @since SIS 1.5
      */
     public DefaultTemporalDatum(final Map<String,?> properties, final Temporal origin) {
         super(properties);
@@ -192,7 +192,7 @@ public class DefaultTemporalDatum extends AbstractDatum implements TemporalDatum
      * This is the base type required by {@code equals(…)} methods for returning a potentially {@code true} value.
      *
      * @return {@code TemporalDatum.class} or a user-defined sub-interface.
-     * @since 1.7
+     * @since SIS 1.7
      */
     @Override
     public Type getStandardType() {

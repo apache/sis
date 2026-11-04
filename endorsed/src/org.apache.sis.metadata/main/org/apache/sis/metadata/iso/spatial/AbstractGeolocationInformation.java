@@ -43,7 +43,7 @@ import org.apache.sis.metadata.iso.ISOMetadata;
  * @author  Martin Desruisseaux (Geomatys)
  * @author  Cullen Rombach (Image Matters)
  * @version 1.4
- * @since   0.3
+ * @since SIS 0.3
  */
 @XmlType(name = "AbstractMI_GeolocationInformation_Type")
 @XmlRootElement(name = "AbstractMI_GeolocationInformation")

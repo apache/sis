@@ -50,7 +50,7 @@ import org.opengis.metadata.Identifier;
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @version 1.7
- * @since   0.4
+ * @since SIS 0.4
  */
 @XmlTransient
 public class AbstractReferenceSystem extends AbstractIdentifiedObject implements ReferenceSystem {
@@ -119,7 +119,7 @@ public class AbstractReferenceSystem extends AbstractIdentifiedObject implements
      * Subclasses implementing a more specific GeoAPI interface shall override this method.
      *
      * @return the GeoAPI interface implemented by this class.
-     * @since 1.7
+     * @since SIS 1.7
      */
     @Override
     public Type getStandardType() {

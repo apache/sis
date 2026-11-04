@@ -113,7 +113,7 @@ import org.apache.sis.system.Configuration;
  * @author  Alexis Manin (Geomatys)
  * @author  Johann Sorel (Geomatys)
  * @version 1.8
- * @since   0.3
+ * @since SIS 0.3
  */
 public class StorageConnector implements Serializable {
     /**
@@ -132,7 +132,7 @@ public class StorageConnector implements Serializable {
      *
      * @see OptionKey#BYTE_BUFFER
      *
-     * @since 1.4
+     * @since SIS 1.4
      */
     @Configuration
     public static final int DEFAULT_BUFFER_SIZE = 32 * 1024;
@@ -155,7 +155,7 @@ public class StorageConnector implements Serializable {
      * @see InputStream#mark(int)
      * @see Reader#mark(int)
      *
-     * @since 1.5
+     * @since SIS 1.5
      */
     @Configuration
     public static final int READ_AHEAD_LIMIT = 8 * 1024;
@@ -645,7 +645,7 @@ public class StorageConnector implements Serializable {
      * @param  parent  the storage connector from which to inherit options.
      * @param storage  the input/output object as a <abbr>URL</abbr>, file, image input stream, <i>etc.</i>.
      *
-     * @since 1.5
+     * @since SIS 1.5
      */
     public StorageConnector(final StorageConnector parent, final Object storage) {
         this(storage);
@@ -1097,7 +1097,7 @@ public class StorageConnector implements Serializable {
      *
      * @return  whether returning the storage would have required the creation of a new file.
      *
-     * @since 1.4
+     * @since SIS 1.4
      */
     public boolean wasProbingAbsentFile() {
         return probing != null && probing.probe != null;
@@ -1117,7 +1117,7 @@ public class StorageConnector implements Serializable {
      *
      * @see DataStoreProvider#probeContent(StorageConnector)
      *
-     * @since 1.7
+     * @since SIS 1.7
      */
     public ProbeResult contentStartsWith(final byte[] signature) throws DataStoreException {
         ArgumentChecks.ensureNonNull("signature", signature);
@@ -1160,7 +1160,7 @@ public class StorageConnector implements Serializable {
      * @see #getFileExtension()
      * @see DataStoreProvider#probeContent(StorageConnector)
      *
-     * @since 1.7
+     * @since SIS 1.7
      */
     public ProbeResult pathEndsWith(final String suffix, final boolean ignoreCase) throws DataStoreException {
         ArgumentChecks.ensureNonEmpty("suffix", suffix);
@@ -1841,7 +1841,7 @@ public class StorageConnector implements Serializable {
      * @see #getStorageAs(Class)
      * @see #closeAllExcept(Object)
      *
-     * @since 1.2
+     * @since SIS 1.2
      */
     @SuppressWarnings("UseSpecificCatch")
     public <S> S commit(final Class<S> type, final String format) throws IllegalArgumentException, DataStoreException {
@@ -1976,7 +1976,7 @@ public class StorageConnector implements Serializable {
      *
      * @return {@code true} if this storage connector is closed.
      *
-     * @since 1.5
+     * @since SIS 1.5
      */
     public final boolean isClosed() {
         return views != null && views.isEmpty();

@@ -121,7 +121,7 @@ import static org.apache.sis.math.DecimalFunctions.fractionDigitsForDelta;
  * @see Longitude
  * @see org.apache.sis.geometry.CoordinateFormat
  *
- * @since 0.3
+ * @since SIS 0.3
  */
 public class AngleFormat extends Format implements Localized {
     /**
@@ -200,7 +200,7 @@ public class AngleFormat extends Format implements Localized {
      *
      * @author  Martin Desruisseaux (Geomatys)
      * @version 0.3
-     * @since   0.3
+     * @since SIS 0.3
      */
     public static final class Field extends FormatField {
         /**
@@ -726,7 +726,7 @@ public class AngleFormat extends Format implements Localized {
      *
      * @see NumberFormat#getRoundingMode()
      *
-     * @since 0.8
+     * @since SIS 0.8
      */
     public RoundingMode getRoundingMode() {
         return (roundingMode != null) ? roundingMode : RoundingMode.HALF_EVEN;
@@ -752,7 +752,7 @@ public class AngleFormat extends Format implements Localized {
      *
      * @see NumberFormat#setRoundingMode(RoundingMode)
      *
-     * @since 0.8
+     * @since SIS 0.8
      */
     public void setRoundingMode(final RoundingMode mode) {
         if (Objects.requireNonNull(mode) == RoundingMode.HALF_UP || mode == RoundingMode.HALF_DOWN) {
@@ -786,7 +786,7 @@ public class AngleFormat extends Format implements Localized {
      *
      * @return precision in decimal degrees of angles formatted by current pattern.
      *
-     * @since 1.1
+     * @since SIS 1.1
      */
     public double getPrecision() {
         double precision = pow10(-fractionFieldWidth);
@@ -820,7 +820,7 @@ public class AngleFormat extends Format implements Localized {
      * @param  allowFieldChanges  whether this method is allowed to change the set of fields (degrees, minutes or seconds).
      * @throws IllegalArgumentException if the given resolution is NaN or infinite.
      *
-     * @since 1.0
+     * @since SIS 1.0
      */
     @SuppressWarnings("PointlessBitwiseExpression")
     public void setPrecision(double resolution, final boolean allowFieldChanges) {

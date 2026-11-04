@@ -42,7 +42,7 @@ import org.opengis.metadata.quality.AccuracyOfATimeMeasurement;
  * @author  Touraïvane (IRD)
  * @author  Alexis Gaillard (Geomatys)
  * @version 1.4
- * @since   0.3
+ * @since SIS 0.3
  */
 @XmlType(name = "DQ_AccuracyOfATimeMeasurement_Type")
 @XmlRootElement(name = "DQ_AccuracyOfATimeMeasurement")

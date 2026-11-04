@@ -63,7 +63,7 @@ import org.opengis.metadata.content.AttributeGroup;
  * @author  Cédric Briançon (Geomatys)
  * @author  Cullen Rombach (Image Matters)
  * @version 1.4
- * @since   0.3
+ * @since SIS 0.3
  */
 @XmlType(name = "MD_CoverageDescription_Type", propOrder = {
     "attributeDescription",
@@ -192,7 +192,7 @@ public class DefaultCoverageDescription extends AbstractContentInformation imple
      *
      * @return identifier for the level of processing that has been applied to the resource, or {@code null} if none.
      *
-     * @since 0.5
+     * @since SIS 0.5
      */
     @Override
     @XmlElement(name = "processingLevelCode")
@@ -206,7 +206,7 @@ public class DefaultCoverageDescription extends AbstractContentInformation imple
      *
      * @param  newValue  the new identifier for the level of processing.
      *
-     * @since 0.5
+     * @since SIS 0.5
      */
     public void setProcessingLevelCode(final Identifier newValue) {
         checkWritePermission(processingLevelCode);
@@ -218,7 +218,7 @@ public class DefaultCoverageDescription extends AbstractContentInformation imple
      *
      * @return information on attribute groups of the resource.
      *
-     * @since 0.5
+     * @since SIS 0.5
      */
     @Override
     // @XmlElement at the end of this class.
@@ -231,7 +231,7 @@ public class DefaultCoverageDescription extends AbstractContentInformation imple
      *
      * @param  newValues  the new information on attribute groups of the resource.
      *
-     * @since 0.5
+     * @since SIS 0.5
      */
     public void setAttributeGroups(final Collection<? extends AttributeGroup> newValues) {
         attributeGroups = writeCollection(newValues, attributeGroups, AttributeGroup.class);

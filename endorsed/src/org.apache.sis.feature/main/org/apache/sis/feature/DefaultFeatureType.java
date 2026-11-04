@@ -103,7 +103,7 @@ import org.opengis.feature.PropertyNotFoundException;
  * @see org.apache.sis.metadata.iso.content.DefaultFeatureTypeInfo
  * @see org.apache.sis.storage.FeatureNaming
  *
- * @since 0.5
+ * @since SIS 0.5
  */
 public class DefaultFeatureType extends AbstractIdentifiedType implements FeatureType {
     /**
@@ -856,7 +856,7 @@ public class DefaultFeatureType extends AbstractIdentifiedType implements Featur
      * @param  name  the name of the property to search.
      * @return whether an attribute, operation or association role exists for the given name.
      *
-     * @since 1.6
+     * @since SIS 1.6
      */
     @Override
     public boolean hasProperty(final String name) {

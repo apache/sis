@@ -51,7 +51,7 @@ package org.apache.sis.util;
  * @see javax.imageio.ImageReader#dispose()
  * @see javax.imageio.ImageWriter#dispose()
  *
- * @since 0.3
+ * @since SIS 0.3
  */
 public interface Disposable {
     /**

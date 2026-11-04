@@ -45,7 +45,7 @@ import org.apache.sis.io.stream.InternalOptionKey;
  *
  * @see GeoTiffStore#getModifiers()
  *
- * @since 1.5
+ * @since SIS 1.5
  */
 public enum FormatModifier {
     /**
@@ -64,7 +64,7 @@ public enum FormatModifier {
      * This flexibility makes possible to write the <abbr>TIFF</abbr> file directly,
      * with no need to write in a temporary file and reorder the images at the end.
      *
-     * @since 1.7
+     * @since SIS 1.7
      */
     PYRAMIDED,
 

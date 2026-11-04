@@ -45,7 +45,7 @@ import org.opengis.coverage.CannotEvaluateException;
  *
  * @see GridCoverageResource#setLoadingStrategy(RasterLoadingStrategy)
  *
- * @since 1.1
+ * @since SIS 1.1
  */
 public enum RasterLoadingStrategy {
     /**

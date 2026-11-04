@@ -63,7 +63,7 @@ import org.apache.sis.measure.Units;
  *
  * @see ImageProcessor#overlay(RenderedImage[], Rectangle)
  *
- * @since 1.1
+ * @since SIS 1.1
  */
 public class ImageCombiner implements Consumer<RenderedImage> {
     /**
@@ -95,7 +95,7 @@ public class ImageCombiner implements Consumer<RenderedImage> {
      * @param  destination  the image where to combine images.
      * @param  processor    the processor to use for resampling operations.
      *
-     * @since 1.2
+     * @since SIS 1.2
      */
     public ImageCombiner(final WritableRenderedImage destination, final ImageProcessor processor) {
         this.destination = Objects.requireNonNull(destination);
@@ -158,7 +158,7 @@ public class ImageCombiner implements Consumer<RenderedImage> {
      *
      * @return the type of number capable to hold sample values of each band.
      *
-     * @since 1.4
+     * @since SIS 1.4
      */
     public DataType getBandType() {
         return DataType.forBands(destination);

@@ -52,7 +52,7 @@ import org.apache.sis.xml.internal.shared.LegacyNamespaces;
  * @author  Cullen Rombach (Image Matters)
  * @author  Alexis Gaillard (Geomatys)
  * @version 1.4
- * @since   0.3
+ * @since SIS 0.3
  */
 @XmlType(name = "DQ_QuantitativeResult_Type", propOrder = {
     "values",

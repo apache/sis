@@ -123,7 +123,7 @@ import org.opengis.referencing.crs.DerivedCRS;
  * @see DefaultTransformation
  * @see org.apache.sis.referencing.operation.transform.MathTransformProvider
  *
- * @since 0.5
+ * @since SIS 0.5
  */
 @XmlType(name = "OperationMethodType", propOrder = {
     "formulaCitation",
@@ -205,7 +205,7 @@ public class DefaultOperationMethod extends AbstractIdentifiedObject implements 
      * @param  properties  set of properties. Shall contain at least {@code "name"}.
      * @param  parameters  description of parameters expected by this operation.
      *
-     * @since 1.1
+     * @since SIS 1.1
      */
     public DefaultOperationMethod(final Map<String,?> properties,
                                   final ParameterDescriptorGroup parameters)
@@ -319,7 +319,7 @@ public class DefaultOperationMethod extends AbstractIdentifiedObject implements 
      * This is the base type required by {@code equals(…)} methods for returning a potentially {@code true} value.
      *
      * @return {@code OperationMethod.class} or a user-defined sub-interface.
-     * @since 1.7
+     * @since SIS 1.7
      */
     @Override
     public Type getStandardType() {

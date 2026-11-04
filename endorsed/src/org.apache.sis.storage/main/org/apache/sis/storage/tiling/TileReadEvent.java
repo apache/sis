@@ -48,7 +48,7 @@ import org.apache.sis.util.internal.shared.Strings;
  * {@link Tile} is generally not known yet.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @since   1.7
+ * @since SIS 1.7
  * @version 1.7
  */
 public final class TileReadEvent extends StoreEvent {

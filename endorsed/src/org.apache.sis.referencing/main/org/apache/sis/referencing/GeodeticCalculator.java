@@ -125,7 +125,7 @@ import static org.apache.sis.referencing.operation.provider.ModifiedAzimuthalEqu
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.1
- * @since   1.0
+ * @since SIS 1.0
  */
 public class GeodeticCalculator {
     /**
@@ -1170,7 +1170,7 @@ public class GeodeticCalculator {
      *
      * @see #moveToEndPoint()
      *
-     * @since 1.1
+     * @since SIS 1.1
      */
     public MathTransform createProjectionAroundStart() {
         if (isInvalid(START_POINT)) {

@@ -62,7 +62,7 @@ import org.apache.sis.util.internal.shared.Strings;
  *
  * @see OptionKey#COVERAGE_MODIFIER
  *
- * @since 1.5
+ * @since SIS 1.5
  */
 public interface CoverageModifier {
     /**
@@ -83,7 +83,7 @@ public interface CoverageModifier {
      * Coverages are identified by their index, starting at 0 and incremented sequentially.
      *
      * @version 1.5
-     * @since   1.5
+     * @since SIS 1.5
      */
     public static class Source {
         /**
@@ -213,7 +213,7 @@ public interface CoverageModifier {
      * Bands are identified by their index, starting at 0 and incremented sequentially.
      *
      * @version 1.5
-     * @since   1.5
+     * @since SIS 1.5
      */
     public static class BandSource extends Source {
         /** Index of the band for which to create sample dimension. */

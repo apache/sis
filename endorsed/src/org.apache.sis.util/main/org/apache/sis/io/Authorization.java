@@ -39,7 +39,7 @@ import java.nio.file.AccessDeniedException;
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.7
- * @since   1.7
+ * @since SIS 1.7
  */
 public enum Authorization {
     /**

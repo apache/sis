@@ -150,7 +150,7 @@ import org.opengis.referencing.datum.RealizationMethod;
  *
  * @see org.apache.sis.referencing.factory.CommonAuthorityFactory
  *
- * @since 0.4
+ * @since SIS 0.4
  */
 @SuppressWarnings("DoubleCheckedLocking")
 public enum CommonCRS {
@@ -284,7 +284,7 @@ public enum CommonCRS {
      *   <tr><th>Inverse flattening:</th>      <td>298.257222101 <i>(definitive)</i></td></tr>
      * </table></blockquote>
      *
-     * @since 1.0
+     * @since SIS 1.0
      */
     GRS1980((short) 4019, (short) 0, (short) 0, (short) 6019, (short) 7019,                  // Geodetic info
             (short) 0, (short) 0, (short) 0, (short) 0, (byte) 0, (byte) 0),                 // UPS and UTM info
@@ -488,7 +488,7 @@ public enum CommonCRS {
      * @throws IllegalArgumentException if no {@code CommonCRS} value can be found for the given CRS.
      *
      * @see #datum(boolean)
-     * @since 0.8
+     * @since SIS 0.8
      */
     public static CommonCRS forDatum(final CoordinateReferenceSystem crs) {
         final SingleCRS single;
@@ -593,7 +593,7 @@ public enum CommonCRS {
      * @see Temporal#TRUNCATED_JULIAN
      * @see DefaultTemporalCRS#toInstant(double)
      *
-     * @since 1.6
+     * @since SIS 1.6
      */
     public static TemporalCRS defaultTemporal() {
         return Temporal.TRUNCATED_JULIAN.crs();
@@ -814,7 +814,7 @@ public enum CommonCRS {
      *
      * @see DefaultGeocentricCRS
      *
-     * @since 0.7
+     * @since SIS 0.7
      */
     public synchronized GeodeticCRS spherical() {
         if (cachedSpherical == null) {
@@ -881,7 +881,7 @@ public enum CommonCRS {
      * @see #forDatum(CoordinateReferenceSystem)
      * @see org.apache.sis.referencing.datum.DefaultGeodeticDatum
      *
-     * @since 1.5
+     * @since SIS 1.5
      */
     public synchronized GeodeticDatum datum(final boolean acceptEnsemble) {
         GeodeticDatum object = datumOrEnsemble(cached);
@@ -922,7 +922,7 @@ public enum CommonCRS {
      *
      * @return the datum ensemble associated with this enum, or {@code null} if none.
      *
-     * @since 1.5
+     * @since SIS 1.5
      */
     public DatumEnsemble<GeodeticDatum> datumEnsemble() {
         return DatumOrEnsemble.asEnsemble(datum(true)).orElse(null);
@@ -1147,7 +1147,7 @@ public enum CommonCRS {
      * @param  longitude a longitude in the desired UTM or UPS projection zone.
      * @return a Universal Transverse Mercator or Polar Stereographic projection for the zone containing the given point.
      *
-     * @since 0.8
+     * @since SIS 0.8
      */
     public ProjectedCRS universal(final double latitude, final double longitude) {
         ArgumentChecks.ensureBetween("latitude",   Latitude.MIN_VALUE,     Latitude.MAX_VALUE,     latitude);
@@ -1275,7 +1275,7 @@ public enum CommonCRS {
      *
      * @see org.apache.sis.referencing.factory.CommonAuthorityFactory
      *
-     * @since 0.4
+     * @since SIS 0.4
      */
     public enum Vertical {
         /**
@@ -1329,7 +1329,7 @@ public enum CommonCRS {
          *
          * @see CommonCRS#NAD83
          *
-         * @since 0.7
+         * @since SIS 0.7
          */
         NAVD88(true, (short) 5703, (short) 5103),
 
@@ -1580,7 +1580,7 @@ public enum CommonCRS {
      * @see #defaultTemporal()
      * @see Engineering#TIME
      *
-     * @since 0.4
+     * @since SIS 0.4
      */
     public enum Temporal {
         /**
@@ -1648,7 +1648,7 @@ public enum CommonCRS {
          *
          * @see Units#TROPICAL_YEAR
          *
-         * @since 1.5
+         * @since SIS 1.5
          */
         TROPICAL_YEAR(Vocabulary.Keys.TropicalYear, 946684800L, "TropicalYear", false),
 
@@ -1735,7 +1735,7 @@ public enum CommonCRS {
          *
          * @see <a href="http://www.opengis.net/def/crs/OGC/0">OGC Definitions Server</a>
          *
-         * @since 1.3
+         * @since SIS 1.3
          */
         public static Temporal forIdentifier(final String identifier, final boolean onlyOGC) {
             ArgumentChecks.ensureNonEmpty("identifier", identifier);
@@ -1758,7 +1758,7 @@ public enum CommonCRS {
          * @param  epoch  the epoch for which to get an enumeration value, or {@code null}.
          * @return the enumeration value for the given epoch, or {@code null} if none.
          *
-         * @since 1.0
+         * @since SIS 1.0
          */
         @OptionalCandidate
         public static Temporal forEpoch(final Instant epoch) {
@@ -1915,7 +1915,7 @@ public enum CommonCRS {
      *
      * @author  Martin Desruisseaux (Geomatys)
      * @version 1.7
-     * @since   1.1
+     * @since SIS 1.1
      */
     public enum Engineering {
         /**
@@ -2068,7 +2068,7 @@ public enum CommonCRS {
          *
          * @param  crs  the CRS to compare against the datum of this enumeration value. May be {@code null}.
          * @return whether the given <abbr>CRS</abbr> uses the datum, directly or indirectly.
-         * @since 1.5
+         * @since SIS 1.5
          */
         public boolean datumUsedBy(final CoordinateReferenceSystem crs) {
             for (final SingleCRS component : CRS.getSingleComponents(crs)) {

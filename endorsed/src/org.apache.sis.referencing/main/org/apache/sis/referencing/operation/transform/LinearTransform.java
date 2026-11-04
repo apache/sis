@@ -69,7 +69,7 @@ import org.opengis.referencing.operation.NoninvertibleTransformException;
  * @see java.awt.geom.AffineTransform
  * @see <a href="https://mathworld.wolfram.com/AffineTransformation.html">Affine transformation on MathWorld</a>
  *
- * @since 0.4
+ * @since SIS 0.4
  */
 public interface LinearTransform extends MathTransform {
     /**
@@ -81,7 +81,7 @@ public interface LinearTransform extends MathTransform {
      *
      * @see org.apache.sis.referencing.operation.matrix.MatrixSIS#isAffine()
      *
-     * @since 0.6
+     * @since SIS 0.6
      */
     boolean isAffine();
 
@@ -116,7 +116,7 @@ public interface LinearTransform extends MathTransform {
      *
      * @see java.awt.geom.AffineTransform#deltaTransform(double[], int, double[], int, int)
      *
-     * @since 0.7
+     * @since SIS 0.7
      */
     void deltaTransform(double[] srcPts, int srcOff, double[] dstPts, int dstOff, int numPts) throws TransformException;
 
@@ -130,7 +130,7 @@ public interface LinearTransform extends MathTransform {
      *
      * @see java.awt.geom.AffineTransform#createInverse()
      *
-     * @since 0.7
+     * @since SIS 0.7
      */
     @Override
     LinearTransform inverse() throws NoninvertibleTransformException;

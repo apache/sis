@@ -52,7 +52,7 @@ import org.apache.sis.metadata.iso.ISOMetadata;
  * @author  Cédric Briançon (Geomatys)
  * @author  Cullen Rombach (Image Matters)
  * @version 1.7
- * @since   0.3
+ * @since SIS 0.3
  */
 @TitleProperty(name = "name")
 @XmlType(name = "CI_OnlineResource_Type", propOrder = {
@@ -321,7 +321,7 @@ public class DefaultOnlineResource extends ISOMetadata implements OnlineResource
      *
      * @return Request used to access the resource.
      *
-     * @since 0.5
+     * @since SIS 0.5
      */
     @Override
     @XmlElement(name = "protocolRequest")
@@ -335,7 +335,7 @@ public class DefaultOnlineResource extends ISOMetadata implements OnlineResource
      *
      * @param  newValue  the new request, or {@code null} if none.
      *
-     * @since 0.5
+     * @since SIS 0.5
      */
     public void setProtocolRequest(final String newValue) {
         checkWritePermission(protocolRequest);

@@ -60,7 +60,7 @@ import org.apache.sis.xml.bind.gco.CharSequenceAdapter;
  * @see DefaultNameSpace
  * @see DefaultScopedName
  *
- * @since 0.3
+ * @since SIS 0.3
  */
 
 /*

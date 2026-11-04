@@ -72,7 +72,7 @@ import java.lang.annotation.RetentionPolicy;
  *
  * @see NumberRange#NumberRange(Class, ValueRange)
  *
- * @since 0.3
+ * @since SIS 0.3
  */
 @Documented
 @Target({ElementType.FIELD, ElementType.METHOD})

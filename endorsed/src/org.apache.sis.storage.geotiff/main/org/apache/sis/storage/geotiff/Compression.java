@@ -50,7 +50,7 @@ import org.apache.sis.io.stream.InternalOptionKey;
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.7
- * @since   1.5
+ * @since SIS 1.5
  */
 public final class Compression implements Serializable {
     /**

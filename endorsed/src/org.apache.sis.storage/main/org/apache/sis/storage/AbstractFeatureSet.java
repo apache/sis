@@ -51,7 +51,7 @@ import org.opengis.feature.FeatureType;
  * @author  Johann Sorel (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.6
- * @since   1.2
+ * @since SIS 1.2
  */
 public abstract class AbstractFeatureSet extends AbstractResource implements FeatureSet {
     /**
@@ -60,7 +60,7 @@ public abstract class AbstractFeatureSet extends AbstractResource implements Fea
      *
      * @param  parent  the parent resource, or {@code null} if none.
      *
-     * @since 1.4
+     * @since SIS 1.4
      */
     protected AbstractFeatureSet(final Resource parent) {
         super(parent);
@@ -149,7 +149,7 @@ public abstract class AbstractFeatureSet extends AbstractResource implements Fea
      * @param  optimizer  the optimization to configure.
      * @throws DataStoreException if an error occurred during the configuration of the optimizer.
      *
-     * @since 1.6
+     * @since SIS 1.6
      */
     protected void prepareQueryOptimization(FeatureQuery query, Optimization optimizer) throws DataStoreException {
     }

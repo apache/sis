@@ -55,7 +55,7 @@ import org.opengis.metadata.identification.OperationMetadata;
  * @author  Rémi Maréchal (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.4
- * @since   0.5
+ * @since SIS 0.5
  */
 @TitleProperty(name = "name")
 @XmlType(name = "SV_OperationChainMetadata_Type", namespace = Namespaces.SRV, propOrder = {

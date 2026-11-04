@@ -90,7 +90,7 @@ import static org.apache.sis.util.Utilities.deepEquals;
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.7
- * @since   0.5
+ * @since SIS 0.5
  */
 @XmlType(name = "AbstractGeneralOperationParameterType", propOrder = {
     "nonDefaultMinimumOccurs",
@@ -217,7 +217,7 @@ public abstract class AbstractParameterDescriptor extends AbstractIdentifiedObje
      * Subclasses implementing a more specific GeoAPI interface shall override this method.
      *
      * @return the parameter descriptor interface implemented by this class.
-     * @since 1.7
+     * @since SIS 1.7
      */
     @Override
     public Type getStandardType() {

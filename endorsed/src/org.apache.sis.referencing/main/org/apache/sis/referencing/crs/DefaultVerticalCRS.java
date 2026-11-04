@@ -59,7 +59,7 @@ import org.opengis.referencing.datum.DatumEnsemble;
  * @see org.apache.sis.referencing.cs.DefaultVerticalCS
  * @see org.apache.sis.referencing.factory.GeodeticAuthorityFactory#createVerticalCRS(String)
  *
- * @since 0.4
+ * @since SIS 0.4
  */
 @XmlType(name = "VerticalCRSType", propOrder = {
     "coordinateSystem",
@@ -116,7 +116,7 @@ public class DefaultVerticalCRS extends AbstractSingleCRS<VerticalDatum> impleme
      *
      * @see org.apache.sis.referencing.factory.GeodeticObjectFactory#createVerticalCRS(Map, VerticalDatum, DatumEnsemble, VerticalCS)
      *
-     * @since 1.5
+     * @since SIS 1.5
      */
     public DefaultVerticalCRS(final Map<String,?> properties,
                               final VerticalDatum datum,
@@ -170,7 +170,7 @@ public class DefaultVerticalCRS extends AbstractSingleCRS<VerticalDatum> impleme
      * This is the base type required by {@code equals(…)} methods for returning a potentially {@code true} value.
      *
      * @return {@code VerticalCRS.class} or a user-defined sub-interface.
-     * @since 1.7
+     * @since SIS 1.7
      */
     @Override
     public Type getStandardType() {
@@ -200,7 +200,7 @@ public class DefaultVerticalCRS extends AbstractSingleCRS<VerticalDatum> impleme
      * @return the datum ensemble, or {@code null} if this <abbr>CRS</abbr> is related
      *         to an object identified only by a single {@linkplain #getDatum() datum}.
      *
-     * @since 1.5
+     * @since SIS 1.5
      */
     @Override
     public DatumEnsemble<VerticalDatum> getDatumEnsemble() {

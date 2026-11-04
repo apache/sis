@@ -69,7 +69,7 @@ import org.apache.sis.metadata.internal.Dependencies;
  * @author  Cédric Briançon (Geomatys)
  * @author  Cullen Rombach (Image Matters)
  * @version 1.4
- * @since   0.3
+ * @since SIS 0.3
  */
 @XmlType(name = "MD_DataIdentification_Type", propOrder = {
     "languages",                // Legacy ISO 19115:2003
@@ -189,7 +189,7 @@ public class DefaultDataIdentification extends AbstractIdentification implements
      *
      * @return language(s) and character set(s) used within the dataset.
      *
-     * @since 1.0
+     * @since SIS 1.0
      */
     @Override
     // @XmlElement at the end of this class.
@@ -204,7 +204,7 @@ public class DefaultDataIdentification extends AbstractIdentification implements
      *
      * @param  newValues  the new language(s) and character set(s) used within the dataset.
      *
-     * @since 1.0
+     * @since SIS 1.0
      */
     public void setLocalesAndCharsets(final Map<? extends Locale, ? extends Charset> newValues) {
         locales = writeMap(newValues, locales, Locale.class);

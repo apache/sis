@@ -76,7 +76,7 @@ import org.opengis.metadata.quality.Metaquality;
  * @author  Guilhem Legal (Geomatys)
  * @author  Alexis Gaillard (Geomatys)
  * @version 1.7
- * @since   0.3
+ * @since SIS 0.3
  */
 @TitleProperty(name = "standaloneQualityReportDetails")
 @XmlType(name = "AbstractDQ_Element_Type", propOrder = {
@@ -239,7 +239,7 @@ public class AbstractElement extends ISOMetadata implements Element {
      *
      * @return clause where this data quality element is described, or {@code null} if none.
      *
-     * @since 1.3
+     * @since SIS 1.3
      */
     @Override
     @XmlElement(name = "standaloneQualityReportDetails")
@@ -253,7 +253,7 @@ public class AbstractElement extends ISOMetadata implements Element {
      *
      * @param  newValue  the clause in the standalone quality report.
      *
-     * @since 1.3
+     * @since SIS 1.3
      */
     public void setStandaloneQualityReportDetails(final InternationalString newValue)  {
         checkWritePermission(standaloneQualityReportDetails);
@@ -265,7 +265,7 @@ public class AbstractElement extends ISOMetadata implements Element {
      *
      * @return reference to the measure used, or {@code null} if none.
      *
-     * @since 1.3
+     * @since SIS 1.3
      */
     @Override
     @XmlElement(name = "measure", required = false)
@@ -278,7 +278,7 @@ public class AbstractElement extends ISOMetadata implements Element {
      *
      * @param  newValues  the new measure identifier.
      *
-     * @since 1.3
+     * @since SIS 1.3
      */
     public void setMeasureReference(final MeasureReference newValues) {
         checkWritePermission(measureReference);
@@ -412,7 +412,7 @@ public class AbstractElement extends ISOMetadata implements Element {
      *
      * @return information about the evaluation method, or {@code null} if none.
      *
-     * @since 1.3
+     * @since SIS 1.3
      */
     @Override
     @XmlElement(name = "evaluationMethod", required = false)
@@ -425,7 +425,7 @@ public class AbstractElement extends ISOMetadata implements Element {
      *
      * @param  newValue  the new evaluation information.
      *
-     * @since 1.3
+     * @since SIS 1.3
      */
     public void setEvaluationMethod(final EvaluationMethod newValue) {
         checkWritePermission(evaluationMethod);
@@ -609,7 +609,7 @@ public class AbstractElement extends ISOMetadata implements Element {
      *
      * @return original element(s) when there is an aggregation or derivation.
      *
-     * @since 1.3
+     * @since SIS 1.3
      */
     @Override
     // @XmlElement at the end of this class.
@@ -622,7 +622,7 @@ public class AbstractElement extends ISOMetadata implements Element {
      *
      * @param  newValues  the new elements.
      *
-     * @since 1.3
+     * @since SIS 1.3
      */
     public void setDerivedElements(final Collection<? extends Element> newValues) {
         derivedElements = writeCollection(newValues, derivedElements, Element.class);

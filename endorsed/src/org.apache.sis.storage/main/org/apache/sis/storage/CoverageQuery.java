@@ -61,7 +61,7 @@ import org.apache.sis.util.resources.Vocabulary;
  * @author  Johann Sorel (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.4
- * @since   1.1
+ * @since SIS 1.1
  */
 public class CoverageQuery extends Query implements Cloneable, Serializable {
     /**
@@ -185,7 +185,7 @@ public class CoverageQuery extends Query implements Cloneable, Serializable {
      * @see GridCoverageProcessor#removeGridDimensions(GridCoverage, int...)
      * @see GridCoverageProcessor#reduceDimensionality(GridCoverage)
      *
-     * @since 1.4
+     * @since SIS 1.4
      */
     public void setAxisSelection(final Function<GridGeometry, DimensionalityReduction> reduction) {
         this.reduction = reduction;
@@ -198,7 +198,7 @@ public class CoverageQuery extends Query implements Cloneable, Serializable {
      * @return the function to apply for obtaining a dimensionality reduction from a grid coverage,
      *         or {@code null} if none.
      *
-     * @since 1.4
+     * @since SIS 1.4
      */
     public Function<GridGeometry, DimensionalityReduction> getAxisSelection() {
         return reduction;
@@ -353,7 +353,7 @@ next:       for (int i=0; i<rangeNames.length; i++) {
      * @see GridCoverageResource#subset(CoverageQuerty)
      * @see FeatureQuery#execute(FeatureSet)
      *
-     * @since 1.2
+     * @since SIS 1.2
      */
     protected GridCoverageResource execute(final GridCoverageResource source) throws DataStoreException {
         return new CoverageSubset(null, Objects.requireNonNull(source), this);

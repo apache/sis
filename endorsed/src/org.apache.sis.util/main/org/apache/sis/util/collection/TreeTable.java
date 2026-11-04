@@ -64,7 +64,7 @@ import java.util.function.Predicate;
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @version 0.3
- * @since   0.3
+ * @since SIS 0.3
  */
 public interface TreeTable {
     /**
@@ -121,7 +121,7 @@ public interface TreeTable {
      *
      * @author  Martin Desruisseaux (IRD, Geomatys)
      * @version 1.7
-     * @since   0.3
+     * @since SIS 0.3
      */
     public interface Node {
         /**
@@ -237,7 +237,7 @@ public interface TreeTable {
          * @return whether this node should be shown.
          *
          * @see TreeTableFormat#setNodeFilter(Predicate)
-         * @since 1.7
+         * @since SIS 1.7
          */
         default boolean isVisible() {
             return true;
@@ -331,7 +331,7 @@ public interface TreeTable {
          * @param  other  the other object to compare with this node.
          * @return whether the two objects are nodes with equal values and equal children, ignoring parents.
          *
-         * @since 0.8
+         * @since SIS 0.8
          */
         @Override
         boolean equals(Object other);
@@ -359,7 +359,7 @@ public interface TreeTable {
          *
          * @return a hash code for this node, potentially based on values and children but ignoring parent.
          *
-         * @since 0.8
+         * @since SIS 0.8
          */
         @Override
         int hashCode();

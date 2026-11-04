@@ -54,7 +54,7 @@ import static org.apache.sis.metadata.internal.shared.ImplementationHelper.ensur
  * @author  Cédric Briançon (Geomatys)
  * @author  Cullen Rombach (Image Matters)
  * @version 1.5
- * @since   0.3
+ * @since SIS 0.3
  */
 @XmlType(name = "MD_DigitalTransferOptions_Type", propOrder = {
     "unitsOfDistribution",
@@ -238,7 +238,7 @@ public class DefaultDigitalTransferOptions extends ISOMetadata implements Digita
      *
      * @return offline media on which the resource can be obtained.
      *
-     * @since 0.5
+     * @since SIS 0.5
      */
     @Override
     @XmlElement(name = "offLine")
@@ -256,7 +256,7 @@ public class DefaultDigitalTransferOptions extends ISOMetadata implements Digita
      *
      * @param  newValues  the new offline media.
      *
-     * @since 0.5
+     * @since SIS 0.5
      */
     public void setOffLines(final Collection<? extends Medium> newValues) {
         offLines = writeCollection(newValues, offLines, Medium.class);
@@ -293,7 +293,7 @@ public class DefaultDigitalTransferOptions extends ISOMetadata implements Digita
      *
      * @return rate of occurrence of distribution, or {@code null} if none.
      *
-     * @since 0.5
+     * @since SIS 0.5
      */
     @Override
     @XmlElement(name = "transferFrequency")
@@ -307,7 +307,7 @@ public class DefaultDigitalTransferOptions extends ISOMetadata implements Digita
      *
      * @param  newValue  the new rate of occurrence of distribution.
      *
-     * @since 0.5
+     * @since SIS 0.5
      */
     public void setTransferFrequency(final TemporalAmount newValue) {
         checkWritePermission(transferFrequency);
@@ -319,7 +319,7 @@ public class DefaultDigitalTransferOptions extends ISOMetadata implements Digita
      *
      * @return formats of distribution.
      *
-     * @since 0.5
+     * @since SIS 0.5
      */
     @Override
     // @XmlElement at the end of this class.
@@ -332,7 +332,7 @@ public class DefaultDigitalTransferOptions extends ISOMetadata implements Digita
      *
      * @param  newValues  the new formats of distribution.
      *
-     * @since 0.5
+     * @since SIS 0.5
      */
     public void setDistributionFormats(final Collection<? extends Format> newValues) {
         distributionFormats = writeCollection(newValues, distributionFormats, Format.class);

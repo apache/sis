@@ -51,7 +51,7 @@ import org.opengis.feature.MultiValuedPropertyException;
  * @see AbstractFeature
  * @see DefaultAssociationRole
  *
- * @since 0.5
+ * @since SIS 0.5
  */
 public abstract class AbstractAssociation extends Field<Feature> implements FeatureAssociation, Cloneable, Serializable {
     /**

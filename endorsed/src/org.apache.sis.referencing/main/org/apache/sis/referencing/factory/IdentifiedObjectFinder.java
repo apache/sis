@@ -74,7 +74,7 @@ import org.opengis.metadata.Identifier;
  * @see GeodeticAuthorityFactory#newIdentifiedObjectFinder()
  * @see IdentifiedObjects#newFinder(String)
  *
- * @since 0.7
+ * @since SIS 0.7
  */
 public class IdentifiedObjectFinder {
     /**
@@ -85,7 +85,7 @@ public class IdentifiedObjectFinder {
      *
      * @see #getSearchDomain()
      *
-     * @since 0.7
+     * @since SIS 0.7
      */
     public enum Domain {
         /**
@@ -141,7 +141,7 @@ public class IdentifiedObjectFinder {
          * optimization may prevent {@link IdentifiedObjectFinder} to scan the rest of the geodetic dataset.
          * This {@code EXHAUSTIVE_VALID_DATASET} domain forces such scan.
          *
-         * @since 1.2
+         * @since SIS 1.2
          */
         EXHAUSTIVE_VALID_DATASET,
 
@@ -746,7 +746,7 @@ public class IdentifiedObjectFinder {
      *
      * @author  Martin Desruisseaux (Geomatys)
      * @version 1.5
-     * @since   1.5
+     * @since SIS 1.5
      */
     public static abstract class Wrapper extends IdentifiedObjectFinder {
         /**

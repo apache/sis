@@ -65,7 +65,7 @@ import org.opengis.feature.PropertyType;
  *
  * @see DefaultFeatureType
  *
- * @since 0.6
+ * @since SIS 0.6
  */
 public abstract class AbstractOperation extends AbstractIdentifiedType implements Operation,
         BiFunction<Feature, ParameterValueGroup, Property>
@@ -237,7 +237,7 @@ public abstract class AbstractOperation extends AbstractIdentifiedType implement
      *
      * @see #INHERIT_FROM_KEY
      *
-     * @since 1.5
+     * @since SIS 1.5
      */
     public Operation updateDependencies(final Map<String, PropertyType> dependencies) {
         return this;

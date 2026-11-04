@@ -71,7 +71,7 @@ import org.apache.sis.util.internal.shared.Constants;
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.7
- * @since   1.2
+ * @since SIS 1.2
  */
 public abstract class AbstractGridCoverageResource extends AbstractResource implements GridCoverageResource {
     /**
@@ -86,7 +86,7 @@ public abstract class AbstractGridCoverageResource extends AbstractResource impl
      *
      * @param  parent  the parent resource, or {@code null} if none.
      *
-     * @since 1.4
+     * @since SIS 1.4
      */
     protected AbstractGridCoverageResource(final Resource parent) {
         super(parent);
@@ -157,7 +157,7 @@ public abstract class AbstractGridCoverageResource extends AbstractResource impl
      * @see #read(GridGeometry, int...)
      * @see GridGeometry#getResolution(boolean)
      *
-     * @since 1.7
+     * @since SIS 1.7
      */
     protected double[] convertResolutionOf(final GridGeometry domain) throws DataStoreException {
         if (domain == null || !domain.isDefined(GridGeometry.RESOLUTION)) {

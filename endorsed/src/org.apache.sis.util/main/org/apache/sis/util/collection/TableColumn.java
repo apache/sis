@@ -96,7 +96,7 @@ import org.apache.sis.util.resources.Vocabulary;
  *
  * @param <V>  base type of all values in the column identified by this instance.
  *
- * @since 0.3
+ * @since SIS 0.3
  */
 public class TableColumn<V> implements CheckedContainer<V> {
     /**
@@ -137,7 +137,7 @@ public class TableColumn<V> implements CheckedContainer<V> {
      * The column {@linkplain #getHeader() header} is <q>Obligation</q> (eventually localized)
      * and the column elements are instances of {@link Obligation}.
      *
-     * @since 1.5
+     * @since SIS 1.5
      */
     public static final TableColumn<Obligation> OBLIGATION = new Constant<>("OBLIGATION",
             Obligation.class, Vocabulary.Keys.Obligation);
@@ -175,7 +175,7 @@ public class TableColumn<V> implements CheckedContainer<V> {
      * the column elements are typically instances of {@link String} or {@link InternationalString},
      * depending on whether the data provide localization support or not.
      *
-     * @since 1.0
+     * @since SIS 1.0
      */
     public static final TableColumn<CharSequence> REMARKS = new Constant<>("REMARKS",
             CharSequence.class, Vocabulary.Keys.Remarks);
@@ -317,7 +317,7 @@ public class TableColumn<V> implements CheckedContainer<V> {
      * Indicates that a table header is an immutable object (at least by default).
      *
      * @return {@link Mutability#IMMUTABLE} by default.
-     * @since 1.6
+     * @since SIS 1.6
      */
     @Override
     public Mutability getMutability() {

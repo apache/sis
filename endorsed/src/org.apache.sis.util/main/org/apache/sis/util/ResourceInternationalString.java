@@ -68,7 +68,7 @@ import java.util.Objects;
  *
  * @see ResourceBundle#getBundle(String, Locale)
  *
- * @since 1.1
+ * @since SIS 1.1
  */
 public abstract class ResourceInternationalString extends AbstractInternationalString implements Serializable {
     /**

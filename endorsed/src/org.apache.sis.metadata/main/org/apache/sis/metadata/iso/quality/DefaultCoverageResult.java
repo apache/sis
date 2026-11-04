@@ -58,7 +58,7 @@ import org.apache.sis.xml.internal.shared.LegacyNamespaces;
  * @author  Cédric Briançon (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.4
- * @since   0.3
+ * @since SIS 0.3
  */
 @XmlType(name = "QE_CoverageResult_Type", propOrder = {
     "spatialRepresentationType",
@@ -213,7 +213,7 @@ public class DefaultCoverageResult extends AbstractResult implements CoverageRes
      *
      * @return description of the content of the result coverage.
      *
-     * @since 1.3
+     * @since SIS 1.3
      */
     @Override
 //  @XmlElement(name = "resultContent")     // Pending new ISO 19157 version.
@@ -226,7 +226,7 @@ public class DefaultCoverageResult extends AbstractResult implements CoverageRes
      *
      * @param  newValues  the new descriptions.
      *
-     * @since 1.3
+     * @since SIS 1.3
      */
     public void setResultContent(final Collection<RangeDimension> newValues) {
         resultContent = writeCollection(newValues, resultContent, RangeDimension.class);

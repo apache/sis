@@ -75,7 +75,7 @@ import org.opengis.coordinate.MismatchedDimensionException;
  * @see MathTransforms#passThrough(int, MathTransform, int)
  * @see MathTransforms#compound(MathTransform...)
  *
- * @since 0.5
+ * @since SIS 0.5
  */
 public class PassThroughTransform extends AbstractMathTransform implements Serializable {
     /**
@@ -251,7 +251,7 @@ public class PassThroughTransform extends AbstractMathTransform implements Seria
      *
      * @see MathTransforms#passThrough(int[], MathTransform, int)
      *
-     * @since 1.4
+     * @since SIS 1.4
      */
     public static MathTransform create(final BitSet modifiedCoordinates, final MathTransform subTransform, final int resultDim,
                                        final MathTransformFactory factory) throws FactoryException
@@ -785,7 +785,7 @@ public class PassThroughTransform extends AbstractMathTransform implements Seria
      * @param  context  information about the neighbor transforms, and the object where to set the result.
      * @throws FactoryException if an error occurred while combining the transforms.
      *
-     * @since 1.5
+     * @since SIS 1.5
      */
     @Override
     protected void tryConcatenate(final TransformJoiner context) throws FactoryException {

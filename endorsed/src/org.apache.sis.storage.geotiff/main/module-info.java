@@ -27,7 +27,7 @@
  * @author  Estelle Idée (Geomatys)
  * @author  Johann Sorel (Geomatys)
  * @version 1.7
- * @since   0.8
+ * @since SIS 0.8
  */
 module org.apache.sis.storage.geotiff {
     requires jakarta.xml.bind;

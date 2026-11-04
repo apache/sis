@@ -42,7 +42,7 @@ import org.opengis.metadata.Identifier;
  * @see GridGeometry#isDefined(int)
  * @see GridGeometrydefaultToGridCRS(Identifier)
  *
- * @since 1.0
+ * @since SIS 1.0
  */
 public class IncompleteGridGeometryException extends IllegalStateException {
     /**

@@ -73,7 +73,7 @@ import org.apache.sis.gui.internal.Resources;
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.2
- * @since   1.1
+ * @since SIS 1.1
  */
 public class ImagePropertyExplorer extends Widget {
     /**
@@ -793,7 +793,7 @@ nextProp:       for (final String property : properties) {
     /**
      * Returns the locale for controls and messages.
      *
-     * @since 1.2
+     * @since SIS 1.2
      */
     @Override
     public final Locale getLocale() {

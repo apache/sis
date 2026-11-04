@@ -21,7 +21,7 @@
  * @author  Martin Desruisseaux (Geomatys)
  * @author  Quentin Bialota (Geomatys)
  * @version 1.7
- * @since   1.2
+ * @since SIS 1.2
  */
 module org.apache.sis.cloud.aws {
     requires software.amazon.awssdk.core;

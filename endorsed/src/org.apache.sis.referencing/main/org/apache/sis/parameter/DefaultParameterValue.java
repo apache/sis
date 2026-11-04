@@ -150,7 +150,7 @@ import org.apache.sis.util.logging.Logging;
  * @see DefaultParameterDescriptor
  * @see DefaultParameterValueGroup
  *
- * @since 0.4
+ * @since SIS 0.4
  */
 @XmlType(name = "ParameterValueType", propOrder = {
     "xmlValue",
@@ -186,7 +186,7 @@ public class DefaultParameterValue<T> extends FormattableObject implements Param
      * Except for the constructors, the {@link #equals(Object)} and the {@link #hashCode()} methods,
      * this field should be read only by {@link #getValue()} and written only by {@link #setValue(Object, Unit)}.
      *
-     * @since 0.7
+     * @since SIS 0.7
      */
     @SuppressWarnings("serial")         // Not statically typed as Serializable.
     protected T value;
@@ -196,7 +196,7 @@ public class DefaultParameterValue<T> extends FormattableObject implements Param
      * Except for the constructors, the {@link #equals(Object)} and the {@link #hashCode()} methods,
      * this field should be read only by {@link #getUnit()} and written only by {@link #setValue(Object, Unit)}.
      *
-     * @since 0.7
+     * @since SIS 0.7
      */
     @SuppressWarnings("serial")         // Most SIS implementations are serializable.
     protected Unit<?> unit;
@@ -278,7 +278,7 @@ public class DefaultParameterValue<T> extends FormattableObject implements Param
      * @see org.apache.sis.xml.MarshalContext#getDocumentURI()
      * @see URI#resolve(URI)
      *
-     * @since 1.5
+     * @since SIS 1.5
      */
     public Optional<URI> getSourceFile() {
         return Optional.ofNullable(sourceFile);
@@ -932,7 +932,7 @@ convert:            if (componentType != null) {
      * This is the base type required by {@code equals(…)} methods for returning a potentially {@code true} value.
      *
      * @return {@code ParameterValue.class} or a user-defined sub-interface.
-     * @since 1.7
+     * @since SIS 1.7
      */
     @Override
     public Type getStandardType() {
@@ -1048,7 +1048,7 @@ convert:            if (componentType != null) {
      *
      * @see DefaultParameterValueGroup#unmodifiable(ParameterValueGroup)
      *
-     * @since 0.6
+     * @since SIS 0.6
      */
     public static <T> DefaultParameterValue<T> unmodifiable(final ParameterValue<T> parameter) {
         return UnmodifiableParameterValue.create(parameter);

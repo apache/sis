@@ -72,7 +72,7 @@ import org.opengis.feature.AttributeType;
  * @see FeatureTypeBuilder#addAttribute(Class)
  * @see org.apache.sis.feature.DefaultAttributeType
  *
- * @since 0.8
+ * @since SIS 0.8
  */
 public final class AttributeTypeBuilder<V> extends PropertyTypeBuilder {
     /**

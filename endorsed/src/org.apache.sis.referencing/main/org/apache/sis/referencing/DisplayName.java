@@ -28,7 +28,7 @@ import org.apache.sis.util.AbstractInternationalString;
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.5
- * @since   1.5
+ * @since SIS 1.5
  */
 final class DisplayName extends AbstractInternationalString implements Serializable {
     /**

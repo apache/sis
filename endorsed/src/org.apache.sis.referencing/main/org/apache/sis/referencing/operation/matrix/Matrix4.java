@@ -37,7 +37,7 @@ import org.opengis.referencing.operation.Matrix;
  * @see Matrix2
  * @see Matrix3
  *
- * @since 0.4
+ * @since SIS 0.4
  */
 public class Matrix4 extends MatrixSIS {
     /**
@@ -329,7 +329,7 @@ public class Matrix4 extends MatrixSIS {
     /**
      * {@inheritDoc}
      *
-     * @since 1.5
+     * @since SIS 1.5
      */
     @Override
     public double[] multiply(final double[] vector) {

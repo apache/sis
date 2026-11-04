@@ -51,7 +51,7 @@ import org.apache.sis.xml.internal.shared.XmlUtilities;
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.7
- * @since   0.3
+ * @since SIS 0.3
  */
 public class ReferenceResolver {
     /**
@@ -74,7 +74,7 @@ public class ReferenceResolver {
      * If {@code null}, relative <abbr>URI</abbr>s will be {@linkplain URI#resolve(URI) resolved}
      * against the <abbr>URI</abbr> of the document which contains the reference.
      *
-     * @since 1.5
+     * @since SIS 1.5
      */
     protected final URIResolver externalSourceResolver;
 
@@ -95,7 +95,7 @@ public class ReferenceResolver {
      * @param externalSourceResolver  resolver of sources, or {@code null} for letting {@code ReferenceResolver}
      *        resolving the URIs itself.
      *
-     * @since 1.5
+     * @since SIS 1.5
      */
     public ReferenceResolver(final URIResolver externalSourceResolver) {
         this.externalSourceResolver = externalSourceResolver;
@@ -287,7 +287,7 @@ public class ReferenceResolver {
      * @return an object for the given source, or {@code null} if none, for example because of failure in a previous attempt.
      * @throws Exception if an error occurred while opening or parsing the document.
      *
-     * @since 1.5
+     * @since SIS 1.5
      */
     @SuppressWarnings({"UseSpecificCatch", "fallthrough"})
     protected Object resolveExternal(final MarshalContext context, final Source source) throws Exception {
@@ -389,7 +389,7 @@ public class ReferenceResolver {
      * @param  document  the document or fragment referenced in a {@code xlink:href}.
      * @return whether the given document or fragment can be opened.
      *
-     * @since 1.7
+     * @since SIS 1.7
      */
     public Authorization accessControl(URI document) {
         return Environment.isTrusted ? Authorization.GRANTED : Authorization.DEFAULT;
@@ -426,7 +426,7 @@ public class ReferenceResolver {
      * @return {@code true} if the marshaller can use the {@code xlink:href="#id"} attribute
      *         instead of marshalling the given object.
      *
-     * @since 0.7
+     * @since SIS 0.7
      */
     public <T> boolean canSubstituteByReference(MarshalContext context, Class<T> type, T object, String id) {
         return true;

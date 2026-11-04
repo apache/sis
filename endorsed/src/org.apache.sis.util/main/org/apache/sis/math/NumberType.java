@@ -52,7 +52,7 @@ import org.apache.sis.util.internal.shared.Strings;
  * @see org.apache.sis.util.Numbers
  * @see org.apache.sis.image.DataType
  *
- * @since 1.6
+ * @since SIS 1.6
  */
 public enum NumberType {
     /**
@@ -696,7 +696,7 @@ public enum NumberType {
      * @param  v2  second value to compare, or {@code null}.
      * @return whether the two values are equal when compared as instances of this type.
      *
-     * @since 1.7
+     * @since SIS 1.7
      */
     public boolean equals(final Number v1, final Number v2) {
         return Objects.equals(cast(v1), cast(v2));

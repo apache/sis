@@ -69,6 +69,6 @@
  * @author  Alexis Manin (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.7
- * @since   1.2
+ * @since SIS 1.2
  */
 package org.apache.sis.storage.tiling;

@@ -54,7 +54,7 @@
  * @author  Alexis Manin (Geomatys)
  * @author  Guilhem Legal (Geomatys)
  * @version 1.7
- * @since   1.0
+ * @since SIS 1.0
  */
 module org.apache.sis.storage.sql {
     requires java.sql;

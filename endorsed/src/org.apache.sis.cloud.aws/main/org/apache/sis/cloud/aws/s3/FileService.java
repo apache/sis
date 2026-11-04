@@ -81,7 +81,7 @@ import org.apache.sis.util.internal.shared.Strings;
  * @author  Martin Desruisseaux (Geomatys)
  * @author  Quentin Bialota (Geomatys)
  * @version 1.7
- * @since   1.2
+ * @since SIS 1.2
  */
 public class FileService extends FileSystemProvider {
     /**
@@ -129,7 +129,7 @@ public class FileService extends FileSystemProvider {
      * Values shall be instances of {@link String}.
      *
      * @see #newFileSystem(URI, Map)
-     * @since 1.7
+     * @since SIS 1.7
      */
     public static final String HOST_URL = "hostURL";
 
@@ -138,7 +138,7 @@ public class FileService extends FileSystemProvider {
      * Values shall be instances of {@link Integer}.
      *
      * @see #newFileSystem(URI, Map)
-     * @since 1.7
+     * @since SIS 1.7
      */
     public static final String PORT = "port";
 
@@ -148,7 +148,7 @@ public class FileService extends FileSystemProvider {
      * The default value is {@code true} (<abbr>HTTPS</abbr>).
      *
      * @see #newFileSystem(URI, Map)
-     * @since 1.7
+     * @since SIS 1.7
      */
     public static final String IS_HTTPS = "isHttps";
 

@@ -42,7 +42,7 @@ import org.opengis.metadata.citation.Individual;
  * @author  Rémi Maréchal (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.4
- * @since   0.5
+ * @since SIS 0.5
  */
 @XmlType(name = "CI_Individual_Type", propOrder = {
     "positionName"

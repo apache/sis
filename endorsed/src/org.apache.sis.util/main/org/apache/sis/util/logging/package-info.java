@@ -39,6 +39,6 @@
  *
  * @see <a href="https://docs.oracle.com/en/java/javase/18/core/java-logging-overview.html">Java Logging Overview</a>
  *
- * @since 0.3
+ * @since SIS 0.3
  */
 package org.apache.sis.util.logging;

@@ -58,7 +58,7 @@ import org.opengis.metadata.maintenance.Scope;
  * @author  Rémi Maréchal (Geomatys)
  * @author  Cullen Rombach (Image Matters)
  * @version 1.4
- * @since   0.3
+ * @since SIS 0.3
  */
 @XmlType(name = "MD_Constraints_Type", propOrder = {
     "useLimitations",
@@ -217,7 +217,7 @@ public class DefaultConstraints extends ISOMetadata implements Constraints {
      *
      * @return spatial and / or temporal extents.
      *
-     * @since 0.5
+     * @since SIS 0.5
      */
     @Override
     @XmlElement(name = "constraintApplicationScope")
@@ -231,7 +231,7 @@ public class DefaultConstraints extends ISOMetadata implements Constraints {
      *
      * @param  newValue  the new spatial and / or temporal extents.
      *
-     * @since 0.5
+     * @since SIS 0.5
      */
     public void setConstraintApplicationScope(final Scope newValue) {
         checkWritePermission(constraintApplicationScope);
@@ -243,7 +243,7 @@ public class DefaultConstraints extends ISOMetadata implements Constraints {
      *
      * @return the graphics / symbols indicating the constraint.
      *
-     * @since 0.5
+     * @since SIS 0.5
      */
     @Override
     // @XmlElement at the end of this class.
@@ -256,7 +256,7 @@ public class DefaultConstraints extends ISOMetadata implements Constraints {
      *
      * @param  newValues  the new graphics / symbols indicating the constraint.
      *
-     * @since 0.5
+     * @since SIS 0.5
      */
     public void setGraphics(final Collection<? extends BrowseGraphic> newValues) {
         graphics = writeCollection(newValues, graphics, BrowseGraphic.class);
@@ -268,7 +268,7 @@ public class DefaultConstraints extends ISOMetadata implements Constraints {
      *
      * @return citations for the limitation of constraint.
      *
-     * @since 0.5
+     * @since SIS 0.5
      */
     @Override
     // @XmlElement at the end of this class.
@@ -281,7 +281,7 @@ public class DefaultConstraints extends ISOMetadata implements Constraints {
      *
      * @param  newValues  the new citation for the limitation of constraint.
      *
-     * @since 0.5
+     * @since SIS 0.5
      */
     public void setReferences(Collection<? extends Citation> newValues) {
         references = writeCollection(newValues, references, Citation.class);
@@ -292,7 +292,7 @@ public class DefaultConstraints extends ISOMetadata implements Constraints {
      *
      * @return information concerning the parties to whom the resource can or cannot be released, or {@code null} if none.
      *
-     * @since 0.5
+     * @since SIS 0.5
      */
     @Override
     @XmlElement(name = "releasability")
@@ -306,7 +306,7 @@ public class DefaultConstraints extends ISOMetadata implements Constraints {
      *
      * @param  newValue  the new information concerning the parties to whom the resource can or cannot be released.
      *
-     * @since 0.5
+     * @since SIS 0.5
      */
     public void setReleasability(final Releasability newValue) {
         checkWritePermission(releasability);
@@ -318,7 +318,7 @@ public class DefaultConstraints extends ISOMetadata implements Constraints {
      *
      * @return parties responsible for the resource constraints.
      *
-     * @since 0.5
+     * @since SIS 0.5
      */
     @Override
     // @XmlElement at the end of this class.
@@ -331,7 +331,7 @@ public class DefaultConstraints extends ISOMetadata implements Constraints {
      *
      * @param  newValues  the new parties responsible for the resource constraints.
      *
-     * @since 0.5
+     * @since SIS 0.5
      */
     public void setResponsibleParties(final Collection<? extends Responsibility> newValues) {
         responsibleParties = writeCollection(newValues, responsibleParties, Responsibility.class);

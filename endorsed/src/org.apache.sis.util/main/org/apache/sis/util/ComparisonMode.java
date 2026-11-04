@@ -50,7 +50,7 @@ import org.opengis.referencing.operation.MathTransform;
  * @see LenientComparable#equals(Object, ComparisonMode)
  * @see Utilities#deepEquals(Object, Object, ComparisonMode)
  *
- * @since 0.3
+ * @since SIS 0.3
  */
 public enum ComparisonMode {
     /**
@@ -155,7 +155,7 @@ public enum ComparisonMode {
      * @see #isCompatibility()
      * @see org.apache.sis.referencing.CRS#equivalent(CoordinateReferenceSystem, CoordinateReferenceSystem)
      *
-     * @since 1.5
+     * @since SIS 1.5
      */
     COMPATIBILITY,
 
@@ -173,7 +173,7 @@ public enum ComparisonMode {
      *
      * @see #isApproximate()
      *
-     * @since 1.0
+     * @since SIS 1.0
      */
     APPROXIMATE,
 
@@ -196,7 +196,7 @@ public enum ComparisonMode {
      *       <b>Example:</b> {@code (0 … 256)} and {@code [1 … 255]}.</li>
      * </ul>
      *
-     * @since 0.7
+     * @since SIS 0.7
      */
     ALLOW_VARIANT,
 
@@ -225,7 +225,7 @@ public enum ComparisonMode {
      *
      * @return whether this comparison ignores metadata.
      *
-     * @since 0.6
+     * @since SIS 0.6
      */
     public boolean isIgnoringMetadata() {
         return ordinal() >= IGNORE_METADATA.ordinal();
@@ -238,7 +238,7 @@ public enum ComparisonMode {
      *
      * @return whether this comparison accepts structural changes for compatibility reasons.
      *
-     * @since 1.5
+     * @since SIS 1.5
      */
     public boolean isCompatibility() {
         return ordinal() >= COMPATIBILITY.ordinal();
@@ -250,7 +250,7 @@ public enum ComparisonMode {
      *
      * @return whether this comparison uses a tolerance threshold.
      *
-     * @since 1.0
+     * @since SIS 1.0
      */
     public boolean isApproximate() {
         return ordinal() >= APPROXIMATE.ordinal();

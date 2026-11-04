@@ -39,7 +39,7 @@ import org.apache.sis.util.Localized;
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.2
- * @since   1.1
+ * @since SIS 1.1
  */
 public abstract class Widget implements Localized {
     /**
@@ -63,7 +63,7 @@ public abstract class Widget implements Localized {
      *
      * @return the locale for controls in this widget.
      *
-     * @since 1.2
+     * @since SIS 1.2
      */
     @Override
     public Locale getLocale() {

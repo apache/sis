@@ -93,7 +93,7 @@ import org.opengis.coordinate.MismatchedDimensionException;
  * @see LinearTransform
  * @see DatumShiftGrid
  *
- * @since 0.8
+ * @since SIS 0.8
  */
 public class LocalizationGridBuilder extends TransformBuilder {
     /**
@@ -212,7 +212,7 @@ public class LocalizationGridBuilder extends TransformBuilder {
      * @param  localizations  the provider of control points for which to create a localization grid.
      * @throws ArithmeticException if this constructor cannot infer a reasonable grid size from the given localizations.
      *
-     * @since 1.0
+     * @since SIS 1.0
      */
     public LocalizationGridBuilder(final LinearTransformBuilder localizations) {
         int n = localizations.getGridDimensions();
@@ -477,7 +477,7 @@ public class LocalizationGridBuilder extends TransformBuilder {
      *
      * @see LinearTransformBuilder#getSourceEnvelope()
      *
-     * @since 1.0
+     * @since SIS 1.0
      */
     public Envelope getSourceEnvelope(final boolean fullArea) throws TransformException {
         Envelope envelope = linearBuilder.getSourceEnvelope();
@@ -500,7 +500,7 @@ public class LocalizationGridBuilder extends TransformBuilder {
      * @param  coordinates coordinates in each target dimensions, stored in row-major order.
      * @throws IllegalStateException if {@link #create(MathTransformFactory) create(…)} has already been invoked.
      *
-     * @since 1.0
+     * @since SIS 1.0
      */
     public void setControlPoints(final Vector... coordinates) {
         ensureModifiable();
@@ -552,7 +552,7 @@ public class LocalizationGridBuilder extends TransformBuilder {
      * @param  row        index of the row to get.
      * @return coordinate values of the specified row in the specified dimension.
      *
-     * @since 1.0
+     * @since SIS 1.0
      */
     public Vector getRow(final int dimension, final int row) {
         gridCoordinates[0] = 0;
@@ -568,7 +568,7 @@ public class LocalizationGridBuilder extends TransformBuilder {
      * @param  column     index of the column to get.
      * @return coordinate values of the specified column in the specified dimension.
      *
-     * @since 1.0
+     * @since SIS 1.0
      */
     public Vector getColumn(final int dimension, final int column) {
         gridCoordinates[0] = column;
@@ -616,7 +616,7 @@ public class LocalizationGridBuilder extends TransformBuilder {
      * @throws IllegalStateException if this method has already been invoked for the same dimension,
      *         or if {@link #create(MathTransformFactory) create(…)} has already been invoked.
      *
-     * @since 1.0
+     * @since SIS 1.0
      */
     public NumberRange<Double> resolveWraparoundAxis(final int dimension, final int direction, final double period) {
         ensureModifiable();
@@ -667,7 +667,7 @@ public class LocalizationGridBuilder extends TransformBuilder {
      *
      * @see LinearTransformBuilder#addLinearizers(Map, int...)
      *
-     * @since 1.1
+     * @since SIS 1.1
      */
     public void addLinearizers(final Map<String,MathTransform> projections, final boolean compensate, final int... projToGrid) {
         ensureModifiable();
@@ -811,7 +811,7 @@ public class LocalizationGridBuilder extends TransformBuilder {
      *
      * @see LinearTransformBuilder#linearizer()
      *
-     * @since 1.1
+     * @since SIS 1.1
      */
     public Optional<Map.Entry<String, MathTransform>> linearizer(final boolean ifNotCompensated) {
         ProjectedTransformTry linearizer = linearBuilder.appliedLinearizer();
@@ -848,7 +848,7 @@ public class LocalizationGridBuilder extends TransformBuilder {
      *
      * @see #toString(boolean, Locale)
      *
-     * @since 1.1
+     * @since SIS 1.1
      */
     public Statistics[] errors(final boolean linear) {
         final MathTransform mt = linear ? linearBuilder.transform() : transform;
@@ -942,7 +942,7 @@ public class LocalizationGridBuilder extends TransformBuilder {
      *
      * @see #errors(boolean)
      *
-     * @since 1.1
+     * @since SIS 1.1
      */
     public String toString(final boolean linear, final Locale locale) {
         final var buffer = new StringBuilder(400);
@@ -978,7 +978,7 @@ public class LocalizationGridBuilder extends TransformBuilder {
      *
      * @return a string representation of this builder.
      *
-     * @since 1.0
+     * @since SIS 1.0
      */
     @Override
     public String toString() {

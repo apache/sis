@@ -64,7 +64,7 @@ import org.opengis.referencing.datum.RealizationMethod;
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.5
- * @since   1.5
+ * @since SIS 1.5
  */
 public final class DatumOrEnsemble {
     /**
@@ -197,7 +197,7 @@ public final class DatumOrEnsemble {
      * @param  crs  the coordinate reference system for which to get the datum or datum ensemble, or {@code null}.
      * @return the datum or pseudo-datum of the given <abbr>CRS</abbr>, or {@code null}.
      *
-     * @since 2.0 (temporary version number until this branch is released)
+     * @since SIS 2.0 (temporary version number until this branch is released)
      */
     public static ParametricDatum asDatum(final ParametricCRS crs) {
         if (crs == null) return null;
@@ -585,7 +585,7 @@ public final class DatumOrEnsemble {
      * @param  crs  the coordinate reference system for which to get the realization method.
      * @return the realization method, or an empty value if none or not equal for all members.
      *
-     * @since 2.0 (temporary version number until this branch is released)
+     * @since SIS 2.0 (temporary version number until this branch is released)
      */
     public static Optional<RealizationMethod> getRealizationMethod(final CoordinateReferenceSystem crs) {
         Optional<RealizationMethod> common = getProperty(crs, VerticalDatum.class, VerticalDatum::getRealizationMethod, Optional::isPresent);

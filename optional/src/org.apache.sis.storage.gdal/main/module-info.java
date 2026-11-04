@@ -52,7 +52,7 @@
  * @author  Quentin Bialota (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.5
- * @since   1.5
+ * @since SIS 1.5
  */
 module org.apache.sis.storage.gdal {
     // Dependencies used in public API.

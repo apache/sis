@@ -104,7 +104,7 @@ import org.apache.sis.util.resources.Errors;
  * @see DefaultParameterDescriptorGroup
  * @see DefaultParameterValue
  *
- * @since 0.4
+ * @since SIS 0.4
  */
 @XmlType(name = "ParameterValueGroupType", propOrder = {
     "values",
@@ -151,7 +151,7 @@ public class DefaultParameterValueGroup extends Parameters implements LenientCom
      *
      * @see #clone()
      *
-     * @since 0.6
+     * @since SIS 0.6
      */
     public DefaultParameterValueGroup(final ParameterValueGroup parameters) {
         values = new ParameterValueList(parameters.getDescriptor());

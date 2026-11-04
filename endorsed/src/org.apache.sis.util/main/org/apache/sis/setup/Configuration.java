@@ -59,7 +59,7 @@ import org.apache.sis.util.internal.shared.MetadataServices;
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.7
- * @since   1.0
+ * @since SIS 1.0
  */
 public final class Configuration {
     /**
@@ -109,7 +109,7 @@ public final class Configuration {
      * @see org.apache.sis.xml.ReferenceResolver#DEFAULT
      * @see org.apache.sis.referencing.operation.transform.MathTransformBuilder#getAccessControl()
      *
-     * @since 1.7
+     * @since SIS 1.7
      */
     public boolean isTrustedEnvironment() {
         return Environment.isTrusted;
@@ -218,7 +218,7 @@ public final class Configuration {
      *
      * @see <a href="https://db.apache.org/derby/docs/10.17/devguide/tdevdvlp40464.html">Shutting down Derby</a>
      *
-     * @since 1.5
+     * @since SIS 1.5
      */
     public void shutdown() {
         try {

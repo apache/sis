@@ -31,6 +31,6 @@
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.7
- * @since   0.5
+ * @since SIS 0.5
  */
 package org.apache.sis.referencing.operation.builder;

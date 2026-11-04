@@ -47,7 +47,7 @@ import org.opengis.metadata.MetadataScope;
  * @author  Rémi Maréchal (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.7
- * @since   0.5
+ * @since SIS 0.5
  */
 @TitleProperty(name = "resourceScope")
 @XmlType(name = "MD_MetadataScope_Type", propOrder = {

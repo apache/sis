@@ -37,7 +37,7 @@ import org.apache.sis.util.resources.Errors;
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.8
- * @since   0.8
+ * @since SIS 0.8
  */
 public class UnparsableObjectException extends ParseException implements Localized {
     /**
@@ -134,7 +134,7 @@ public class UnparsableObjectException extends ParseException implements Localiz
      *
      * @return the locale of the localized message, or {@code null} if not explicitly defined.
      *
-     * @since 1.8
+     * @since SIS 1.8
      */
     @Override
     public Locale getLocale() {

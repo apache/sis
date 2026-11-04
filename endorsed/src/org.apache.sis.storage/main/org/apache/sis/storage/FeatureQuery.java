@@ -84,7 +84,7 @@ import org.opengis.filter.SortProperty;
  * @author  Johann Sorel (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.7
- * @since   1.1
+ * @since SIS 1.1
  */
 public class FeatureQuery extends Query implements Cloneable, Emptiable, Serializable {
     /**
@@ -175,7 +175,7 @@ public class FeatureQuery extends Query implements Cloneable, Emptiable, Seriali
      *
      * @see #clone()
      *
-     * @since 1.5
+     * @since SIS 1.5
      */
     public FeatureQuery(final FeatureQuery other) {
         projection       = other.projection;
@@ -191,7 +191,7 @@ public class FeatureQuery extends Query implements Cloneable, Emptiable, Seriali
      *
      * @return if this query performs no filtering.
      *
-     * @since 1.5
+     * @since SIS 1.5
      */
     @Override
     public boolean isEmpty() {
@@ -462,7 +462,7 @@ public class FeatureQuery extends Query implements Cloneable, Emptiable, Seriali
      * modifier.
      *
      * @version 1.4
-     * @since   1.4
+     * @since SIS 1.4
      */
     public enum ProjectionType {
         /**
@@ -539,7 +539,7 @@ public class FeatureQuery extends Query implements Cloneable, Emptiable, Seriali
      * Columns can be given to the {@link FeatureQuery#setProjection(NamedExpression[])} method.
      *
      * @version 1.6
-     * @since   1.1
+     * @since SIS 1.1
      */
     public static final class NamedExpression implements Serializable {
         /**
@@ -607,7 +607,7 @@ public class FeatureQuery extends Query implements Cloneable, Emptiable, Seriali
          * @param alias       the name to assign to the expression result, or {@code null} if unspecified.
          * @param type        whether to create a feature {@link Attribute} or a feature {@link Operation}.
          *
-         * @since 1.4
+         * @since SIS 1.4
          */
         public NamedExpression(final Expression<? super Feature,?> expression, final GenericName alias, ProjectionType type) {
             this.expression = Objects.requireNonNull(expression);
@@ -643,7 +643,7 @@ public class FeatureQuery extends Query implements Cloneable, Emptiable, Seriali
          *
          * @return the expression (often a literal) for the value to retrieve.
          *
-         * @since 1.5
+         * @since SIS 1.5
          */
         public Expression<? super Feature, ?> expression() {
             return expression;
@@ -654,7 +654,7 @@ public class FeatureQuery extends Query implements Cloneable, Emptiable, Seriali
          *
          * @return optional name for the expression result.
          *
-         * @since 1.5
+         * @since SIS 1.5
          */
         public GenericName alias() {
             return alias;
@@ -668,7 +668,7 @@ public class FeatureQuery extends Query implements Cloneable, Emptiable, Seriali
          *
          * @return the projection type (stored or computing).
          *
-         * @since 1.5
+         * @since SIS 1.5
          */
         public ProjectionType type() {
             return type;
@@ -762,7 +762,7 @@ public class FeatureQuery extends Query implements Cloneable, Emptiable, Seriali
      *
      * @return all XPaths used, directly or indirectly, by this query.
      *
-     * @since 1.5
+     * @since SIS 1.5
      */
     public Set<String> getXPaths() {
         Set<String> xpaths = ListingPropertyVisitor.xpaths(selection, null);
@@ -826,7 +826,7 @@ public class FeatureQuery extends Query implements Cloneable, Emptiable, Seriali
      * @see FeatureSet#subset(Query)
      * @see CoverageQuery#execute(GridCoverageResource)
      *
-     * @since 1.2
+     * @since SIS 1.2
      */
     protected FeatureSet execute(final FeatureSet source) throws DataStoreException {
         if (isEmpty()) {

@@ -50,7 +50,7 @@ import org.opengis.metadata.maintenance.Scope;
  * @author  Touraïvane (IRD)
  * @author  Alexis Gaillard (Geomatys)
  * @version 1.4
- * @since   0.3
+ * @since SIS 0.3
  */
 @XmlType(name = "AbstractDQ_Result_Type", propOrder = {
     "resultScope",
@@ -152,7 +152,7 @@ public class AbstractResult extends ISOMetadata implements Result {
      *
      * @return scope of the result, or {@code null} if unspecified.
      *
-     * @since 1.3
+     * @since SIS 1.3
      */
     @Override
     @XmlElement(name = "resultScope")
@@ -166,7 +166,7 @@ public class AbstractResult extends ISOMetadata implements Result {
      *
      * @param  newValue  the new evaluation procedure.
      *
-     * @since 1.3
+     * @since SIS 1.3
      */
     public void setResultScope(final Scope newValue) {
         resultScope = newValue;
@@ -180,7 +180,7 @@ public class AbstractResult extends ISOMetadata implements Result {
      *
      * @return date of the result, or {@code null} if none.
      *
-     * @since 1.3
+     * @since SIS 1.3
      */
     @Override
     @XmlElement(name = "dateTime")
@@ -194,7 +194,7 @@ public class AbstractResult extends ISOMetadata implements Result {
      *
      * @param  newValue  the new date, or {@code null}.
      *
-     * @since 1.3
+     * @since SIS 1.3
      */
     public void setDateTime(final Temporal newValue) {
         dateTime = newValue;

@@ -53,7 +53,7 @@ import static org.apache.sis.metadata.internal.shared.ImplementationHelper.value
  * @author  Touraïvane (IRD)
  * @author  Cédric Briançon (Geomatys)
  * @version 1.4
- * @since   0.3
+ * @since SIS 0.3
  */
 @XmlType(name = "EX_SpatialTemporalExtent_Type")
 @XmlRootElement(name = "EX_SpatialTemporalExtent")
@@ -89,7 +89,7 @@ public class DefaultSpatialTemporalExtent extends DefaultTemporalExtent implemen
      * @param verticalExtent  the vertical extent component, or {@code null} if none.
      * @param extent          the date and time for the content of the dataset, or {@code null} if unspecified.
      *
-     * @since 0.5
+     * @since SIS 0.5
      */
     public DefaultSpatialTemporalExtent(final GeographicExtent spatialExtent,
                                         final VerticalExtent verticalExtent,
@@ -167,7 +167,7 @@ public class DefaultSpatialTemporalExtent extends DefaultTemporalExtent implemen
      *
      * @return vertical extent component, or {@code null} if none.
      *
-     * @since 0.5
+     * @since SIS 0.5
      */
     @Override
     @XmlElement(name = "verticalExtent")
@@ -180,7 +180,7 @@ public class DefaultSpatialTemporalExtent extends DefaultTemporalExtent implemen
      *
      * @param  newValue  the new vertical extent component.
      *
-     * @since 0.5
+     * @since SIS 0.5
      */
     public void setVerticalExtent(final VerticalExtent newValue) {
         checkWritePermission(verticalExtent);

@@ -81,7 +81,7 @@ import org.apache.sis.util.resources.Errors;
  * @see DefaultTypeName
  * @see DefaultMemberName
  *
- * @since 0.5
+ * @since SIS 0.5
  */
 public final class Names {
     /**
@@ -148,7 +148,7 @@ public final class Names {
      *                      This array shall contain at least one element.
      * @return the generic name for the given parsed names.
      *
-     * @since 1.0
+     * @since SIS 1.0
      */
     public static GenericName createGenericName(final CharSequence namespace, final String separator, final CharSequence... parsedNames) {
         ArgumentChecks.ensureNonNull("parsedNames", parsedNames);
@@ -167,7 +167,7 @@ public final class Names {
      * @param  name       the second part to concatenate.
      * @return a scoped name in the given namespace.
      *
-     * @since 0.8
+     * @since SIS 0.8
      */
     public static ScopedName createScopedName(final GenericName scope, final String separator, final CharSequence name) {
         // Current version does not perform any caching, but this is something we could add in the future.
@@ -265,7 +265,7 @@ public final class Names {
      * @see #createMemberName(CharSequence, String, CharSequence, Class)
      * @see DefaultNameFactory#toTypeName(Class)
      *
-     * @since 1.3
+     * @since SIS 1.3
      */
     public static TypeName createTypeName(final Class<?> valueClass) {
         ArgumentChecks.ensureNonNull("valueClass", valueClass);
@@ -325,7 +325,7 @@ public final class Names {
      * @param  attributeType  the type of the data associated with the member.
      * @return a member name in the given namespace for values of the given type.
      *
-     * @since 1.3
+     * @since SIS 1.3
      */
     public static MemberName createMemberName(final CharSequence namespace, final String separator,
             final CharSequence localPart, final TypeName attributeType)
@@ -349,7 +349,7 @@ public final class Names {
      *
      * @see org.opengis.metadata.content.RangeDimension#getSequenceIdentifier()
      *
-     * @since 1.0
+     * @since SIS 1.0
      */
     public static MemberName createMemberName(final CharSequence namespace, String separator, final int localPart) {
         if (DefaultNameSpace.DEFAULT_SEPARATOR_STRING.equals(separator)) {
@@ -414,7 +414,7 @@ public final class Names {
      * @see #createTypeName(Class)
      * @see DefaultTypeName#toJavaType()
      *
-     * @since 0.5
+     * @since SIS 0.5
      */
     @OptionalCandidate
     public static Class<?> toClass(final TypeName type) throws UnknownNameException {

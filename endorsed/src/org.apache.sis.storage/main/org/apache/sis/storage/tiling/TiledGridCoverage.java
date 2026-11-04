@@ -82,7 +82,7 @@ import org.opengis.coordinate.MismatchedDimensionException;
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.7
- * @since   1.7
+ * @since SIS 1.7
  */
 public abstract class TiledGridCoverage extends GridCoverage {
     /**

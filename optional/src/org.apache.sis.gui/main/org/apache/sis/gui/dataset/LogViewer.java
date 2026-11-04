@@ -89,7 +89,7 @@ import org.apache.sis.util.logging.PerformanceLevel;
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.2
- * @since   1.1
+ * @since SIS 1.1
  */
 public class LogViewer extends Widget {
     /**

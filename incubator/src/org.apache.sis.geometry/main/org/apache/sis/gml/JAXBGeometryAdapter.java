@@ -51,7 +51,7 @@ import org.apache.sis.geometries.Geometry;
  *
  * @author Johann Sorel (Geomatys)
  * @version 2.0
- * @since 2.0
+ * @since SIS 2.0
  */
 public final class JAXBGeometryAdapter extends XmlAdapter<Element, Geometry> {
 

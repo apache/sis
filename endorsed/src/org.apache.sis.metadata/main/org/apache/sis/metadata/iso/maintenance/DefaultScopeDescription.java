@@ -68,7 +68,7 @@ import org.apache.sis.util.iso.Types;
  * @author  Cédric Briançon (Geomatys)
  * @author  Cullen Rombach (Image Matters)
  * @version 1.4
- * @since   0.3
+ * @since SIS 0.3
  */
 @XmlType(name = "MD_ScopeDescription_Type", namespace = Namespaces.MCC) // No need for propOrder since this structure is a union (see javadoc).
 @XmlRootElement(name = "MD_ScopeDescription", namespace = Namespaces.MCC)
@@ -287,7 +287,7 @@ public class DefaultScopeDescription extends ISOMetadata implements ScopeDescrip
      *
      * @see #setLevelDescription(ScopeCode, Set)
      *
-     * @since 1.0
+     * @since SIS 1.0
      */
     public ScopeCode getLevel() {
         switch (property) {
@@ -507,7 +507,7 @@ public class DefaultScopeDescription extends ISOMetadata implements ScopeDescrip
      *
      * @see #getLevel()
      *
-     * @since 1.0
+     * @since SIS 1.0
      */
     public void setLevelDescription(final ScopeCode level, final Set<? extends CharSequence> newValues) {
         if (level == ScopeCode.DATASET) {

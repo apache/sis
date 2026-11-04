@@ -21,7 +21,7 @@
  * @author  Johann Sorel (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.8
- * @since   0.5
+ * @since SIS 0.5
  */
 module org.apache.sis.feature {
     requires java.sql;

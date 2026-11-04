@@ -46,7 +46,7 @@ import org.opengis.metadata.quality.SourceReference;
  * @author  Alexis Gaillard (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.7
- * @since   1.3
+ * @since SIS 1.3
  */
 @TitleProperty(name = "citation")
 @XmlType(name = "DQM_SourceReference_Type", namespace = Namespaces.DQM)

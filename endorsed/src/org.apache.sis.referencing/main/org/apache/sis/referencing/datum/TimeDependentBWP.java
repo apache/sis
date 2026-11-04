@@ -60,7 +60,7 @@ import static org.apache.sis.util.ArgumentChecks.*;
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.6
- * @since   0.4
+ * @since SIS 0.4
  */
 @SuppressWarnings("CloneableImplementsClone")                   // Fields in this class do not need cloning.
 public class TimeDependentBWP extends BursaWolfParameters {
@@ -123,7 +123,7 @@ public class TimeDependentBWP extends BursaWolfParameters {
      *                          is valid, or {@code null} if unspecified.
      * @param timeReference     the reference epoch for time-dependent parameters.
      *
-     * @since 1.5
+     * @since SIS 1.5
      */
     public TimeDependentBWP(final GeodeticDatum targetDatum, final Extent domainOfValidity, final Temporal timeReference) {
         super(targetDatum, domainOfValidity);
@@ -205,7 +205,7 @@ public class TimeDependentBWP extends BursaWolfParameters {
      *
      * @return the parameter values as an array of length 14.
      *
-     * @since 0.6
+     * @since SIS 0.6
      */
     @Override
     public double[] getValues() {
@@ -220,7 +220,7 @@ public class TimeDependentBWP extends BursaWolfParameters {
      *
      * @param  elements  the new parameter values, as an array of any length.
      *
-     * @since 0.6
+     * @since SIS 0.6
      */
     @Override
     @SuppressWarnings("fallthrough")

@@ -100,7 +100,7 @@ import static org.apache.sis.util.ArgumentChecks.ensureNonNullElement;
  *
  * @see AbstractMetadata
  *
- * @since 0.3
+ * @since SIS 0.3
  */
 public class MetadataStandard implements Serializable {
     /**
@@ -146,7 +146,7 @@ public class MetadataStandard implements Serializable {
      * An instance working on ISO 19157 standard as defined by GeoAPI interfaces
      * in the {@link org.opengis.metadata.quality} package.
      *
-     * @since 1.3
+     * @since SIS 1.3
      */
     public static final MetadataStandard ISO_19157;
 
@@ -696,7 +696,7 @@ public class MetadataStandard implements Serializable {
      * @throws NoSuchElementException if the given type does not implement a standard subtype of {@code baseType}.
      * @throws IllegalArgumentException if the given type implements more than one standard subtype of {@code baseType}.
      *
-     * @since 1.7
+     * @since SIS 1.7
      */
     @SuppressWarnings("unchecked")
     public <T> Class<? super T> getInterface(final Class<T> type, Class<?> baseType) {
@@ -790,7 +790,7 @@ public class MetadataStandard implements Serializable {
      * @see TitleProperty
      * @see ValueExistencePolicy#TITLED
      *
-     * @since 1.7
+     * @since SIS 1.7
      */
     public Optional<Object> getTitle(final Object metadata) {
         return Optional.ofNullable(getTitle(metadata, null, false, false, false));
@@ -1063,7 +1063,7 @@ public class MetadataStandard implements Serializable {
      *
      * @see AbstractMetadata#asMap()
      *
-     * @since 0.8
+     * @since SIS 0.8
      */
     public Map<String, Object> asValueMap(final Object metadata,
                                           final Class<?> baseType,
@@ -1108,7 +1108,7 @@ public class MetadataStandard implements Serializable {
      *
      * @see AbstractMetadata#nilReasons()
      *
-     * @since 1.5
+     * @since SIS 1.5
      */
     public Map<String, NilReason> asNilReasonMap(Object metadata, Class<?> baseType, KeyNamePolicy keyPolicy) {
         ensureNonNull("metadata",  metadata);
@@ -1201,7 +1201,7 @@ public class MetadataStandard implements Serializable {
      *
      * @see AbstractMetadata#asTreeTable()
      *
-     * @since 0.8
+     * @since SIS 0.8
      */
     public TreeTable asTreeTable(final Object metadata, Class<?> baseType, final ValueExistencePolicy valuePolicy) {
         ensureNonNull("metadata",    metadata);
@@ -1241,7 +1241,7 @@ public class MetadataStandard implements Serializable {
      *
      * @see AbstractMetadata#equals(Object, ComparisonMode)
      *
-     * @since 1.7
+     * @since SIS 1.7
      */
     public Boolean equals(final Object metadata1, final Object metadata2, final Class<?> baseType, final ComparisonMode criteria) {
         ensureNonNull("criteria", criteria);

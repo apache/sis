@@ -74,7 +74,7 @@ import org.opengis.feature.PropertyNotFoundException;
  * @author  Johann Sorel (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.5
- * @since   0.8
+ * @since SIS 0.8
  */
 public abstract class TypeBuilder implements Localized {
     /**

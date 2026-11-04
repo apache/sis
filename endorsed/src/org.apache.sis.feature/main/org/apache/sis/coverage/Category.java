@@ -73,7 +73,7 @@ import org.apache.sis.util.iso.Types;
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @author  Alexis Manin (Geomatys)
  * @version 1.7
- * @since   1.0
+ * @since SIS 1.0
  */
 public class Category implements LenientComparable, Serializable {
     /**
@@ -482,7 +482,7 @@ public class Category implements LenientComparable, Serializable {
      * @see #getMeasurementRange()
      * @see SampleDimension#forConvertedValues(boolean)
      *
-     * @since 1.1
+     * @since SIS 1.1
      */
     public Category forConvertedValues(final boolean converted) {
         return converted ? converse : this;                             // Overridden in ConvertedCategory.
@@ -530,7 +530,7 @@ public class Category implements LenientComparable, Serializable {
      * @param  mode    the comparison strictness level.
      * @return {@code true} if both objects are equal according the given comparison mode.
      *
-     * @since 1.7
+     * @since SIS 1.7
      */
     @Override
     public boolean equals(final Object object, final ComparisonMode mode) {

@@ -42,7 +42,7 @@ import java.util.Set;
  *
  * @param <E>  the base type of elements in the container.
  *
- * @since 0.3
+ * @since SIS 0.3
  */
 public interface CheckedContainer<E> {
     /**
@@ -57,14 +57,14 @@ public interface CheckedContainer<E> {
      *
      * @return the mutability status of this container.
      *
-     * @since 1.6
+     * @since SIS 1.6
      */
     Mutability getMutability();
 
     /**
      * Mutability status of a container.
      *
-     * @since 1.6
+     * @since SIS 1.6
      */
     enum Mutability {
         /**

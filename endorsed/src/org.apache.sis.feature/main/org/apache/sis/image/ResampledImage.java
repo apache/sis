@@ -79,7 +79,7 @@ import static org.apache.sis.image.internal.shared.ImageUtilities.LOGGER;
  * @see Interpolation
  * @see java.awt.image.AffineTransformOp
  *
- * @since 1.1
+ * @since SIS 1.1
  */
 public class ResampledImage extends ComputedImage {
     /**
@@ -578,7 +578,7 @@ public class ResampledImage extends ComputedImage {
      *
      * @return the valid area of the source converted to the coordinate system of this resampled image.
      *
-     * @since 1.5
+     * @since SIS 1.5
      */
     @Override
     public synchronized Shape getValidArea() {
@@ -928,7 +928,7 @@ public class ResampledImage extends ComputedImage {
      * If the source image is an instance of {@link ComputedImage}, then this method
      * forwards the notification to it. Otherwise default implementation does nothing.
      *
-     * @since 1.2
+     * @since SIS 1.2
      */
     @Override
     protected Disposable prefetch(final Rectangle tiles) {

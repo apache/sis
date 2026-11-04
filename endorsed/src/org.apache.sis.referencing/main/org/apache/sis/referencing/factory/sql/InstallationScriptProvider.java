@@ -55,7 +55,7 @@ import org.apache.sis.util.internal.shared.Constants;
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.5
- * @since   0.7
+ * @since SIS 0.7
  */
 public abstract class InstallationScriptProvider extends InstallationResources {
     /**
