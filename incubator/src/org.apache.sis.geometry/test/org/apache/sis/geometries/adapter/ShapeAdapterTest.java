@@ -18,6 +18,7 @@ package org.apache.sis.geometries.adapter;
 
 import java.awt.Shape;
 import java.awt.geom.PathIterator;
+import java.awt.geom.Rectangle2D;
 import org.apache.sis.geometries.Geometry;
 import org.apache.sis.geometries.GeometryFactory;
 import org.apache.sis.geometries.curve.LineString;
@@ -213,5 +214,36 @@ public final class ShapeAdapterTest {
         assertSegmentEquals(PathIterator.SEG_MOVETO, 0, 0);
         assertSegmentEquals(PathIterator.SEG_LINETO, 2, 0);
         assertTrue(iterator.isDone());
+    }
+    /**
+     * Creates the square [0 … 10] × [0 … 10] in the given coordinate reference system.
+     */
+    private static Polygon square(final org.opengis.referencing.crs.CoordinateReferenceSystem crs) {
+        final LinearRing ring = GeometryFactory.DEFAULT.createLinearRing(
+                GeometryFactory.DEFAULT.createDataPoints(crs, 0.0, 0.0,  10.0, 0.0,  10.0, 10.0,  0.0, 10.0,  0.0, 0.0));
+        return GeometryFactory.DEFAULT.createPolygon(ring, null);
+    }
+
+    /**
+     * Tests {@link ShapeAdapter#intersects(Rectangle2D)} and {@link ShapeAdapter#contains(Rectangle2D)}
+     * with their variants. The temporary rectangles and points shall be in the geometry CRS.
+     */
+    @Test
+    public void testIntersectsAndContains() {
+        for (final var crs : new org.opengis.referencing.crs.CoordinateReferenceSystem[] {
+                org.apache.sis.referencing.CommonCRS.WGS84.normalizedGeographic(),
+                CARTESIAN_2D.getCoordinateReferenceSystem()})
+        {
+            final Shape shape = new ShapeAdapter(square(crs));
+            assertTrue (shape.intersects(new Rectangle2D.Double(5, 5, 10, 10)));
+            assertTrue (shape.intersects(5, 5, 10, 10));
+            assertFalse(shape.intersects(new Rectangle2D.Double(20, 20, 5, 5)));
+            assertFalse(shape.intersects(20, 20, 5, 5));
+            assertTrue (shape.contains(new Rectangle2D.Double(2, 2, 3, 3)));
+            assertTrue (shape.contains(2, 2, 3, 3));
+            assertFalse(shape.contains(new Rectangle2D.Double(5, 5, 10, 10)));
+            assertTrue (shape.contains(5, 5));
+            assertFalse(shape.contains(15, 5));
+        }
     }
 }
