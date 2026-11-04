@@ -164,7 +164,7 @@ module org.apache.sis.util {
             org.apache.sis.storage.gsf,                 // In the "incubator" sub-project.
             org.apache.sis.portrayal,
             org.apache.sis.console,
-            org.apache.sis.webapp,                      // In the "incubator" sub-project.
+            org.apache.sis.web,                         // In the "incubator" sub-project.
             org.apache.sis.gui,                         // In the "optional" sub-project.
             org.apache.sis.referencing.database;        // In the "non-free" sub-project.
 

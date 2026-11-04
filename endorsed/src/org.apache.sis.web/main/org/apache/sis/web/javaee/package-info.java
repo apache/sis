@@ -15,7 +15,12 @@
  * limitations under the License.
  */
 
+
 /**
- * Tasks to execute at initialization and undeploy time.
+ * All classes having a dependencies to JavaEE ({@code javax.servlet} packages).
+ * JavaEE is replaced by Jakarta ({@code jakarta.servlet} packages), but not all applications have migrated.
+ * This package is provided for web applications that are still using JavaEE.
+ *
+ * @author  Martin Desruisseaux (Geomatys)
  */
-package org.apache.sis.services;
+package org.apache.sis.web.javaee;

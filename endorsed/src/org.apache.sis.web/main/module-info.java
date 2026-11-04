@@ -16,26 +16,33 @@
  */
 
 /**
- * Support the use of Apache <abbr>SIS</abbr> in web containers.
- * Web applications having <abbr>SIS</abbr> in their dependencies can add this module
- * if they need to undeploy <abbr>SIS</abbr> cleanly while keeping the rest of the container running.
- * This module is compatible with:
+ * Support for Apache <abbr>SIS</abbr> execution in the context of web containers.
+ * This module registers listeners for stopping Apache <abbr>SIS</abbr> background threads
+ * when a web application using <abbr>SIS</abbr> is undeployed from a web container.
+ * The listeners in this module are compatible with the following frameworks:
  *
  * <ul>
- *   <li>JavaEE Servlet 4.0 ({@code javax.servlet} packages)</li>
- *   <li>Jakarta Servlet 6.1 ({@code jakarta.servlet} packages)</li>
- *   <li>OGSGi 8.0 ({@code org.osgi} packages)</li>
+ *   <li>JavaEE Servlet 4.0 ({@code javax.servlet} package)</li>
+ *   <li>Jakarta Servlet 6.1 ({@code jakarta.servlet} package)</li>
+ *   <li>OGSGi 8.0 ({@code org.osgi.framework} package)</li>
  * </ul>
+ *
+ * Web applications should consider adding this module in their dependencies
+ * if they use Apache <abbr>SIS</abbr> and need clean undeploy while keeping the rest of the container running.
+ *
+ * @author  Martin Desruisseaux (Geomatys)
+ * @version 1.8
+ * @since   1.8
  */
-module org.apache.sis.webapp {
+module org.apache.sis.web {
     requires transitive org.apache.sis.util;
     requires static jakarta.servlet;
     requires static javax.servlet.api;
     requires static osgi.core;
 
     provides jakarta.servlet.ServletContainerInitializer
-            with org.apache.sis.services.ServletListener;
+            with org.apache.sis.web.jakarta.ServletListener;
 
     provides javax.servlet.ServletContainerInitializer
-            with org.apache.sis.services.ServletListenerLegacy;
+            with org.apache.sis.web.javaee.ServletListener;
 }

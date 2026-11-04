@@ -14,29 +14,30 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.sis.services;
+package org.apache.sis.web.jakarta;
 
 import java.util.Set;
-import javax.servlet.ServletContext;
-import javax.servlet.ServletContextEvent;
-import javax.servlet.ServletContextListener;
-import javax.servlet.ServletContainerInitializer;
-import javax.servlet.annotation.HandlesTypes;
-import javax.servlet.annotation.WebListener;
+import jakarta.servlet.ServletContext;
+import jakarta.servlet.ServletContextEvent;
+import jakarta.servlet.ServletContextListener;
+import jakarta.servlet.ServletContainerInitializer;
+import jakarta.servlet.annotation.HandlesTypes;
+import jakarta.servlet.annotation.WebListener;
 import org.apache.sis.system.Shutdown;
 
 
 /**
- * Copy of {@link ServletListener} using the JaveEE package name instead of Jakarta.
+ * Listener for servlet context, used as a shutdown hook when the application is undeployed.
+ * This class should not be used directly.
  *
  * @author  Martin Desruisseaux (Geomatys)
  */
 @WebListener("Apache SIS shutdown hook")
-public final class ServletListenerLegacy implements ServletContainerInitializer, ServletContextListener {
+public final class ServletListener implements ServletContainerInitializer, ServletContextListener {
     /**
      * Invoked by reflection by the service loader.
      */
-    public ServletListenerLegacy() {
+    public ServletListener() {
     }
 
     /**

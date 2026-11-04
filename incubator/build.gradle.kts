@@ -64,9 +64,6 @@ dependencies {
     implementation(group = "com.fasterxml.jackson.core", name = "jackson-databind",    version = "2.22.1")
     implementation(group = "org.antlr",                  name = "antlr4-maven-plugin", version = "4.13.2")
     implementation(group = "org.xerial",                 name = "sqlite-jdbc",         version = "3.45.1.0")
-    compileOnly   (group = "jakarta.servlet",            name = "jakarta.servlet-api", version = "6.1.0")
-    compileOnly   (group = "javax.servlet",              name = "javax.servlet-api",   version = "4.0.1")
-    compileOnly   (group = "org.osgi",                   name = "osgi.core",           version = "8.0.0")
     antlr         (group = "org.antlr",                  name = "antlr4",              version = "4.13.2")
 }
 
@@ -259,18 +256,6 @@ publishing {
             pom {
                 name        = "Apache SIS portrayal"
                 description = "Symbology and map representations, together with a rendering engine for display."
-            }
-        }
-        create<MavenPublication>("webapp") {
-            var module = "org.apache.sis.webapp"
-            groupId    = "org.apache.sis.application"
-            artifactId = "sis-webapp"
-            artifact(layout.buildDirectory.file("libs/${module}.jar"))
-            artifact(layout.buildDirectory.file("docs/${module}-sources.jar")) {classifier = "sources"}
-            artifact(layout.buildDirectory.file("docs/${module}-javadoc.jar")) {classifier = "javadoc"}
-            pom {
-                name        = "Apache SIS web services layer"
-                description = "Placeholder for future developments."
             }
         }
     }

@@ -70,6 +70,9 @@ dependencies {
     compileOnly(libs.aws.s3)
     compileOnly(drivers.postgres)
     runtimeOnly(drivers.hsql)
+    compileOnly(group = "jakarta.servlet", name = "jakarta.servlet-api", version = "6.1.0")
+    compileOnly(group = "javax.servlet",   name = "javax.servlet-api",   version = "4.0.1")
+    compileOnly(group = "org.osgi",        name = "osgi.core",           version = "8.0.0")
 
     // Test dependencies
     testImplementation(tests.junit5)
@@ -462,6 +465,18 @@ publishing {
                 description = "Provides some Apache SIS functionalities as Apache OpenOffice addins. " +
                               "For example, addins provide coordinate operation services as formulas " +
                               "inside the Calc spreadsheet."
+            }
+        }
+        create<MavenPublication>("web") {
+            var module = "org.apache.sis.web"
+            groupId    = "org.apache.sis.application"
+            artifactId = "sis-web"
+            artifact(layout.buildDirectory.file("libs/${module}.jar"))
+            artifact(layout.buildDirectory.file("docs/${module}-sources.jar")) {classifier = "sources"}
+            artifact(layout.buildDirectory.file("docs/${module}-javadoc.jar")) {classifier = "javadoc"}
+            pom {
+                name        = "Apache SIS web services layer"
+                description = "Support the use of Apache SIS in web applications."
             }
         }
     }

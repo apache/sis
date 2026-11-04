@@ -14,21 +14,21 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.sis.services;
+package org.apache.sis.web.javaee;
 
 import java.util.Set;
-import jakarta.servlet.ServletContext;
-import jakarta.servlet.ServletContextEvent;
-import jakarta.servlet.ServletContextListener;
-import jakarta.servlet.ServletContainerInitializer;
-import jakarta.servlet.annotation.HandlesTypes;
-import jakarta.servlet.annotation.WebListener;
+import javax.servlet.ServletContext;
+import javax.servlet.ServletContextEvent;
+import javax.servlet.ServletContextListener;
+import javax.servlet.ServletContainerInitializer;
+import javax.servlet.annotation.HandlesTypes;
+import javax.servlet.annotation.WebListener;
 import org.apache.sis.system.Shutdown;
 
 
 /**
- * Listener for servlet context, used as a shutdown hook when the application is undeployed.
- * This class should not be used directly.
+ * Copy of the {@linkplain org.apache.sis.web.jakarta.ServletListener listener for Jakarta}
+ * using the JaveEE package name instead of Jakarta.
  *
  * @author  Martin Desruisseaux (Geomatys)
  */
