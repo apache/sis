@@ -64,6 +64,9 @@ dependencies {
     implementation(group = "com.fasterxml.jackson.core", name = "jackson-databind",    version = "2.22.1")
     implementation(group = "org.antlr",                  name = "antlr4-maven-plugin", version = "4.13.2")
     implementation(group = "org.xerial",                 name = "sqlite-jdbc",         version = "3.45.1.0")
+    implementation(group = "org.apache.xmlgraphics",     name = "batik-bridge",        version = "1.19") {
+        exclude(group = "xml-apis", module = "xml-apis")     // Split package with the java.xml module.
+    }
     antlr         (group = "org.antlr",                  name = "antlr4",              version = "4.13.2")
 }
 
