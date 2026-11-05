@@ -3689,6 +3689,8 @@ search: try (ResultSet result = executeMetadataQuery("Deprecation",
         /*
          * Before to return the set, tests the creation of 1 object in order to report early (i.e. now)
          * any problems with SQL statements. Remaining operations will be created only when first needed.
+         * Do nothing if only metadata are requested because `set.resolve(1)` would create an instance of
+         * `DeferredCoordinateOperation`, which does not really answer the question.
          */
         if (!Semaphores.METADATA_ONLY.get()) {
             set.resolve(1);

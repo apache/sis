@@ -377,8 +377,8 @@ public class IdentifiedObjectSet<T extends IdentifiedObject> extends AbstractSet
 
     /**
      * Returns an iterator over the objects in this set. If the iteration encounter any kind of
-     * {@link FactoryException} other than {@link NoSuchIdentifierException}, then the exception
-     * will be re-thrown as an unchecked {@link BackingStoreException}.
+     * {@link FactoryException} other than {@linkplain #isRecoverableFailure recoverable failures},
+     * then the exception will be re-thrown as an unchecked {@link BackingStoreException}.
      *
      * <p>This iterator is <strong>not</strong> thread safe – iteration should be done in a single thread.
      * However, the iterator is robust to concurrent changes in {@code IdentifiedObjectSet} during iteration.</p>
@@ -468,7 +468,7 @@ public class IdentifiedObjectSet<T extends IdentifiedObject> extends AbstractSet
      */
     public void resolve(int n) throws FactoryException {
         if (n > 0) try {
-            for (final Iterator<T> it=iterator(); it.hasNext(); it.next()) {
+            for (final Iterator<T> it = iterator(); it.hasNext(); it.next()) {
                 if (--n == 0) {
                     break;
                 }
@@ -485,10 +485,8 @@ public class IdentifiedObjectSet<T extends IdentifiedObject> extends AbstractSet
      * <ol>
      *   <li>An identifier allocated by the authority given by
      *       <code>{@linkplain #factory}.{@linkplain GeodeticAuthorityFactory#getAuthority() getAuthority()}</code>.</li>
-     *   <li>The first {@linkplain org.apache.sis.referencing.AbstractIdentifiedObject#getIdentifiers() object identifier},
-     *       regardless its authority.</li>
-     *   <li>The first {@linkplain org.apache.sis.referencing.AbstractIdentifiedObject#getName() object name},
-     *       regardless its authority.</li>
+     *   <li>The first {@linkplain IdentifiedObject#getIdentifiers() object identifier}, regardless its authority.</li>
+     *   <li>The first {@linkplain IdentifiedObject#getName() object name}, regardless its authority.</li>
      * </ol>
      *
      * Subclasses may override this method if they want to use a different identifiers.
@@ -524,15 +522,13 @@ public class IdentifiedObjectSet<T extends IdentifiedObject> extends AbstractSet
     /**
      * Returns {@code true} if the specified exception should be handled as a recoverable failure.
      * This method is invoked during the iteration process if the factory failed to create some objects.
-     * If this method returns {@code true} for the given exception, then the exception will be logged
-     * at {@link Level#WARNING}. If this method returns {@code false}, then the exception will be re-thrown
-     * as a {@link BackingStoreException}.
+     * If this method returns {@code true} for the given exception, then the exception will be logged at {@link Level#WARNING}.
+     * If this method returns {@code false}, then the exception will be re-thrown as a {@link BackingStoreException}.
      *
      * <p>The default implementation applies the following rules:</p>
      * <ul>
      *   <li>If {@link NoSuchAuthorityCodeException}, returns {@code false} since failure to find a code declared
-     *       in the collection would be an inconsistency. Note that this exception is a subtype of
-     *       {@code NoSuchIdentifierException}, so it must be tested before the last case below.</li>
+     *       in the collection would be an inconsistency.</li>
      *   <li>If {@link NoSuchIdentifierException}, returns {@code true} because this exception is caused
      *       by an attempt to create a parameterized transform for an unimplemented operation.</li>
      *   <li>If {@link MissingFactoryResourceException}, returns {@code true}.</li>

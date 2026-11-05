@@ -48,6 +48,7 @@ import org.junit.jupiter.api.extension.RegisterExtension;
 import org.apache.sis.test.LoggingWatcher;
 import org.apache.sis.referencing.operation.transform.MathTransformTestCase;
 import static org.apache.sis.referencing.Assertions.assertEpsgNameAndIdentifierEqual;
+import org.apache.sis.referencing.operation.transform.MathTransforms;
 import static org.apache.sis.test.TestCase.assumeConnectionToEPSG;
 
 // Specific to the geoapi-3.1 and geoapi-4.0 branches:
@@ -417,6 +418,64 @@ public final class CoordinateOperationRegistryTest extends MathTransformTestCase
         assertEquals( 14.1012, p.parameter("Scale difference")  .doubleValue());
         assertEquals(  0.1,    CRS.getLinearAccuracy(operation));
         loggings.assertNoUnexpectedLog();
+    }
+
+    /**
+     * Tests an operation requiring datum shifts. The <abbr>EPSG</abbr> database contains coordinate operations
+     * for the forward and reverse operations, but one of them is defined with geocentric translation while the
+     * other is defined with datum shift grids. The latter may not be present, in which case SIS should fallback
+     * on the inverse of the geocentric translation (a previous SIS version did not, causing a 355 meters error).
+     *
+     * @throws ParseException if a CRS used in this test cannot be parsed.
+     * @throws FactoryException if an error occurred while creating a <abbr>CRS</abbr> or an operation.
+     * @throws TransformException if an error occurred while converting the test points.
+     */
+    @Test
+    public void testDatumShift() throws ParseException, FactoryException, TransformException {
+        final CoordinateReferenceSystem sourceCRS = CommonCRS.WGS84.normalizedGeographic();
+        final CoordinateReferenceSystem targetCRS = parse(
+                "ProjectedCRS[“NTF Lambert II étendu”,\n" +
+                // Intentionally not the authoritative base for checking that the search works anyway.
+                "  BaseGeogCRS[“GCS NTF”,\n" +
+                "    Datum[“NTF”, Ellipsoid[“Clarke_1880_IGN”, 6378249.2, 293.46602]],\n" +
+                "    Unit[“Degree”, 0.0174532925199433]],\n" +
+                "  Conversion[“Lambert zone II”,\n" +
+                "    Method[“Lambert Conformal Conic”],\n" +
+                "    Parameter[“False Easting”, 600000],\n" +
+                "    Parameter[“False Northing”, 2200000],\n" +
+                "    Parameter[“Central_Meridian”, 2.3372291667],\n" +
+                "    Parameter[“Standard Parallel 1”, 45.8989188889],\n" +  // Using degrees instead of grad.
+                "    Parameter[“Standard Parallel 2”, 47.6960144444],\n" +
+                "    Parameter[“Latitude Of Origin”,  46.8]],\n" +
+                "  Unit[“Meter”, 1],\n" +
+                "  Id[“EPSG”, “27582”]]");      // For helping SIS to find the authoritative definition faster.
+        /*
+         * Despite the fact that `sourceCRS` is not conform to EPSG authoritative definition,
+         * SIS should be able to find the correct definition (equivalent to above definition)
+         * and find a datum shift with an accuracy of 2 meters or less (compared to 3000 m if
+         * the datum shift is not found).
+         */
+        final CoordinateOperation forward = CRS.findOperation(sourceCRS, targetCRS, null);
+        final CoordinateOperation reverse = CRS.findOperation(targetCRS, sourceCRS, null);
+        assertTrue((tolerance = CRS.getLinearAccuracy(reverse)) <= 2, () -> "Forward accuracy: " + tolerance);
+        assertTrue((tolerance = CRS.getLinearAccuracy(forward)) <= 2, () -> "Reverse accuracy: " + tolerance);
+        /*
+         * Transform a building corner near Toulon (La Garde). We keep the tolerance declared by the operation.
+         * This is another way to test if a datum shift is applied (if not, the error is about 355 meters).
+         */
+        transform = forward.getMathTransform();
+        verifyTransform(new double[] {5.9808769, 43.1338320},   // Point to transform.
+                        new double[] {896966.00, 1799238.19});  // Expected values.
+        /*
+         * Verify the consistency between the two transforms: forward followed by reverse.
+         */
+        transform = MathTransforms.concatenate(forward.getMathTransform(), reverse.getMathTransform());
+        verifyTransform(new double[] {5.9808769, 43.1338320},
+                        new double[] {5.9808769, 43.1338320});
+
+        transform = MathTransforms.concatenate(reverse.getMathTransform(), forward.getMathTransform());
+        verifyTransform(new double[] {896966.00, 1799238.19},
+                        new double[] {896966.00, 1799238.19});
     }
 
     /**
