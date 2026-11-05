@@ -765,9 +765,9 @@ public abstract class AbstractEnvelope extends FormattableObject implements Enve
      * If it least one coordinate value in the given point is {@link Double#NaN NaN},
      * then this method returns {@code false}.
      *
-     * <h4>Preconditions</h4>
+     * <p><b>Precondition:</b>
      * This method assumes that the specified point uses a CRS equivalent to this envelope CRS.
-     * For performance reasons, this condition is not verified unless Java assertions are enabled.
+     * For performance reasons, this condition is not verified unless Java assertions are enabled.</p>
      *
      * <h4>Crossing the anti-meridian of a Geographic CRS</h4>
      * For any dimension, if <var>upper</var> &lt; <var>lower</var> then this method uses an
@@ -817,9 +817,9 @@ public abstract class AbstractEnvelope extends FormattableObject implements Enve
      *
      * <blockquote><pre>{@linkplain #contains(Envelope, boolean) contains}(envelope, <b>true</b>)</pre></blockquote>
      *
-     * <h4>Preconditions</h4>
+     * <p><b>Precondition:</b>
      * This method assumes that the specified envelope uses the same CRS as this envelope.
-     * For performance reasons, this condition is not verified unless Java assertions are enabled.
+     * For performance reasons, this condition is not verified unless Java assertions are enabled.</p>
      *
      * <h4>Crossing the anti-meridian of a Geographic CRS</h4>
      * For every cases illustrated below, the yellow box is considered completely enclosed
@@ -947,9 +947,9 @@ public abstract class AbstractEnvelope extends FormattableObject implements Enve
      *
      * <blockquote><pre>{@linkplain #intersects(Envelope, boolean) intersects}(envelope, <b>false</b>)</pre></blockquote>
      *
-     * <h4>Preconditions</h4>
+     * <p><b>Precondition:</b>
      * This method assumes that the specified envelope uses the same CRS as this envelope.
-     * For performance reasons, this condition is not verified unless Java assertions are enabled.
+     * For performance reasons, this condition is not verified unless Java assertions are enabled.</p>
      *
      * <h4>Crossing the anti-meridian of a Geographic CRS</h4>
      * This method can handle envelopes crossing the anti-meridian.

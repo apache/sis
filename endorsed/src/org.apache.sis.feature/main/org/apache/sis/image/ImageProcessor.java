@@ -947,10 +947,10 @@ public class ImageProcessor implements Cloneable {
      * The returned image may share some tiles from any source images (without copy)
      * if the tile can be used directly with no change.
      *
-     * <h4>Preconditions</h4>
+     * <p><b>Preconditions:</b>
      * All source images shall have the same number of bands (but not necessarily the same sample model).
      * All source images should have equivalent color model, otherwise color consistency is not guaranteed.
-     * At least one image shall intersect the given bounds.
+     * At least one image shall intersect the given bounds.</p>
      *
      * <h4>Properties used</h4>
      * This operation uses the following properties in addition to method parameters:
@@ -994,8 +994,8 @@ public class ImageProcessor implements Cloneable {
      * approach of creating views as much as possible. Therefore, this method should be used only
      * when necessary.
      *
-     * <h4>Preconditions</h4>
-     * The new sample model shall have the same number of bands as in the given image.
+     * <p><b>Precondition:</b>
+     * The new sample model shall have the same number of bands as in the given image.</p>
      *
      * <h4>Properties used</h4>
      * This operation uses the following properties in addition to method parameters:

@@ -145,9 +145,9 @@ public class PixelIteratorTest extends TestCase {
      * Creates a {@code WritableRaster} to use as the source of test data.
      * The raster is filled with arbitrary sample values.
      *
-     * <h4>Preconditions</h4>
+     * <p><b>Precondition:</b>
      * Before invocation, the {@link #xmin}, {@link #ymin}, {@link #width}, {@link #height} and {@link #numBands}
-     * fields must be initialized.
+     * fields must be initialized.</p>
      *
      * @param  subArea  the raster subarea on which to perform iteration, or {@code null} for the whole area.
      * @return a raster filled with arbitrary sample values.
@@ -204,9 +204,9 @@ public class PixelIteratorTest extends TestCase {
      * Creates a {@code RenderedImage} to use as the source of test data.
      * The image is filled with arbitrary sample values.
      *
-     * <h4>Preconditions</h4>
+     * <p><b>Precondition:</b>
      * Before invocation, the {@link #xmin}, {@link #ymin}, {@link #width}, {@link #height},
-     * {@link #tileWidth}, {@link #tileHeight} and {@link #numBands} fields must be initialized.
+     * {@link #tileWidth}, {@link #tileHeight} and {@link #numBands} fields must be initialized.</p>
      *
      * @param  subArea  the image subarea on which to perform iteration, or {@code null} for the whole area.
      * @return an image filled with arbitrary sample values.

@@ -1076,10 +1076,10 @@ public class GridDerivation {
      *
      * The {@linkplain GridGeometry#getGridToCRS(PixelInCell) grid to CRS} transform is scaled accordingly
      *
-     * <h4>Preconditions</h4>
+     * <p><b>Precondition:</b>
      * This method assumes that subsampling are divisors of {@linkplain #chunkSize(int...) chunk sizes}
      * and are not greater than the {@linkplain #maximumSubsampling(long...) maximum subsampling}.
-     * It is caller responsibility to ensure that those preconditions are met.
+     * It is caller responsibility to ensure that this precondition is met.</p>
      *
      * @param  subsampling  the subsampling to apply on each grid dimension. All values shall be greater than zero.
      *         If the array length is shorter than the number of dimensions, missing values are assumed to be 1.
