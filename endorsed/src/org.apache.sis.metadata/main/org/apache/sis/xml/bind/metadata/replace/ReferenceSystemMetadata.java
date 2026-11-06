@@ -16,6 +16,7 @@
  */
 package org.apache.sis.xml.bind.metadata.replace;
 
+import java.util.Optional;
 import java.lang.reflect.Type;
 import jakarta.xml.bind.Marshaller;
 import jakarta.xml.bind.annotation.XmlType;
@@ -117,6 +118,16 @@ public class ReferenceSystemMetadata extends SimpleIdentifiedObject implements R
     @Override
     public Type getStandardType() {
         return ReferenceSystem.class;
+    }
+
+    /**
+     * Returns the type of this reference system.
+     *
+     * @return the type of this reference system.
+     */
+    @Override
+    public Optional<ReferenceSystemType> getReferenceSystemType() {
+        return Optional.ofNullable(referenceSystemType);
     }
 
     /**
