@@ -20,8 +20,8 @@ import java.util.Arrays;
 import java.util.Random;
 import static java.lang.StrictMath.*;
 import org.opengis.referencing.operation.TransformException;
+import static org.apache.sis.referencing.internal.shared.CoordinateOperations.MAXIMUM_BUFFER_SIZE;
 import static org.apache.sis.referencing.operation.transform.AbstractMathTransform.MAXIMUM_FAILURES;
-import static org.apache.sis.referencing.operation.transform.AbstractMathTransform.MAXIMUM_BUFFER_SIZE;
 
 // Test dependencies
 import org.junit.jupiter.api.Test;
@@ -34,6 +34,7 @@ import org.apache.sis.test.TestCase;
  *
  * @author  Martin Desruisseaux (Geomatys)
  */
+@SuppressWarnings("exports")
 public final class AbstractMathTransformTest extends TestCase {
     /**
      * Creates a new test case.

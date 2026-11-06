@@ -486,7 +486,7 @@ public class GeneralEnvelope extends ArrayEnvelope implements Cloneable, Seriali
      * @see Envelopes#toTimeRange(Envelope)
      */
     public boolean setTimeRange(final Instant startTime, final Instant endTime) {
-        final TemporalAccessor t = TemporalAccessor.of(crs, 0);
+        final TemporalAccessor t = TemporalAccessor.of(crs);
         if (t != null) {
             double lower = t.timeCRS.toValue(startTime);
             double upper = t.timeCRS.toValue(endTime);

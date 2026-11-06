@@ -23,10 +23,9 @@ import java.util.Arrays;
 import java.util.Optional;
 import java.util.Objects;
 import java.util.Comparator;
-import java.util.Spliterator;
 import java.util.stream.Stream;
+import java.util.stream.DoubleStream;
 import java.util.stream.StreamSupport;
-import java.util.function.Consumer;
 import java.util.logging.Logger;
 import java.io.Serializable;
 import java.io.IOException;
@@ -100,7 +99,7 @@ import org.opengis.coverage.grid.GridCoordinates;
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @author  Alexis Manin (Geomatys)
  * @author  Johann Sorel (Geomatys)
- * @version 1.7
+ * @version 1.8
  * @since SIS 1.0
  */
 public class GridExtent implements GridEnvelope, LenientComparable, Serializable {
@@ -2246,7 +2245,7 @@ public class GridExtent implements GridEnvelope, LenientComparable, Serializable
     }
 
     /**
-     * Create a stream of all lattice points contained inside this grid extent.
+     * Creates a stream of all lattice points contained inside this grid extent.
      * For each dimension, the coordinate values range from {@linkplain #getLow(int) low}
      * to {@linkplain #getHigh(int) high} inclusive.
      * The stream is ordered from first dimension varying the fastest to last dimension varying the slowest.
@@ -2256,138 +2255,70 @@ public class GridExtent implements GridEnvelope, LenientComparable, Serializable
      * @return stream of lattice points inside this grid extent.
      *
      * @see #getLatticePointCount()
+     *
      * @since SIS 1.7
      */
     public Stream<long[]> latticePointStream(final boolean parallel) {
-        return StreamSupport.stream(new Iter(coordinates.clone()), parallel);
+        return StreamSupport.stream(new LatticeIterator.Grid(coordinates.clone()), parallel);
     }
 
     /**
-     * Iterator over all grid coordinates included inside the grid extent, low and high values included.
-     * Iteration is ordered from first dimension varying the fastest to last dimension varying the slowest.
+     * Creates a stream of all lattice points inside this grid extent transformed with the given {@code gridToCRS}.
+     * The source coordinates given to {@code gridToCRS} are as computed by {@link #latticePointStream(boolean)} in
+     * the same iteration order. The target coordinates computed by {@code gridToCRS} are the elements traversed by
+     * the stream, in the same order.
+     *
+     * <p>If the given {@code gridToCRS} throws a {@link TransformException} during traversal, the exception will be
+     * wrapped in a {@link BackingStoreException}. There is no guarantee that points successfully transformed before
+     * the exception will be consumed before the {@link BackingStoreException} is thrown.</p>
+     *
+     * @param  gridToCRS  the transform to apply on grid coordinates.
+     * @param  parallel   whether to return a parallel stream.
+     * @return stream of all transformed lattice points.
+     * @throws MismatchedDimensionException if the number of source dimensions of {@code gridToCRS}
+     *         is not the {@linkplain #getDimension() number of dimensions} of this grid extent.
+     *
+     * @see #getLatticePointCount()
+     * @see #latticePointStream(boolean)
+     * @see GridGeometry#latticePointStream(PixelInCell, CoordinateReferenceSystem)
+     *
+     * @since SIS 1.8
      */
-    private static final class Iter implements Spliterator<long[]> {
-        /**
-         * The low coordinates followed by the high coordinates, inclusive.
-         * This is either a copy of the {@link GridExtent#coordinates} array,
-         * or a subregion if the iterator has been split.
-         */
-        private final long[] extent;
+    public Stream<double[]> latticePointStream(final MathTransform gridToCRS, final boolean parallel) {
+        ArgumentChecks.ensureDimensionsMatch("gridToCRS", getDimension(), gridToCRS.getTargetDimensions(), gridToCRS);
+        return StreamSupport.stream(new GridPointIterator.MultiDimensional(coordinates.clone(), gridToCRS), parallel);
+    }
 
-        /**
-         * The current position.
-         */
-        private final long[] current;
-
-        /**
-         * Whether the iteration is finished.
-         */
-        private boolean done;
-
-        /**
-         * Creates a new iterator with the given low and high coordinate values.
-         * The given array may be modified in-place if the iterator is split.
-         *
-         * @param  extent  the low coordinates followed by the high coordinates, inclusive.
-         */
-        Iter(final long[] extent) {
-            this.extent  = extent;
-            this.current = Arrays.copyOf(extent, extent.length >>> 1);
-        }
-
-        /**
-         * Returns the characteristics of this iterator: ordered, size known, without duplicated value.
-         */
-        @Override
-        public int characteristics() {
-            return ORDERED | DISTINCT | SIZED | NONNULL | IMMUTABLE | SUBSIZED;
-        }
-
-        /**
-         * Returns the exact number of points inside the extent if that number does not overflow.
-         * In case of size exceeding the capacity of 64-bits integers, returns {@link Long#MAX_VALUE}.
-         */
-        @Override
-        public long estimateSize() {
-            long count = 1;
-            final int dimension = extent.length >>> 1;
-            for (int i=0; i<dimension; i++) {
-                try {
-                    long span = Math.subtractExact(extent[dimension + i], extent[i]);
-                    count = Math.multiplyExact(count, Math.incrementExact(span));
-                } catch (ArithmeticException e) {
-                    Logging.ignorableException(LOGGER, GridExtent.class, "latticePointStream", e);
-                    return Long.MAX_VALUE;
-                }
-            }
-            return count;
-        }
-
-        /**
-         * Tries to return an iterator covering a prefix of the points covered by this iterator.
-         * If successful, then after this method call this iterator covers the remaining suffix.
-         */
-        @Override
-        public Spliterator<long[]> trySplit() {
-            final int dimension = extent.length >>> 1;
-            for (int i = dimension; --i >= 0;) {
-                long span = Math.subtractExact(extent[dimension + i], extent[i]);
-                if (span != 0) {
-                    final long[] prefix = extent.clone();
-                    final long separation = prefix[i] + (span >>> 1);
-                    prefix[i + dimension] = separation;
-                    current[i] = extent[i] = separation + 1;
-                    return new Iter(prefix);
-                }
-            }
-            return null;
-        }
-
-        /**
-         * Moves to the next point and checks whether there are more lattice points to iterate over.
-         *
-         * @param  dimension  value of {@code extent.length >>> 1}.
-         * @return whether there is more lattice points after this method call.
-         */
-        private boolean next(final int dimension) {
-            for (int i=0; i<dimension; i++) {
-                if (current[i] < extent[i + dimension]) {
-                    current[i]++;
-                    return true;
-                }
-                current[i] = extent[i];
-            }
-            return false;
-        }
-
-        /**
-         * Preforms the given action on the next lattice point if it exists.
-         *
-         * @param  action  the action to execute.
-         * @return whether a remaining point existed.
-         */
-        @Override
-        public boolean tryAdvance(final Consumer<? super long[]> action) {
-            if (done) return false;
-            action.accept(current.clone());
-            done = !next(extent.length >>> 1);
-            return true;
-        }
-
-        /**
-         * Preforms the given action on all remaining lattice points.
-         *
-         * @param  action  the action to execute.
-         */
-        @Override
-        public void forEachRemaining(Consumer<? super long[]> action) {
-            final int dimension = extent.length >>> 1;
-            if (!done) {
-                do action.accept(current.clone());
-                while (next(dimension));
-                done = true;
-            }
-        }
+    /**
+     * Creates a stream of all lattice points inside this grid extent transformed with the given {@code gridToCRS}.
+     * The source coordinates given to {@code gridToCRS} are as computed by {@link #latticePointStream(boolean)} in
+     * the same iteration order. The target coordinates computed by {@code gridToCRS} are the elements traversed by
+     * the stream, in the same order. The number of target dimensions in the {@code gridToCRS} transform must be 1.
+     *
+     * <p>This method is a variant of the {@linkplain #latticePointStream(MathTransform, boolean)
+     * multi-dimensional method} with coordinates returned as primitive types instead of arrays of length 1.
+     * This alternative avoids the creations of a temporary array for each point.</p>
+     *
+     * <p>If the given {@code gridToCRS} throws a {@link TransformException} during traversal, the exception will be
+     * wrapped in a {@link BackingStoreException}. There is no guarantee that points successfully transformed before
+     * the exception will be consumed before the {@link BackingStoreException} is thrown.</p>
+     *
+     * @param  gridToCRS  the transform to apply on grid coordinates. The number of target dimension must be 1.
+     * @param  parallel   whether to return a parallel stream.
+     * @return stream of all transformed lattice points.
+     * @throws MismatchedDimensionException if the number of source dimensions of {@code gridToCRS}
+     *         is not the {@linkplain #getDimension() number of dimensions} of this grid extent,
+     *         or if the number of target dimensions is not 1.
+     *
+     * @see #getLatticePointCount()
+     * @see #latticePointStream(boolean)
+     * @see GridGeometry#latticePointStream1D(PixelInCell, CoordinateReferenceSystem)
+     *
+     * @since SIS 1.8
+     */
+    public DoubleStream latticePointStream1D(final MathTransform gridToCRS, final boolean parallel) {
+        ArgumentChecks.ensureDimensionsMatch("gridToCRS", getDimension(), 1, Objects.requireNonNull(gridToCRS));
+        return StreamSupport.doubleStream(new GridPointIterator.OneDimensional(coordinates.clone(), gridToCRS), parallel);
     }
 
     /**

@@ -43,7 +43,7 @@ public abstract class DirectPositionView extends AbstractDirectPosition {
      * Creates a new direct position wrapping the given array.
      *
      * @param  offset     the first value index in the coordinates array.
-     * @param  dimension  the number of valid coordinate values.
+     * @param  dimension  the number of valid coordinate values in one coordinate tuple.
      */
     DirectPositionView(final int offset, final int dimension) {
         this.offset    = offset;
@@ -84,8 +84,8 @@ public abstract class DirectPositionView extends AbstractDirectPosition {
          * Creates a new direct position wrapping the given array.
          *
          * @param  coordinates  the coordinate values.
-         * @param  offset     the first value index in the coordinates array.
-         * @param  dimension  the number of valid coordinate values.
+         * @param  offset       the first value index in the coordinates array.
+         * @param  dimension    the number of valid coordinate values in one coordinate tuple.
          */
         public Double(final double[] coordinates, final int offset, final int dimension) {
             super(offset, dimension);
@@ -130,8 +130,8 @@ public abstract class DirectPositionView extends AbstractDirectPosition {
          * Creates a new direct position wrapping the given array.
          *
          * @param  coordinates  the coordinate values.
-         * @param  offset     the first value index in the coordinates array.
-         * @param  dimension  the number of valid coordinate values.
+         * @param  offset       the first value index in the coordinates array.
+         * @param  dimension    the number of valid coordinate values in one coordinate tuple.
          */
         public Float(final float[] coordinates, final int offset, final int dimension) {
             super(offset, dimension);

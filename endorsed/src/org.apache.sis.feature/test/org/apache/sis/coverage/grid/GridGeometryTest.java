@@ -1032,6 +1032,62 @@ public final class GridGeometryTest extends TestCase {
     }
 
     /**
+     * Tests {@link GridGeometry#latticePointStream(PixelInCell, CoordinateReferenceSystem)}
+     * and its one-dimensional variant.
+     *
+     * @throws FactoryException if an error occurred while creating the transform.
+     */
+    @Test
+    public void testLatticePointStream() throws FactoryException {
+        final var grid = new GridGeometry(
+                new GridExtent(null, new long[] {1, 4, 10}, new long[] {3, 5, 14}, true),
+                PixelInCell.CELL_CENTER,
+                MathTransforms.linear(new Matrix4(
+                    0.25, 0,   0,  2,
+                    0,    0.5, 0,  3,
+                    0,    0,   2,  7,
+                    0,    0,   0,  1)),
+                HardCodedCRS.WGS84_3D);
+
+        assertArrayEquals(new double[][] {
+            new double[] {5.0, 2.25},
+            new double[] {5.0, 2.50},
+            new double[] {5.0, 2.75},
+            new double[] {5.5, 2.25},
+            new double[] {5.5, 2.50},
+            new double[] {5.5, 2.75}
+        }, grid.latticePointStream(PixelInCell.CELL_CENTER, HardCodedCRS.WGS84_LATITUDE_FIRST).toArray());
+
+        assertArrayEquals(new double[] {2700, 2900, 3100, 3300, 3500},
+                grid.latticePointStream1D(PixelInCell.CELL_CENTER, HardCodedCRS.ELLIPSOIDAL_HEIGHT_cm).toArray());
+    }
+
+    /**
+     * Tests {@link GridGeometry#instantStream(PixelInCell)}.
+     *
+     * @throws FactoryException if an error occurred while creating the transform.
+     */
+    @Test
+    public void testInstantStream() throws FactoryException {
+        final var grid = new GridGeometry(
+                new GridExtent(null, null, new long[] {3, 5, 3}, true),
+                PixelInCell.CELL_CENTER,
+                MathTransforms.linear(new Matrix4(
+                    0.25, 0,   0,  2,
+                    0,    0.5, 0,  3,
+                    0,    0,   2,  7,
+                    0,    0,   0,  1)),
+                HardCodedCRS.WGS84_WITH_TIME);
+
+        assertArrayEquals(new String[] {
+            "1858-11-24T00:00:00Z",     // Value zero is 1858-11-17T00:00:00Z.
+            "1858-11-26T00:00:00Z",
+            "1858-11-28T00:00:00Z",
+            "1858-11-30T00:00:00Z"
+        }, grid.instantStream(PixelInCell.CELL_CENTER).map(Object::toString).toArray());
+    }
+
+    /**
      * Tests {@link GridGeometry#contains(GridGeometry)} and {@link GridGeometry#intersects(GridGeometry)}.
      */
     @Test

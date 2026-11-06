@@ -564,7 +564,7 @@ public abstract class AbstractEnvelope extends FormattableObject implements Enve
      * @since SIS 1.1
      */
     public Optional<Range<Instant>> getTimeRange() {
-        final TemporalAccessor t = TemporalAccessor.of(getCoordinateReferenceSystem(), 0);
+        final TemporalAccessor t = TemporalAccessor.of(getCoordinateReferenceSystem());
         return (t != null) ? Optional.of(t.getTimeRange(this)) : Optional.empty();
     }
 

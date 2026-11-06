@@ -282,7 +282,7 @@ public final class ServicesForMetadata extends ReferencingServices {
     @Override
     public boolean setBounds(final Envelope envelope, final DefaultTemporalExtent target) {
         final CoordinateReferenceSystem crs = envelope.getCoordinateReferenceSystem();
-        final TemporalAccessor accessor = TemporalAccessor.of(crs, 0);
+        final TemporalAccessor accessor = TemporalAccessor.of(crs);
         if (accessor == null) {                     // Mandatory for the conversion from numbers to dates.
             return false;
         }
@@ -305,7 +305,7 @@ public final class ServicesForMetadata extends ReferencingServices {
         final CoordinateReferenceSystem crs = envelope.getCoordinateReferenceSystem();
         final SingleCRS horizontalCRS = CRS.getHorizontalComponent(crs);
         final VerticalCRS verticalCRS = CRS.getVerticalComponent(crs, true);
-        final TemporalAccessor accessor = TemporalAccessor.of(crs, 0);
+        final TemporalAccessor accessor = TemporalAccessor.of(crs);
         if (horizontalCRS == null && verticalCRS == null && accessor == null) {
             return false;
         }
@@ -389,7 +389,7 @@ public final class ServicesForMetadata extends ReferencingServices {
             target.getVerticalElements().add(extent);
             found = true;
         }
-        final TemporalAccessor accessor = TemporalAccessor.of(crs, 0);
+        final TemporalAccessor accessor = TemporalAccessor.of(crs);
         if (accessor != null) {
             final DefaultTemporalExtent extent = new DefaultTemporalExtent();
             accessor.setTemporalExtent(envelope, extent);

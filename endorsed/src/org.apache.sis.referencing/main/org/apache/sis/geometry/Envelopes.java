@@ -1162,7 +1162,7 @@ poles:  for (int i=0; i<dimension; i++) {
      */
     public static Optional<Range<Instant>> toTimeRange(final Envelope envelope) {
         if (envelope != null) {
-            final TemporalAccessor t = TemporalAccessor.of(envelope.getCoordinateReferenceSystem(), 0);
+            final TemporalAccessor t = TemporalAccessor.of(envelope.getCoordinateReferenceSystem());
             if (t != null) {
                 return Optional.of(t.getTimeRange(envelope));
             }
