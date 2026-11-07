@@ -25,7 +25,6 @@ import org.opengis.referencing.NoSuchAuthorityCodeException;
 import org.opengis.referencing.crs.CRSFactory;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import org.opengis.referencing.crs.GeodeticCRS;
-import org.opengis.referencing.crs.GeographicCRS;
 import org.opengis.referencing.crs.VerticalCRS;
 import org.opengis.referencing.crs.ProjectedCRS;
 import org.opengis.referencing.cs.CSFactory;
@@ -48,6 +47,9 @@ import org.apache.sis.util.Classes;
 import org.apache.sis.util.logging.Logging;
 import org.apache.sis.util.resources.Errors;
 import org.apache.sis.util.internal.shared.Constants;
+
+// Specific to the main and geoapi-3.1 branches:
+import org.opengis.referencing.crs.GeographicCRS;
 
 
 /**
