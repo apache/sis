@@ -22,13 +22,11 @@ import java.util.List;
 import java.util.Set;
 import org.opengis.util.LocalName;
 import org.opengis.util.TypeName;
-import org.apache.sis.filter.FunctionRegister;
-import org.apache.sis.util.iso.Names;
-
-// Specific to the geoapi-3.1 and geoapi-4.0 branches:
 import org.opengis.filter.Expression;
 import org.opengis.filter.Literal;
 import org.opengis.filter.capability.AvailableFunction;
+import org.apache.sis.filter.FunctionRegister;
+import org.apache.sis.util.iso.Names;
 
 
 /**

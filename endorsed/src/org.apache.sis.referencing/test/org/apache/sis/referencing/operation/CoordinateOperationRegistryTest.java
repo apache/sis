@@ -36,6 +36,7 @@ import org.apache.sis.referencing.internal.shared.Formulas;
 import org.apache.sis.referencing.crs.DefaultGeographicCRS;
 import org.apache.sis.referencing.cs.AxesConvention;
 import org.apache.sis.io.wkt.WKTFormat;
+import org.apache.sis.referencing.operation.transform.MathTransforms;
 
 // Test dependencies
 import org.junit.jupiter.api.BeforeEach;
@@ -48,7 +49,6 @@ import org.junit.jupiter.api.extension.RegisterExtension;
 import org.apache.sis.test.LoggingWatcher;
 import org.apache.sis.referencing.operation.transform.MathTransformTestCase;
 import static org.apache.sis.referencing.Assertions.assertEpsgNameAndIdentifierEqual;
-import org.apache.sis.referencing.operation.transform.MathTransforms;
 import static org.apache.sis.test.TestCase.assumeConnectionToEPSG;
 
 // Specific to the geoapi-3.1 and geoapi-4.0 branches:

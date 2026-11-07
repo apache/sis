@@ -96,10 +96,12 @@ import org.apache.sis.util.logging.Logging;
 
 // Specific to the geoapi-3.1 and geoapi-4.0 branches:
 import org.opengis.referencing.ObjectDomain;
-import org.opengis.referencing.crs.DerivedCRS;
 import org.opengis.referencing.datum.DatumEnsemble;
 import org.opengis.referencing.datum.DynamicReferenceFrame;
 import org.opengis.coordinate.CoordinateMetadata;
+
+// Specific to the geoapi-4.0 branch:
+import org.opengis.referencing.crs.DerivedCRS;
 
 
 /**

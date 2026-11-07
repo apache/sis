@@ -18,13 +18,13 @@ package org.apache.sis.geometries.internal.shared;
 
 import java.util.HashMap;
 import java.util.Map;
-import javax.measure.IncommensurableException;
-import javax.measure.Quantity;
-import javax.measure.Unit;
 import static java.lang.StrictMath.abs;
 import static java.lang.StrictMath.hypot;
 import static java.lang.StrictMath.max;
 import static java.lang.StrictMath.min;
+import javax.measure.IncommensurableException;
+import javax.measure.Quantity;
+import javax.measure.Unit;
 import org.opengis.geometry.Envelope;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import org.apache.sis.geometries.DataPoints;

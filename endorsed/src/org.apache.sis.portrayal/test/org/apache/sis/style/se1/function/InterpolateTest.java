@@ -19,6 +19,11 @@ package org.apache.sis.style.se1.function;
 import java.awt.Color;
 import java.util.List;
 import java.util.Optional;
+import org.opengis.feature.Feature;
+import org.opengis.feature.FeatureType;
+import org.opengis.filter.Expression;
+import org.opengis.filter.FilterFactory;
+import org.opengis.filter.Literal;
 import org.apache.sis.feature.builder.FeatureTypeBuilder;
 import org.apache.sis.filter.DefaultFilterFactory;
 
@@ -26,13 +31,6 @@ import org.apache.sis.filter.DefaultFilterFactory;
 import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.*;
 import org.apache.sis.test.TestCase;
-
-// Specific to the geoapi-3.1 and geoapi-4.0 branches:
-import org.opengis.feature.Feature;
-import org.opengis.feature.FeatureType;
-import org.opengis.filter.Expression;
-import org.opengis.filter.FilterFactory;
-import org.opengis.filter.Literal;
 
 
 /**

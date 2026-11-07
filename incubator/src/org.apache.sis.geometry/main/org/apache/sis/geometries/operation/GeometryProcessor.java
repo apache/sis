@@ -59,8 +59,8 @@ import org.apache.sis.maths.NDArrays;
 import org.apache.sis.maths.SampleSystem;
 import org.apache.sis.maths.Vector;
 import org.apache.sis.measure.Quantities;
-import org.apache.sis.referencing.CRS;
 import org.apache.sis.measure.Units;
+import org.apache.sis.referencing.CRS;
 import org.apache.sis.util.ArgumentChecks;
 
 

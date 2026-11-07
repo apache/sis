@@ -24,8 +24,10 @@ import java.util.Set;
 import java.util.TreeSet;
 import org.opengis.referencing.ReferenceSystem;
 import org.opengis.referencing.operation.TransformException;
+import org.opengis.referencing.operation.MathTransform;
 import org.opengis.util.FactoryException;
 import org.opengis.util.GenericName;
+import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import org.apache.sis.coverage.SampleDimension;
 import org.apache.sis.coverage.grid.GridExtent;
 import org.apache.sis.coverage.grid.GridGeometry;
@@ -37,10 +39,8 @@ import org.apache.sis.storage.AbstractResource;
 import org.apache.sis.storage.DataStoreException;
 import org.apache.sis.storage.rs.CodedCoverage;
 import org.apache.sis.storage.rs.CodedGeometry;
-import static org.apache.sis.storage.rs.CodedGeometry.compound;
 import org.apache.sis.storage.rs.CodedResource;
-import org.opengis.referencing.crs.CoordinateReferenceSystem;
-import org.opengis.referencing.operation.MathTransform;
+import static org.apache.sis.storage.rs.CodedGeometry.compound;
 
 
 /**
