@@ -17,8 +17,9 @@
 
 
 /**
- * All classes having a dependencies to JavaEE ({@code javax.servlet} packages).
- * JavaEE is replaced by Jakarta ({@code jakarta.servlet} packages), but not all applications have migrated.
+ * All classes having a dependencies to JavaEE ({@code javax.servlet} and {@code javax.ejb} packages).
+ * JavaEE contains Enterprise JavaBeans (<abbr>EJB</abbr>) for business logic and servlet for the web.
+ * JavaEE is replaced by Jakarta ({@code jakarta.*} packages), but not all applications have migrated.
  * This package is provided for web applications that are still using JavaEE.
  *
  * @author  Martin Desruisseaux (Geomatys)

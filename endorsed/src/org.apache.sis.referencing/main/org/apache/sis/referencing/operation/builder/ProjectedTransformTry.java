@@ -33,6 +33,7 @@ import org.apache.sis.util.resources.Errors;
 import org.apache.sis.referencing.operation.matrix.Matrices;
 import org.apache.sis.referencing.operation.matrix.MatrixSIS;
 import org.apache.sis.referencing.operation.transform.MathTransforms;
+import static org.apache.sis.referencing.internal.shared.CoordinateOperations.MAXIMUM_BUFFER_SIZE;
 
 // Specific to the main and geoapi-3.1 branches:
 import org.opengis.geometry.MismatchedDimensionException;
@@ -64,14 +65,6 @@ import org.opengis.geometry.MismatchedDimensionException;
  * @author  Martin Desruisseaux (Geomatys)
  */
 final class ProjectedTransformTry implements Comparable<ProjectedTransformTry>, Map.Entry<String,MathTransform> {
-    /**
-     * Number of points in the temporary buffer used for transforming data.
-     * The buffer length will be this capacity multiplied by the number of dimensions.
-     *
-     * @see org.apache.sis.referencing.operation.transform.AbstractMathTransform#MAXIMUM_BUFFER_SIZE
-     */
-    private static final int BUFFER_CAPACITY = 512;
-
     /**
      * A name by witch this projection attempt is identified.
      *
@@ -233,7 +226,7 @@ final class ProjectedTransformTry implements Comparable<ProjectedTransformTry>, 
             if (numDimensions == 1) {
                 projection.transform(coordinates[projToGrid[0]], 0, results[0], 0, numPoints);
             } else {
-                final int bufferCapacity = Math.min(numPoints, BUFFER_CAPACITY);                 // In number of points.
+                final int bufferCapacity = Math.min(numPoints, MAXIMUM_BUFFER_SIZE);    // In number of points.
                 final double[] buffer = new double[bufferCapacity * numDimensions];
                 int dataOffset = 0;
                 while (dataOffset < numPoints) {

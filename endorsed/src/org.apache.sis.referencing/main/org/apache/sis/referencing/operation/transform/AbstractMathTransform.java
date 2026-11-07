@@ -47,6 +47,7 @@ import org.apache.sis.util.ComparisonMode;
 import org.apache.sis.util.LenientComparable;
 import org.apache.sis.util.OptionalCandidate;
 import org.apache.sis.util.resources.Errors;
+import static org.apache.sis.referencing.internal.shared.CoordinateOperations.MAXIMUM_BUFFER_SIZE;
 
 // Specific to the geoapi-3.1 and geoapi-4.0 branches:
 import org.opengis.coordinate.MismatchedDimensionException;
@@ -99,14 +100,6 @@ public abstract class AbstractMathTransform extends FormattableObject
      * The logger for coordinate operations.
      */
     static final Logger LOGGER = Logger.getLogger(Loggers.COORDINATE_OPERATION);
-
-    /**
-     * Maximum buffer size when creating temporary arrays. Must not be too big, otherwise the
-     * cost of allocating the buffer may be greater than the benefit of transforming array of
-     * coordinates. Remember that double number occupy 8 bytes, so a buffer of size 512 will
-     * actually consumes 4 kb of memory.
-     */
-    static final int MAXIMUM_BUFFER_SIZE = 512;
 
     /**
      * Maximum number of {@link TransformException}s to catch while transforming a block of

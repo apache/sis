@@ -21,6 +21,7 @@ import java.util.ArrayDeque;
 import java.util.Objects;
 import java.util.concurrent.Callable;
 import org.apache.sis.util.logging.Logging;
+import static org.apache.sis.util.internal.shared.Constants.NANOS_PER_SECOND;
 
 
 /**
@@ -33,6 +34,8 @@ public final class Shutdown extends Thread {
     /**
      * Non-null if a shutdown hook is already registered. That shutdown hook is not necessarily {@link #hook}.
      * It may be an OSGi or Servlet shutdown hook instead, as notified by {@link #setContainer(String)}.
+     *
+     * @see #setContainer(String)
      */
     private static String container;
 
@@ -60,7 +63,7 @@ public final class Shutdown extends Thread {
     @SuppressWarnings("CallToPrintStackTrace")
     public void run() {
         try {
-            Shutdown.stop((Class<?>) null);
+            stop((Class<?>) null);
         } catch (Exception e) {
             /*
              * Too late for logging since we are in process of shutting down the Java Virtual Machine.
@@ -84,15 +87,18 @@ public final class Shutdown extends Thread {
     /**
      * Invoked if the Apache SIS library is executed from an environment that provides its own shutdown hook.
      * Example of such environments are OSGi and servlet containers. In such case, the shutdown hook will not
-     * be registered to the JVM {@link Runtime}.
+     * be registered to the <abbr>JVM</abbr> {@link Runtime}.
      *
      * @param  env  a description of the container. Should contain version information if possible.
      *              Example: {@code "OSGi"} or {@code "JavaServer Web Dev Kit/1.0"}.
      */
-    public static void setContainer(final String env) {
+    public static void setContainer(String env) {
         Objects.requireNonNull(env);
         synchronized (resources) {
             removeShutdownHook();       // Should not be needed but we are paranoiac.
+            if (container != null) {
+                env = container + " & " + env;
+            }
             container = env;
         }
     }
@@ -145,7 +151,7 @@ public final class Shutdown extends Thread {
 
     /**
      * Unregisters the supervisor MBean, executes the disposal tasks and shutdowns the {@code org.apache.sis.util} threads.
-     * This method may be invoked at JVM shutdown, or if a container like OSGi is unloaded the SIS library.
+     * This method may be invoked at JVM shutdown, or if a container like OSGi is unloading the <abbr>SIS</abbr> library.
      *
      * @param  caller  the class invoking this method (used for logging purpose), or {@code null} if this method
      *         is invoked at JVM shutdown time (in which case the logging system is not available anymore).
@@ -163,7 +169,7 @@ public final class Shutdown extends Thread {
         }
         /*
          * Unregister the MBean before to stop the threads, in order to avoid false alerts
-         * in the superviror 'warnings()' method. Failure to unregister the MBean is worth
+         * in the superviror `warnings()` method. Failure to unregister the MBean is worth
          * to report, but we will do that only after we completed the other shutdown steps.
          */
         Exception exception = null;
@@ -194,14 +200,25 @@ public final class Shutdown extends Thread {
          * but continue the shutdown process anyway.
          */
         try {
-            Threads.shutdown(System.nanoTime() + 4000);
+            Threads.shutdown(System.nanoTime() + 3*NANOS_PER_SECOND);
         } catch (InterruptedException e) {
             if (caller != null) {
-                Logging.unexpectedException(SystemListener.LOGGER, caller, "stop", e);
+                log(caller, e);
             }
         }
         if (exception != null) {
             throw exception;
         }
+    }
+
+    /**
+     * Convenience method for logging an unexpected exception at shutdown time.
+     * This method assumes that the caller is a method named {@code "shutdown"}.
+     *
+     * @param caller  the class which is doing the shutdown.
+     * @param e       the exception that occurred during shutdown.
+     */
+    public static void log(final Class<?> caller, final Exception e) {
+        Logging.unexpectedException(SystemListener.LOGGER, caller, "shutdown", e);
     }
 }

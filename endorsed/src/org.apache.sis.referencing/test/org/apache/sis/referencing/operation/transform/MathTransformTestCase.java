@@ -34,6 +34,7 @@ import org.apache.sis.util.ArraysExt;
 import org.apache.sis.io.TableAppender;
 import org.apache.sis.io.wkt.Convention;
 import org.apache.sis.io.wkt.FormattableObject;
+import static org.apache.sis.referencing.internal.shared.CoordinateOperations.MAXIMUM_BUFFER_SIZE;
 
 // Test dependencies
 import static org.junit.jupiter.api.Assertions.*;
@@ -89,7 +90,7 @@ public abstract class MathTransformTestCase extends TransformTestCase {
      * encompass at least 2 time the default buffer size in order to test the code that use
      * the buffer. We add an arbitrary number just for making the transform job harder.
      */
-    static final int ORDINATE_COUNT = AbstractMathTransform.MAXIMUM_BUFFER_SIZE * 2 + 137;
+    static final int ORDINATE_COUNT = MAXIMUM_BUFFER_SIZE * 2 + 137;
 
     /**
      * The dimension of longitude, or {@code null} if none. If non-null, then the comparison of

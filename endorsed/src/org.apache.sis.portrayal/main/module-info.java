@@ -36,6 +36,12 @@ module org.apache.sis.portrayal {
     exports org.apache.sis.style.se1 to
             org.apache.sis.portrayal.map;               // In the "incubator" sub-project.
 
+    exports org.apache.sis.style.se1.function to
+            org.apache.sis.portrayal.map;               // In the "incubator" sub-project.
+
+    provides org.apache.sis.filter.FunctionRegister
+        with org.apache.sis.style.se1.function.SymbologyFunctions;
+
     /*
      * Allow JAXB to use reflection for marshalling and
      * unmarshalling Apache SIS objects in XML documents.

@@ -89,6 +89,14 @@ public final class CoordinateOperations {
     public static final String OPERATION_TYPE_KEY = "operationType";
 
     /**
+     * Maximum buffer size when creating temporary arrays. Must not be too big, otherwise the
+     * cost of allocating the buffer may be greater than the benefit of transforming array of
+     * coordinates. Remember that each double-precision number occupy 8 bytes, so a buffer of
+     * size 512 will actually consumes 4 kb of memory.
+     */
+    public static final int MAXIMUM_BUFFER_SIZE = 512;
+
+    /**
      * Cached values of {@link #wrapAroundChanges wrapAroundChanges(…)}, created when first needed.
      * Indices are bit masks computed by {@link #changes changes(…)}. Since the most common "wrap around" axes
      * are longitude at dimension 0 or 1, and some measurement of time (in climatology) at dimension 2 or 3,

@@ -68,7 +68,7 @@ import org.opengis.metadata.citation.ResponsibleParty;
  * @author  Cédric Briançon (Geomatys)
  * @author  Rémi Maréchal (Geomatys)
  * @author  Cullen Rombach (Image Matters)
- * @version 1.5
+ * @version 1.8
  * @since SIS 0.3
  */
 @TitleProperty(name = "specificUsage")
@@ -281,7 +281,7 @@ public class DefaultUsage extends ISOMetadata implements Usage {
      * @since SIS 1.5
      */
     public void setUsageDates(final Collection<TemporalPrimitive> newValues) {
-        usageDates = writeCollection(usageDates, newValues, TemporalPrimitive.class);
+        usageDates = writeCollection(newValues, usageDates, TemporalPrimitive.class);
     }
 
     /**

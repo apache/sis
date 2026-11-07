@@ -21,6 +21,8 @@ import java.util.BitSet;
 import java.util.Locale;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.stream.Stream;
+import java.util.stream.DoubleStream;
 import java.time.Instant;
 import java.text.NumberFormat;
 import java.math.RoundingMode;
@@ -54,11 +56,13 @@ import org.apache.sis.geometry.ImmutableDirectPosition;
 import org.apache.sis.coordinate.DefaultCoordinateMetadata;
 import org.apache.sis.referencing.IdentifiedObjects;
 import org.apache.sis.referencing.crs.AbstractCRS;
+import org.apache.sis.referencing.crs.DefaultTemporalCRS;
 import org.apache.sis.referencing.operation.CoordinateOperationContext;
 import org.apache.sis.referencing.operation.matrix.Matrices;
 import org.apache.sis.referencing.operation.matrix.MatrixSIS;
 import org.apache.sis.referencing.operation.transform.MathTransforms;
 import org.apache.sis.referencing.operation.transform.LinearTransform;
+import org.apache.sis.referencing.operation.transform.TransformSeparator;
 import org.apache.sis.referencing.operation.transform.PassThroughTransform;
 import org.apache.sis.referencing.operation.transform.TransformFactoryException;
 import org.apache.sis.referencing.factory.InvalidGeodeticParameterException;
@@ -90,7 +94,6 @@ import org.apache.sis.util.logging.Logging;
 import org.apache.sis.io.TableAppender;
 import org.apache.sis.xml.NilObject;
 import org.apache.sis.xml.NilReason;
-import static org.apache.sis.referencing.CRS.getDimensionOrZero;
 import static org.apache.sis.referencing.CRS.findOperation;
 import static org.apache.sis.referencing.CRS.SeparationMode;
 
@@ -1191,6 +1194,8 @@ public class GridGeometry implements LenientComparable, Serializable {
      * in the first element and the end time (exclusive) in the last element.
      *
      * @return time range as an array of length 0 (if none), 1 or 2.
+     *
+     * @see #instantStream(PixelInCell)
      */
     public Instant[] getTemporalExtent() {
         Instant[] times = timeRange();
@@ -1207,7 +1212,7 @@ public class GridGeometry implements LenientComparable, Serializable {
     private Instant[] timeRange() {
         Instant[] times = timeRange;
         if (times == null) {
-            final TemporalAccessor t = TemporalAccessor.of(getCoordinateReferenceSystem(envelope), 0);
+            final TemporalAccessor t = TemporalAccessor.of(getCoordinateReferenceSystem(envelope));
             times = (t != null) ? t.getTimeBounds(envelope) : TemporalAccessor.EMPTY;
             timeRange = times;
         }
@@ -1220,17 +1225,16 @@ public class GridGeometry implements LenientComparable, Serializable {
      * All non-constant coordinates are set to NaN. If this method returns a non-empty value,
      * then it is guaranteed to contain at least one non-NaN value.
      *
-     * <h4>Coordinate Reference System</h4>
-     * The <abbr>CRS</abbr> of the returned position may be {@link #getCoordinateReferenceSystem()}.
+     * <p>The <abbr>CRS</abbr> of the returned position may be {@link #getCoordinateReferenceSystem()}.
      * But it may also be a subset of the <abbr>CRS</abbr> components containing only the components
      * having at least one non-NaN value. For example, if only the time coordinate is constant, then
-     * the <abbr>CRS</abbr> of the returned position may contain only the temporal component.
+     * the <abbr>CRS</abbr> of the returned position may contain only the temporal component.</p>
      *
-     * <h4>Usage</h4>
-     * This is a helper method for computing coordinate operations with grid geometries that are,
+     * <p><b>Usage:</b>
+     * this is a helper method for computing coordinate operations with grid geometries that are,
      * for example, two-dimensional slices in a three- or four-dimensional data cube.
      * The algorithm should work with any number of dimensions, the two-dimensional slice is only an example.
-     * This method is intended to be used with {@link CoordinateOperationContext} as below:
+     * This method is intended to be used with {@link CoordinateOperationContext} as below:</p>
      *
      * {@snippet lang="java" :
      *     GridGeometry gg = ...;
@@ -1946,9 +1950,6 @@ public class GridGeometry implements LenientComparable, Serializable {
      * to the given <abbr>CRS</abbr>. The {@linkplain #getGeographicExtent() geographic bounding box} of this grid
      * geometry is used as the desired domain of validity.
      *
-     * <p>If this grid geometry has no <abbr>CRS</abbr> but the number of dimensions of the "real world" space is
-     * equal to the number of dimensions of the {@code target}, then this method returns an identity operation.</p>
-     *
      * @param  target  the target <abbr>CRS</abbr> of the desired operation.
      * @return coordinate operation from the <abbr>CRS</abbr> of this grid geometry to the given <abbr>CRS</abbr>.
      * @throws IncompleteGridGeometryException if this grid geometry does not have sufficient information.
@@ -1958,11 +1959,7 @@ public class GridGeometry implements LenientComparable, Serializable {
      */
     public CoordinateOperation createChangeOfCRS(final CoordinateReferenceSystem target) throws FactoryException {
         ArgumentChecks.ensureNonNull("target", target);
-        CoordinateReferenceSystem crs = getCoordinateReferenceSystem(envelope);
-        if (crs == null) {
-            crs = (getDimensionOrZero(target) == getTargetDimension()) ? target : getCoordinateReferenceSystem();
-        }
-        return findOperation(crs, target, geographicBBox());
+        return findOperation(getCoordinateReferenceSystem(), target, geographicBBox());
     }
 
     /**
@@ -1998,6 +1995,121 @@ public class GridGeometry implements LenientComparable, Serializable {
             throw new TransformFactoryException(e);
         }
         return MathTransforms.concatenate(getGridToCRS(anchor), tr);
+    }
+
+    /**
+     * Creates a stream of lattice points inside the grid extent and transformed to the given <abbr>CRS</abbr>.
+     * If the given <abbr>CRS</abbr> is {@code null}, then it is assumed the same <abbr>CRS</abbr> as this
+     * grid geometry — that <abbr>CRS</abbr> does not need to be {@linkplain #isDefined(int) defined}.
+     * If the given <abbr>CRS</abbr> contains only a subset of the dimensions of
+     * {@linkplain #getCoordinateReferenceSystem() this grid geometry <abbr>CRS</abbr>},
+     * then the stream will iterate only over the necessary grid dimensions.
+     *
+     * <p><b>Example:</b> if this grid geometry is multi-dimensional with horizontal, vertical and temporal axes,
+     * and if the horizontal axes are independent of the vertical and temporal axes, then the stream created for
+     * the {@code EPSG:4326} <abbr>CRS</abbr> (<abbr>WGS</abbr> 1984) will iterate only on the rows and columns.
+     * It will not iterate on the grid coordinates for the vertical and temporal axes.</p>
+     *
+     * Grid coordinates are traversed in the order defined by {@link GridExtent#latticePointStream(boolean)},
+     * but the order seen after transformation from grid to <abbr>CRS</abbr> coordinates can be anything.
+     * If a {@link TransformException} occurs during traversal, the exception will be wrapped in a
+     * {@link BackingStoreException}. There is no guarantee that points successfully transformed
+     * before the exception will be consumed before the {@link BackingStoreException} is thrown.
+     *
+     * @param  source  the cell part to map (center or corner).
+     * @param  target  the <abbr>CRS</abbr> in which to get the coordinate tuples,
+     *                 or {@code null} for no change compared to the <abbr>CRS</abbr> of this grid geometry.
+     * @return lattice points as coordinate tuples expressed in the given <abbr>CRS</abbr>.
+     * @throws IncompleteGridGeometryException if this grid geometry does not have sufficient information.
+     * @throws FactoryException if the coordinate operation cannot be found.
+     *
+     * @see GridExtent#latticePointStream(MathTransform, booleam)
+     *
+     * @since SIS 1.8
+     */
+    public Stream<double[]> latticePointStream(final PixelInCell source, final CoordinateReferenceSystem target)
+            throws FactoryException
+    {
+        MathTransform tr = getGridToCRS(source);
+        GridExtent slice = getExtent();
+        if (target != null) {
+            final var trs = new TransformSeparator(MathTransforms.concatenate(tr, createChangeOfCRS(target).getMathTransform()));
+            tr = trs.separate();    // Drop unused source dimensions.
+            slice = slice.selectDimensions(trs.getSourceDimensions());
+        }
+        return slice.latticePointStream(tr, false);
+    }
+
+    /**
+     * Creates a stream of lattice coordinates inside the grid extent and transformed to the given <abbr>CRS</abbr>.
+     * The {@code target} argument shall be a one-dimensional <abbr>CRS</abbr> such as a vertical or temporal component.
+     * The stream will traverse all coordinate values on that axis with duplicated values avoided on a best-effort basis.
+     * Grid coordinates are traversed in the order defined by {@link GridExtent#latticePointStream(boolean)},
+     * but the order seen after transformation from grid to <abbr>CRS</abbr> coordinates can be anything.
+     *
+     * <p>This method is a variant of the {@linkplain #latticePointStream(PixelInCell, CoordinateReferenceSystem)
+     * multi-dimensional method} with coordinates returned as primitive types instead of arrays of length 1.
+     * This alternative avoids the creations of a temporary array for each point.</p>
+     *
+     * <p>If a {@link TransformException} occurs during traversal, the exception will be wrapped in a
+     * {@link BackingStoreException}. There is no guarantee that points successfully transformed before
+     * the exception will be consumed before the {@link BackingStoreException} is thrown.</p>
+     *
+     * @param  source  the cell part to map (center or corner).
+     * @param  target  the one-dimensional <abbr>CRS</abbr> in which to get the coordinate values, or {@code null}
+     *                 if this grid geometry is one dimensional and no <abbr>CRS</abbr> change is desired.
+     * @return values from a subset of grid extent dimensions expressed in the given <abbr>CRS</abbr>.
+     * @throws MismatchedDimensionException if the given <abbr>CRS</abbr> is not one-dimensional,
+     *         or is {@code null} and this grid geometry is not one-dimensional.
+     * @throws IncompleteGridGeometryException if this grid geometry does not have sufficient information.
+     * @throws FactoryException if the coordinate operation cannot be found.
+     *
+     * @see GridExtent#latticePointStream1D(MathTransform, booleam)
+     *
+     * @since SIS 1.8
+     */
+    public DoubleStream latticePointStream1D(final PixelInCell source, final CoordinateReferenceSystem target)
+            throws FactoryException
+    {
+        ArgumentChecks.ensureDimensionMatches("target", 1, target);
+        GridExtent slice = getExtent();
+        MathTransform tr = getGridToCRS(source);
+        if (target != null) {
+            final var trs = new TransformSeparator(MathTransforms.concatenate(tr, createChangeOfCRS(target).getMathTransform()));
+            tr = trs.separate();    // Drop unused source dimensions.
+            slice = slice.selectDimensions(trs.getSourceDimensions());
+        }
+        return slice.latticePointStream1D(tr, false);
+    }
+
+    /**
+     * Creates a stream of instants for all lattices inside the grid extent.
+     * This grid geometry must have an extent, a <abbr>CRS</abbr> and "grid to <abbr>CRS</abbr>" transform.
+     * If the <abbr>CRS</abbr> has no temporal component, then the stream will be empty.
+     *
+     * @param  anchor  the cell part to map (center or corner).
+     * @return a stream of all instants in the grid, or an empty stream if there is no temporal axis.
+     * @throws IncompleteGridGeometryException if this grid geometry does not have sufficient information.
+     * @throws FactoryException if an error occurred while isolating the temporal component of the transform.
+     *
+     * @see #getTemporalExtent()
+     *
+     * @since SIS 1.8
+     */
+    public Stream<Instant> instantStream(final PixelInCell anchor) throws FactoryException {
+        GridExtent slice = getExtent();     // Cause an exception early if this information is missing.
+        MathTransform tr = getGridToCRS(anchor);
+        final CoordinateReferenceSystem crs = getCoordinateReferenceSystem();
+        final TemporalAccessor t = TemporalAccessor.of(crs);
+        if (t == null) {
+            return Stream.empty();
+        }
+        final DefaultTemporalCRS timeCRS = t.timeCRS;
+        final var trs = new TransformSeparator(tr);
+        trs.addTargetDimensions(t.dimension);
+        tr = trs.separate();
+        slice = slice.selectDimensions(trs.getSourceDimensions());
+        return slice.latticePointStream1D(tr, false).mapToObj(timeCRS::toInstant);
     }
 
     /**

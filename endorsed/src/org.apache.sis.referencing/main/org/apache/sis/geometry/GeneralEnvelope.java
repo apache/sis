@@ -486,7 +486,7 @@ public class GeneralEnvelope extends ArrayEnvelope implements Cloneable, Seriali
      * @see Envelopes#toTimeRange(Envelope)
      */
     public boolean setTimeRange(final Instant startTime, final Instant endTime) {
-        final TemporalAccessor t = TemporalAccessor.of(crs, 0);
+        final TemporalAccessor t = TemporalAccessor.of(crs);
         if (t != null) {
             double lower = t.timeCRS.toValue(startTime);
             double upper = t.timeCRS.toValue(endTime);
@@ -533,11 +533,11 @@ public class GeneralEnvelope extends ArrayEnvelope implements Cloneable, Seriali
      * with the added point as an argument will return {@code true}, except if one of the point
      * coordinates was {@link Double#NaN} in which case the corresponding coordinate has been ignored.</p>
      *
-     * <h4>Preconditions</h4>
+     * <p><b>Precondition:</b>
      * This method assumes that the specified point uses a CRS equivalent to this envelope CRS.
-     * For performance reasons, this condition is not verified unless Java assertions are enabled.
+     * For performance reasons, this condition is not verified unless Java assertions are enabled.</p>
      *
-     * <h4>Crossing the anti-meridian of a Geographic CRS</h4>
+     * <h4>Addition of point in an envelope crossing the anti-meridian of a Geographic CRS</h4>
      * This method supports envelopes crossing the anti-meridian. In such cases it is possible to
      * move both envelope borders in order to encompass the given point, as illustrated below (the
      * new point is represented by the {@code +} symbol):
@@ -611,11 +611,11 @@ public class GeneralEnvelope extends ArrayEnvelope implements Cloneable, Seriali
      * Adds an envelope object to this envelope.
      * The resulting envelope is the union of the two {@code Envelope} objects.
      *
-     * <h4>Preconditions</h4>
+     * <p><b>Precondition:</b>
      * This method assumes that the specified envelope uses a CRS equivalent to this envelope CRS.
-     * For performance reasons, this condition is not verified unless Java assertions are enabled.
+     * For performance reasons, this condition is not verified unless Java assertions are enabled.</p>
      *
-     * <h4>Crossing the anti-meridian of a Geographic CRS</h4>
+     * <h4>Union of envelopes crossing the anti-meridian of a Geographic CRS</h4>
      * This method supports envelopes crossing the anti-meridian. If one or both envelopes cross
      * the anti-meridian, then the result of the {@code add} operation may be an envelope expanding
      * to infinities. In such case, the coordinate range will be either [−∞…∞] or [0…−0] depending on
@@ -768,11 +768,11 @@ public class GeneralEnvelope extends ArrayEnvelope implements Cloneable, Seriali
     /**
      * Sets this envelope to the intersection of this envelope with the specified one.
      *
-     * <h4>Preconditions</h4>
+     * <p><b>Precondition:</b>
      * This method assumes that the specified envelope uses a CRS equivalent to this envelope CRS.
-     * For performance reasons, this condition is not verified unless Java assertions are enabled.
+     * For performance reasons, this condition is not verified unless Java assertions are enabled.</p>
      *
-     * <h4>Crossing the anti-meridian of a Geographic CRS</h4>
+     * <h4>Intersection of envelopes crossing the anti-meridian of a Geographic CRS</h4>
      * This method supports envelopes crossing the anti-meridian.
      *
      * <h4>Handling of NaN values</h4>
