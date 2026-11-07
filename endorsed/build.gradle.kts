@@ -70,9 +70,13 @@ dependencies {
     compileOnly(libs.aws.s3)
     compileOnly(drivers.postgres)
     runtimeOnly(drivers.hsql)
-    compileOnly(group = "jakarta.servlet", name = "jakarta.servlet-api", version = "6.1.0")
-    compileOnly(group = "javax.servlet",   name = "javax.servlet-api",   version = "4.0.1")
-    compileOnly(group = "org.osgi",        name = "osgi.core",           version = "8.0.0")
+    compileOnly(group = "jakarta.annotation", name = "jakarta.annotation-api", version = "3.0.0")
+    compileOnly(group = "jakarta.servlet",    name = "jakarta.servlet-api",    version = "6.1.0")
+    compileOnly(group = "jakarta.ejb",        name = "jakarta.ejb-api",        version = "4.0.1")
+    compileOnly(group = "javax.annotation",   name = "javax.annotation-api",   version = "1.3.2")
+    compileOnly(group = "javax.servlet",      name = "javax.servlet-api",      version = "4.0.1")
+    compileOnly(group = "javax.ejb",          name = "javax.ejb-api",          version = "3.2.2")
+    compileOnly(group = "org.osgi",           name = "osgi.core",              version = "8.0.0")
 
     // Test dependencies
     testImplementation(tests.junit5)

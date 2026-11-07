@@ -46,6 +46,7 @@ import org.apache.sis.io.wkt.Convention;
 import org.apache.sis.io.wkt.Formatter;
 import org.apache.sis.io.wkt.FormattableObject;
 import org.apache.sis.util.resources.Errors;
+import static org.apache.sis.referencing.internal.shared.CoordinateOperations.MAXIMUM_BUFFER_SIZE;
 
 // Specific to the main and geoapi-3.1 branches:
 import org.opengis.geometry.MismatchedDimensionException;

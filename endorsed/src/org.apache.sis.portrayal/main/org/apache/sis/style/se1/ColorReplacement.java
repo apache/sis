@@ -16,16 +16,21 @@
  */
 package org.apache.sis.style.se1;
 
+import java.util.Optional;
 import jakarta.xml.bind.annotation.XmlType;
 import jakarta.xml.bind.annotation.XmlRootElement;
 
+// Specific to the main branch:
+import org.apache.sis.filter.Expression;
+
 
 /**
- * Replacement of a color in an external graphic.
+ * Replacement of colors in an external graphic.
+ * The replacement is defined by a function, which is usually a {@link org.apache.sis.style.se1.function.Recode}
+ * function using the color of each pixel of the external graphic as its lookup value, and mapping some colors
+ * to replacement colors. Colors without replacement are left unchanged. Renderers may not support other kinds
+ * of expressions.
  *
- * <p>This is a placeholder for future development.
- * OGC 05-077r4 standard defines the dependent classes,
- * but there is too many of them for this initial draft.</p>
  *
  * @author  Johann Sorel (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
@@ -35,6 +40,14 @@ import jakarta.xml.bind.annotation.XmlRootElement;
 @XmlType(name = "ColorReplacementType")
 @XmlRootElement(name = "ColorReplacement")
 public class ColorReplacement<R> extends StyleElement<R> {
+    /**
+     * The function computing replacement colors, or {@code null} if none.
+     *
+     * @see #getFunction()
+     * @see #setFunction(Expression)
+     */
+    protected Expression<R,?> function;
+
     /**
      * For JAXB unmarshalling only.
      */
@@ -59,6 +72,26 @@ public class ColorReplacement<R> extends StyleElement<R> {
      */
     public ColorReplacement(final ColorReplacement<R> source) {
         super(source);
+        function = source.function;
+    }
+
+    /**
+     * Returns the function computing replacement colors.
+     * It is usually a {@link org.apache.sis.style.se1.function.Recode} function.
+     *
+     * @return the function computing replacement colors.
+     */
+    public Optional<Expression<R,?>> getFunction() {
+        return Optional.ofNullable(function);
+    }
+
+    /**
+     * Sets the function computing replacement colors.
+     *
+     * @param  value  new function, or {@code null} if none.
+     */
+    public void setFunction(final Expression<R,?> value) {
+        function = value;
     }
 
     /**
@@ -67,7 +100,7 @@ public class ColorReplacement<R> extends StyleElement<R> {
      */
     @Override
     final Object[] properties() {
-        return new Object[] {};
+        return new Object[] {function};
     }
 
     /**

@@ -396,6 +396,66 @@ class CoordinateOperationRegistry {
     }
 
     /**
+     * Returns whether it is presumed easy for {@link IdentifiedObjectFinder} to perform a full search
+     * (ignoring axis order) for the given CRS. An important criterion is to avoid all CRS containing
+     * a coordinate operation (in particular projected CRS), because they are difficult to search.
+     *
+     * <p>We allow extensive search of geographic CRS because the EPSG database has some geographic CRS
+     * defined with both (longitude, latitude) and (latitude, longitude) axis order. But operations may
+     * be defined for only one axis order. So if the user specified the CRS with (longitude, latitude)
+     * axis order, we want to check also the coordinate operations using (latitude, longitude) axis order
+     * because they may be the only ones available.</p>
+     */
+    private static boolean isEasySearch(final CoordinateReferenceSystem crs) {
+        if (crs instanceof GeneralDerivedCRS) {
+            return false;
+        }
+        if (crs instanceof CompoundCRS) {
+            for (CoordinateReferenceSystem c : ((CompoundCRS) crs).getComponents()) {
+                if (!isEasySearch(c)) {
+                    return false;
+                }
+            }
+        }
+        return true;
+    }
+
+    /**
+     * Returns a copy of the given list where the first element (if it exists) is a fully constructed operation.
+     * This method tries to resolve {@link DeferredCoordinateOperation} instances in iteration order until one
+     * element can be fully constructed. All remaining elements are left deferred. The purpose is to determine
+     * whether the collection is effectively empty because of missing resources such as <abbr>NADCON</abbr> grids.
+     *
+     * @param  authoritatives  the operations returned by the authority factory.
+     * @return a copy of {@code authoritatives} where the first element, if present, is resolved.
+     */
+    private List<CoordinateOperation> resolveFirst(final Collection<CoordinateOperation> authoritatives)
+            throws FactoryException
+    {
+        if (Containers.isNullOrEmpty(authoritatives)) {
+            return List.of();
+        }
+        final var resolved = new ArrayList<CoordinateOperation>(authoritatives.size());
+        for (CoordinateOperation operation : authoritatives) {
+            try {
+                if (resolved.isEmpty() && operation instanceof DeferredCoordinateOperation) {
+                    assert Semaphores.METADATA_ONLY.get();
+                    try {
+                        Semaphores.METADATA_ONLY.clear();
+                        operation = ((DeferredCoordinateOperation) operation).create();
+                    } finally {
+                        Semaphores.METADATA_ONLY.set();
+                    }
+                }
+                resolved.add(operation);
+            } catch (MissingFactoryResourceException e) {
+                log(null, e);
+            }
+        }
+        return resolved;
+    }
+
+    /**
      * Strategies for decomposing a three-dimensional CRS into components that may be present in EPSG database.
      * The database may have no entries for a coordinate operation between a pair of 3D CRS with (x,y,z) axes,
      * while entries for the horizontal components (2D CRS with (x,y) axes) may exist. This class enumerates
@@ -458,31 +518,6 @@ class CoordinateOperationRegistry {
             }
             return null;
         }
-    }
-
-    /**
-     * Returns whether it is presumed easy for {@link IdentifiedObjectFinder} to perform a full search
-     * (ignoring axis order) for the given CRS. An important criterion is to avoid all CRS containing
-     * a coordinate operation (in particular projected CRS), because they are difficult to search.
-     *
-     * <p>We allow extensive search of geographic CRS because the EPSG database has some geographic CRS
-     * defined with both (longitude, latitude) and (latitude, longitude) axis order. But operations may
-     * be defined for only one axis order. So if the user specified the CRS with (longitude, latitude)
-     * axis order, we want to check also the coordinate operations using (latitude, longitude) axis order
-     * because they may be the only ones available.</p>
-     */
-    private static boolean isEasySearch(final CoordinateReferenceSystem crs) {
-        if (crs instanceof GeneralDerivedCRS) {
-            return false;
-        }
-        if (crs instanceof CompoundCRS) {
-            for (CoordinateReferenceSystem c : ((CompoundCRS) crs).getComponents()) {
-                if (!isEasySearch(c)) {
-                    return false;
-                }
-            }
-        }
-        return true;
     }
 
     /**
@@ -601,7 +636,7 @@ class CoordinateOperationRegistry {
     {
         final List<String> sources = findCode(sourceCRS); if (sources.isEmpty()) return null;
         final List<String> targets = findCode(targetCRS); if (targets.isEmpty()) return null;
-        final List<CoordinateOperation> operations = new ArrayList<>();
+        final var operations = new ArrayList<CoordinateOperation>();
         boolean foundDirectOperations = false;
         boolean useDeprecatedOperations = false;
         for (final String sourceID : sources) {
@@ -628,8 +663,8 @@ class CoordinateOperationRegistry {
                 try {
                     Collection<CoordinateOperation> authoritatives;
                     try {
-                        authoritatives = registry.createFromCoordinateReferenceSystemCodes(sourceID, targetID);
-                        final boolean inverse = Containers.isNullOrEmpty(authoritatives);
+                        authoritatives = resolveFirst(registry.createFromCoordinateReferenceSystemCodes(sourceID, targetID));
+                        final boolean inverse = authoritatives.isEmpty();
                         if (inverse) {
                             /*
                              * No operation from `source` to `target` available. But maybe there is an inverse operation.
@@ -1114,7 +1149,7 @@ class CoordinateOperationRegistry {
                                                   final Decomposition decompose)
             throws NoninvertibleTransformException, FactoryException
     {
-        final List<CoordinateOperation> operations = new ArrayList<>();
+        final var operations = new ArrayList<CoordinateOperation>();
         if (operation instanceof ConcatenatedOperation) {
             operations.addAll(Arrays.asList(getSteps((ConcatenatedOperation) operation, false)));
         } else {

@@ -62,13 +62,13 @@ public final class TemporalAccessor {
 
     /**
      * Creates a new temporal accessor for elements at the given dimensions.
-     * This method searches for a temporal component in the given CRS.
+     * This method searches for a temporal component in the given <abbr>CRS</abbr>.
      *
      * @param  crs  the coordinate reference system which may contain a temporal component, or {@code null}.
      * @param  dim  offset to add to the dimension indices. This is usually zero.
      * @return the temporal accessor, or {@code null} if no temporal component has been found.
      */
-    public static TemporalAccessor of(final CoordinateReferenceSystem crs, int dim) {
+    private static TemporalAccessor of(final CoordinateReferenceSystem crs, int dim) {
         if (crs instanceof TemporalCRS) {
             return new TemporalAccessor(dim, (TemporalCRS) crs);
         }
@@ -82,6 +82,17 @@ public final class TemporalAccessor {
             }
         }
         return null;
+    }
+
+    /**
+     * Creates a new temporal accessor for elements at the given dimensions.
+     * This method searches for a temporal component in the given <abbr>CRS</abbr>.
+     *
+     * @param  crs  the coordinate reference system which may contain a temporal component, or {@code null}.
+     * @return the temporal accessor, or {@code null} if no temporal component has been found.
+     */
+    public static TemporalAccessor of(final CoordinateReferenceSystem crs) {
+        return of(crs, 0);
     }
 
     /**

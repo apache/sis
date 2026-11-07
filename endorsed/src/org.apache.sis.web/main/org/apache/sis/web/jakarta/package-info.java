@@ -17,8 +17,9 @@
 
 
 /**
- * All classes having a dependencies to Jakarta ({@code jakarta.servlet} packages).
- * This is the replacement of JavaEE ({@code javax.servlet} packages).
+ * All classes having a dependencies to Jakarta ({@code jakarta.servlet} and {@code jakarta.ejb} packages).
+ * Jakarta contains Enterprise JavaBeans (<abbr>EJB</abbr>) for business logic and servlet for the web.
+ * This is the replacement of JavaEE ({@code javax.*} packages).
  *
  * @author  Martin Desruisseaux (Geomatys)
  */

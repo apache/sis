@@ -273,7 +273,7 @@ public class WraparoundAdjustment {
      * <p>If a {@link #domainToInput} has been explicitly specified to the constructor,
      * that transform is unconditionally used and the {@code crs} argument is ignored.</p>
      *
-     * <h4>Preconditions</h4>
+     * <p><b>Preconditions:</b></p>
      * <ul>
      *   <li>The {@link #inputToShiftable} transform must be initialized.</li>
      *   <li>The {@link #shiftableDomain} field is assumed initialized to {@link #domainOfValidity}.</li>

@@ -150,7 +150,11 @@ public final class TileReadEvent extends StoreEvent {
             @SuppressWarnings("LocalVariableHidesMemberVariable")
             CoordinateOperation crsToObjective = this.crsToObjective;
             if (crsToObjective == null || !CRS.equivalent(crsToObjective.getTargetCRS(), crs)) try {
-                crsToObjective = sliceGeometry.createChangeOfCRS(crs);
+                if (sliceGeometry.isDefined(GridGeometry.CRS)) {
+                    crsToObjective = sliceGeometry.createChangeOfCRS(crs);
+                } else {
+                    crsToObjective = CRS.findOperation(crs, crs, null);     // Create an identity operation.
+                }
                 MathTransform tr = MathTransforms.translation(offsetX, offsetY);
                 tr = MathTransforms.concatenate(tr, sliceGeometry.getGridToCRS(PixelInCell.CELL_CORNER));
                 tr = MathTransforms.concatenate(tr, crsToObjective.getMathTransform());

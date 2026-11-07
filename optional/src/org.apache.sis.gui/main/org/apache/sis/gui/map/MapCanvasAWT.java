@@ -346,10 +346,10 @@ public abstract class MapCanvasAWT extends MapCanvas {
      * In all cases we need to be careful to not use directly any {@link MapCanvas} field from the {@code call()}
      * methods. Information needed by {@code call()} must be copied first.
      *
-     * <h4>Preconditions</h4>
+     * <p><b>Precondition:</b>
      * It is important that no other worker is in progress at the time this method is invoked
      * ({@code assert renderingInProgress == null}), otherwise conflicts may happen when workers
-     * will update the {@code MapCanvasAWT} fields after they completed their task.
+     * will update the {@code MapCanvasAWT} fields after they completed their task.</p>
      *
      * @see #requestRepaint()
      */

@@ -213,7 +213,7 @@ public final class CoordinateOperationFinderTest extends MathTransformTestCase {
          * We could mix WKT 1 and WKT 2 elements (SIS allows that), but we nevertheless use WKT 1 for the whole
          * string as a matter of principle.
          */
-        final GeographicCRS sourceCRS = (GeographicCRS) parse(
+        final GeographicCRS sourceCRS = assertInstanceOf(GeographicCRS.class, parse(
                 "GEOGCS[“NAD27”,\n" +
                 "  DATUM[“North American Datum 1927”,\n" +
                 "    SPHEROID[“Clarke 1866”, 6378206.4, 294.9786982138982],\n" +
@@ -222,7 +222,7 @@ public final class CoordinateOperationFinderTest extends MathTransformTestCase {
                 "  UNIT[“degree”, 0.017453292519943295],\n" +
                 "  AXIS[“Latitude (φ)”, NORTH],\n" +
                 "  AXIS[“Longitude (λ)”, EAST],\n" +
-                "  AUTHORITY[“EPSG”, “4267”]]");
+                "  AUTHORITY[“EPSG”, “4267”]]"));
 
         testGeocentricTranslationInGeographicDomain("Geocentric translations (geog2D domain)", sourceCRS, CommonCRS.WGS84.geographic());
         testGeocentricTranslationInGeographicDomain("Geocentric translations (geog3D domain)", sourceCRS, CommonCRS.WGS84.geographic3D());
@@ -238,7 +238,7 @@ public final class CoordinateOperationFinderTest extends MathTransformTestCase {
      */
     @Test
     public void testGeocentricTranslationInGeographic3D() throws ParseException, FactoryException, TransformException {
-        final GeographicCRS sourceCRS = (GeographicCRS) parse(
+        final GeographicCRS sourceCRS = assertInstanceOf(GeographicCRS.class, parse(
                 "GeographicCRS[“NAD27”,\n" +
                 "  Datum[“North American Datum 1927”,\n" +
                 "    Ellipsoid[“Clarke 1866”, 6378206.4, 294.9786982138982],\n" +
@@ -246,7 +246,7 @@ public final class CoordinateOperationFinderTest extends MathTransformTestCase {
                 "  CS[ellipsoidal, 3],\n" +
                 "    Axis[“Latitude (φ)”, NORTH, Unit[“degree”, 0.017453292519943295]],\n" +
                 "    Axis[“Longitude (λ)”, EAST, Unit[“degree”, 0.017453292519943295]],\n" +
-                "    Axis[“Height (h)”, UP, Unit[“m”, 1]]]");
+                "    Axis[“Height (h)”, UP, Unit[“m”, 1]]]"));
 
         testGeocentricTranslationInGeographicDomain("Geocentric translations (geog3D domain)",
                 sourceCRS, CommonCRS.WGS84.geographic3D());
@@ -461,7 +461,7 @@ public final class CoordinateOperationFinderTest extends MathTransformTestCase {
         assertEquals("TM", operation.getName().getCode());
         assertInstanceOf(Conversion.class, operation);
 
-        final ParameterValueGroup param = ((SingleOperation) operation).getParameterValues();
+        final ParameterValueGroup param = assertInstanceOf(SingleOperation.class, operation).getParameterValues();
         assertEquals(6370997, param.parameter("semi_major"        ).doubleValue());
         assertEquals(6370997, param.parameter("semi_minor"        ).doubleValue());
         assertEquals(     50, param.parameter("latitude_of_origin").doubleValue());
@@ -546,7 +546,7 @@ public final class CoordinateOperationFinderTest extends MathTransformTestCase {
     }
 
     /**
-     * Tests a transformation between two CRS for which no direct bursa-wolf parameters are defined.
+     * Tests a transformation between two <abbr>CRS</abbr>s for which no direct bursa-wolf parameters are defined.
      * However, a transformation should still be possible indirectly, through WGS 84.
      *
      * @throws ParseException if a CRS used in this test cannot be parsed.
@@ -735,7 +735,7 @@ public final class CoordinateOperationFinderTest extends MathTransformTestCase {
      */
     @Test
     public void testGeographic4D_to_2D() throws FactoryException, TransformException {
-        // NOTE: make sure that the 'sourceCRS' below is not equal to any other 'sourceCRS' created in this class.
+        // NOTE: make sure that the `sourceCRS` below is not equal to any other `sourceCRS` created in this class.
         final CompoundCRS   sourceCRS = compound("Test4D", CommonCRS.WGS84.geographic3D(), CommonCRS.Temporal.UNIX.crs());
         final GeographicCRS targetCRS = CommonCRS.WGS84.geographic();
         final CoordinateOperation operation = finder().createOperation(sourceCRS, targetCRS);
@@ -779,7 +779,7 @@ public final class CoordinateOperationFinderTest extends MathTransformTestCase {
         assertEquals("Axis changes", operation.getName().getCode());
         assertInstanceOf(Conversion.class, operation);
 
-        final ParameterValueGroup parameters = ((SingleOperation) operation).getParameterValues();
+        final ParameterValueGroup parameters = assertInstanceOf(SingleOperation.class, operation).getParameterValues();
         assertEquals("Geographic3D to 2D conversion", parameters.getDescriptor().getName().getCode());
         assertTrue(parameters.values().isEmpty());
 
@@ -820,7 +820,7 @@ public final class CoordinateOperationFinderTest extends MathTransformTestCase {
         assertEquals("Axis changes", operation.getName().getCode());
         assertInstanceOf(Conversion.class, operation);
 
-        final ParameterValueGroup parameters = ((SingleOperation) operation).getParameterValues();
+        final ParameterValueGroup parameters = assertInstanceOf(SingleOperation.class, operation).getParameterValues();
         assertEquals("Geographic2D to 3D conversion", parameters.getDescriptor().getName().getCode());
         assertEquals(0, parameters.parameter("height").doubleValue());
 
@@ -891,7 +891,7 @@ public final class CoordinateOperationFinderTest extends MathTransformTestCase {
      */
     @Test
     public void testGeographic4D_to_EllipsoidalHeight() throws FactoryException, TransformException {
-        // NOTE: make sure that the 'sourceCRS' below is not equal to any other 'sourceCRS' created in this class.
+        // NOTE: make sure that the `sourceCRS` below is not equal to any other `sourceCRS` created in this class.
         final CompoundCRS sourceCRS = compound("Test4D", CommonCRS.WGS84.geographic3D(), CommonCRS.Temporal.JULIAN.crs());
         final VerticalCRS targetCRS = CommonCRS.Vertical.ELLIPSOIDAL.crs();
         final CoordinateOperation operation = finder().createOperation(sourceCRS, targetCRS);
@@ -999,7 +999,7 @@ public final class CoordinateOperationFinderTest extends MathTransformTestCase {
      */
     @Test
     public void testGeographic3D_to_4D() throws FactoryException, TransformException {
-        // NOTE: make sure that the 'sourceCRS' below is not equal to any other 'sourceCRS' created in this class.
+        // NOTE: make sure that the `sourceCRS` below is not equal to any other `sourceCRS` created in this class.
         final CompoundCRS sourceCRS = compound("Test3D", CommonCRS.WGS84.geographic(),   CommonCRS.Temporal.UNIX.crs());
         final CompoundCRS targetCRS = compound("Test4D", CommonCRS.WGS84.geographic3D(), CommonCRS.Temporal.MODIFIED_JULIAN.crs());
         final CoordinateOperation operation = finder().createOperation(sourceCRS, targetCRS);

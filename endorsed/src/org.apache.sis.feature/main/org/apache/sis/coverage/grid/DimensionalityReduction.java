@@ -625,10 +625,10 @@ public class DimensionalityReduction implements UnaryOperator<GridCoverage>, Ser
     /**
      * Returns a coordinate tuple on which dimensionality reduction has been applied.
      *
-     * <h4>Precondition</h4>
+     * <p><b>Precondition:</b>
      * The coordinate reference system of the given {@code source} should be either
-     * null or equal (ignoring metadata) to the CRS of the source grid geometry.
-     * For performance reason, this condition is not verified unless Java assertions are enabled.
+     * null or equal (ignoring metadata) to the <abbr>CRS</abbr> of the source grid geometry.
+     * For performance reason, this condition is not verified unless Java assertions are enabled.</p>
      *
      * @param  source  the source coordinate tuple, or {@code null}.
      * @return the reduced coordinate tuple, or {@code null} if the given source was null.
