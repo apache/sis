@@ -70,9 +70,18 @@ abstract class GridPointIterator<T> extends LatticeIterator<T> {
         super(extent);
         this.gridToCRS = gridToCRS;
         crsDimension = gridToCRS.getTargetDimensions();
+        buffer = createBuffer();
+    }
+
+    /**
+     * Creates the {@link #buffer} array with a size sufficient for containing both source and target coordinates.
+     * Array size is {@value org.apache.sis.referencing.internal.shared.CoordinateOperations#MAXIMUM_BUFFER_SIZE}
+     * or less.
+     */
+    private double[] createBuffer() {
         final int dimension = Math.max(crsDimension, gridToCRS.getSourceDimensions());
         final int capacity  = (int) Math.min(estimateSize(), Math.max(MAXIMUM_BUFFER_SIZE / dimension, 1));
-        buffer = new double[capacity * dimension];
+        return new double[Math.max(capacity * dimension, limit)];
     }
 
     /**
@@ -82,7 +91,13 @@ abstract class GridPointIterator<T> extends LatticeIterator<T> {
      * @param  prefix  extent of the prefix of the given iterator.
      */
     GridPointIterator(final GridPointIterator<T> suffix, final long[] prefix) {
-        this(prefix, suffix.gridToCRS);
+        super(prefix);
+        gridToCRS = suffix.gridToCRS;
+        crsDimension = suffix.crsDimension;
+        limit = suffix.limit - suffix.currentPosition;
+        buffer = createBuffer();
+        System.arraycopy(suffix.buffer, suffix.currentPosition, buffer, 0, limit);
+        suffix.limit = 0;
     }
 
     /**
