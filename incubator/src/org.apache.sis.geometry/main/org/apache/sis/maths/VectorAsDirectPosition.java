@@ -19,6 +19,7 @@ package org.apache.sis.maths;
 import org.opengis.geometry.DirectPosition;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 
+
 /**
  *
  * @author Johann Sorel (Geomatys)

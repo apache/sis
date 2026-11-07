@@ -16,7 +16,6 @@
  */
 package org.apache.sis.xml.bind.metadata.replace;
 
-import java.util.Optional;
 import java.lang.reflect.Type;
 import jakarta.xml.bind.Marshaller;
 import jakarta.xml.bind.annotation.XmlType;
@@ -33,6 +32,7 @@ import org.apache.sis.util.Utilities;
 import org.opengis.referencing.ReferenceIdentifier;
 
 // Specific to the geoapi-3.1 and geoapi-4.0 branches:
+import java.util.Optional;
 import org.opengis.referencing.ReferenceSystemType;
 import org.apache.sis.util.collection.Containers;
 

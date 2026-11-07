@@ -48,11 +48,11 @@ import org.apache.sis.util.logging.Logging;
 import org.apache.sis.util.resources.Errors;
 import org.apache.sis.util.internal.shared.Constants;
 
+// Specific to the main and geoapi-3.1 branches:
+import org.opengis.referencing.crs.GeographicCRS;
+
 // Specific to the geoapi-3.1 and geoapi-4.0 branches:
 import org.opengis.referencing.ObjectDomain;
-
-// Specific to the geoapi-3.1 branch:
-import org.opengis.referencing.crs.GeographicCRS;
 
 
 /**

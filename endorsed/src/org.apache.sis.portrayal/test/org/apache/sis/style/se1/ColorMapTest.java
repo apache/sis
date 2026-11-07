@@ -17,12 +17,14 @@
 package org.apache.sis.style.se1;
 
 import java.awt.Color;
-import java.util.List;
-import org.apache.sis.style.se1.function.Categorize;
-import org.apache.sis.style.se1.function.Interpolate;
 
 // Test dependencies
 import org.junit.jupiter.api.Test;
+
+// Specific to the geoapi-3.1 and geoapi-4.0 branches:
+import java.util.List;
+import org.apache.sis.style.se1.function.Categorize;
+import org.apache.sis.style.se1.function.Interpolate;
 import static org.junit.jupiter.api.Assertions.*;
 
 

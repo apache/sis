@@ -21,6 +21,10 @@ import java.time.ZoneId;
 import java.time.ZonedDateTime;
 import java.util.Date;
 import java.util.List;
+import org.opengis.feature.Feature;
+import org.opengis.feature.FeatureType;
+import org.opengis.filter.Expression;
+import org.opengis.filter.FilterFactory;
 import org.apache.sis.feature.builder.FeatureTypeBuilder;
 import org.apache.sis.filter.DefaultFilterFactory;
 
@@ -28,12 +32,6 @@ import org.apache.sis.filter.DefaultFilterFactory;
 import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.*;
 import org.apache.sis.test.TestCase;
-
-// Specific to the geoapi-3.1 and geoapi-4.0 branches:
-import org.opengis.feature.Feature;
-import org.opengis.feature.FeatureType;
-import org.opengis.filter.Expression;
-import org.opengis.filter.FilterFactory;
 
 
 /**

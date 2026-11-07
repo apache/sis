@@ -40,6 +40,7 @@ import org.apache.sis.geometry.GeneralEnvelope;
 import org.apache.sis.measure.Quantities;
 import org.apache.sis.measure.Units;
 
+
 /**
  * A typed collection of geometric objects which behaves as the set union of its elements.
  *

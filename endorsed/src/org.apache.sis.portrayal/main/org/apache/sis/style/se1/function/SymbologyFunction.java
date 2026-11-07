@@ -25,13 +25,11 @@ import java.util.Locale;
 import java.util.Objects;
 import org.opengis.util.LocalName;
 import org.opengis.util.ScopedName;
+import org.opengis.filter.Expression;
+import org.opengis.filter.Literal;
 import org.apache.sis.util.ObjectConverters;
 import org.apache.sis.util.UnconvertibleObjectException;
 import org.apache.sis.util.iso.Names;
-
-// Specific to the geoapi-3.1 and geoapi-4.0 branches:
-import org.opengis.filter.Expression;
-import org.opengis.filter.Literal;
 
 
 /**
