@@ -18,6 +18,7 @@ package org.apache.sis.system;
 
 import java.util.List;
 import java.util.ArrayList;
+import static org.apache.sis.util.internal.shared.Constants.NANOS_PER_MILLISECOND;
 
 
 /**
@@ -141,9 +142,9 @@ abstract class DaemonThread extends Thread {
             t.interrupt();
         }
         while (thread != null) {
-            final long delay = stopWaitingAt - System.nanoTime();
-            if (delay <= 0) break;
-            thread.join(delay / 1000000);                   // Convert nanoseconds to milliseconds.
+            final long delay = (stopWaitingAt - System.nanoTime()) / NANOS_PER_MILLISECOND;
+            if (delay <= 0) break;      // A value of 0 cause `join(…)` to wait forever.
+            thread.join(delay);
             thread = thread.previous;
         }
     }

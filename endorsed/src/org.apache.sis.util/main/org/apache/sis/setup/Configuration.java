@@ -25,8 +25,6 @@ import javax.sql.DataSource;
 import java.sql.SQLException;
 import org.apache.sis.system.Shutdown;
 import org.apache.sis.system.Environment;
-import org.apache.sis.system.SystemListener;
-import org.apache.sis.util.logging.Logging;
 import org.apache.sis.util.internal.shared.MetadataServices;
 
 
@@ -156,7 +154,7 @@ public final class Configuration {
      *
      *     class MyClass {
      *         private static DataSource createDataSource() {
-     *             PGSimpleDataSource ds = new PGSimpleDataSource();
+     *             var ds = new PGSimpleDataSource();
      *             ds.setDatabaseName("SpatialMetadata");
      *             // Server default to "localhost".
      *             return ds;
@@ -182,7 +180,7 @@ public final class Configuration {
      *         The supplier may return {@code null}, in which case it will be ignored.
      * @throws IllegalStateException if {@link DataSource} has already be obtained before this method call.
      *
-     * @see <a href="https://sis.apache.org/epsg.html#jndi">How to use EPSG geodetic dataset</a>
+     * @see <a href="https://sis.apache.org/epsg.html#jndi">How to use <abbr>EPSG</abbr> geodetic dataset</a>
      */
     public void setDatabase(final Supplier<DataSource> source) {
         MetadataServices.getInstance().setDataSource(Objects.requireNonNull(source));
@@ -195,13 +193,13 @@ public final class Configuration {
      * Any use of Apache <abbr>SIS</abbr> after this method call may have unexpected effects.
      * In particular, it may cause memory leaks.
      *
-     * <h4>When to use</h4>
+     * <h4>When to shutdown Apache <abbr>SIS</abbr></h4>
      * This method should generally <strong>not</strong> be invoked, because Apache <abbr>SIS</abbr> registers
      * itself a {@linkplain Runtime#addShutdownHook(Thread) shutdown hook} to the Java Virtual Machine.
      * This method may be useful in embedded environments that do not allow the use of shutdown hooks,
      * or when waiting for the <abbr>JVM</abbr> shutdown is overly conservative.
      *
-     * <h4>Complete shutdown of Derby</h4>
+     * <h4>Complete shutdown of Derby database</h4>
      * This method shutdowns only the databases used by Apache <abbr>SIS</abbr>.
      * If Apache Derby is used for the <abbr>EPSG</abbr> database, some Derby daemon threads may still be running.
      * Those daemons can be ignored in standalone applications, but may need to be stopped in embedded environments.
@@ -224,7 +222,7 @@ public final class Configuration {
         try {
             Shutdown.stop(Configuration.class);
         } catch (Exception e) {
-            Logging.unexpectedException(SystemListener.LOGGER, Configuration.class, "stop", e);
+            Shutdown.log(Configuration.class, e);
         }
     }
 }

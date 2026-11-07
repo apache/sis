@@ -16,18 +16,21 @@
  */
 
 /**
- * Support for Apache <abbr>SIS</abbr> execution in the context of web containers.
+ * Support for Apache <abbr>SIS</abbr> execution in the context of JavaEE or web containers.
  * This module registers listeners for stopping Apache <abbr>SIS</abbr> background threads
- * when a web application using <abbr>SIS</abbr> is undeployed from a web container.
+ * when a web application or an Enterprise JavaBean (<abbr>EJB</abbr>) using <abbr>SIS</abbr>
+ * is undeployed from a container.
  * The listeners in this module are compatible with the following frameworks:
  *
  * <ul>
- *   <li>JavaEE Servlet 4.0 ({@code javax.servlet} package)</li>
- *   <li>Jakarta Servlet 6.1 ({@code jakarta.servlet} package)</li>
- *   <li>OGSGi 8.0 ({@code org.osgi.framework} package)</li>
+ *   <li>Jakarta Servlet ({@code jakarta.servlet} package)</li>
+ *   <li>JavaEE Servlet ({@code javax.servlet} package)</li>
+ *   <li>Jakarta Enterprise JavaBeans (<abbr>EJB</abbr>) ({@code jakarta.ejb} package)</li>
+ *   <li>JavaEE <abbr>EJB</abbr> ({@code javax.ejb} package)</li>
+ *   <li>OGSGi ({@code org.osgi.framework} package)</li>
  * </ul>
  *
- * Web applications should consider adding this module in their dependencies
+ * Web applications or Enterprise JavaBeans should consider adding this module in their dependencies
  * if they use Apache <abbr>SIS</abbr> and need clean undeploy while keeping the rest of the container running.
  *
  * @author  Martin Desruisseaux (Geomatys)
@@ -36,8 +39,18 @@
  */
 module org.apache.sis.web {
     requires transitive org.apache.sis.util;
+
+    // Servlet (new and old)
     requires static jakarta.servlet;
     requires static javax.servlet.api;
+
+    // JavaEE (new and old)
+    requires static jakarta.annotation;
+    requires static jakarta.ejb;
+    requires static java.annotation;
+    requires static javax.ejb.api;
+
+    // OSGi bundle
     requires static osgi.core;
 
     provides jakarta.servlet.ServletContainerInitializer
