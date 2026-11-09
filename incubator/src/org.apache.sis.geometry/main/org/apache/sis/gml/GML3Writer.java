@@ -62,6 +62,12 @@ import org.apache.sis.storage.DataStoreReferencingException;
  */
 public final class GML3Writer extends AbstractGMLWriter {
     /**
+     * The namespace of the written elements: either the GML 3.2 namespace,
+     * or the unversioned namespace used by GML 3.0 and 3.1.
+     */
+    private final String namespace;
+
+    /**
      * Creates a new writer using the given StAX cursor.
      * The XML document header is written immediately by this constructor.
      *
@@ -69,7 +75,22 @@ public final class GML3Writer extends AbstractGMLWriter {
      * @throws XMLStreamException if the XML document header cannot be written.
      */
     public GML3Writer(final XMLStreamWriter writer) throws XMLStreamException {
-        super(writer);
+        this(writer, GML3Tags.NAMESPACE_3, false);
+    }
+
+    /**
+     * Creates a new writer using the given StAX cursor, writing elements in the given namespace.
+     * The namespace shall be either {@link GML3Tags#NAMESPACE_3} for GML 3.2,
+     * or {@link GML2Tags#NAMESPACE_2} for GML 3.0 and 3.1.
+     *
+     * @param  writer     the StAX cursor to write to.
+     * @param  namespace  the namespace of the elements to write.
+     * @param  fragment   whether to write geometries inside a document owned by the caller.
+     * @throws XMLStreamException if the XML document header cannot be written.
+     */
+    GML3Writer(final XMLStreamWriter writer, final String namespace, final boolean fragment) throws XMLStreamException {
+        super(writer, fragment);
+        this.namespace = namespace;
     }
 
     /**
@@ -84,15 +105,15 @@ public final class GML3Writer extends AbstractGMLWriter {
 
     @Override
     protected GMLVersion getVersion() {
-        return GMLVersion.V3;
+        return GML3Tags.NAMESPACE_3.equals(namespace) ? GMLVersion.V3 : GMLVersion.V3_1;
     }
 
     /**
-     * Returns the GML 3.2 namespace.
+     * Returns the GML 3.2 namespace, or the unversioned GML 3.1 namespace.
      */
     @Override
     protected String namespace() {
-        return GML3Tags.NAMESPACE_3;
+        return namespace;
     }
 
     /**

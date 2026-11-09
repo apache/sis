@@ -48,6 +48,12 @@ abstract class AbstractGMLWriter implements GMLGeometryWriter {
     protected final XMLStreamWriter writer;
 
     /**
+     * Whether this writer writes geometry elements inside a document owned by the caller.
+     * In such case, this writer does not write the document header and does not close the cursor.
+     */
+    private final boolean fragment;
+
+    /**
      * Creates a new writer using the given StAX cursor.
      * The XML document header is written immediately by this constructor.
      *
@@ -55,8 +61,26 @@ abstract class AbstractGMLWriter implements GMLGeometryWriter {
      * @throws XMLStreamException if the XML document header cannot be written.
      */
     protected AbstractGMLWriter(final XMLStreamWriter writer) throws XMLStreamException {
-        this.writer = writer;
-        writer.writeStartDocument("UTF-8", "1.0");
+        this(writer, false);
+    }
+
+    /**
+     * Creates a new writer using the given StAX cursor, optionally as a fragment writer.
+     * If {@code fragment} is {@code false}, the XML document header is written immediately by this constructor.
+     * If {@code fragment} is {@code true}, the geometries are written inside a document that the caller started
+     * and will end itself. In the latter case, {@link #close()} does not write the end of the document and does
+     * not close the cursor.
+     *
+     * @param  writer    the StAX cursor to write to.
+     * @param  fragment  whether to write geometries inside a document owned by the caller.
+     * @throws XMLStreamException if the XML document header cannot be written.
+     */
+    protected AbstractGMLWriter(final XMLStreamWriter writer, final boolean fragment) throws XMLStreamException {
+        this.writer   = writer;
+        this.fragment = fragment;
+        if (!fragment) {
+            writer.writeStartDocument("UTF-8", "1.0");
+        }
     }
 
     /**
@@ -265,12 +289,18 @@ abstract class AbstractGMLWriter implements GMLGeometryWriter {
 
     /**
      * Writes the end of the XML document and closes the underlying StAX cursor.
+     * If this writer is a fragment writer, then this method only flushes the cursor,
+     * since the document is owned by the caller.
      *
      * @throws XMLStreamException if an error occurred while writing or closing the cursor.
      */
     @Override
     public final void close() throws XMLStreamException {
-        writer.writeEndDocument();
-        writer.close();
+        if (fragment) {
+            writer.flush();
+        } else {
+            writer.writeEndDocument();
+            writer.close();
+        }
     }
 }
