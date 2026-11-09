@@ -88,7 +88,7 @@ import static org.apache.sis.metadata.internal.shared.ImplementationHelper.ISO_N
  * @author  Guilhem Legal   (Geomatys)
  * @author  Cullen Rombach  (Image Matters)
  * @author  Alexis Gaillard (Geomatys)
- * @version 1.4
+ * @version 2.0
  * @since SIS 0.3
  */
 public final class Namespaces {
@@ -510,6 +510,22 @@ public final class Namespaces {
      * @since SIS 1.4
      */
     public static final String SE = "http://www.opengis.net/se";
+
+    /**
+     * The <code>{@value}</code> URL.
+     * The usual prefix for this namespace is {@code "sld"}.
+     *
+     * <p>History</p>
+     * <table class="sis">
+     *   <caption>Change log</caption>
+     *   <tr><th>SIS version</th> <th>URL</th></tr>
+     *   <tr><td>2.0</td>         <td>http://www.opengis.net/sld</td></tr>
+     * </table>
+     *
+     * @category OGC
+     * @since SIS 2.0
+     */
+    public static final String SLD = "http://www.opengis.net/sld";
 
     /**
      * The <code>{@value}</code> URL.
