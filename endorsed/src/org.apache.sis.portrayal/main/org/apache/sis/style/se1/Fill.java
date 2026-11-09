@@ -18,9 +18,6 @@ package org.apache.sis.style.se1;
 
 import java.awt.Color;
 import java.util.Optional;
-import jakarta.xml.bind.annotation.XmlType;
-import jakarta.xml.bind.annotation.XmlElement;
-import jakarta.xml.bind.annotation.XmlRootElement;
 
 // Specific to the geoapi-3.1 and geoapi-4.0 branches:
 import org.opengis.filter.Expression;
@@ -37,11 +34,6 @@ import org.opengis.filter.Expression;
  *
  * @param <R>  the type of data to style, such as {@code Feature} or {@code Coverage}.
  */
-@XmlType(name = "FillType", propOrder = {
-    "graphicFill",
-//  "svgParameter"
-})
-@XmlRootElement(name = "Fill")
 public class Fill<R> extends StyleElement<R> implements Translucent<R> {
     /**
      * The image to use for filling the area, or {@code null} if a solid color should be used.
@@ -49,7 +41,6 @@ public class Fill<R> extends StyleElement<R> implements Translucent<R> {
      * @see #getGraphicFill()
      * @see #setGraphicFill(GraphicFill)
      */
-    @XmlElement(name = "GraphicFill")
     protected GraphicFill<R> graphicFill;
 
     /**
@@ -74,13 +65,6 @@ public class Fill<R> extends StyleElement<R> implements Translucent<R> {
      * @see #setOpacity(Expression)
      */
     protected Expression<R, ? extends Number> opacity;
-
-    /**
-     * For JAXB unmarshalling only.
-     */
-    private Fill() {
-        // Thread-local factory will be used.
-    }
 
     /**
      * Creates an opaque fill initialized to the gray color.

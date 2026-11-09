@@ -17,10 +17,6 @@
 package org.apache.sis.style.se1;
 
 import java.util.Optional;
-import jakarta.xml.bind.Marshaller;
-import jakarta.xml.bind.annotation.XmlType;
-import jakarta.xml.bind.annotation.XmlElement;
-import jakarta.xml.bind.annotation.XmlRootElement;
 
 // Specific to the geoapi-3.1 and geoapi-4.0 branches:
 import org.opengis.filter.Expression;
@@ -46,13 +42,6 @@ import org.opengis.filter.Expression;
  *
  * @param <R>  the type of data to style, such as {@code Feature} or {@code Coverage}.
  */
-@XmlType(name = "PolygonSymbolizerType", propOrder = {
-    "fill",
-    "stroke",
-    "displacement",
-    "perpendicularOffset"
-})
-@XmlRootElement(name = "PolygonSymbolizer")
 public class PolygonSymbolizer<R> extends Symbolizer<R> {
     /**
      * Information about how the interior of polygons should be filled, or {@code null} for no fill.
@@ -62,7 +51,6 @@ public class PolygonSymbolizer<R> extends Symbolizer<R> {
      * @see #getFill()
      * @see #setFill(Fill)
      */
-    @XmlElement(name = "Fill")
     protected Fill<R> fill;
 
     /**
@@ -79,7 +67,6 @@ public class PolygonSymbolizer<R> extends Symbolizer<R> {
      * @see #getStroke()
      * @see #setStroke(Stroke)
      */
-    @XmlElement(name = "Stroke")
     protected Stroke<R> stroke;
 
     /**
@@ -94,7 +81,6 @@ public class PolygonSymbolizer<R> extends Symbolizer<R> {
      * @see #getDisplacement()
      * @see #setDisplacement(Displacement)
      */
-    @XmlElement(name = "Displacement")
     protected Displacement<R> displacement;
 
     /**
@@ -103,28 +89,7 @@ public class PolygonSymbolizer<R> extends Symbolizer<R> {
      * @see #getPerpendicularOffset()
      * @see #setPerpendicularOffset(Expression)
      */
-    @XmlElement(name = "PerpendicularOffset")
     protected Expression<R, ? extends Number> perpendicularOffset;
-
-    /**
-     * Invoked by JAXB before marshalling this polyogon symbolizer.
-     * Creates the default fill and stroke if needed.
-     */
-    private void beforeMarshal(Marshaller caller) {
-        if (fill   == null && !isFillSet)   fill   = factory.createFill();
-        if (stroke == null && !isStrokeSet) stroke = factory.createStroke();
-    }
-
-    /**
-     * For JAXB unmarshalling only. This constructor disables the lazy creation of default values.
-     * This is because OGC 05-077r4 said that if the fill or the stroke is not specified,
-     * then no fill or stroke should be applied.
-     */
-    private PolygonSymbolizer() {
-        // Thread-local factory will be used.
-        isFillSet   = true;
-        isStrokeSet = true;
-    }
 
     /**
      * Creates a polygon symbolizer initialized to the default fill and default stroke.
@@ -174,7 +139,7 @@ public class PolygonSymbolizer<R> extends Symbolizer<R> {
     /**
      * Sets information about how the interior of polygons should be filled.
      * The given instance is stored by reference, it is not cloned.
-     * If this method is never invoked, then the default value is the {@linkplain Fill#Fill() default fill}.
+     * If this method is never invoked, then the default value is the {@linkplain Fill#Fill(StyleFactory) default fill}.
      *
      * @param  value  new information about the fill, or {@code null} for no fill.
      */
@@ -207,7 +172,7 @@ public class PolygonSymbolizer<R> extends Symbolizer<R> {
     /**
      * Sets information about styled lines.
      * The given instance is stored by reference, it is not cloned.
-     * If this method is never invoked, then the default value is the {@linkplain Stroke#Stroke() default stroke}.
+     * If this method is never invoked, then the default value is the {@linkplain Stroke#Stroke(StyleFactory) default stroke}.
      *
      * @param  value  new information about styled lines, or {@code null} if lines should not be drawn.
      */
@@ -242,7 +207,7 @@ public class PolygonSymbolizer<R> extends Symbolizer<R> {
     /**
      * Sets the two-dimensional displacement from the "hot-spot" point.
      * The given instance is stored by reference, it is not cloned. If this method is never invoked,
-     * then the default value is a {@linkplain Displacement#Displacement() default displacement}.
+     * then the default value is a {@linkplain Displacement#Displacement(StyleFactory) default displacement}.
      *
      * @param  value  new displacement from the "hot-spot" point, or {@code null} for resetting the default value.
      */

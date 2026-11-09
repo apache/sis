@@ -17,8 +17,6 @@
 package org.apache.sis.style.se1;
 
 import java.util.Optional;
-import jakarta.xml.bind.annotation.XmlType;
-import jakarta.xml.bind.annotation.XmlElement;
 
 // Specific to the geoapi-3.1 and geoapi-4.0 branches:
 import org.opengis.filter.Expression;
@@ -37,21 +35,13 @@ import org.opengis.filter.Expression;
  *
  * @param <R>  the type of data to style, such as {@code Feature} or {@code Coverage}.
  */
-@XmlType(name = "SelectedChannelType", propOrder = {
-    "sourceChannelName",
-    "contrastEnhancement"
-})
-// No root element is specified in OGC 05-077r4.
 public class SelectedChannel<R> extends StyleElement<R> {
     /**
      * The channel's name, or {@code null} if unspecified.
      *
      * @see #getSourceChannelName()
      * @see #setSourceChannelName(Expression)
-     *
-     * @todo Needs an adapter from expression to plain string.
      */
-    @XmlElement(name = "SourceChannelName", required = true)
     protected Expression<R,String> sourceChannelName;
 
     /**
@@ -60,15 +50,7 @@ public class SelectedChannel<R> extends StyleElement<R> {
      * @see #getContrastEnhancement()
      * @see #setContrastEnhancement(ContrastEnhancement)
      */
-    @XmlElement(name = "ContrastEnhancement")
     protected ContrastEnhancement<R> contrastEnhancement;
-
-    /**
-     * For JAXB unmarshalling only.
-     */
-    private SelectedChannel() {
-        // Thread-local factory will be used.
-    }
 
     /**
      * Creates an initially empty selected channel.

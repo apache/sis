@@ -16,10 +16,6 @@
  */
 package org.apache.sis.style.se1;
 
-import jakarta.xml.bind.annotation.XmlType;
-import jakarta.xml.bind.annotation.XmlElement;
-import jakarta.xml.bind.annotation.XmlRootElement;
-
 // Specific to the geoapi-3.1 and geoapi-4.0 branches:
 import org.opengis.filter.Expression;
 
@@ -34,11 +30,6 @@ import org.opengis.filter.Expression;
  *
  * @param <R>  the type of data to style, such as {@code Feature} or {@code Coverage}.
  */
-@XmlType(name = "LineSymbolizerType", propOrder = {
-    "stroke",
-    "perpendicularOffset"
-})
-@XmlRootElement(name = "LineSymbolizer")
 public class LineSymbolizer<R> extends Symbolizer<R> {
     /**
      * Information about how to draw lines, or {@code null} for lazily constructed default.
@@ -46,7 +37,6 @@ public class LineSymbolizer<R> extends Symbolizer<R> {
      * @see #getStroke()
      * @see #setStroke(Stroke)
      */
-    @XmlElement(name = "Stroke")
     protected Stroke<R> stroke;
 
     /**
@@ -55,15 +45,7 @@ public class LineSymbolizer<R> extends Symbolizer<R> {
      * @see #getPerpendicularOffset()
      * @see #setPerpendicularOffset(Expression)
      */
-    @XmlElement(name = "PerpendicularOffset")
     protected Expression<R, ? extends Number> perpendicularOffset;
-
-    /**
-     * For JAXB unmarshalling only.
-     */
-    private LineSymbolizer() {
-        // Thread-local factory will be used.
-    }
 
     /**
      * Creates a line symbolizer with the default stroke and no perpendicular offset.
@@ -103,7 +85,7 @@ public class LineSymbolizer<R> extends Symbolizer<R> {
     /**
      * Sets the object containing all the information necessary to draw styled lines.
      * The given instance is stored by reference, it is not cloned.
-     * If this method is never invoked, then the default value is a {@linkplain Stroke#Stroke() default instance}.
+     * If this method is never invoked, then the default value is a {@linkplain Stroke#Stroke(StyleFactory) default instance}.
      *
      * @param  value  new information about how to draw lines, or {@code null} for resetting the default value.
      */

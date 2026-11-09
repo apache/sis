@@ -17,10 +17,6 @@
 package org.apache.sis.style.se1;
 
 import java.util.Optional;
-import jakarta.xml.bind.Marshaller;
-import jakarta.xml.bind.annotation.XmlType;
-import jakarta.xml.bind.annotation.XmlElement;
-import jakarta.xml.bind.annotation.XmlRootElement;
 
 // Specific to the geoapi-3.1 and geoapi-4.0 branches:
 import org.opengis.filter.Expression;
@@ -40,16 +36,6 @@ import org.opengis.filter.Expression;
  *
  * @param <R>  the type of data to style, such as {@code Feature} or {@code Coverage}.
  */
-@XmlType(name = "MarkType", propOrder = {
-    "wellKnownName",
-//  "onlineResource",       // XML encoding not yet available.
-//  "inlineContent",        // Idem.
-    "format",
-    "markIndex",
-    "fill",
-    "stroke"
-})
-@XmlRootElement(name = "Mark")
 public class Mark<R> extends GraphicalSymbol<R> {
     /**
      * Expression whose value will indicate the symbol to draw, or {@code null} for the default value.
@@ -57,7 +43,6 @@ public class Mark<R> extends GraphicalSymbol<R> {
      * @see #getWellKnownName()
      * @see #setWellKnownName(Expression)
      */
-    @XmlElement(name = "WellKnownName")
     protected Expression<R,String> wellKnownName;
 
     /**
@@ -68,7 +53,6 @@ public class Mark<R> extends GraphicalSymbol<R> {
      * @see #getFill()
      * @see #setFill(Fill)
      */
-    @XmlElement(name = "Fill")
     protected Fill<R> fill;
 
     /**
@@ -85,7 +69,6 @@ public class Mark<R> extends GraphicalSymbol<R> {
      * @see #getStroke()
      * @see #setStroke(Stroke)
      */
-    @XmlElement(name = "Stroke")
     protected Stroke<R> stroke;
 
     /**
@@ -100,28 +83,7 @@ public class Mark<R> extends GraphicalSymbol<R> {
      * @see #getMarkIndex()
      * @see #setMarkIndex(Expression)
      */
-    @XmlElement(name = "MarkIndex")
     protected Expression<R,Integer> markIndex;
-
-    /**
-     * Invoked by JAXB before marshalling this mark.
-     * Creates the default fill and stroke if needed.
-     */
-    private void beforeMarshal(Marshaller caller) {
-        if (fill   == null && !isFillSet)   fill   = factory.createFill();
-        if (stroke == null && !isStrokeSet) stroke = factory.createStroke();
-    }
-
-    /**
-     * For JAXB unmarshalling only. This constructor disables the lazy creation of default values.
-     * This is because OGC 05-077r4 said that if the fill or the stroke is not specified,
-     * then no fill or stroke should be applied.
-     */
-    private Mark() {
-        // Thread-local factory will be used.
-        isFillSet   = true;
-        isStrokeSet = true;
-    }
 
     /**
      * Creates a mark initialized to a gray square with black outline.
@@ -143,7 +105,10 @@ public class Mark<R> extends GraphicalSymbol<R> {
         super(source);
         wellKnownName = source.wellKnownName;
         fill          = source.fill;
+        isFillSet     = source.isFillSet;
         stroke        = source.stroke;
+        isStrokeSet   = source.isStrokeSet;
+        markIndex     = source.markIndex;
     }
 
     /**
@@ -198,7 +163,7 @@ public class Mark<R> extends GraphicalSymbol<R> {
     /**
      * Sets information about how the interior of marks should be filled.
      * The given instance is stored by reference, it is not cloned.
-     * If this method is never invoked, then the default value is the {@linkplain Fill#Fill() default fill}.
+     * If this method is never invoked, then the default value is the {@linkplain Fill#Fill(StyleFactory) default fill}.
      *
      * @param  value  new information about the fill, or {@code null} for no fill.
      */
@@ -230,7 +195,7 @@ public class Mark<R> extends GraphicalSymbol<R> {
     /**
      * Sets information about styled lines.
      * The given instance is stored by reference, it is not cloned.
-     * If this method is never invoked, then the default value is the {@linkplain Stroke#Stroke() default stroke}.
+     * If this method is never invoked, then the default value is the {@linkplain Stroke#Stroke(StyleFactory) default stroke}.
      *
      * @param  value  new information about styled lines, or {@code null} if lines should not be drawn.
      */
@@ -264,7 +229,7 @@ public class Mark<R> extends GraphicalSymbol<R> {
      */
     @Override
     final Object[] properties() {
-        return new Object[] {wellKnownName, fill, isFillSet, stroke, isStrokeSet, markIndex};
+        return new Object[] {onlineResource, inlineContent, format, wellKnownName, fill, isFillSet, stroke, isStrokeSet, markIndex};
     }
 
     /**

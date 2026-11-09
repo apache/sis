@@ -19,14 +19,8 @@ package org.apache.sis.style.se1;
 import java.util.List;
 import java.util.ArrayList;
 import java.util.Optional;
-import jakarta.xml.bind.annotation.XmlType;
-import jakarta.xml.bind.annotation.XmlElement;
-import jakarta.xml.bind.annotation.XmlElementRef;
-import jakarta.xml.bind.annotation.XmlRootElement;
 import org.opengis.metadata.citation.OnlineResource;
-import org.apache.sis.xml.bind.Context;
 import org.apache.sis.util.ArgumentChecks;
-import org.apache.sis.util.resources.Errors;
 
 // Specific to the geoapi-3.1 and geoapi-4.0 branches:
 import org.opengis.filter.Filter;
@@ -46,17 +40,6 @@ import org.opengis.filter.Filter;
  *
  * @param <R>  the type of data to style, such as {@code Feature} or {@code Coverage}.
  */
-@XmlType(name = "RuleType", propOrder = {
-    "name",
-    "description",
-    "legend",
-//  "filter",           // XML encoding not yet available.
-    "elseFilter",
-    "minScale",
-    "maxScale",
-    "symbolizers"
-})
-@XmlRootElement(name = "Rule")
 public class Rule<R> extends StyleElement<R> {
     /**
      * Name for this rule, or {@code null} if none.
@@ -64,7 +47,6 @@ public class Rule<R> extends StyleElement<R> {
      * @see #getName()
      * @see #setName(String)
      */
-    @XmlElement(name = "Name")
     protected String name;
 
     /**
@@ -73,7 +55,6 @@ public class Rule<R> extends StyleElement<R> {
      * @see #getDescription()
      * @see #setDescription(Description)
      */
-    @XmlElement(name = "Description")
     protected Description<R> description;
 
     /**
@@ -82,7 +63,6 @@ public class Rule<R> extends StyleElement<R> {
      * @see #getLegend()
      * @see #setLegend(LegendGraphic)
      */
-    @XmlElement(name = "LegendGraphic")
     protected LegendGraphic<R> legend;
 
     /**
@@ -91,7 +71,6 @@ public class Rule<R> extends StyleElement<R> {
      * @see #getFilter()
      * @see #setFilter(Filter)
      */
-//  @XmlElement(name = "Filter", namespace = "http://www.opengis.net/ogc")
     protected Filter<R> filter;
 
     /**
@@ -106,7 +85,7 @@ public class Rule<R> extends StyleElement<R> {
      * Minimum value (inclusive) in the denominator of map scale at which this rule will apply.
      *
      * @see #getMinScaleDenominator()
-     * @see #setMaxScaleDenominator(double)
+     * @see #setMinScaleDenominator(double)
      */
     protected double minScale;
 
@@ -123,23 +102,15 @@ public class Rule<R> extends StyleElement<R> {
      *
      * @see #symbolizers()
      */
-    @XmlElementRef(name = "Symbolizer")
     private List<Symbolizer<R>> symbolizers;
 
     /**
      * If the style comes from an external XML file, the original source. Otherwise {@code null}.
      *
-     * @see #getOnlineResource()
+     * @see #getOnlineSource()
      * @see #setOnlineSource(OnlineResource)
      */
     protected OnlineResource onlineSource;
-
-    /**
-     * For JAXB unmarshalling only.
-     */
-    private Rule() {
-        // Thread-local factory will be used.
-    }
 
     /**
      * Creates an initially empty rule.
@@ -164,6 +135,7 @@ public class Rule<R> extends StyleElement<R> {
         description  = source.description;
         legend       = source.legend;
         filter       = source.filter;
+        isElseFilter = source.isElseFilter;
         minScale     = source.minScale;
         maxScale     = source.maxScale;
         onlineSource = source.onlineSource;
@@ -289,21 +261,6 @@ public class Rule<R> extends StyleElement<R> {
     }
 
     /**
-     * Invoked by JAXB at marshalling time for expressing the boolean {@code isElseFilter} value as an XML element.
-     */
-    @XmlElement(name = "ElseFilter")
-    private ElseFilter getElseFilter() {
-        return isElseFilter ? ElseFilter.INSTANCE : null;
-    }
-
-    /**
-     * Invoked at JAXB unmarshalling time when an {@code <ElseFilter/>} element is found.
-     */
-    private void setElseFilter(final ElseFilter value) {
-        isElseFilter = (value != null);
-    }
-
-    /**
      * Returns the minimum value (inclusive) in the denominator of map scale at which this rule will apply.
      * If, for example, this value was 10000, then this rule would only apply at scales of 1:<var>X</var>
      * where <var>X</var> is greater than 10000. A value of zero indicates that there is no minimum.
@@ -321,17 +278,6 @@ public class Rule<R> extends StyleElement<R> {
     }
 
     /**
-     * Invoked by JAXB for marshalling the minimum scale denominator.
-     * If both the minimum and maximum are the default values, then this property is omitted.
-     * If a maximum value exists, then the zero minimum is explicitly written for clarity.
-     */
-    @XmlElement(name = "MinScaleDenominator")
-    private Double getMinScale() {
-        final var value = minScale;
-        return (value > 0 || maxScale != Double.POSITIVE_INFINITY) ? value : null;
-    }
-
-    /**
      * Sets the minimum value (inclusive) in the denominator of map scale at which this rule will apply.
      * If the given value is greater than the maximum scale, then that maximum is discarded.
      * If this method is never invoked, then the default value is 0.
@@ -343,18 +289,6 @@ public class Rule<R> extends StyleElement<R> {
         minScale = value;
         if (value > maxScale) {
             maxScale = Double.POSITIVE_INFINITY;
-        }
-    }
-
-    /**
-     * Invoked by JAXB for unmarshalling the minimum scale denominator.
-     * The argument validity check assumes that this method is invoked only once.
-     * If this assumption is violated, the check allows range restriction but not expansion.
-     * If the given value is invalid, a warning is reported but the unmarshalling continue.
-     */
-    private void setMinScale(final Double value) {
-        if (isValidScale("MinScaleDenominator", value)) {
-            minScale = value;
         }
     }
 
@@ -374,16 +308,6 @@ public class Rule<R> extends StyleElement<R> {
     }
 
     /**
-     * Invoked by JAXB for marshalling the maximum scale denominator.
-     * If the value is positive infinity, then the property is omitted.
-     */
-    @XmlElement(name = "MaxScaleDenominator")
-    private Double getMaxScale() {
-        final var value = maxScale;
-        return (value != Double.POSITIVE_INFINITY) ? value : null;
-    }
-
-    /**
      * Sets the maximum value (exclusive) in the denominator of map scale at which this rule will apply.
      * If the given value is less than the minimum scale, then that minimum is discarded.
      * If this method is never invoked, then the default value is {@link Double#POSITIVE_INFINITY}.
@@ -396,34 +320,6 @@ public class Rule<R> extends StyleElement<R> {
         if (value < minScale) {
             minScale = 0;
         }
-    }
-
-    /**
-     * Invoked by JAXB for unmarshalling the maximum scale denominator.
-     * The argument validity check assumes that this method is invoked only once.
-     * If this assumption is violated, the check allows range restriction but not expansion.
-     * If the given value is invalid, a warning is reported but the unmarshalling continue.
-     */
-    private void setMaxScale(final Double value) {
-        if (isValidScale("MaxScaleDenominator", value)) {
-            maxScale = value;
-        }
-    }
-
-    /**
-     * Indicates whether an unmarshalled minimum or maximum scale denominator is inside the expected range of values.
-     * If the given value is invalid, a warning is emitted to the JAXB unmarshaller and the caller will keep the default value.
-     */
-    private boolean isValidScale(final String name, final Double value) {
-        boolean isValidScale = (value != null);
-        if (isValidScale) {
-            isValidScale = (value >= minScale && value <= maxScale);
-            if (!isValidScale) {
-                Context.warningOccured(Context.current(), Rule.class, "set".concat(name), Errors.class,
-                                       Errors.Keys.ValueOutOfRange_4, name, minScale, maxScale, value);
-            }
-        }
-        return isValidScale;
     }
 
     /**
@@ -462,13 +358,11 @@ public class Rule<R> extends StyleElement<R> {
      * If the style comes from an external XML file, the original source.
      * If this method is never invoked, then the default value is absence.
      *
-     * <h4>Effect on XML marshalling</h4>
+     * <h4>Effect on XML documents</h4>
      * Setting this property to a non-null value has the following effect:
      * When this rule is written in a XML document, then instead of writing
      * the XML elements describing this rule,
      * the specified link will be written instead.
-     *
-     * @todo Above-describing marshalling is not yet implemented.
      *
      * @param  value  new source of this rule, or {@code null} if none.
      */
@@ -482,7 +376,7 @@ public class Rule<R> extends StyleElement<R> {
      */
     @Override
     final Object[] properties() {
-        return new Object[] {name, description, legend, filter, minScale, maxScale, symbolizers, onlineSource};
+        return new Object[] {name, description, legend, filter, isElseFilter, minScale, maxScale, symbolizers, onlineSource};
     }
 
     /**

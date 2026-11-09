@@ -82,4 +82,53 @@ public final class MarkTest extends StyleTestCase {
         cdt.setStroke(value);
         assertOptionalEquals(value, cdt.getStroke());
     }
+
+    /**
+     * Test of {@code MarkIndex} property.
+     */
+    @Test
+    public void testMarkIndex() {
+        final var cdt = factory.createMark();
+
+        // Check default
+        assertEmpty(cdt.getMarkIndex());
+
+        // Check get/set
+        var value = literal(3);
+        cdt.setMarkIndex(value);
+        assertOptionalEquals(value, cdt.getMarkIndex());
+    }
+
+    /**
+     * Verifies that the copy constructor preserves all properties,
+     * including the explicit absence of fill and stroke.
+     */
+    @Test
+    public void testCopyConstructor() {
+        final var cdt = factory.createMark();
+        cdt.setWellKnownName(literal("circle"));
+        cdt.setFill(null);
+        cdt.setStroke(null);
+        cdt.setMarkIndex(literal(3));
+        cdt.setFormat("image/svg+xml");
+
+        final var copy = new Mark<>(cdt);
+        assertEquals(cdt, copy);
+        assertEmpty(copy.getFill());
+        assertEmpty(copy.getStroke());
+        assertOptionalEquals(cdt.getMarkIndex().orElseThrow(), copy.getMarkIndex());
+        assertOptionalEquals("image/svg+xml", copy.getFormat());
+    }
+
+    /**
+     * Verifies that {@code equals} takes in account the properties inherited from {@link GraphicalSymbol}.
+     */
+    @Test
+    public void testEqualsWithInheritedProperties() {
+        final var m1 = factory.createMark();
+        final var m2 = factory.createMark();
+        assertEquals(m1, m2);
+        m2.setFormat("image/svg+xml");
+        assertNotEquals(m1, m2);
+    }
 }

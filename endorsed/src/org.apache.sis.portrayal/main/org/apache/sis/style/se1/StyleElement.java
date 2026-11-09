@@ -19,7 +19,6 @@ package org.apache.sis.style.se1;
 import java.awt.Color;
 import java.util.Arrays;
 import java.util.Objects;
-import jakarta.xml.bind.annotation.XmlTransient;
 import org.opengis.util.InternationalString;
 
 // Specific to the geoapi-3.1 and geoapi-4.0 branches:
@@ -36,7 +35,6 @@ import org.opengis.filter.Literal;
  *
  * @param <R>  the type of data to style, such as {@code Feature} or {@code Coverage}.
  */
-@XmlTransient
 public abstract class StyleElement<R> implements Cloneable {
     /**
      * The factory to use for creating expressions and child elements.
@@ -65,17 +63,6 @@ public abstract class StyleElement<R> implements Cloneable {
      */
     StyleElement(final StyleElement<R> source) {
         factory = source.factory;
-    }
-
-    /**
-     * Creates a style element for XML unmarshalling.
-     * <em>This constructor is unsafe</em> and should be used only by JAXB reflection.
-     *
-     * @todo Allow the factory to be set according the parent {@link AbstractStyle} being unmarshalled.
-     *       We will need to use {@link ThreadLocal}.
-     */
-    StyleElement() {
-        factory = null;     // TODO
     }
 
     /**

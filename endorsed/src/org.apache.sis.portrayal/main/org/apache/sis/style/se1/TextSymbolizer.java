@@ -17,10 +17,6 @@
 package org.apache.sis.style.se1;
 
 import java.util.Optional;
-import jakarta.xml.bind.annotation.XmlType;
-import jakarta.xml.bind.annotation.XmlElement;
-import jakarta.xml.bind.annotation.XmlElementRef;
-import jakarta.xml.bind.annotation.XmlRootElement;
 
 // Specific to the geoapi-3.1 and geoapi-4.0 branches:
 import org.opengis.filter.Expression;
@@ -39,14 +35,6 @@ import org.opengis.filter.Expression;
  *
  * @param <R>  the type of data to style, such as {@code Feature} or {@code Coverage}.
  */
-@XmlType(name = "TextSymbolizerType", propOrder = {
-    "label",
-    "font",
-    "labelPlacement",
-    "halo",
-    "fill"
-})
-@XmlRootElement(name = "TextSymbolizer")
 public class TextSymbolizer<R> extends Symbolizer<R> {
     /**
      * Text to display, or {@code null} if none.
@@ -54,7 +42,6 @@ public class TextSymbolizer<R> extends Symbolizer<R> {
      * @see #getLabel()
      * @see #setLabel(Expression)
      */
-    @XmlElement(name = "Label")
     protected Expression<R,String> label;
 
     /**
@@ -63,7 +50,6 @@ public class TextSymbolizer<R> extends Symbolizer<R> {
      * @see #getFont()
      * @see #setFont(Font)
      */
-    @XmlElement(name = "Font")
     protected Font<R> font;
 
     /**
@@ -73,7 +59,6 @@ public class TextSymbolizer<R> extends Symbolizer<R> {
      * @see #getLabelPlacement()
      * @see #setLabelPlacement(LabelPlacement)
      */
-    @XmlElementRef(name = "LabelPlacement")
     protected LabelPlacement<R> labelPlacement;
 
     /**
@@ -82,7 +67,6 @@ public class TextSymbolizer<R> extends Symbolizer<R> {
      * @see #getHalo()
      * @see #setHalo(Halo)
      */
-    @XmlElement(name = "Halo")
     protected Halo<R> halo;
 
     /**
@@ -91,15 +75,7 @@ public class TextSymbolizer<R> extends Symbolizer<R> {
      * @see #getFill()
      * @see #setFill(Fill)
      */
-    @XmlElement(name = "Fill")
     protected Fill<R> fill;
-
-    /**
-     * For JAXB unmarshalling only.
-     */
-    private TextSymbolizer() {
-        // Thread-local factory will be used.
-    }
 
     /**
      * Creates a text symbolizer with default placement and default font.
@@ -165,7 +141,7 @@ public class TextSymbolizer<R> extends Symbolizer<R> {
     /**
      * Sets the font to apply on the text.
      * The given instance is stored by reference, it is not cloned. If this method is never invoked,
-     * then the default value is a {@linkplain Font#Font() default font}.
+     * then the default value is a {@linkplain Font#Font(StyleFactory) default font}.
      *
      * @param  value  new font to apply on the text, or {@code null} for resetting the default value.
      */
@@ -193,7 +169,7 @@ public class TextSymbolizer<R> extends Symbolizer<R> {
      * Sets indications about how the text should be placed with respect to the feature geometry.
      * The given instance is stored by reference, it is not cloned.
      * If this method is never invoked, then the default value is a
-     * {@linkplain PointPlacement#PointPlacement() default point placement}.
+     * {@linkplain PointPlacement#PointPlacement(StyleFactory) default point placement}.
      *
      * @param  value  new indications about text placement, or {@code null} for resetting the default value.
      */

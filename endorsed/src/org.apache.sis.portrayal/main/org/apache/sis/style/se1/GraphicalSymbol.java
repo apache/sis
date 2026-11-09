@@ -18,8 +18,6 @@ package org.apache.sis.style.se1;
 
 import javax.swing.Icon;
 import java.util.Optional;
-import jakarta.xml.bind.annotation.XmlElement;
-import jakarta.xml.bind.annotation.XmlTransient;
 import org.opengis.metadata.citation.OnlineResource;
 
 
@@ -38,7 +36,6 @@ import org.opengis.metadata.citation.OnlineResource;
  *
  * @see Graphic#graphicalSymbols()
  */
-@XmlTransient
 public abstract class GraphicalSymbol<R> extends StyleElement<R> {
     /**
      * URL to the image or mark, or {@code null} if none.
@@ -46,7 +43,6 @@ public abstract class GraphicalSymbol<R> extends StyleElement<R> {
      * @see #getOnlineResource()
      * @see #setOnlineResource(OnlineResource)
      */
-//  @XmlElement(name = "OnlineResource")
     protected OnlineResource onlineResource;
 
     /**
@@ -57,24 +53,16 @@ public abstract class GraphicalSymbol<R> extends StyleElement<R> {
      * @see #getInlineContent()
      * @see #setInlineContent(Icon)
      */
-//  @XmlElement(name = "InlineContent")
     protected Icon inlineContent;
 
     /**
      * The expected document MIME type, or {@code null} if unspecified.
+     * This property is required in {@link ExternalGraphic} but not in {@link Mark}.
      *
      * @see #getFormat()
      * @see #setFormat(String)
      */
-    @XmlElement(name = "Format")       // Required in ExternalGraphic but not in Mark.
     protected String format;
-
-    /**
-     * For JAXB unmarshalling only.
-     */
-    GraphicalSymbol() {
-        // Thread-local factory will be used.
-    }
 
     /**
      * Creates a new graphical symbol.

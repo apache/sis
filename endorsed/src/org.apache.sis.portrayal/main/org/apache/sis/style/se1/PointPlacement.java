@@ -16,10 +16,6 @@
  */
 package org.apache.sis.style.se1;
 
-import jakarta.xml.bind.annotation.XmlType;
-import jakarta.xml.bind.annotation.XmlElement;
-import jakarta.xml.bind.annotation.XmlRootElement;
-
 // Specific to the geoapi-3.1 and geoapi-4.0 branches:
 import org.opengis.filter.Expression;
 
@@ -34,12 +30,6 @@ import org.opengis.filter.Expression;
  *
  * @param <R>  the type of data to style, such as {@code Feature} or {@code Coverage}.
  */
-@XmlType(name = "PointPlacementType", propOrder = {
-    "anchorPoint",
-    "displacement",
-    "rotation"
-})
-@XmlRootElement(name = "PointPlacement")
 public class PointPlacement<R> extends LabelPlacement<R> {
     /**
      * Location to use for anchoring the label to the point, or {@code null} for lazily constructed default.
@@ -47,7 +37,6 @@ public class PointPlacement<R> extends LabelPlacement<R> {
      * @see #getAnchorPoint()
      * @see #setAnchorPoint(AnchorPoint)
      */
-    @XmlElement(name = "AnchorPoint")
     protected AnchorPoint<R> anchorPoint;
 
     /**
@@ -56,7 +45,6 @@ public class PointPlacement<R> extends LabelPlacement<R> {
      * @see #getDisplacement()
      * @see #setDisplacement(Displacement)
      */
-    @XmlElement(name = "Displacement")
     protected Displacement<R> displacement;
 
     /**
@@ -65,15 +53,7 @@ public class PointPlacement<R> extends LabelPlacement<R> {
      * @see #getRotation()
      * @see #setRotation(Expression)
      */
-    @XmlElement(name = "Rotation")
     protected Expression<R, ? extends Number> rotation;
-
-    /**
-     * For JAXB unmarshalling only.
-     */
-    private PointPlacement() {
-        // Thread-local factory will be used.
-    }
 
     /**
      * Creates a point placement initialized to anchor at the middle and no displacement.
@@ -118,7 +98,7 @@ public class PointPlacement<R> extends LabelPlacement<R> {
     /**
      * Sets the location inside of a label to use for anchoring the label to the point.
      * The given instance is stored by reference, it is not cloned. If this method is never invoked,
-     * then the default value is a {@linkplain AnchorPoint#AnchorPoint() default anchor point}.
+     * then the default value is a {@linkplain AnchorPoint#AnchorPoint(StyleFactory) default anchor point}.
      *
      * @param  value  new anchor point, or {@code null} for resetting the default value.
      */
@@ -145,7 +125,7 @@ public class PointPlacement<R> extends LabelPlacement<R> {
     /**
      * Sets the two-dimensional displacements from the "hot-spot" point.
      * The given instance is stored by reference, it is not cloned. If this method is never invoked,
-     * then the default value is a {@linkplain Displacement#Displacement() default displacement}.
+     * then the default value is a {@linkplain Displacement#Displacement(StyleFactory) default displacement}.
      *
      * @param  value  new displacements from the "hot-spot" point, or {@code null} for resetting the default value.
      */

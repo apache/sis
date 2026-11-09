@@ -16,10 +16,6 @@
  */
 package org.apache.sis.style.se1;
 
-import jakarta.xml.bind.annotation.XmlType;
-import jakarta.xml.bind.annotation.XmlElement;
-import jakarta.xml.bind.annotation.XmlRootElement;
-
 
 /**
  * Stipple-fill repeated graphic.
@@ -33,8 +29,6 @@ import jakarta.xml.bind.annotation.XmlRootElement;
  *
  * @param <R>  the type of data to style, such as {@code Feature} or {@code Coverage}.
  */
-@XmlType(name = "GraphicFillType")
-@XmlRootElement(name = "GraphicFill")
 public class GraphicFill<R> extends StyleElement<R> implements GraphicalElement<R> {
     /**
      * The graphic to be repeated, or {@code null} for lazily constructed default.
@@ -44,13 +38,6 @@ public class GraphicFill<R> extends StyleElement<R> implements GraphicalElement<
      * @see #setGraphic(Graphic)
      */
     protected Graphic<R> graphic;
-
-    /**
-     * For JAXB unmarshalling only.
-     */
-    private GraphicFill() {
-        // Thread-local factory will be used.
-    }
 
     /**
      * Creates a graphic fill initialized to a default graphic.
@@ -82,7 +69,6 @@ public class GraphicFill<R> extends StyleElement<R> implements GraphicalElement<
      * @see GraphicStroke#getGraphic()
      */
     @Override
-    @XmlElement(name = "Graphic", required = true)
     public final Graphic<R> getGraphic() {
         if (graphic == null) {
             graphic = factory.createGraphic();
@@ -93,7 +79,7 @@ public class GraphicFill<R> extends StyleElement<R> implements GraphicalElement<
     /**
      * Sets the graphic to be repeated.
      * The given instance is stored by reference, it is not cloned.
-     * If this method is never invoked, then the default value is a {@linkplain Graphic#Graphic() default instance}.
+     * If this method is never invoked, then the default value is a {@linkplain Graphic#Graphic(StyleFactory) default instance}.
      *
      * @param  value  new graphic, or {@code null} for resetting the default value.
      *

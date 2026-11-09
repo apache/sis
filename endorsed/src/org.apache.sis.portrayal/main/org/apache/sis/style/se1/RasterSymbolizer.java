@@ -17,9 +17,6 @@
 package org.apache.sis.style.se1;
 
 import java.util.Optional;
-import jakarta.xml.bind.annotation.XmlType;
-import jakarta.xml.bind.annotation.XmlElement;
-import jakarta.xml.bind.annotation.XmlRootElement;
 
 // Specific to the geoapi-3.1 and geoapi-4.0 branches:
 import org.opengis.filter.Expression;
@@ -40,16 +37,6 @@ import org.opengis.filter.Expression;
  *
  * @param <R>  the type of data to style, such as {@code Feature} or {@code Coverage}.
  */
-@XmlType(name = "RasterSymbolizerType", propOrder = {
-    "opacity",
-    "channelSelection",
-    "overlapBehavior",
-    "colorMap",
-    "contrastEnhancement",
-    "shadedRelief",
-    "imageOutline"
-})
-@XmlRootElement(name = "RasterSymbolizer")
 public class RasterSymbolizer<R> extends Symbolizer<R> implements Translucent<R> {
     /**
      * Level of translucency as a floating point number between 0 and 1 (inclusive), or {@code null} the default value.
@@ -58,7 +45,6 @@ public class RasterSymbolizer<R> extends Symbolizer<R> implements Translucent<R>
      * @see #getOpacity()
      * @see #setOpacity(Expression)
      */
-    @XmlElement(name = "Opacity")
     protected Expression<R, ? extends Number> opacity;
 
     /**
@@ -67,7 +53,6 @@ public class RasterSymbolizer<R> extends Symbolizer<R> implements Translucent<R>
      * @see #getChannelSelection()
      * @see #setChannelSelection(ChannelSelection)
      */
-    @XmlElement(name = "ChannelSelection")
     protected ChannelSelection<R> channelSelection;
 
     /**
@@ -77,7 +62,6 @@ public class RasterSymbolizer<R> extends Symbolizer<R> implements Translucent<R>
      * @see #getOverlapBehavior()
      * @see #setOverlapBehavior(OverlapBehavior)
      */
-    @XmlElement(name = "OverlapBehavior")
     protected OverlapBehavior overlapBehavior;
 
     /**
@@ -86,7 +70,6 @@ public class RasterSymbolizer<R> extends Symbolizer<R> implements Translucent<R>
      * @see #getColorMap()
      * @see #setColorMap(ColorMap)
      */
-    @XmlElement(name = "ColorMap")
     protected ColorMap<R> colorMap;
 
     /**
@@ -95,7 +78,6 @@ public class RasterSymbolizer<R> extends Symbolizer<R> implements Translucent<R>
      * @see #getContrastEnhancement()
      * @see #setContrastEnhancement(ContrastEnhancement)
      */
-    @XmlElement(name = "ContrastEnhancement")
     protected ContrastEnhancement<R> contrastEnhancement;
 
     /**
@@ -104,7 +86,6 @@ public class RasterSymbolizer<R> extends Symbolizer<R> implements Translucent<R>
      * @see #getShadedRelief()
      * @see #setShadedRelief(ShadedRelief)
      */
-    @XmlElement(name = "ShadedRelief")
     protected ShadedRelief<R> shadedRelief;
 
     /**
@@ -113,15 +94,7 @@ public class RasterSymbolizer<R> extends Symbolizer<R> implements Translucent<R>
      * @see #getImageOutline()
      * @see #setImageOutline(Symbolizer)
      */
-    @XmlElement(name = "ImageOutline")
     protected Symbolizer<R> imageOutline;
-
-    /**
-     * For JAXB unmarshalling only.
-     */
-    private RasterSymbolizer() {
-        // Thread-local factory will be used.
-    }
 
     /**
      * Creates an initially opaque raster symbolizer with no contrast enhancement, shaded relief or outline.

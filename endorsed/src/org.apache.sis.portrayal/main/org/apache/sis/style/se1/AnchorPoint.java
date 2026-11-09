@@ -16,10 +16,6 @@
  */
 package org.apache.sis.style.se1;
 
-import jakarta.xml.bind.annotation.XmlType;
-import jakarta.xml.bind.annotation.XmlElement;
-import jakarta.xml.bind.annotation.XmlRootElement;
-
 // Specific to the geoapi-3.1 and geoapi-4.0 branches:
 import org.opengis.filter.Expression;
 
@@ -39,11 +35,6 @@ import org.opengis.filter.Expression;
  *
  * @param <R>  the type of data to style, such as {@code Feature} or {@code Coverage}.
  */
-@XmlType(name = "AnchorPointType", propOrder = {
-    "anchorPointX",
-    "anchorPointY"
-})
-@XmlRootElement(name = "AnchorPoint")
 public class AnchorPoint<R> extends StyleElement<R> {
     /**
      * The <var>x</var> coordinate of the anchor point.
@@ -52,7 +43,6 @@ public class AnchorPoint<R> extends StyleElement<R> {
      * @see #getAnchorPointX()
      * @see #setAnchorPointX(Expression)
      */
-    @XmlElement(name = "AnchorPointX", required = true)
     protected Expression<R, ? extends Number> anchorPointX;
 
     /**
@@ -62,15 +52,7 @@ public class AnchorPoint<R> extends StyleElement<R> {
      * @see #getAnchorPointY()
      * @see #setAnchorPointY(Expression)
      */
-    @XmlElement(name = "AnchorPointY", required = true)
     protected Expression<R, ? extends Number> anchorPointY;
-
-    /**
-     * For JAXB unmarshalling only.
-     */
-    private AnchorPoint() {
-        // Thread-local factory will be used.
-    }
 
     /**
      * Creates an anchor point initialized to <var>x</var> = 0.5 and <var>y</var> = 0.5.

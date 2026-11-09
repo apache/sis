@@ -16,9 +16,6 @@
  */
 package org.apache.sis.style.se1;
 
-import jakarta.xml.bind.annotation.XmlType;
-import jakarta.xml.bind.annotation.XmlElement;
-import jakarta.xml.bind.annotation.XmlRootElement;
 import org.apache.sis.util.resources.Errors;
 
 
@@ -35,48 +32,30 @@ import org.apache.sis.util.resources.Errors;
  *
  * @param <R>  the type of data to style, such as {@code Feature} or {@code Coverage}.
  */
-@XmlType(name = "ChannelSelectionType", propOrder = {
-    "red",
-    "green",
-    "blue",
-    "gray"
-})
-@XmlRootElement(name = "ChannelSelection")
 public class ChannelSelection<R> extends StyleElement<R> {
     /**
      * The red channel, or {@code null} if none.
      * This property is mutually exclusive with {@link #gray}.
      */
-    @XmlElement(name = "RedChannel")
     protected SelectedChannel<R> red;
 
     /**
      * The green channel, or {@code null} if none.
      * This property is mutually exclusive with {@link #gray}.
      */
-    @XmlElement(name = "GreenChannel")
     protected SelectedChannel<R> green;
 
     /**
      * The blue channel, or {@code null} if none.
      * This property is mutually exclusive with {@link #gray}.
      */
-    @XmlElement(name = "BlueChannel")
     protected SelectedChannel<R> blue;
 
     /**
      * The gray channel, or {@code null} if none.
      * This property is mutually exclusive with {@link #red}, {@link #green} and {@link #blue}.
      */
-    @XmlElement(name = "GrayChannel")
     protected SelectedChannel<R> gray;
-
-    /**
-     * For JAXB unmarshalling only.
-     */
-    private ChannelSelection() {
-        // Thread-local factory will be used.
-    }
 
     /**
      * Creates an initially empty channel selection.

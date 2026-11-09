@@ -16,10 +16,6 @@
  */
 package org.apache.sis.style.se1;
 
-import jakarta.xml.bind.annotation.XmlType;
-import jakarta.xml.bind.annotation.XmlElement;
-import jakarta.xml.bind.annotation.XmlRootElement;
-
 // Specific to the geoapi-3.1 and geoapi-4.0 branches:
 import org.opengis.filter.Expression;
 
@@ -34,21 +30,13 @@ import org.opengis.filter.Expression;
  *
  * @param <R>  the type of data to style, such as {@code Feature} or {@code Coverage}.
  */
-@XmlType(name = "ShadedReliefType", propOrder = {
-    "brightnessOnly",
-    "reliefFactor"
-})
-@XmlRootElement(name = "ShadedRelief")
 public class ShadedRelief<R> extends StyleElement<R> {
     /**
      * Whether to apply the shading to the image generated so far by other layers.
      *
      * @see #isBrightnessOnly()
      * @see #setBrightnessOnly(Expression)
-     *
-     * @todo Needs an adapter from expression to plain boolean.
      */
-    @XmlElement(name = "BrightnessOnly")
     protected Expression<R,Boolean> brightnessOnly;
 
     /**
@@ -57,15 +45,7 @@ public class ShadedRelief<R> extends StyleElement<R> {
      * @see #getReliefFactor()
      * @see #setReliefFactor(Expression)
      */
-    @XmlElement(name = "ReliefFactor")
     protected Expression<R, ? extends Number> reliefFactor;
-
-    /**
-     * For JAXB unmarshalling only.
-     */
-    private ShadedRelief() {
-        // Thread-local factory will be used.
-    }
 
     /**
      * Creates a shaded relief initialized to implementation-specific default values.

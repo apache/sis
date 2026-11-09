@@ -16,8 +16,6 @@
  */
 package org.apache.sis.style.se1;
 
-import jakarta.xml.bind.annotation.XmlType;
-import jakarta.xml.bind.annotation.XmlRootElement;
 import org.apache.sis.coverage.BandedCoverage;
 
 
@@ -26,8 +24,6 @@ import org.apache.sis.coverage.BandedCoverage;
  *
  * @author  Martin Desruisseaux (Geomatys)
  */
-@XmlType(name = "CoverageStyleType")
-@XmlRootElement(name = "CoverageStyle")
 public class CoverageStyle extends AbstractStyle<BandedCoverage> {
     /**
      * The default style factory for coverages.

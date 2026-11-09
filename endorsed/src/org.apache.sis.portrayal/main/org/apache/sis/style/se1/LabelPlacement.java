@@ -16,8 +16,6 @@
  */
 package org.apache.sis.style.se1;
 
-import jakarta.xml.bind.annotation.XmlSeeAlso;
-
 
 /**
  * Position of a label relative to a point, line string or polygon.
@@ -32,10 +30,6 @@ import jakarta.xml.bind.annotation.XmlSeeAlso;
  *
  * @param <R>  the type of data to style, such as {@code Feature} or {@code Coverage}.
  */
-@XmlSeeAlso({
-    PointPlacement.class,
-    LinePlacement.class
-})
 public abstract class LabelPlacement<R> extends StyleElement<R> {
     /**
      * Creates a new label placement.
@@ -45,13 +39,6 @@ public abstract class LabelPlacement<R> extends StyleElement<R> {
      */
     public LabelPlacement(final StyleFactory<R> factory) {
         super(factory);
-    }
-
-    /**
-     * For JAXB unmarshalling only.
-     */
-    LabelPlacement() {
-        // Thread-local factory will be used.
     }
 
     /**

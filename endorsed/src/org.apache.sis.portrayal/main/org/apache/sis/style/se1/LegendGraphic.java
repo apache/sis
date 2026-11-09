@@ -16,10 +16,6 @@
  */
 package org.apache.sis.style.se1;
 
-import jakarta.xml.bind.annotation.XmlType;
-import jakarta.xml.bind.annotation.XmlElement;
-import jakarta.xml.bind.annotation.XmlRootElement;
-
 
 /**
  * A graphic to do displayed in a legend for a rule.
@@ -29,8 +25,6 @@ import jakarta.xml.bind.annotation.XmlRootElement;
  *
  * @param <R>  the type of data to style, such as {@code Feature} or {@code Coverage}.
  */
-@XmlType(name = "LegendGraphicType")
-@XmlRootElement(name = "LegendGraphic")
 public class LegendGraphic<R> extends StyleElement<R> implements GraphicalElement<R> {
     /**
      * The graphic to use as a legend, or {@code null} for lazily constructed default.
@@ -40,13 +34,6 @@ public class LegendGraphic<R> extends StyleElement<R> implements GraphicalElemen
      * @see #setGraphic(Graphic)
      */
     protected Graphic<R> graphic;
-
-    /**
-     * For JAXB unmarshalling only.
-     */
-    private LegendGraphic() {
-        // Thread-local factory will be used.
-    }
 
     /**
      * Creates a legend initialized to the default graphic.
@@ -76,7 +63,6 @@ public class LegendGraphic<R> extends StyleElement<R> implements GraphicalElemen
      * @return graphic of the legend.
      */
     @Override
-    @XmlElement(name = "Graphic", required = true)
     public final Graphic<R> getGraphic() {
         if (graphic == null) {
             graphic = factory.createGraphic();
@@ -87,7 +73,7 @@ public class LegendGraphic<R> extends StyleElement<R> implements GraphicalElemen
     /**
      * Sets the graphic of the legend.
      * The given instance is stored by reference, it is not cloned.
-     * If this method is never invoked, then the default value is a {@linkplain Graphic#Graphic() default instance}.
+     * If this method is never invoked, then the default value is a {@linkplain Graphic#Graphic(StyleFactory) default instance}.
      *
      * @param  value  new graphic of the legend, or {@code null} for resetting the default value.
      */

@@ -27,6 +27,13 @@ import org.apache.sis.style.Style;
  * A set of styles to be applied on different types of features.
  * This class contains a list of {@link FeatureTypeStyle}.
  *
+ * <h2>Relationship with Styled Layer Descriptor</h2>
+ * This class is the {@code <UserStyle>} element of OGC 05-078r4 — Styled Layer Descriptor 1.1.0.
+ * User styles are referenced by the {@link org.apache.sis.style.sld1.NamedLayer} and
+ * {@link org.apache.sis.style.sld1.UserLayer} elements of a styled layer descriptor.
+ * The {@linkplain #getDefaultSpecification() default specification} is not part of that standard
+ * and is not encoded in XML documents.
+ *
  * <!-- Following list of authors contains credits to OGC GeoAPI 2 contributors. -->
  * @author  Johann Sorel (Geomatys)
  * @author  Chris Dillard (SYS Technologies)
