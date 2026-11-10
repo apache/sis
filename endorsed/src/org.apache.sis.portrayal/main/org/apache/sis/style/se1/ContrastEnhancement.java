@@ -72,6 +72,8 @@ public class ContrastEnhancement<R> extends StyleElement<R> {
 
     /**
      * Returns the method to use for applying contrast enhancement.
+     * If no method has been explicitly set, then the default is {@link ContrastMethod#NONE}
+     * if a {@linkplain #getGammaValue() gamma value} has been set, or {@link ContrastMethod#NONE} otherwise.
      *
      * @return method to use for applying contrast enhancement.
      */
@@ -80,21 +82,19 @@ public class ContrastEnhancement<R> extends StyleElement<R> {
         if (value != null) {
             return value;
         }
-        return (gammaValue != null) ? ContrastMethod.GAMMA : ContrastMethod.NONE;
+        return ContrastMethod.NONE;
     }
 
     /**
      * Sets the method to use for applying contrast enhancement.
-     * Setting this method to anything else than {@link ContrastMethod#GAMMA}
-     * clears the {@linkplain #getGammaValue() gamma value}.
+     * This method does not change the {@linkplain #getGammaValue() gamma value}, which can be combined
+     * with the {@link ContrastMethod#NORMALIZE} and {@link ContrastMethod#HISTOGRAM} methods,
+     * as allowed by OGC 05-077r4.
      *
-     * @param  value  new method to use, or {@code null} for none.
+     * @param  value  new method to use, or {@code null} for the default.
      */
     public void setMethod(final ContrastMethod value) {
         method = value;
-        if (value != ContrastMethod.GAMMA) {
-            gammaValue = null;
-        }
     }
 
     /**
@@ -109,16 +109,15 @@ public class ContrastEnhancement<R> extends StyleElement<R> {
 
     /**
      * Sets how much to brighten (values greater than 1) or dim (values less than 1) an image.
-     * Setting a non-null value sets the method to {@link ContrastMethod#GAMMA}.
+     * This method does not change the {@linkplain #getMethod() method}: the gamma value can be combined
+     * with the {@link ContrastMethod#NORMALIZE} and {@link ContrastMethod#HISTOGRAM} methods.
+     * If no method has been explicitly set, then a non-null gamma value implies {@link ContrastMethod#GAMMA}.
      * If this method is never invoked, then the default value is literal 1.
      *
      * @param  value  new expression to control gamma adjustment, or {@code null} for the default.
      */
     public void setGammaValue(final Expression<R, ? extends Number> value) {
         gammaValue = value;
-        if (value != null) {
-            method = null;
-        }
     }
 
     /**
