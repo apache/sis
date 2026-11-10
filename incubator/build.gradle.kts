@@ -201,6 +201,18 @@ publishing {
                 description = "Discrete Global Grid Systems (DGGS)."
             }
         }
+        create<MavenPublication>("process") {
+            var module = "org.apache.sis.process"
+            groupId    = "org.apache.sis.core"
+            artifactId = "sis-process"
+            artifact(layout.buildDirectory.file("libs/${module}.jar"))
+            artifact(layout.buildDirectory.file("docs/${module}-sources.jar")) {classifier = "sources"}
+            artifact(layout.buildDirectory.file("docs/${module}-javadoc.jar")) {classifier = "javadoc"}
+            pom {
+                name        = "Apache SIS Process"
+                description = "Description and execution of processes."
+            }
+        }
         create<MavenPublication>("storage.shapefile") {
             var module = "org.apache.sis.storage.shapefile"
             groupId    = "org.apache.sis.storage"
@@ -247,6 +259,42 @@ publishing {
             pom {
                 name        = "Apache SIS JSON Coverage storage"
                 description = "Read and write files in the JSON Coverage format."
+            }
+        }
+        create<MavenPublication>("storage.hdf") {
+            var module = "org.apache.sis.storage.hdf"
+            groupId    = "org.apache.sis.storage"
+            artifactId = "sis-hdf"
+            artifact(layout.buildDirectory.file("libs/${module}.jar"))
+            artifact(layout.buildDirectory.file("docs/${module}-sources.jar")) {classifier = "sources"}
+            artifact(layout.buildDirectory.file("docs/${module}-javadoc.jar")) {classifier = "javadoc"}
+            pom {
+                name        = "Apache SIS HDF5 storage"
+                description = "Read files in the HDF5 format."
+            }
+        }
+        create<MavenPublication>("storage.ogcwxs") {
+            var module = "org.apache.sis.storage.ogcwxs"
+            groupId    = "org.apache.sis.storage"
+            artifactId = "sis-ogcwxs"
+            artifact(layout.buildDirectory.file("libs/${module}.jar"))
+            artifact(layout.buildDirectory.file("docs/${module}-sources.jar")) {classifier = "sources"}
+            artifact(layout.buildDirectory.file("docs/${module}-javadoc.jar")) {classifier = "javadoc"}
+            pom {
+                name        = "Apache SIS OGC Web Services storage"
+                description = "Access to OGC web services of the W*S family (WMS, WMTS, WFS, WCS...)."
+            }
+        }
+        create<MavenPublication>("storage.ogcapi") {
+            var module = "org.apache.sis.storage.ogcapi"
+            groupId    = "org.apache.sis.storage"
+            artifactId = "sis-ogcapi"
+            artifact(layout.buildDirectory.file("libs/${module}.jar"))
+            artifact(layout.buildDirectory.file("docs/${module}-sources.jar")) {classifier = "sources"}
+            artifact(layout.buildDirectory.file("docs/${module}-javadoc.jar")) {classifier = "javadoc"}
+            pom {
+                name        = "Apache SIS OGC API storage"
+                description = "Access to OGC API services (Features, Coverages, Maps, Tiles...)."
             }
         }
         create<MavenPublication>("portrayal.map") {
