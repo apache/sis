@@ -16,34 +16,38 @@
  */
 package org.apache.sis.map.service.se1;
 
-import java.awt.BasicStroke;
-import java.awt.Color;
 import java.awt.Shape;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.function.Consumer;
 import java.util.stream.Stream;
-import org.locationtech.jts.geom.Geometry;
 import org.opengis.feature.Feature;
-import org.opengis.referencing.crs.CoordinateReferenceSystem;
-import org.opengis.referencing.operation.CoordinateOperation;
 import org.opengis.referencing.operation.MathTransform;
-import org.opengis.referencing.operation.TransformException;
-import org.opengis.util.FactoryException;
-import org.apache.sis.coverage.grid.PixelInCell;
+import org.apache.sis.geometries.Geometry;
+import org.apache.sis.geometries.curve.LineString;
+import org.apache.sis.geometries.operation.OperationException;
 import org.apache.sis.map.Presentation;
 import org.apache.sis.map.SEPresentation;
 import org.apache.sis.map.service.Scene2D;
 import org.apache.sis.map.service.RenderingException;
-import org.apache.sis.feature.internal.shared.AttributeConvention;
-import org.apache.sis.geometry.wrapper.Geometries;
-import org.apache.sis.geometry.wrapper.GeometryWrapper;
-import org.apache.sis.geometry.wrapper.jts.JTS;
-import org.apache.sis.referencing.CRS;
-import org.apache.sis.referencing.operation.transform.MathTransforms;
 import org.apache.sis.style.se1.LineSymbolizer;
+import org.apache.sis.style.se1.Stroke;
 
 
 /**
  * Support for LineSymbolizer rendering.
+ *
+ * <p>All the {@link LineSymbolizer} parameters are supported:</p>
+ * <ul>
+ *   <li>Geometry: the geometry expression is evaluated on the feature. JTS geometries are viewed as SIS geometries.
+ *       All linear components are rendered (line strings, curves when they can be linearized, polygon rings).</li>
+ *   <li>Unit of measure: pixel or ground linear units (metre, foot, …). All distances are scaled accordingly.</li>
+ *   <li>Perpendicular offset: positive values to the left of the line direction, negative to the right.</li>
+ *   <li>Stroke: color, opacity, width, line join, line cap, dash array, dash offset,
+ *       graphic fill (tiled pattern) and graphic stroke (repeated graphic with initial gap and gap).</li>
+ * </ul>
+
+ * <p>Supported graphics are listed in {@link GraphicRenderer}.</p>
  *
  * @author Johann Sorel (Geomatys)
  */
@@ -55,55 +59,55 @@ public final class LineToScene2D extends SymbolizerToScene2D<LineSymbolizer<?>> 
 
     @Override
     public void paint(SEPresentation presentation, Consumer<Stream<Presentation>> callback) throws RenderingException {
-        final RenderedShape visual = createVisual(presentation);
-        if (visual != null) {
-            visual.paint(state.getGraphics());
-        }
+        RenderedVisual.paint(createVisuals(presentation), state.getGraphics());
     }
 
     @Override
     public boolean intersects(SEPresentation presentation, Shape mask, Consumer<Stream<Presentation>> callback) throws RenderingException {
-        final RenderedShape visual = createVisual(presentation);
-        if (visual != null) {
-            return visual.intersects(mask);
-        }
-        return false;
+        return RenderedVisual.intersects(createVisuals(presentation), mask);
     }
 
-    private RenderedShape createVisual(SEPresentation presentation) throws RenderingException {
+    /**
+     * Creates the visual elements for the given presentation.
+     *
+     * @return visual elements, may be empty but never null.
+     */
+    private List<RenderedVisual> createVisuals(SEPresentation presentation) throws RenderingException {
         final Feature feature = presentation.getCandidate();
-        Object geometry = feature.getPropertyValue(AttributeConvention.GEOMETRY);
+        final Geometry geometry = GeometryResolver.resolve(evaluate(feature, symbolizer.getGeometry()));
+        if (geometry == null) {
+            return List.of();
+        }
+        final Stroke<?> stroke = symbolizer.getStroke();
+        if (stroke == null) {
+            return List.of();
+        }
+        final double pixelsPerUnit = state.getPixelsPerUnit(symbolizer.getUnitOfMeasure());
+        return StrokeVisuals.create(toDisplay(geometry, feature, pixelsPerUnit), stroke, feature, pixelsPerUnit);
+    }
 
-        if (geometry instanceof Geometry) {
-
-            final MathTransform gridToCRS = state.grid.getGridToCRS(PixelInCell.CELL_CENTER);
-
-            final GeometryWrapper geomWrap = Geometries.wrap(geometry).get();
-            final CoordinateReferenceSystem geomCrs = geomWrap.getCoordinateReferenceSystem();
-
-            final Geometry jts;
+    /**
+     * Extracts the linear components of the given geometry, transforms them to display space
+     * and applies the perpendicular offset.
+     */
+    private List<LineString> toDisplay(Geometry geometry, Feature feature, double pixelsPerUnit) throws RenderingException {
+        final List<LineString> components = new ArrayList<>();
+        GeometryResolver.linearComponents(geometry, components);
+        final double offset = evaluateNumber(feature, symbolizer.getPerpendicularOffset(), 0.0) * pixelsPerUnit;
+        final List<LineString> lines = new ArrayList<>(components.size());
+        for (LineString line : components) {
+            if (line.getNumPoints() < 2) continue;
+            final MathTransform dataToDisplay = state.getDataToDisplay(line.getCoordinateReferenceSystem());
+            final LineString display;
             try {
-                final CoordinateOperation coop = CRS.findOperation(geomCrs, state.grid.getCoordinateReferenceSystem(), null);
-                final MathTransform geomToGrid = MathTransforms.concatenate(coop.getMathTransform(), gridToCRS.inverse());
-
-                jts = JTS.transform((Geometry) geometry, geomToGrid);
-            } catch (FactoryException | TransformException ex) {
+                display = GeometryResolver.toDisplay(line, dataToDisplay);
+            } catch (OperationException ex) {
                 throw new RenderingException(ex);
             }
-
-            Shape shape = JTS.asShape(jts);
-
-            //TODO geometry world wrap and styling
-
-            RenderedShape rs = new RenderedShape();
-            rs.shape = shape;
-            rs.stroke = new BasicStroke(1);
-            rs.strokePaint = Color.BLACK;
-
-            return rs;
+            final LineString shifted = StrokeVisuals.offset(display, offset);
+            lines.add(shifted != null ? shifted : display);     // Rendered without offset if it cannot be computed.
         }
-
-        return null;
+        return lines;
     }
 
     public static final class Spi implements SymbolizerToScene2D.Spi<LineSymbolizer> {

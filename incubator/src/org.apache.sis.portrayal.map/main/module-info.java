@@ -25,6 +25,10 @@ module org.apache.sis.portrayal.map {
     requires org.apache.sis.geometry;
     requires java.xml;
     requires static org.locationtech.jts;
+    requires static org.apache.xmlgraphics.batik.anim;      // Optional, for SVG graphics.
+    requires static org.apache.xmlgraphics.batik.bridge;
+    requires static org.apache.xmlgraphics.batik.gvt;
+    requires static org.apache.xmlgraphics.batik.util;
 
     exports org.apache.sis.map;
     exports org.apache.sis.map.service;

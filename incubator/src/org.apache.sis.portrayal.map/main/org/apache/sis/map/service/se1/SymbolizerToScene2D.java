@@ -16,6 +16,7 @@
  */
 package org.apache.sis.map.service.se1;
 
+import java.awt.Color;
 import java.awt.Shape;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -24,6 +25,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.ServiceLoader;
 import java.util.function.Consumer;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.stream.Stream;
 import org.opengis.feature.Feature;
@@ -105,6 +107,113 @@ public abstract class SymbolizerToScene2D<S extends Symbolizer> {
             value = ObjectConverters.convert(fallback.apply(feature), clazz);
         }
         return value;
+    }
+
+    /**
+     * Evaluates an expression on the given feature, without type conversion.
+     *
+     * @param feature evaluated feature, may be null
+     * @param exp expression to evaluate, may be null
+     * @return expression value, null if expression is null
+     */
+    @SuppressWarnings("unchecked")
+    static Object evaluate(Feature feature, Expression<?,?> exp) {
+        return (exp == null) ? null : ((Expression<Feature,?>) exp).apply(feature);
+    }
+
+    /**
+     * Evaluates an expression as a number.
+     *
+     * @param feature evaluated feature, may be null
+     * @param exp expression to evaluate, may be null
+     * @param fallback value returned if the expression is null or the value is not convertible to a number
+     * @return evaluated number
+     */
+    static double evaluateNumber(Feature feature, Expression<?,?> exp, double fallback) {
+        final Object value = evaluate(feature, exp);
+        if (value instanceof Number n) {
+            return n.doubleValue();
+        }
+        if (value != null) try {
+            final Double n = ObjectConverters.convert(value, Double.class);
+            if (n != null) return n;
+        } catch (RuntimeException ex) {
+            LOGGER.log(Level.FINE, ex.getMessage(), ex);
+        }
+        return fallback;
+    }
+
+    /**
+     * Evaluates an expression as a string.
+     *
+     * @param feature evaluated feature, may be null
+     * @param exp expression to evaluate, may be null
+     * @param fallback value returned if the expression is null or returns null
+     * @return evaluated string
+     */
+    static String evaluateString(Feature feature, Expression<?,?> exp, String fallback) {
+        final Object value = evaluate(feature, exp);
+        return (value == null) ? fallback : value.toString();
+    }
+
+    /**
+     * Evaluates an expression as a boolean. Strings "true" and "1" are accepted.
+     */
+    static boolean evaluateBoolean(Feature feature, Expression<?,?> exp, boolean fallback) {
+        final Object value = evaluate(feature, exp);
+        if (value instanceof Boolean b) return b;
+        if (value instanceof Number n) return n.doubleValue() != 0;
+        if (value != null) {
+            final String s = value.toString().trim();
+            if (s.equalsIgnoreCase("true") || s.equals("1")) return true;
+            if (s.equalsIgnoreCase("false") || s.equals("0")) return false;
+        }
+        return fallback;
+    }
+
+    /**
+     * Evaluates an expression as a color.
+     * Strings are decoded as hexadecimal colors ({@code #RRGGBB} or {@code #AARRGGBB}).
+     *
+     * @param feature evaluated feature, may be null
+     * @param exp expression to evaluate, may be null
+     * @param fallback value returned if the expression is null or the value is not convertible to a color
+     * @return evaluated color
+     */
+    static Color evaluateColor(Feature feature, Expression<?,?> exp, Color fallback) {
+        return toColor(evaluate(feature, exp), fallback);
+    }
+
+    /**
+     * Converts the given value to a color.
+     * Strings are decoded as hexadecimal colors ({@code #RRGGBB} or {@code #AARRGGBB}).
+     *
+     * @param value the value to convert, may be null
+     * @param fallback value returned if the value is null or not convertible to a color
+     * @return the color
+     */
+    static Color toColor(final Object value, final Color fallback) {
+        if (value instanceof Color c) {
+            return c;
+        }
+        if (value instanceof CharSequence cs) {
+            final String str = cs.toString().trim();
+            try {
+                if (str.startsWith("#") && str.length() == 9) {
+                    final long argb = Long.parseLong(str.substring(1), 16);
+                    return new Color((int) argb, true);
+                }
+                return Color.decode(str);
+            } catch (NumberFormatException ex) {
+                LOGGER.log(Level.FINE, ex.getMessage(), ex);
+            }
+        } else if (value != null) try {
+            final Color c = ObjectConverters.convert(value, Color.class);
+            if (c != null) return c;
+        } catch (RuntimeException ex) {
+            LOGGER.log(Level.FINE, ex.getMessage(), ex);
+        }
+        return fallback;
     }
 
     /**
