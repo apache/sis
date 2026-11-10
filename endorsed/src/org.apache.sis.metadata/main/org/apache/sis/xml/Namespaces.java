@@ -70,6 +70,7 @@ import static org.apache.sis.metadata.internal.shared.ImplementationHelper.ISO_N
  *   <tr><td>gmw</td>    <td>Geographic Markup Wrappers</td>                 <td>{@value #GMW}</td>   <td></td></tr>
  *   <tr><td>gml</td>    <td>Geographic Markup Language</td>                 <td>{@value #GML}</td>   <td>SIS 0.4</td></tr>
  *   <tr><td>csw</td>    <td>Catalog Service for the Web</td>                <td>{@value #CSW}</td>   <td></td></tr>
+ *   <tr><td>sld</td>    <td>Styled Layer Descriptor</td>                    <td>{@value #SLD}</td>   <td>SIS 1.8</td></tr>
  *   <tr><td>xsi</td>    <td>XML Schema Instance information</td>            <td>{@value #XSI}</td>   <td></td></tr>
  *   <tr><td>xlink</td>  <td>Link</td>                                       <td>{@value #XLINK}</td> <td></td></tr>
  * </table>
@@ -88,7 +89,7 @@ import static org.apache.sis.metadata.internal.shared.ImplementationHelper.ISO_N
  * @author  Guilhem Legal   (Geomatys)
  * @author  Cullen Rombach  (Image Matters)
  * @author  Alexis Gaillard (Geomatys)
- * @version 2.0
+ * @version 1.8
  * @since SIS 0.3
  */
 public final class Namespaces {
@@ -519,11 +520,11 @@ public final class Namespaces {
      * <table class="sis">
      *   <caption>Change log</caption>
      *   <tr><th>SIS version</th> <th>URL</th></tr>
-     *   <tr><td>2.0</td>         <td>http://www.opengis.net/sld</td></tr>
+     *   <tr><td>1.8</td>         <td>http://www.opengis.net/sld</td></tr>
      * </table>
      *
      * @category OGC
-     * @since SIS 2.0
+     * @since SIS 1.8
      */
     public static final String SLD = "http://www.opengis.net/sld";
 
