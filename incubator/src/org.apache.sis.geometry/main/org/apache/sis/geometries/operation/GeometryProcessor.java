@@ -476,6 +476,23 @@ public final class GeometryProcessor {
     // ////////////////////////////////////////////////////////////////////////
 
     /**
+     * Returns a simplified version of the geometry using the Douglas-Peucker algorithm.
+     * Each line string keeps a subset of its points such that no removed point is farther
+     * than the given tolerance from the simplified line string.
+     * Geometries without removable points are returned unchanged.
+     *
+     * @param geom geometry to simplify.
+     * @param tolerance maximal distance in CRS units between a removed point and the simplified geometry.
+     *        If not strictly positive, the geometry is returned unchanged.
+     * @return simplified geometry of the same type.
+     *
+     * @see DouglasPeucker
+     */
+    public Geometry simplify(Geometry geom, double tolerance) {
+        return DouglasPeucker.simplify(geom, tolerance);
+    }
+
+    /**
      * Add a Z axis on the geometry and configure it's ordinates.
      *
      * @param geom geometry to transform, if it already has a 3D crs and given crs is null, geometry crs will be preserved.
