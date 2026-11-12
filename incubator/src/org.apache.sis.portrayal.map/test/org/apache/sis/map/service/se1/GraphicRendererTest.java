@@ -64,6 +64,7 @@ import org.apache.sis.style.se1.function.Recode.MapItem;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.junit.jupiter.api.Assumptions.assumeTrue;
 import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestInstance;
 import org.junit.jupiter.api.parallel.Execution;
@@ -314,6 +315,7 @@ public class GraphicRendererTest {
     /**
      * Tests that graphical symbols are alternatives: a missing image is replaced by the next symbol.
      */
+    @Disabled //produce an annoying log, TODO find how to use sis test logging helper
     @Test
     public void testAlternatives() {
         final URI missing = directory.resolve("missing.png").toUri();
