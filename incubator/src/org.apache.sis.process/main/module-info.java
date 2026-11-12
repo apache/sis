@@ -24,6 +24,7 @@ module org.apache.sis.process {
     // Dependencies used in public API.
     requires transitive org.apache.sis.referencing;
 
-    // Uncomment when the package contains at least one class.
-    // exports org.apache.sis.process;
+    exports org.apache.sis.process;
+
+    uses org.apache.sis.process.ProcessDescriptor;
 }
