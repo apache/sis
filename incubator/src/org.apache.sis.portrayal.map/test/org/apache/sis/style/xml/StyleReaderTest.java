@@ -339,7 +339,10 @@ public final class StyleReaderTest extends StyleXmlTestCase {
         symbolizer = read("se1/SE_ExternalGraphic_InlineContent.xml", PointSymbolizer.class);
         graphic = assertInstanceOf(ExternalGraphic.class, symbolizer.getGraphic().graphicalSymbols().get(0));
         final InlineImage image = assertInstanceOf(InlineImage.class, graphic.getInlineContent().orElseThrow());
-        assertArrayEquals(Base64.getDecoder().decode("iVBORw0KGgoAAAANSUhEUg=="), image.data);
+        assertArrayEquals(Base64.getDecoder().decode(
+                "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg=="), image.data);
+        assertEquals(1, image.getIconWidth(),  "The inline PNG should be decodable.");
+        assertEquals(1, image.getIconHeight(), "The inline PNG should be decodable.");
         assertEquals("image/png", graphic.getFormat().orElseThrow());
     }
 

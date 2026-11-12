@@ -3,7 +3,7 @@
 <se:PointSymbolizer xmlns:se="http://www.opengis.net/se">
     <se:Graphic>
         <se:ExternalGraphic>
-            <se:InlineContent encoding="base64">iVBORw0KGgoAAAANSUhEUg==</se:InlineContent>
+            <se:InlineContent encoding="base64">iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg==</se:InlineContent>
             <se:Format>image/png</se:Format>
         </se:ExternalGraphic>
     </se:Graphic>
