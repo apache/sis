@@ -202,10 +202,9 @@ public abstract class ComputedImage extends PlanarImage implements Disposable {
      * and the {@linkplain SampleModel#getHeight() sample model height}
      * determines this {@linkplain #getTileHeight() image tile height}.
      *
-     * <h4>Design note</h4>
-     * {@code ComputedImage} requires the sample model to have exactly the desired tile size
-     * otherwise tiles created by {@link #createTile(int, int)} will consume more memory
-     * than needed.
+     * <p><b>Implementation note:</b>
+     * {@code ComputedImage} requires the sample model to have exactly the desired tile size,
+     * otherwise tiles created by {@link #createTile(int, int)} will consume more memory than needed.</p>
      *
      * @see #getSampleModel()
      */
@@ -412,13 +411,13 @@ public abstract class ComputedImage extends PlanarImage implements Disposable {
      * Returns the width of tiles in this image.
      * In {@code ComputedImage} implementation, this is fixed to {@link SampleModel#getWidth()}.
      *
-     * <h4>Design note</h4>
+     * <p><b>Design note:</b>
      * In theory it is legal to have a tile width smaller than the sample model width,
      * for example when a raster is a view over a subregion of another raster.
      * But this is not allowed in {@code ComputedImage} class, because it would
-     * cause {@link #createTile(int, int)} to consume more memory than necessary.
+     * cause {@link #createTile(int, int)} to consume more memory than necessary.</p>
      *
-     * @return the width of this image in pixels.
+     * @return the width (in pixels) of all tiles in this image.
      */
     @Override
     public final int getTileWidth() {
@@ -429,13 +428,13 @@ public abstract class ComputedImage extends PlanarImage implements Disposable {
      * Returns the height of tiles in this image.
      * In {@code ComputedImage} implementation, this is fixed to {@link SampleModel#getHeight()}.
      *
-     * <h4>Design note</h4>
+     * <p><b>Design note:</b>
      * In theory it is legal to have a tile height smaller than the sample model height,
      * for example when a raster is a view over a subregion of another raster.
      * But this is not allowed in {@code ComputedImage} class, because it would
-     * cause {@link #createTile(int, int)} to consume more memory than necessary.
+     * cause {@link #createTile(int, int)} to consume more memory than necessary.</p>
      *
-     * @return the height of this image in pixels.
+     * @return the height (in pixels) of all tiles in this image.
      */
     @Override
     public final int getTileHeight() {

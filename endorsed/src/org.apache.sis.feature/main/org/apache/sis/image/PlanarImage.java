@@ -112,6 +112,11 @@ import org.apache.sis.pending.jdk.JDK18;
  */
 public abstract class PlanarImage implements RenderedImage {
     /**
+     * The {@value} value for identifying code expecting exactly 2 dimensions.
+     */
+    static final int BIDIMENSIONAL = 2;
+
+    /**
      * Key for a property storing the name of the source of the data rendered by this image.
      * The name can be used as a label in a graphical user interface or for debugging purposes,
      * but should not be used as identifier since the name is not guaranteed to be unique.
@@ -707,7 +712,7 @@ public abstract class PlanarImage implements RenderedImage {
      * The returned identifiers may also have subcategories. For example {@code "colorModel"} may be
      * subdivided with {@code "colorModel.numBands"} and {@code "colorModel.transferType"}.
      *
-     * <h4>Ignorable inconsistency</h4>
+     * <h4>Ignorable inconsistency in image properties</h4>
      * Inconsistency in {@code "width"} and {@code "height"} values may be acceptable
      * if all other verifications pass (in particular the {@code "numXTiles"} and {@code "numYTiles"} checks).
      * It happens when tiles in the last row or last column have some unused space compared to the image size.

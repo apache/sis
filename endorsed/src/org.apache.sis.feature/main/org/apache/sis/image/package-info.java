@@ -17,7 +17,7 @@
 
 /**
  * Provides helper classes for handling Java2D rendered images together with some operations.
- * This package does not provide any geospatial functionalities;
+ * This package does not provide any geospatial functionalities,
  * it works only on sample or pixel values stored in {@link java.awt.image.RenderedImage}s.
  * Those rendered images have the following capabilities:
  *
@@ -27,12 +27,10 @@
  *   <li>Images can be tiled.</li>
  * </ul>
  *
- * This package is used as a basis for
- * {@linkplain org.apache.sis.metadata.iso.spatial.DefaultGeorectified georectified} or
- * {@linkplain org.apache.sis.metadata.iso.spatial.DefaultGeoreferenceable georeferenceable}
- * <i>grid coverages</i>.
+ * This package is used as a basis for georeferenced
+ * {@linkplain org.apache.sis.coverage.grid.GridCoverage grid coverages}.
  *
- * <h2>Usage note</h2>
+ * <h2>Usage pattern for writing in images</h2>
  * Some images are writable. But modifying pixel values should be done by invoking the {@code getWritableTile(…)}
  * and {@code releaseWritableTile(…)} methods of {@link java.awt.image.WritableRenderedImage} interface.
  * Do not cast directly a {@link java.awt.image.Raster} to {@link java.awt.image.WritableRaster}
@@ -42,7 +40,8 @@
  * @author  Rémi Maréchal (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
  * @author  Johann Sorel (Geomatys)
- * @version 1.7
+ * @version 1.8
+ *
  * @since SIS 1.0
  */
 package org.apache.sis.image;

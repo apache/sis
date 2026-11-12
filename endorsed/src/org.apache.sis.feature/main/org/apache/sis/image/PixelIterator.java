@@ -325,7 +325,7 @@ public class PixelIterator {
 
         /**
          * Sets the region (in pixel coordinates) where to perform the iteration.
-         * If this method is not invoked, then  by default iterators will traverse all pixels in the image or raster.
+         * If this method is not invoked, then by default iterators will traverse all pixels in the image or raster.
          * If a sub-area is specified, then the traversed area is the {@linkplain Rectangle#intersection(Rectangle)
          * intersection} of {@code subArea} with the image or {@linkplain Raster#getBounds() raster bounds}.
          *
@@ -790,7 +790,7 @@ public class PixelIterator {
                 x = currentLowerX;
             } else {
                 /*
-                 * SequenceType.LINEAR iteration order: before to move to next row, verify if there is
+                 * SequenceType.LINEAR iteration order: before to move to next row, verify if there are
                  * more tiles to traverse on the right side.
                  */
                 releaseTile();                          // Must be invoked before (tileX, tileY) change.
@@ -837,6 +837,14 @@ public class PixelIterator {
      */
     final boolean isSameRowAndTile(final int px, final int py) {
         return (py == y) && px >= currentLowerX && px < currentUpperX;
+    }
+
+    /**
+     * Returns whether the iterator is at the beginning of a row other than the first row.
+     * This method can be used for detecting when the iterator changed the traversed row.
+     */
+    final boolean isBeginningOfNewRow() {
+        return x == lowerX && y != lowerY;
     }
 
     /**

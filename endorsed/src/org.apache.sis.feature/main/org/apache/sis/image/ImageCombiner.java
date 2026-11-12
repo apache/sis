@@ -52,11 +52,11 @@ import org.apache.sis.measure.Units;
  * an image is <abbr>RGB</abbr> and the other image is <abbr>BVR</abbr>.
  * It is caller responsibility to ensure that bands are in the same order.</p>
  *
- * <h2>Alternative</h2>
+ * <p><b>Alternative:</b>
  * A single call to the {@link ImageProcessor#overlay ImageProcessor.overlay(…)} method can produce the same result
  * as multiple calls to the {@link #accept(RenderedImage)} method of this class. The main difference between the two
  * methods is that this class writes immediately in the given destination image, while {@code ImageProcessor} creates
- * an image which will compute the requested tiles on the fly.
+ * an image which will compute the requested tiles on the fly.</p>
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.4

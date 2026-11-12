@@ -69,6 +69,14 @@ import org.opengis.coordinate.MismatchedDimensionException;
  */
 public final class MathTransforms {
     /**
+     * The {@value} value for identifying code expecting exactly 2 dimensions.
+     * We provide this constant for clarity only, its value will never change.
+     *
+     * @see AbstractMathTransform2D#DIMENSION
+     */
+    static final int BIDIMENSIONAL = 2;
+
+    /**
      * Do not allow instantiation of this class.
      */
     private MathTransforms() {
@@ -111,7 +119,7 @@ public final class MathTransforms {
      */
     public static LinearTransform swapTwoFirstAxes(final int dimension) {
         ArgumentChecks.ensurePositive("dimension", dimension);
-        if (dimension < 2) {
+        if (dimension < BIDIMENSIONAL) {
             return IdentityTransform.create(dimension);
         }
         final int[] indices = ArraysExt.range(0, dimension);
@@ -235,13 +243,13 @@ public final class MathTransforms {
                                 DoubleDouble.of(m.getNumber(0, 0), true),
                                 DoubleDouble.of(m.getNumber(0, 1), true));
                     }
-                    case 2: {
+                    case BIDIMENSIONAL: {
                         if (!Matrices.hasNaN(matrix)) {
                             return AffineTransform2D.create(matrix);
                         }
                     }
                 }
-            } else if (sourceDimension == 2) {
+            } else if (sourceDimension == BIDIMENSIONAL) {
                 return new ProjectiveTransform2D(matrix);
             }
         }
@@ -367,7 +375,7 @@ public final class MathTransforms {
         final SpecializableTransform tr;
         if (specializations.isEmpty()) {
             return global;
-        } else if (global.getSourceDimensions() == 2 && global.getTargetDimensions() == 2) {
+        } else if (global.getSourceDimensions() == BIDIMENSIONAL && global.getTargetDimensions() == BIDIMENSIONAL) {
             tr = new SpecializableTransform2D(global, specializations);
         } else {
             tr = new SpecializableTransform(global, specializations);
@@ -630,7 +638,7 @@ public final class MathTransforms {
         if (transform == null || transform instanceof MathTransform2D) {
             return (MathTransform2D) transform;
         } else {
-            ArgumentChecks.ensureDimensionsMatch("transform", 2, 2, transform);
+            ArgumentChecks.ensureDimensionsMatch("transform", BIDIMENSIONAL, BIDIMENSIONAL, transform);
             return new TransformAdapter2D(transform);
         }
     }

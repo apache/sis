@@ -79,7 +79,7 @@ import org.opengis.coordinate.MismatchedDimensionException;
  * computes automatically the offsets from that position to the position of the first value included
  * in the {@code sliceExtent} given to the constructor.</p>
  *
- * <h2>Usage example</h2>
+ * <p><b>Usage example:</b></p>
  * {@snippet lang="java" :
  *     class MyResource extends GridCoverage {
  *         @Override
@@ -95,9 +95,9 @@ import org.opengis.coordinate.MismatchedDimensionException;
  *     }
  *     }
  *
- * <h2>Limitations</h2>
+ * <p><b>Limitation:</b>
  * Current implementation constructs only images made of a single tile.
- * Support for tiled images will be added in a future version.
+ * Support for tiled images will be added in a future version.</p>
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.7
@@ -795,10 +795,11 @@ public class ImageRenderer {
             return new WritableUntiledImage(cm, wr, false, properties).setGridGeometry(imageGeometry, supplier);
         }
         properties.putIfAbsent(GRID_GEOMETRY_KEY, (supplier != null) ? new DeferredProperty(supplier) : imageGeometry);
+        final var bounds = new Rectangle(imageX, imageY, width, height);
         if (wr != null) {
-            return new WritableTiledImage(properties, cm, width, height, 0, 0, wr);
+            return new WritableTiledImage(properties, cm, sm, bounds, null, wr);
         } else {
-            return new TiledImage(properties, cm, width, height, 0, 0, raster);
+            return new TiledImage(properties, cm, sm, bounds, null, raster);
         }
     }
 }

@@ -19,6 +19,7 @@ package org.apache.sis.image;
 import java.nio.DoubleBuffer;
 import java.awt.Point;
 import java.awt.Dimension;
+import java.awt.Rectangle;
 import java.awt.image.DataBuffer;
 import java.awt.image.WritableRaster;
 import java.awt.image.BandedSampleModel;
@@ -83,17 +84,16 @@ public final class InterpolationTest extends TestCase {
      *         1 for nearest, 2 for bilinear, 4 for bicubic.
      */
     private void createImage(final int support) {
-        final WritableRaster raster = WritableRaster.createWritableRaster(
-                new BandedSampleModel(DataBuffer.TYPE_FLOAT, XUP-XMIN, YUP-YMIN, 1),
-                new Point(XMIN, YMIN));
-
+        final var sm = new BandedSampleModel(DataBuffer.TYPE_FLOAT, XUP-XMIN, YUP-YMIN, 1);
+        final WritableRaster raster = WritableRaster.createWritableRaster(sm, new Point(XMIN, YMIN));
         float value = 0;
         for (int y=YMIN; y<YUP; y++) {
             for (int x=XMIN; x<XUP; x++) {
                 raster.setSample(x, y, 0, value++);
             }
         }
-        final TiledImage source = new TiledImage(null, null, XUP-XMIN, YUP-YMIN, 0, 0, raster);
+        final var bounds = new Rectangle(XMIN, YMIN, XUP - XMIN, YUP - YMIN);
+        final var source = new TiledImage(null, null, sm, bounds, null, raster);
         assertNull(source.verify());
         iterator = new PixelIterator.Builder().setWindowSize(new Dimension(support, support)).create(source);
         window   = iterator.createWindow(TransferType.DOUBLE);

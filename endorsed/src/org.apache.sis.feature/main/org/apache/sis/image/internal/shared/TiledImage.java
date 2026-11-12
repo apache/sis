@@ -17,6 +17,8 @@
 package org.apache.sis.image.internal.shared;
 
 import java.util.Map;
+import java.awt.Point;
+import java.awt.Rectangle;
 import java.awt.Image;
 import java.awt.image.Raster;
 import java.awt.image.ColorModel;
@@ -30,8 +32,10 @@ import org.apache.sis.util.ArgumentChecks;
  * This class may become public in a future version, but not yet because managing large tiled
  * images would require a more sophisticated class than current implementation.
  *
- * <p>This class should not perform any computation; all tiles are given at construction time.
- * This requirement makes this class thread-safe and concurrent without the need for synchronization.</p>
+ * <p>This class assumes that all tiles are provided at construction time with no deferred calculation.
+ * This assumption makes this class thread-safe and concurrent without the need for synchronization.
+ * If this assumption is not true, then subclasses should override the {@link #verify()} and
+ * {@link #getTile(int, int)} methods with synchronization.</p>
  *
  * @author  Rémi Maréchal (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
@@ -40,56 +44,78 @@ public class TiledImage extends PlanarImage {
     /**
      * The color model, or {@code null} if none.
      */
-    private final ColorModel colorModel;
+    protected final ColorModel colorModel;
 
     /**
-     * Number of pixels along X or Y axis in the whole rendered image.
+     * The sample model, either specified at construction time or inferred from the tiles.
+     * May be {@code null} if no sample model was found at construction time.
      */
-    private final int width, height;
+    protected final SampleModel sampleModel;
+
+    /**
+     * Number of pixels along <var>x</var> or <var>y</var> axis in the whole rendered image.
+     */
+    protected final int width, height;
+
+    /**
+     * Index of the first pixel in the image. Must be equals to the origin of the first tile.
+     * That first tile may be {@code null} if a subclass implements deferred computation.
+     */
+    protected final int minX, minY;
 
     /**
      * Index of the first tile in the image.
      */
-    private final int minTileX, minTileY;
+    protected final int minTileX, minTileY;
 
     /**
-     * The tiles. They must all use the same sample model.
+     * The tiles in row-major fashion. All tiles must all use the same sample model.
      */
-    private final Raster[] tiles;
+    protected final Raster[] tiles;
 
     /**
-     * Image properties, or an empty map if none.
+     * Image properties in an immutable map, or an empty map if none.
      */
-    private final Map<String, Object> properties;
+    protected final Map<String, Object> properties;
 
     /**
-     * Creates a new tiled image. The first tile in the given array must be the
-     * one located at the minimal tile indices. All tiles must have the same size
-     * and the same sample model and must be sorted in row-major fashion
+     * Creates a new tiled image.
+     * The first tile in the given array must be the one located at the minimal tile indices.
+     * The caller must ensure that origin of {@code bounds} is the origin of the first tile.
+     * All tiles must have the same size and the same sample model and must be sorted in row-major fashion
      * (this is not verified in current version, but may be in the future).
      *
      * @param properties  image properties, or {@code null} if none.
      * @param colorModel  the color model, or {@code null} if none.
-     * @param width       number of pixels along X axis in the whole rendered image.
-     * @param height      number of pixels along Y axis in the whole rendered image.
-     * @param minTileX    minimum tile index in the X direction.
-     * @param minTileY    minimum tile index in the Y direction.
+     * @param sampleModel the sample model used by all tiles.
+     * @param bounds      minimum (<var>x</var>, <var>y</var>) coordinates together with the image size.
+     * @param minTile     minimum tile indexes along <var>x</var> and <var>y</var> axes, or {@code null} for (0,0).
      * @param tiles       the tiles. Must contains at least one element. This array is not cloned.
      */
-    public TiledImage(final Map<String, ?> properties, final ColorModel colorModel,
-                      final int width, final int height, final int minTileX, final int minTileY,
-                      final Raster... tiles)
+    public TiledImage(final Map<String, ?> properties,
+                      final ColorModel     colorModel,
+                      final SampleModel    sampleModel,
+                      final Rectangle      bounds,
+                      final Point          minTile,
+                      final Raster...      tiles)
     {
-        ArgumentChecks.ensureStrictlyPositive("width",  width);
-        ArgumentChecks.ensureStrictlyPositive("height", height);
+        ArgumentChecks.ensureNonNull("sampleModel", sampleModel);
+        ArgumentChecks.ensureStrictlyPositive("width",  width  = bounds.width);
+        ArgumentChecks.ensureStrictlyPositive("height", height = bounds.height);
         ArgumentChecks.ensureNonEmpty        ("tiles",  tiles);
-        this.colorModel = colorModel;
-        this.width      = width;
-        this.height     = height;
-        this.minTileX   = minTileX;
-        this.minTileY   = minTileY;
-        this.tiles      = tiles;
-        this.properties = (properties != null) ? Map.copyOf(properties) : Map.of();
+        this.tiles       = tiles;
+        this.minX        = bounds.x;
+        this.minY        = bounds.y;
+        this.colorModel  = colorModel;
+        this.sampleModel = sampleModel;
+        this.properties  = (properties != null) ? Map.copyOf(properties) : Map.of();
+        if (minTile != null) {
+            minTileX = minTile.x;
+            minTileY = minTile.y;
+        } else {
+            minTileX = 0;
+            minTileY = 0;
+        }
     }
 
     /**
@@ -103,14 +129,12 @@ public class TiledImage extends PlanarImage {
      */
     @Override
     public String verify() {
-        final int minX       = getMinX();
-        final int minY       = getMinY();
         final int numXTiles  = getNumXTiles();
         final int tileWidth  = getTileWidth();
         final int tileHeight = getTileHeight();
-        final SampleModel sm = getSampleModel();
         for (int i=0; i < tiles.length; i++) {
             final Raster tile = tiles[i];
+            if (tile == null) continue;
             final int tx = i % numXTiles;
             final int ty = i / numXTiles;
             final int ox = minX + tx * tileWidth;
@@ -128,7 +152,7 @@ public class TiledImage extends PlanarImage {
                 if (tw != Math.min(tileWidth,  width  - ox)) return property(tx, ty, "width");
                 if (th != Math.min(tileHeight, height - oy)) return property(tx, ty, "height");
             }
-            if (!sm.equals(tile.getSampleModel())) return property(tx, ty, "sampleModel");
+            if (!sampleModel.equals(tile.getSampleModel())) return property(tx, ty, "sampleModel");
         }
         return super.verify();      // "width" and "height" properties should be checked last.
     }
@@ -153,7 +177,7 @@ public class TiledImage extends PlanarImage {
      */
     @Override
     public SampleModel getSampleModel() {
-        return tiles[0].getSampleModel();
+        return sampleModel;
     }
 
     /**
@@ -188,7 +212,7 @@ public class TiledImage extends PlanarImage {
      */
     @Override
     public int getMinX() {
-        return tiles[0].getMinX();
+        return minX;
     }
 
     /**
@@ -196,11 +220,11 @@ public class TiledImage extends PlanarImage {
      */
     @Override
     public int getMinY() {
-        return tiles[0].getMinY();
+        return minY;
     }
 
     /**
-     * Returns the number of pixels along X axis in the whole rendered image.
+     * Returns the number of pixels along <var>x</var> axis in the whole rendered image.
      */
     @Override
     public int getWidth() {
@@ -208,7 +232,7 @@ public class TiledImage extends PlanarImage {
     }
 
     /**
-     * Returns the number of pixels along Y axis in the whole rendered image.
+     * Returns the number of pixels along <var>y</var> axis in the whole rendered image.
      */
     @Override
     public int getHeight() {
@@ -220,7 +244,7 @@ public class TiledImage extends PlanarImage {
      */
     @Override
     public int getTileWidth() {
-        return tiles[0].getWidth();
+        return sampleModel.getWidth();
     }
 
     /**
@@ -228,11 +252,11 @@ public class TiledImage extends PlanarImage {
      */
     @Override
     public int getTileHeight() {
-        return tiles[0].getHeight();
+        return sampleModel.getHeight();
     }
 
     /**
-     * Returns the minimum tile index in the X direction.
+     * Returns the minimum tile index in the <var>x</var> direction.
      */
     @Override
     public final int getMinTileX() {
@@ -240,7 +264,7 @@ public class TiledImage extends PlanarImage {
     }
 
     /**
-     * Returns the minimum tile index in the Y direction.
+     * Returns the minimum tile index in the <var>y</var> direction.
      */
     @Override
     public final int getMinTileY() {
@@ -251,7 +275,7 @@ public class TiledImage extends PlanarImage {
      * Returns the tile at the given location in tile coordinates.
      */
     @Override
-    public Raster getTile(int tileX, int tileY) {
+    public Raster getTile(final int tileX, final int tileY) {
         final int numXTiles = getNumXTiles();
         final int numYTiles = getNumYTiles();
         checkTileIndex("tileX", minTileX, numXTiles, tileX);

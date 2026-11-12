@@ -25,6 +25,7 @@ import java.awt.Dimension;
 import java.awt.Rectangle;
 import java.awt.geom.Area;
 import java.awt.geom.Rectangle2D;
+import java.awt.geom.AffineTransform;
 import java.awt.image.ColorModel;
 import java.awt.image.Raster;
 import java.awt.image.RenderedImage;
@@ -43,6 +44,7 @@ import org.apache.sis.referencing.operation.transform.TransformSeparator;
 import org.apache.sis.image.internal.shared.ImageUtilities;
 import org.apache.sis.image.internal.shared.FillValues;
 import org.apache.sis.feature.internal.Resources;
+import org.apache.sis.coverage.grid.PixelInCell;
 import org.apache.sis.util.ArraysExt;
 import org.apache.sis.util.Disposable;
 import org.apache.sis.util.ArgumentChecks;
@@ -60,17 +62,25 @@ import static org.apache.sis.image.internal.shared.ImageUtilities.LOGGER;
  * Resampling is the action of computing pixel values at possibly non-integral positions of a source image.
  * It can be used for projecting an image to another coordinate reference system,
  * for example from (<var>latitude</var>, <var>longitude</var>) to World Mercator.
- * The resampling is defined by a non-linear {@link MathTransform} (for example a map projection)
+ * The resampling is defined by a {@link MathTransform} (for example a map projection)
  * which converts pixel center coordinates from <em>this</em> image to pixel center coordinates
  * in the <em>source</em> image.
- * The converted coordinates usually contain fraction digits, in which case an interpolation is applied.
+ * The converted coordinates usually contain fraction digits, in which case an interpolation can be applied.
  *
- * <h2>Usage note</h2>
- * This class should be used with non-linear transforms such as map projections. It is technically
- * possible to use this class with linear transforms such as {@link java.awt.geom.AffineTransform},
- * but there is more efficient alternatives for linear cases (for example
- * {@linkplain java.awt.Graphics2D#drawRenderedImage(RenderedImage, java.awt.geom.AffineTransform)
- * specifying the affine transform at rendering time}).
+ * <p>This class is designed for use with non-linear transforms such as map projections.
+ * It is possible to use this class with linear transforms such as {@link AffineTransform},
+ * but there are more efficient alternatives for linear cases (for example,
+ * {@linkplain java.awt.Graphics2D#drawRenderedImage(RenderedImage, AffineTransform)
+ * specifying the affine transform at rendering time}).</p>
+ *
+ * <h2>Interpolated image <i>versus</i> aggregated image</h2>
+ * The algorithm used by this class (coordinates transformed from <em>this</em> to <em>source</em> image)
+ * is suitable to interpolations, which are themselves suitable to both upsampling (higher resolution) and
+ * downsampling (lower resolution).
+ * An algorithm using transforms in the opposite direction (from <em>source</em> image to <em>this</em> image)
+ * is also possible, but is more suitable to aggregation methods such as weighted average, median or mode,
+ * which are themselves better suited to downsampling rather than upsampling.
+ * That alternative approach is handled by the {@link AggregatedImage} class.
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @author  Johann Sorel (Geomatys)
@@ -97,11 +107,6 @@ public class ResampledImage extends ComputedImage {
     public static final String POSITIONAL_CONSISTENCY_KEY = "org.apache.sis.PositionalConsistency";
 
     /**
-     * The {@value} value for identifying code expecting exactly 2 dimensions.
-     */
-    static final int BIDIMENSIONAL = 2;
-
-    /**
      * Domain of pixel coordinates in this image.
      */
     private final int minX, minY, width, height;
@@ -116,7 +121,7 @@ public class ResampledImage extends ComputedImage {
      * image. This transform should be an instance of {@link MathTransform2D}, but this is not required by this class
      * (a future version may allow interpolations in a <var>n</var>-dimensional cube).
      *
-     * @see org.apache.sis.coverage.grid.PixelInCell#CELL_CENTER
+     * @see PixelInCell#CELL_CENTER
      */
     protected final MathTransform toSource;
 
@@ -184,13 +189,14 @@ public class ResampledImage extends ComputedImage {
     private Shape validArea;
 
     /**
-     * Creates a new image which will resample the given image. The resampling operation is defined
-     * by a potentially non-linear transform from <em>this</em> image to the specified <em>source</em> image.
-     * That transform shall map {@linkplain org.apache.sis.coverage.grid.PixelInCell#CELL_CENTER pixel centers}.
+     * Creates a new image which will resample the given image. The resampling operation requires
+     * a potentially non-linear transform from <em>this</em> image to the specified <em>source</em> image.
+     * That transform shall map {@linkplain PixelInCell#CELL_CENTER pixel centers}.
      *
-     * <p>The {@code sampleModel} determines the tile size and the target data type. This is often the same sample
-     * model than the one used by the {@code source} image, but may also be different for forcing a different tile
-     * size or a different data type (e.g. {@code byte} versus {@code float}) for storing resampled values.
+     * <p>The given {@code sampleModel} determines the tile size and the target data type.
+     * This is often the same sample model as the one used by the {@code source} image,
+     * but may also be different for forcing a different tile size or a different data type
+     * (for example, casting {@code float} values to {@code byte}s) for storing resampled values.
      * If the specified sample model is not the same as the one used by the source image,
      * then subclass should override {@link #getColorModel()} for returning a color model which is
      * {@linkplain ColorModel#isCompatibleSampleModel(SampleModel) compatible with the sample model}.</p>
@@ -492,7 +498,7 @@ public class ResampledImage extends ComputedImage {
 
     /**
      * Gets a property from this image. Current default implementation supports the following keys
-     * (more properties may be added to this list in any future Apache SIS versions):
+     * (more properties may be added to this list in any future Apache <abbr>SIS</abbr> versions):
      *
      * <ul>
      *   <li>{@value #SOURCE_NAME_KEY}</li>
@@ -503,7 +509,6 @@ public class ResampledImage extends ComputedImage {
      *   <li>{@value #MASK_KEY} if the image uses floating point numbers.</li>
      * </ul>
      *
-     * <h4>Note on sample values</h4>
      * The sample resolutions are retained because they should have approximately the same values before and after
      * resampling. {@linkplain #STATISTICS_KEY Statistics} are not in this list because, while minimum and maximum
      * values should stay approximately the same, the average value and standard deviation may be quite different.

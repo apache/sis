@@ -94,9 +94,9 @@ import org.apache.sis.pending.jdk.JDK18;
  *     }
  * }
  *
- * <h2>Limitations</h2>
+ * <p><b>Limitation:</b>
  * Current implementation creates only two-dimensional coverages.
- * A future version may extend this builder API for creating <var>n</var>-dimensional coverages.
+ * A future version may extend this builder API for creating <var>n</var>-dimensional coverages.</p>
  *
  * @author  Johann Sorel (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
@@ -251,7 +251,7 @@ public class GridCoverageBuilder {
      * (i.e. the matrix representation of the affine transform will be diagonal,
      * ignoring the translation column).
      *
-     * <h4>Axis directions</h4>
+     * <h4>Default axis directions of coverage created from an envelope</h4>
      * By default grid indices increase in the same direction as domain coordinates.
      * When applied to images with pixels located by (<var>column</var>, <var>row</var>) indices,
      * it means that by default row indices in the image are increasing toward up if the <var>y</var>
@@ -264,17 +264,16 @@ public class GridCoverageBuilder {
      * If more sophisticated operations is desired (for example a rotation),
      * then {@link #setDomain(GridGeometry)} should be used instead of this method.</p>
      *
-     * <h5>Design note</h5>
+     * <h5>Implementation note</h5>
      * {@code GridCoverageBuilder} does not flip the <var>y</var> axis by default because not all
      * file formats have row indices increasing toward down. A counter-example is the netCDF format.
      * Even if we consider that the majority of images have <var>y</var> axis flipped, things become
      * less obvious when considering data in more than two dimensions. Having the same default policy
      * (no flipping) for all dimensions make problem analysis easier.
      *
-     * <h4>Default implementation</h4>
-     * The default implementation creates a new {@link GridGeometry} from the given envelope
+     * <p>The default implementation creates a new {@link GridGeometry} from the given envelope
      * then invokes {@link #setDomain(GridGeometry)}. Subclasses can override that later method
-     * as a single overriding point for all domain settings.
+     * as a single overriding point for all domain settings.</p>
      *
      * @param  domain  envelope of the coverage domain together with its CRS,
      *                 or {@code null} for removing previous domain setting.
@@ -568,22 +567,6 @@ public class GridCoverageBuilder {
     }
 
     /**
-     * Creates a color model for the given sample model.
-     *
-     * @param  sm     the sample model.
-     * @param  bands  {@link #ranges} if non-null, or a default non-null value otherwise.
-     * @return the color model.
-     */
-    private ColorModel createColorModel(final SampleModel sm, final List<? extends SampleDimension> bands) {
-        final var colorizer = new ColorScaleBuilder(ColorScaleBuilder.GRAYSCALE, null, false);
-        if (colorizer.initialize(sm, bands.get(visibleBand)) || colorizer.initialize(sm, visibleBand)) {
-            return colorizer.createColorModel(sm, bands.size(), visibleBand);
-        } else {
-            return ColorScaleBuilder.NULL_COLOR_MODEL;
-        }
-    }
-
-    /**
      * Creates an image from the given rasters.
      * The first tile in the given array must be the one located at the minimal tile indices.
      * All tiles must have the same size and the same sample model and must be sorted in row-major fashion.
@@ -591,13 +574,24 @@ public class GridCoverageBuilder {
      * <p>This method tries to create the most standard objects when possible: preferably a
      * {@link BufferedImage} from Java2D, otherwise a {@link TiledImage} from <abbr>SIS</abbr>.</p>
      *
-     * @param  colors  the color model, or {@code null}.
-     * @param  width   the image width in pixels.
-     * @param  height  the image height in pixels.
+     * @param  sm      the sample model.
+     * @param  bands   {@link #ranges} if non-null, or a default non-null value otherwise.
+     * @param  bounds  the image width and height in pixels, together with the location of the first tile.
      * @param  tiles   the image tiles.
      * @return an image for the given rasters.
      */
-    private RenderedImage createImage(final ColorModel colors, final int width, final int height, final Raster... tiles) {
+    private RenderedImage createImage(final SampleModel sm,
+                                      final List<? extends SampleDimension> bands,
+                                      final Rectangle bounds,
+                                      final Raster... tiles)
+    {
+        final ColorModel colors;
+        final var colorizer = new ColorScaleBuilder(ColorScaleBuilder.GRAYSCALE, null, false);
+        if (colorizer.initialize(sm, bands.get(visibleBand)) || colorizer.initialize(sm, visibleBand)) {
+            colors = colorizer.createColorModel(sm, bands.size(), visibleBand);
+        } else {
+            colors = ColorScaleBuilder.NULL_COLOR_MODEL;
+        }
         if (colors != null && tiles.length == 1) {
             final Raster tile = tiles[0];
             if (tile instanceof WritableRaster && (tile.getMinX() | tile.getMinY()) == 0) {
@@ -605,9 +599,9 @@ public class GridCoverageBuilder {
             }
         }
         if (tiles instanceof WritableRaster[]) {
-            return new WritableTiledImage(properties, colors, width, height, 0, 0, (WritableRaster[]) tiles);
+            return new WritableTiledImage(properties, colors, sm, bounds, null, (WritableRaster[]) tiles);
         } else {
-            return new TiledImage(properties, colors, width, height, 0, 0, tiles);
+            return new TiledImage(properties, colors, sm, bounds, null, tiles);
         }
     }
 
@@ -649,8 +643,9 @@ public class GridCoverageBuilder {
             location.y = ymin + (i / numXTiles) * tileHeight;
             tiles[i] = WritableRaster.createWritableRaster(sm, location);
         }
-        final var data = (WritableRenderedImage) createImage(createColorModel(sm, bands), width, height, tiles);
-        final WritablePixelIterator i = new WritablePixelIterator.Builder().createWritable(data);
+        final var bounds = new Rectangle(xmin, ymin, width, height);
+        final var data = (WritableRenderedImage) createImage(sm, bands, bounds, tiles);
+        final WritablePixelIterator i = WritablePixelIterator.create(data);
         if (calcAsDoubles != null) {
             i.setRemainingPixels(calcAsDoubles);
         } else {
@@ -693,7 +688,7 @@ public class GridCoverageBuilder {
                      * and fallback on TiledImage only if the BufferedImage cannot be created.
                      */
                     properties.put(PlanarImage.SAMPLE_DIMENSIONS_KEY, bands.toArray(SampleDimension[]::new));
-                    data = createImage(createColorModel(sm, bands), raster.getWidth(), raster.getHeight(), raster);
+                    data = createImage(sm, bands, raster.getBounds(), raster);
                     properties.remove(PlanarImage.SAMPLE_DIMENSIONS_KEY);
                 } else {
                     /*

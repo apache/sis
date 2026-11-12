@@ -591,6 +591,9 @@ public final class TiledImageMock extends PlanarImage implements WritableRendere
      */
     @SuppressWarnings("exports")
     public synchronized WritableTiledImage toWritableTiledImage() {
-        return new WritableTiledImage(null, null, width, height, minTileX, minTileY, tiles);
+        final var minTile = new Point(minTileX, minTileY);
+        final var image = new WritableTiledImage(null, colorModel, sampleModel, getBounds(), minTile, tiles);
+        assertNull(image.verify());
+        return image;
     }
 }

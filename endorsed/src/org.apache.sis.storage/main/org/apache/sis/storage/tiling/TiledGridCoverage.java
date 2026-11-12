@@ -585,7 +585,7 @@ public abstract class TiledGridCoverage extends GridCoverage {
         if (name != null) {
             name = name.toFullyQualifiedName();
         }
-        final RenderedImage image;
+        final PlanarImage image;
         try {
             final int[] tileLower = new int[dimension];         // Indices of first tile to read, inclusive.
             final int[] tileUpper = new int[dimension];         // Indices of last tile to read, exclusive.
@@ -640,9 +640,11 @@ public abstract class TiledGridCoverage extends GridCoverage {
                  * in the area of interest now. I/O operations, if needed, happen in `readTiles(…)` call.
                  */
                 final Raster[] result = readTiles(iterator);
-                image = new TiledImage(properties, colors,
-                        imageSize[xDimension], imageSize[yDimension],
-                        tileLower[xDimension], tileLower[yDimension], result);
+                final var minTile = new Point    (tileLower[xDimension], tileLower[yDimension]);
+                final var bounds  = new Rectangle(imageSize[xDimension], imageSize[yDimension]);
+                bounds.x = offsetAOI[xDimension];
+                bounds.y = offsetAOI[yDimension];
+                image = new TiledImage(properties, colors, model, bounds, minTile, result);
             }
         } catch (DisjointExtentException | CannotEvaluateException e) {
             throw e;
@@ -650,6 +652,11 @@ public abstract class TiledGridCoverage extends GridCoverage {
             throw new CannotEvaluateException(Resources.forLocale(listeners.getLocale())
                         .getString(Resources.Keys.CanNotRenderImage_1, name), e);
         }
+        /*
+         * Debugging tip: invoke `image.verify()` here if the image seems wrong.
+         * We don't do that systematically because inconsistency reported in the
+         * "width" or "height" properties are sometime normal.
+         */
         return image;
     }
 

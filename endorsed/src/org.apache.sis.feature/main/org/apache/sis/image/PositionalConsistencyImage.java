@@ -127,7 +127,7 @@ final class PositionalConsistencyImage extends SourceAlignedImage {
         final int tileMinY = tile.getMinY();
         final int tileMaxX = Math.addExact(tileMinX, scanline);
         final int tileMaxY = Math.addExact(tileMinY, tile.getHeight());
-        final double[] buffer = new double[scanline * Math.max(ResampledImage.BIDIMENSIONAL, toSource.getSourceDimensions())];
+        final double[] buffer = new double[scanline * Math.max(BIDIMENSIONAL, toSource.getSourceDimensions())];
         for (int y=tileMinY; y<tileMaxY; y++) {
             for (int i=0, x = tileMinX; x < tileMaxX; x++) {
                 buffer[i++] = x;

@@ -21,6 +21,7 @@ import java.util.Random;
 import java.util.EnumSet;
 import java.util.stream.IntStream;
 import java.awt.Color;
+import java.awt.Point;
 import java.awt.Rectangle;
 import java.awt.image.BufferedImage;
 import java.awt.image.DataBuffer;
@@ -164,7 +165,7 @@ public final class ResampledGridCoverageTest extends TestCase {
      */
     private GridCoverage createCoverageND(final boolean withTime) {
         random = TestUtilities.createRandomNumberGenerator();
-        final BufferedImage image = new BufferedImage(2*QS, 2*QS, BufferedImage.TYPE_3BYTE_BGR);
+        final var image = new BufferedImage(2*QS, 2*QS, BufferedImage.TYPE_3BYTE_BGR);
         final int[] color = new int[QS*QS];
         /* Upper-left  quarter */ // Keep default value, which is black.
         /* Upper-right quarter */ Arrays.fill(color, Color.RED  .getRGB()); image.setRGB(QS,  0, QS, QS, color, 0, QS);
@@ -178,12 +179,14 @@ public final class ResampledGridCoverageTest extends TestCase {
         final int minX = random.nextInt(5) - 2;
         final int minY = random.nextInt(5) - 2;
         GridGeometry gg = createGridGeometryND(withTime ? HardCodedCRS.WGS84_4D : HardCodedCRS.WGS84_3D, 0, 1, 2, 3, false);
-        final TiledImage shiftedImage = new TiledImage(null,
+        final var shiftedImage = new TiledImage(
+                null,
                 image.getColorModel(),
-                image.getWidth(), image.getHeight(),        // Image size
-                random.nextInt(32) - 10,                    // minTileX
-                random.nextInt(32) - 10,                    // minTileY
+                image.getSampleModel(),
+                new Rectangle(minX, minY, image.getWidth(), image.getHeight()),
+                new Point(random.nextInt(32) - 10, random.nextInt(32) - 10),    // Minimum tile index.
                 image.getRaster().createTranslatedChild(minX, minY));
+        assertNull(shiftedImage.verify());
         return new GridCoverage2D(gg, null, shiftedImage);
     }
 

@@ -21,6 +21,7 @@ import java.util.LinkedHashMap;
 import java.awt.Point;
 import java.awt.Rectangle;
 import java.awt.image.ColorModel;
+import java.awt.image.SampleModel;
 import java.awt.image.Raster;
 import java.awt.image.TileObserver;
 import java.awt.image.WritableRaster;
@@ -30,6 +31,8 @@ import org.apache.sis.feature.internal.Resources;
 
 /**
  * A writable version of {@link TiledImage}.
+ * The array of tiles given to the constructor can contain null elements,
+ * in which case initially empty tiles will be created when first requested.
  *
  * @author  Martin Desruisseaux (Geomatys)
  */
@@ -56,23 +59,45 @@ public class WritableTiledImage extends TiledImage implements WritableRenderedIm
     /**
      * Creates a new tiled image.
      * The first tile in the given array must be the one located at the minimal tile indices.
+     * The caller must ensure that origin of {@code bounds} is the origin of the first tile.
      * All tiles must have the same size and the same sample model and must be sorted in row-major fashion.
      *
      * @param properties  image properties, or {@code null} if none.
      * @param colorModel  the color model, or {@code null} if none.
-     * @param width       number of pixels along X axis in the whole rendered image.
-     * @param height      number of pixels along Y axis in the whole rendered image.
-     * @param minTileX    minimum tile index in the X direction.
-     * @param minTileY    minimum tile index in the Y direction.
-     * @param tiles       the tiles. Must contains at least one element.
-     *                    This array is not cloned.
+     * @param sampleModel the sample model used by all tiles.
+     * @param bounds      minimum (<var>x</var>, <var>y</var>) coordinates together with the image size.
+     * @param minTile     minimum tile indexes along <var>x</var> and <var>y</var> axes, or {@code null} for (0,0).
+     * @param tiles       the tiles. Must contains at least one element. This array is not cloned.
      */
-    public WritableTiledImage(final Map<String, ?> properties, final ColorModel colorModel,
-                              final int width, final int height, final int minTileX, final int minTileY,
+    public WritableTiledImage(final Map<String, ?> properties,
+                              final ColorModel     colorModel,
+                              final SampleModel    sampleModel,
+                              final Rectangle      bounds,
+                              final Point          minTile,
                               final WritableRaster... tiles)
     {
-        super(properties, colorModel, width, height, minTileX, minTileY, tiles);
+        super(properties, colorModel, sampleModel, bounds, minTile, tiles);
         writables = new LinkedHashMap<>();
+    }
+
+    /**
+     * Verifies whether image layout information and tile coordinates are consistent.
+     *
+     * @hidden
+     */
+    @Override
+    public String verify() {
+        synchronized (tiles) {
+            return super.verify();
+        }
+    }
+
+    /**
+     * Returns the sample model specified or inferred at construction time.
+     */
+    @Override
+    public SampleModel getSampleModel() {
+        return sampleModel;
     }
 
     /**
@@ -99,6 +124,29 @@ public class WritableTiledImage extends TiledImage implements WritableRenderedIm
     }
 
     /**
+     * Returns the tile at the given location in tile coordinates.
+     * If the tile is null, an initially empty tile is created.
+     */
+    @Override
+    public final Raster getTile(final int tileX, final int tileY) {
+        final int numXTiles = getNumXTiles();
+        final int numYTiles = getNumYTiles();
+        checkTileIndex("tileX", minTileX, numXTiles, tileX);
+        checkTileIndex("tileY", minTileY, numYTiles, tileY);
+        final int index = (tileX - minTileX) + (tileY - minTileY) * numXTiles;
+        synchronized (tiles) {
+            Raster tile = tiles[index];
+            if (tile == null) {
+                final int x = ImageUtilities.tileToPixelX(this, tileX);
+                final int y = ImageUtilities.tileToPixelY(this, tileY);
+                tile = WritableRaster.createWritableRaster(sampleModel, new Point(x, y));
+                tiles[index] = tile;
+            }
+            return tile;
+        }
+    }
+
+    /**
      * Checks out a tile for writing. If the same tile is checked out many times
      * before to be released, only the first checkout is notified to listeners.
      *
@@ -108,8 +156,8 @@ public class WritableTiledImage extends TiledImage implements WritableRenderedIm
      */
     @Override
     public WritableRaster getWritableTile(final int tileX, final int tileY) {
-        final WritableRaster tile = (WritableRaster) super.getTile(tileX, tileY);
-        final Point key = new Point(tileX, tileY);
+        final var tile = (WritableRaster) getTile(tileX, tileY);
+        final var key = new Point(tileX, tileY);
         final Integer count;
         synchronized (writables) {
             count = writables.merge(key, 1, (old, one) -> old + 1);
@@ -130,7 +178,7 @@ public class WritableTiledImage extends TiledImage implements WritableRenderedIm
      */
     @Override
     public void releaseWritableTile(final int tileX, final int tileY) {
-        final Point key = new Point(tileX, tileY);
+        final var key = new Point(tileX, tileY);
         final Integer count;
         final boolean close;
         synchronized (writables) {
