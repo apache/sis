@@ -14,19 +14,30 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.sis.storage.hdf;
+package org.apache.sis.storage.hdf.internal;
+
+import java.util.logging.Logger;
 
 
 /**
- * Placeholder for the tests of the {@code org.apache.sis.storage.hdf} module.
- * To be replaced by real test classes.
+ * Constants shared by the classes of the <abbr>HDF5</abbr> reader.
  *
  * @author Johann Sorel (Geomatys)
  */
-public final class ModuleTest {
+public final class Constants {
     /**
-     * Creates a new test case.
+     * Name of the <abbr>HDF5</abbr> format, used as the name of the root node of native metadata.
      */
-    public ModuleTest() {
+    public static final String FORMAT_NAME = "HDF5";
+
+    /**
+     * The logger for the <abbr>HDF5</abbr> reader.
+     */
+    public static final Logger LOGGER = Logger.getLogger("org.apache.sis.storage.hdf");
+
+    /**
+     * Do not allow instantiation of this class.
+     */
+    private Constants() {
     }
 }

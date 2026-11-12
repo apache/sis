@@ -23,7 +23,10 @@
 module org.apache.sis.storage.hdf {
     // Dependencies used in public API.
     requires transitive org.apache.sis.storage;
+    requires static org.locationtech.jts;
 
-    // Uncomment when the package contains at least one class.
-    // exports org.apache.sis.storage.hdf;
+    exports org.apache.sis.storage.hdf;
+
+    provides org.apache.sis.storage.DataStoreProvider
+            with org.apache.sis.storage.hdf.HDF5Provider;
 }
