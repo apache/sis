@@ -19,9 +19,11 @@ package org.apache.sis.image;
 import java.util.Map;
 import java.util.Vector;
 import java.util.Arrays;
-import java.util.Objects;
+import java.util.ArrayList;
 import java.util.ConcurrentModificationException;
-import java.util.concurrent.RecursiveTask;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.Callable;
+import java.util.concurrent.Future;
 import java.awt.Point;
 import java.awt.Rectangle;
 import java.awt.image.ColorModel;
@@ -39,10 +41,10 @@ import org.apache.sis.image.internal.shared.WritableTiledImage;
 import org.apache.sis.image.internal.shared.ImageUtilities;
 import org.apache.sis.coverage.grid.PixelInCell;
 import org.apache.sis.pending.jdk.JDK18;
+import org.apache.sis.system.CommonExecutor;
 import org.apache.sis.util.Exceptions;
 import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.resources.Errors;
-import org.apache.sis.util.collection.BackingStoreException;
 
 // Specific to the GeoAPI 3.1 and 4.0 branches:
 import org.opengis.coverage.grid.SequenceType;
@@ -60,9 +62,9 @@ import org.opengis.coverage.grid.SequenceType;
  * when an aggregation method is desired instead of an interpolation method.
  * For example, weighted averages are preferred to bilinear interpolations when
  * pixel values are proportional to physical energy and the total energy needs to be preserved.
- * {@code AggregatedImage} can also be used as a fallback when {@code ResampledImage} fails to
- * resample an image because of a {@link TransformException}.
- * Since these two image classes use {@link MathTransform} in opposite directions,
+ * {@code AggregatedImage} can also be used as a fallback
+ * when {@code ResampledImage} fails because of a {@link TransformException}.
+ * Since {@code ResampledImage} and {@code AggregatedImage} use {@link MathTransform} in opposite directions,
  * an exception thrown in one direction may be absent in the opposite direction.</p>
  *
  * <p>Contrary to {@link ComputedImage}, this image computes all tiles immediately when one tile is requested.
@@ -141,36 +143,43 @@ public class AggregatedImage extends PlanarImage {
     private WritableRaster[] tiles;
 
     /**
+     * Whether parallel execution is allowed.
+     * If {@code true}, may threads can be used for aggregating the pixel values.
+     */
+    protected boolean parallel;
+
+    /**
      * Creates a new image which will aggregate the given images. The operation requires transforms
      * (which can be non-linear) from the specified <em>source</em> images to <em>this</em> image.
      * The transforms shall map {@linkplain PixelInCell#CELL_CORNER pixel corners}.
      *
-     * <p>The given {@code sampleModel} determines the tile size and the target data type.
-     * This is often the same sample model as the ones used by the source images,
-     * but may also be different for forcing a different tile size or a different data type
-     * (for example, casting {@code float} values to {@code byte}s).
-     * If the specified sample model is not the same as the one used by the source images,
-     * then subclass should override {@link #getColorModel()} for returning a color model which is
-     * {@linkplain ColorModel#isCompatibleSampleModel(SampleModel) compatible with the sample model}.</p>
-     *
      * @param  sources      the images to aggregate with their transforms from <em>source</em> to <em>this</em>.
-     * @param  sampleModel  the sample model for this aggregated image.
-     * @param  minTile      indices of the first tile ({@code minTileX}, {@code minTileY}), or {@code null} for (0,0).
+     * @param  layout       preferences about how to derive a sample model for this aggregated image.
      * @param  bounds       domain of pixel coordinates of this aggregated image, or {@code null} for automatic.
-     * @param  fillValues   the values to use if the source images provide no value, or {@code null} for zeros.
+     * @param  aggregation  the method to use for performing aggregations.
+     * @param  fillValues   the values to use if the source images have missing bands, or {@code null} for NaNs.
      * @throws TransformException if {@code bounds} is null and an error occurred while computing automatic bounds.
      */
     public AggregatedImage(final Map<RenderedImage, MathTransform> sources,
-                           final SampleModel sampleModel,
-                           final Point minTile,
+                           final ImageLayout layout,
                            Rectangle bounds,
-                           double[] fillValues)
+                           final Aggregation aggregation,
+                           final Number[] fillValues)
             throws TransformException
     {
+        ArgumentChecks.ensureNonNull("sources",     sources);
+        ArgumentChecks.ensureNonNull("layout",      layout);
+        ArgumentChecks.ensureNonNull("aggregation", aggregation);   // Anticipation for a future version.
         final int numSources = sources.size();
+        if (numSources == 0) {
+            throw new IllegalArgumentException(Errors.format(Errors.Keys.EmptyArgument_1, "sources"));
+        }
         this.sources     = new RenderedImage[numSources];
         this.fromSources = new MathTransform[numSources];
-        this.sampleModel = Objects.requireNonNull(sampleModel);
+        /*
+         * Store sources and transforms, checking their validity in same time.
+         * Also compute the image bounds if it was not explicitly specified.
+         */
         final boolean computeBounds = (bounds == null);
         int i = 0, numBands = 0;
         for (final var entry : sources.entrySet()) {
@@ -179,7 +188,7 @@ public class AggregatedImage extends PlanarImage {
             ArgumentChecks.ensureNonNullElement("sources[#].key",   i, source);
             ArgumentChecks.ensureNonNullElement("sources[#].value", i, fromSource);
             ArgumentChecks.ensureDimensionsMatch("sources", BIDIMENSIONAL, BIDIMENSIONAL, fromSource);
-            this.fromSources[i] = fromSource;
+            fromSources[i] = fromSource;
             this.sources[i++] = source;
             numBands = Math.max(numBands, ImageUtilities.getNumBands(source));
             if (computeBounds) {
@@ -195,28 +204,33 @@ public class AggregatedImage extends PlanarImage {
         if (i != numSources) {
             throw new ConcurrentModificationException();    // New entries added while we were iterating.
         }
-        minX = bounds.x;
-        minY = bounds.y;
+        /*
+         * Store the specified or inferred image bounds.
+         * Use the bounds for inferring a sample model.
+         */
         ArgumentChecks.ensureStrictlyPositive("width",  width  = bounds.width);
         ArgumentChecks.ensureStrictlyPositive("height", height = bounds.height);
+        numChunks = Math.multiplyExact(numChunks(width), numChunks(height));
+        minX              = bounds.x;
+        minY              = bounds.y;
+        minTileX          = layout.preferredMinTileX;
+        minTileY          = layout.preferredMinTileY;
+        sampleModel       = layout.createCompatibleSampleModel(this.sources[0], bounds);
         effectiveNumBands = Math.min(sampleModel.getNumBands(), numBands);
         if (effectiveNumBands >= Integer.MAX_VALUE / (CHUNK_SIZE * CHUNK_SIZE * NUM_ACCUMULATORS)) {
             throw new RasterFormatException(Errors.format(Errors.Keys.IllegalPropertyValue_2, "numBands", effectiveNumBands));
         }
-        if (fillValues == null) {
-            fillValues = new double[effectiveNumBands];
-        } else {
-            fillValues = Arrays.copyOf(fillValues, effectiveNumBands);
+        final var values = new double[sampleModel.getNumBands()];
+        Arrays.fill(values, Double.NaN);
+        if (fillValues != null) {
+            for (i = Math.min(values.length, fillValues.length); --i >= 0;) {
+                final Number value = fillValues[i];
+                if (value != null) {
+                    values[i] = value.doubleValue();
+                }
+            }
         }
-        this.fillValues = fillValues;
-        numChunks = Math.multiplyExact(numChunks(width), numChunks(height));
-        if (minTile != null) {
-            minTileX = minTile.x;
-            minTileY = minTile.y;
-        } else {
-            minTileX = 0;
-            minTileY = 0;
-        }
+        this.fillValues = values;
     }
 
     /**
@@ -357,6 +371,7 @@ public class AggregatedImage extends PlanarImage {
      * @throws ImagingOpException if an error occurred while computing the image.
      */
     @Override
+    @SuppressWarnings("UseSpecificCatch")
     public synchronized Raster getTile(final int tileX, final int tileY) {
         final int numXTiles = getNumXTiles();
         final int numYTiles = getNumYTiles();
@@ -365,14 +380,14 @@ public class AggregatedImage extends PlanarImage {
         final int chunkCellStride = effectiveNumBands * NUM_ACCUMULATORS;
         if (tiles == null) try {
             // Execute the aggregation now, possibly using many threads.
-            final double[][] data = new SourceScanner().compute();
+            final double[][] data = new SourceScanner().call();
             /*
              * At this point, the calculatuon of all aggregated values is completed.
              * Dispatch the results in the tiles of this image.
              */
             final int chunksPerImageRow = numChunks(width);
             final var bounds = new Rectangle(CHUNK_SIZE, CHUNK_SIZE);
-            final var samples = new double[effectiveNumBands];
+            final double[] samples = fillValues.clone();
             final var writable = new WritableTiledImage(
                     null,           // Properties,  not needed for dispatching values.
                     null,           // Color model, not needed for dispatching values.
@@ -384,6 +399,7 @@ public class AggregatedImage extends PlanarImage {
             for (int i=0; i<data.length; i++) {
                 final double[] tileData = data[i];
                 if (tileData != null) {
+                    data[i] = null;
                     bounds.y = (i / chunksPerImageRow) * CHUNK_SIZE + minX;
                     bounds.x = (i % chunksPerImageRow) * CHUNK_SIZE + minY;
                     try (WritablePixelIterator it = new PixelIterator.Builder()
@@ -399,7 +415,7 @@ public class AggregatedImage extends PlanarImage {
                             if (it.isBeginningOfNewRow()) {
                                 valueIndex += toNextRow;
                             }
-                            for (int j=0; j < samples.length; j++) {
+                            for (int j=0; j < effectiveNumBands; j++) {
                                 // The two values counted by `NUM_ACCUMULATORS`.
                                 final double sum = tileData[valueIndex++];
                                 final double num = tileData[valueIndex++];
@@ -425,24 +441,67 @@ public class AggregatedImage extends PlanarImage {
      * However, each {@code SourceScanner} instance can be subdivided into other instances
      * working on a subset of the images and tiles. Each sub-task can be executed
      * in a different thread and their results combined after task completion.
+     *
+     * <p><b>Design note:</b>
+     * We do not use {@link java.util.concurrent.RecursiveTask} because the latter is designed
+     * for a lot of small tasks, while we use a few large and potentially I/O bounded tasks.
+     * Each task may create a lot of temporary arrays which need to be merged afterward,
+     * therefore it is not necessarily advantageous to create a lot of tasks.</p>
      */
-    @SuppressWarnings("serial")     // Not intended to be serialized.
-    private final class SourceScanner extends RecursiveTask<double[][]> {
+    private final class SourceScanner implements Callable<double[][]> {
         /**
          * Index of the next source image to aggregate.
+         * This is initially 0, unless the work has been divided between many threads.
          */
         private int imageIndex;
 
         /**
          * Index after the last source image to aggregate.
+         * This is {@code sources.length}, unless the work has been divided between many threads.
          */
         private final int upperImageIndex;
+
+        /**
+         * Index of the next tile to read in the current image.
+         * This is initially 0, unless the work has been divided between many threads.
+         */
+        private long srcTileIndex;
+
+        /**
+         * Index after the last source image tile to aggregate, or -1 for aggregating all remaining tiles.
+         * This is {@code numTileX} × {@code numTileY}, unless the work has been divided between many threads.
+         * This value is updated every time that {@link #call()} iterates over a new image.
+         */
+        private long upperTileIndex;
+
+        /**
+         * Number of forks that are allowed. This is 0 if parallel execution is not enabled.
+         * The number of tasks will be 2ⁿ. Therefore, a value of 3 will create a maximum of 8 tasks.
+         * We avoid creating too much tasks because each of them brings an additional cost in arrays
+         * creation and merges.
+         */
+        private byte numAllowedForks;
 
         /**
          * Creates a new task initialized for aggregating all tiles of all images.
          */
         SourceScanner() {
             upperImageIndex = sources.length;
+            upperTileIndex  = -1;
+            numAllowedForks = parallel ? (byte) 3 : 0;
+        }
+
+        /**
+         * Creates a new task for aggregating half of the tiles handled by the given task.
+         * This new task will work on a prefix of the tile collection while the given task
+         * will work on the suffix.
+         */
+        private SourceScanner(final SourceScanner suffix, final int upperImageIndex, final long upperTileIndex) {
+            this.imageIndex      = suffix.imageIndex;
+            this.upperImageIndex = upperImageIndex;
+            this.srcTileIndex    = suffix.srcTileIndex;
+            this.upperTileIndex  = upperTileIndex;
+            this.numAllowedForks = --suffix.numAllowedForks;
         }
 
         /**
@@ -461,10 +520,28 @@ public class AggregatedImage extends PlanarImage {
          * value index with <var>y</var> pixel coordinate varying slowest, then <var>x</var> pixel coordinate,
          * then band index, then accumulator index for a total length of {@link #accumulatorValuesPerChunk()}.
          *
-         * @return Result of the aggregation for each tile in the enclosing target image.
+         * @return result of the aggregation for each tile in the enclosing target image.
+         * @throws TransformException if an error occurred while transforming coordinates.
+         * @throws InterruptedException if the current thread was interrupted while waiting for other threads.
          */
         @Override
-        protected double[][] compute() {
+        public double[][] call() throws TransformException, InterruptedException, ExecutionException {
+            /*
+             * If there are many images and we are allowed to fork,
+             * delegates half of the images to a background thread.
+             */
+            final var parallelTasks = new ArrayList<Future<double[][]>>();
+            while (numAllowedForks > 0) {
+                final int half = (upperImageIndex - imageIndex) / 2 + imageIndex;
+                if (half <= imageIndex) break;
+                parallelTasks.add(CommonExecutor.instance().submit(new SourceScanner(this, half, -1)));
+                imageIndex = half;
+            }
+            /*
+             * Prepare pixel aggregation on the remaining suffix of the tile collection.
+             * The code may decide again, inside the loop, to delegate half of the tiles
+             * to a background thread.
+             */
             final double[] imageOffset = {getMinX(), getMinY()};
             final double[][] data = new double[numChunks][];
             final double[] sourcePixelCorners = new double[BIDIMENSIONAL * 2];  // Bounds of a single source pixel in target coordinates.
@@ -477,16 +554,25 @@ public class AggregatedImage extends PlanarImage {
                 final int srcMinTileX = source.getMinTileX();
                 final int srcMinTileY = source.getMinTileY();
                 final int srcNumTileX = source.getNumXTiles();
-                final int srcNumTiles = Math.multiplyExact(srcNumTileX, source.getNumYTiles());
-                for (int srcTileIndex = 0; srcTileIndex < srcNumTiles; srcTileIndex++) try {
+                if (upperTileIndex < 0) {
+                    upperTileIndex = Math.multiplyFull(srcNumTileX, source.getNumYTiles());
+                }
+                while (numAllowedForks > 0) {
+                    // Try to delegate half of the tiles to a background thread.
+                    final long half = (upperTileIndex - srcTileIndex) / 2 + srcTileIndex;
+                    if (half <= srcTileIndex) break;
+                    parallelTasks.add(CommonExecutor.instance().submit(new SourceScanner(this, imageIndex + 1, half)));
+                    srcTileIndex = half;
+                }
+                while (srcTileIndex < upperTileIndex) {
                     /*
                      * We will iterate over all pixels of a single tile of a source image.
                      * For each pixel, the coordinates of the 4 corners will be transformed
                      * to coordinates of a bounding box in the target image (conceptually,
                      * actual implementation tries to be more efficient).
                      */
-                    final Raster tile = source.getTile(srcMinTileX + (srcTileIndex % srcNumTileX),
-                                                       srcMinTileY + (srcTileIndex / srcNumTileX));
+                    final Raster tile = source.getTile(srcMinTileX + (int) (srcTileIndex % srcNumTileX),
+                                                       srcMinTileY + (int) (srcTileIndex / srcNumTileX));
                     final int numBands = Math.min(tile.getNumBands(), effectiveNumBands);
                     final int scanline = tile.getWidth();
                     final int xmin     = tile.getMinX();
@@ -557,10 +643,34 @@ public class AggregatedImage extends PlanarImage {
                         }
                         xyBottom = xyTop;
                     }
-                } catch (TransformException e) {
-                    throw new BackingStoreException(e);
+                    // Finished pixel aggregation of one tile of source image. Move to next tile.
+                    srcTileIndex++;
                 }
+                // Finished pixel aggregation of all tiles of one source image. Move to next image.
+                srcTileIndex = 0;
+                upperTileIndex = -1;
                 imageIndex++;
+            }
+            /*
+             * Merges the data computed by other threads with the data computed by this thread.
+             * The loop is executed only if parallel computation was enabled.
+             */
+            for (final Future<double[][]> fork : parallelTasks) {
+                final double[][] other = fork.get();
+                for (int i=0; i<other.length; i++) {
+                    final double[] otherTile = other[i];
+                    if (otherTile != null) {
+                        other[i] = null;
+                        final double[] tileData = data[i];
+                        if (tileData == null) {
+                            data[i] = otherTile;
+                        } else {
+                            for (int j = otherTile.length; --j >= 0;) {
+                                tileData[j] += otherTile[j];
+                            }
+                        }
+                    }
+                }
             }
             return data;
         }

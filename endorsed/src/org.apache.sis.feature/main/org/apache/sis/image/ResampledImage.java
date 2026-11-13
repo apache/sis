@@ -212,7 +212,7 @@ public class ResampledImage extends ComputedImage {
      * @param  minTile        indices of the first tile ({@code minTileX}, {@code minTileY}), or {@code null} for (0,0).
      * @param  bounds         domain of pixel coordinates of this resampled image.
      * @param  toSource       conversion of pixel coordinates of this image to pixel coordinates of {@code source} image.
-     * @param  interpolation  the object to use for performing interpolations.
+     * @param  interpolation  the method to use for performing interpolations.
      * @param  fillValues     the values to use for pixels in this image that cannot be mapped to pixels in source image.
      *                        May be {@code null} or contain {@code null} elements, and may have any length
      *                        (see above for more details).
@@ -224,9 +224,14 @@ public class ResampledImage extends ComputedImage {
      *
      * @see ImageProcessor#resample(RenderedImage, Rectangle, MathTransform)
      */
-    protected ResampledImage(final RenderedImage source, final SampleModel sampleModel, final Point minTile,
-            final Rectangle bounds, final MathTransform toSource, Interpolation interpolation,
-            final Number[] fillValues, final Quantity<?>[] accuracy)
+    protected ResampledImage(final RenderedImage source,
+                             final SampleModel sampleModel,
+                             final Point minTile,
+                             final Rectangle bounds,
+                             final MathTransform toSource,
+                             Interpolation interpolation,
+                             final Number[] fillValues,
+                             final Quantity<?>[] accuracy)
     {
         super(sampleModel, source);
         if ((source.getWidth() | source.getHeight()) <= 0) {

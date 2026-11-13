@@ -52,6 +52,7 @@ import org.apache.sis.math.Statistics;
 import org.apache.sis.util.ArraysExt;
 import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.resources.Errors;
+import org.apache.sis.util.collection.Containers;
 import org.apache.sis.util.collection.WeakHashSet;
 import org.apache.sis.system.Modules;
 import org.apache.sis.image.processing.isoline.Isolines;
@@ -71,6 +72,8 @@ import org.apache.sis.measure.Units;
  *   </li><li>
  *     {@linkplain #setInterpolation(Interpolation) Interpolation method} to use during resampling operations.
  *   </li><li>
+ *     {@linkplain #setAggregation(Aggregation) Aggregation method} to use during aggregate operations.
+ *   </li><li>
  *     {@linkplain #setFillValues(Number...) Fill values} to use for pixels that cannot be computed.
  *   </li><li>
  *     {@linkplain #setColorizer(Colorizer) Colorization algorithm} to apply for colorizing a computed image.
@@ -82,8 +85,8 @@ import org.apache.sis.measure.Units;
  *     {@link RenderedImage} implementations are executed sequentially in the caller thread, for safety reasons.
  *     Some operations can be parallelized, but it should be enabled only if the {@link RenderedImage} is known
  *     to be thread-safe and has concurrent (or fast) implementation of {@link RenderedImage#getTile(int, int)}.
- *     Apache SIS implementations of {@link RenderedImage} can be parallelized, but it may not be the case of
- *     images from other libraries.
+ *     Apache <abbr>SIS</abbr> implementations of {@link RenderedImage} can be parallelized,
+ *     but it may not be the case of images from other libraries.
  *   </li><li>
  *     Whether the operations should fail if an exception is thrown while processing a tile.
  *     By default errors during calculation are propagated as an {@link ImagingOpException},
@@ -93,30 +96,32 @@ import org.apache.sis.measure.Units;
  * </ul>
  *
  * For each image operations, above properties are combined with parameters given to the operation method.
- * Each method in this {@code ImageProcessor} class documents the properties used in addition of method parameters.
- *
- * <h2>API design</h2>
  * Properties (setter methods) are used for values that can be applied unchanged on many different images.
  * For example, the {@linkplain #getInterpolation() interpolation method} can be specified once and used
  * unchanged for many {@link #resample resample(…)} operations.
  * On the other hand, method arguments are used for values that are usually specific to the image to process.
  * For example, the {@link MathTransform} argument given to the {@link #resample resample(…)} operation depends
- * tightly on the source image and destination bounds (also given in arguments); those information usually need
- * to be recomputed for each image.
+ * tightly on the source image and destination bounds (also given in arguments),
+ * and those information usually need to be different for each image.
+ * Each method in this {@code ImageProcessor} class documents the properties used in addition of method parameters.
  *
- * <h2>Deferred calculations</h2>
+ * <p>{@code ImageProcessor} is safe for concurrent use in multi-threading environment.
+ * However since {@code ImageProcessor} instances are mutable, users should consider to
+ * {@linkplain #clone() clone} if setter methods are invoked on a shared instance.</p>
+ *
+ * <h2>Deferred tile calculations in computed images</h2>
  * Methods in this class may compute the result at some later time after the method returned, instead of computing
  * the result immediately on method call. Consequently, unless otherwise specified, {@link RenderedImage} arguments
  * should be <em>stable</em>, i.e. pixel values should not be modified after method return.
  *
- * <h2>Area of interest</h2>
+ * <h2>Area Of Interest (<abbr>AOI</abbr>) for image operations</h2>
  * Some operations accept an optional <var>area of interest</var> argument specified as a {@link Shape} instance in
  * pixel coordinates. If a shape is given, it should not be modified after {@code ImageProcessor} method call because
  * the given object may be retained directly (i.e. the {@code Shape} is not always cloned; it depends on its class).
  * In addition, the {@code Shape} implementation shall be thread-safe (assuming its state stay unmodified)
  * unless the execution mode is set to {@link Mode#PARALLEL}.
  *
- * <h2>Error handling</h2>
+ * <h2>Error handling after failure to compute a tile</h2>
  * If an exception occurs during the computation of a tile, then the {@code ImageProcessor} behavior
  * is controlled by the {@link #getErrorHandler() errorHandler} property:
  *
@@ -129,14 +134,9 @@ import org.apache.sis.measure.Units;
  *     In both cases a partial result is returned.</li>
  * </ul>
  *
- * <h2>Thread-safety</h2>
- * {@code ImageProcessor} is safe for concurrent use in multi-threading environment.
- * Note however that {@code ImageProcessor} instances are mutable;
- * consider {@linkplain #clone() cloning} if setter methods are invoked on a shared instance.
- *
  * @author  Martin Desruisseaux (Geomatys)
  * @author  Alexis Manin (Geomatys)
- * @version 1.7
+ * @version 1.8
  *
  * @see org.apache.sis.coverage.grid.GridCoverageProcessor
  *
@@ -169,12 +169,20 @@ public class ImageProcessor implements Cloneable {
     private ImageLayout layout;
 
     /**
-     * Interpolation to use during resample operations.
+     * Interpolation method to use during resample operations.
      *
      * @see #getInterpolation()
      * @see #setInterpolation(Interpolation)
      */
     private Interpolation interpolation;
+
+    /**
+     * Aggregation method to use during resample operations.
+     *
+     * @see #getAggregation()
+     * @see #setAggregation(Aggregation)
+     */
+    private Aggregation aggregation;
 
     /**
      * The values to use for pixels that cannot be computed.
@@ -265,6 +273,7 @@ public class ImageProcessor implements Cloneable {
         executionMode = Mode.DEFAULT;
         errorHandler  = ErrorHandler.THROW;
         interpolation = Interpolation.BILINEAR;
+        aggregation   = Aggregation.RASTER_SPACE_WEIGHTING;
     }
 
     /**
@@ -312,6 +321,30 @@ public class ImageProcessor implements Cloneable {
     }
 
     /**
+     * Returns the aggregation method to use during aggregate operations.
+     *
+     * @return aggregation method to use during aggregate operations.
+     *
+     * @see #aggregate(RenderedImage, Rectangle, MathTransform)
+     * @since SIS 1.8
+     */
+    public synchronized Aggregation getAggregation() {
+        return aggregation;
+    }
+
+    /**
+     * Sets the aggregation method to use during aggregate operations.
+     *
+     * @param  method  aggregate method to use during aggregate operations.
+     *
+     * @see #aggregate(RenderedImage, Rectangle, MathTransform)
+     * @since SIS 1.8
+     */
+    public synchronized void setAggregation(final Aggregation method) {
+        aggregation = Objects.requireNonNull(method);
+    }
+
+    /**
      * Returns the values to use for pixels that cannot be computed.
      * This method returns a copy of the array set by the last call to {@link #setFillValues(Number...)}.
      *
@@ -351,12 +384,11 @@ public class ImageProcessor implements Cloneable {
      * The colorizer is invoked when the rendered image produced by an {@code ImageProcessor} operation
      * needs a {@link ColorModel} which is not straightforward.
      *
-     * <h4>Examples</h4>
-     * <p>The color model of a {@link #resample(RenderedImage, Rectangle, MathTransform) resample(…)}
+     * <p><b>Examples:</b>
+     * The color model of a {@link #resample(RenderedImage, Rectangle, MathTransform) resample(…)}
      * operation is straightforward: it is the same {@link ColorModel} than the source image.
-     * Consequently the colorizer is not invoked for that operation.</p>
-     *
-     * <p>But by contrast, the color model of an {@link #aggregateBands(RenderedImage...) aggregateBands(…)}
+     * Consequently the colorizer is not invoked for that operation.
+     * But by contrast, the color model of an {@link #aggregateBands(RenderedImage...) aggregateBands(…)}
      * operation cannot be determined in such straightforward way.
      * If three or four bands are aggregated, should they be interpreted as an (A)RGB image?
      * The {@link Colorizer} allows to specify the desired behavior.</p>
@@ -454,7 +486,7 @@ public class ImageProcessor implements Cloneable {
             case PARALLEL:   return true;
             case SEQUENTIAL: return false;
             default: {
-                if (source instanceof BufferedImage) {
+                if (source == null || source instanceof BufferedImage) {
                     return true;
                 }
                 return source.getClass().getName().startsWith(Modules.CLASSNAME_PREFIX);
@@ -480,11 +512,11 @@ public class ImageProcessor implements Cloneable {
      * {@link LogRecord} instead, in which case a partial result may be available.
      * Only one log record is created for all tiles that failed for the same operation on the same image.
      *
-     * <h4>Limitations</h4>
+     * <p><b>Limitations:</b>
      * In current {@code ImageProcessor} implementation, the error handler is not honored by all operations.
      * Some operations may continue to throw an exception on failure (the behavior of default error handler)
      * even if a different handler has been specified.
-     * Each operation specifies in its Javadoc whether the operation uses error handler or not.
+     * Each operation specifies in its Javadoc whether the operation uses error handler or not.</p>
      *
      * @param  handler  handler to notify when an operation failed on one or more tiles,
      *                  or {@link ErrorHandler#THROW} for propagating the exception.
@@ -508,11 +540,11 @@ public class ImageProcessor implements Cloneable {
      * if the <var>x</var> value is equal to one of the given no-data {@code values},
      * and will return <var>x</var> unchanged otherwise.
      *
-     * <h4>Usage</h4>
+     * <p><b>Usage:</b>
      * This operator can be used as a {@code sampleFilters} argument in calls to
      * {@link #statistics statistics(…)} or {@link #valueOfStatistics valueOfStatistics(…)} methods.
      * It is redundant with {@linkplain SampleDimension#getTransferFunction() transfer function} work,
-     * but can be useful for images not managed by a {@link org.apache.sis.coverage.grid.GridCoverage}.
+     * but can be useful for images not managed by a {@link org.apache.sis.coverage.grid.GridCoverage}.</p>
      *
      * @param  values  the "no data" values, or {@code null} if none. Null and NaN elements are ignored.
      * @return an operator for filtering the given "no data" values,
@@ -543,22 +575,20 @@ public class ImageProcessor implements Cloneable {
      *   <li>Otherwise statistics are computed for the whole image.</li>
      * </ul>
      *
-     * <h4>Sample converters</h4>
-     * An arbitrary {@link DoubleUnaryOperator} can be applied on sample values before to add them to statistics.
+     * <p>An arbitrary {@link DoubleUnaryOperator} can be applied on sample values before to add them to statistics.
      * The main purpose is to replace "no-data values" by {@link Double#NaN} values for instructing
      * {@link Statistics#accept(double)} to ignore them. The {@link #filterNodataValues(Number...)}
-     * convenience method can be used for building an operator filtering "no data" sample values.
+     * convenience method can be used for building an operator filtering "no data" sample values.</p>
      *
-     * <h4>Properties used</h4>
-     * This operation uses the following properties in addition to method parameters:
+     * <p>This operation uses the following properties in addition to method parameters:</p>
      * <ul>
      *   <li>{@linkplain #getExecutionMode() Execution mode} (parallel or sequential).</li>
      *   <li>{@linkplain #getErrorHandler() Error handler} (custom action executed if an exception is thrown).</li>
      * </ul>
      *
-     * <h4>Result relationship with source</h4>
+     * <p><b>Result relationship with source:</b>
      * This method fetches (from property values) or computes statistics immediately.
-     * Changes in the {@code source} image after this method call do not change the results.
+     * Changes in the {@code source} image after this method call do not change the results.</p>
      *
      * @param  source          the image for which to compute statistics.
      * @param  areaOfInterest  pixel coordinates of the area of interest, or {@code null} for the default.
@@ -643,23 +673,21 @@ public class ImageProcessor implements Cloneable {
      *       is returned.</li>
      * </ul>
      *
-     * <h4>Sample converters</h4>
-     * An arbitrary {@link DoubleUnaryOperator} can be applied on sample values before to add them to statistics.
+     * <p>An arbitrary {@link DoubleUnaryOperator} can be applied on sample values before to add them to statistics.
      * The main purpose is to replace "no-data values" by {@link Double#NaN} values for instructing
      * {@link Statistics#accept(double)} to ignore them. The {@link #filterNodataValues(Number...)}
-     * convenience method can be used for building an operator filtering "no data" sample values.
+     * convenience method can be used for building an operator filtering "no data" sample values.</p>
      *
-     * <h5>API design note</h5>
+     * <p><b>API design note:</b>
      * The {@code areaOfInterest} and {@code sampleFilters} arguments are complementary.
      * Both of them filter the data accepted for statistics. In ISO 19123 terminology,
      * the {@code areaOfInterest} argument filters the <i>coverage domain</i> while
      * the {@code sampleFilters} argument filters the <i>coverage range</i>.
      * Another connection with OGC/ISO standards is that {@link DoubleUnaryOperator} in this context
      * does the same work as {@linkplain SampleDimension#getTransferFunction() transfer function}.
-     * It can be useful for images not managed by a {@link org.apache.sis.coverage.grid.GridCoverage}.
+     * It can be useful for images not managed by a {@link org.apache.sis.coverage.grid.GridCoverage}.</p>
      *
-     * <h4>Properties used</h4>
-     * This operation uses the following properties in addition to method parameters:
+     * <p>This operation uses the following properties in addition to method parameters:</p>
      * <ul>
      *   <li>{@linkplain #getExecutionMode() Execution mode} (parallel or sequential).</li>
      *   <li>{@linkplain #getErrorHandler() Error handler} (whether to fail if an exception is thrown).</li>
@@ -760,16 +788,15 @@ public class ImageProcessor implements Cloneable {
      * value will be the {@value PlanarImage#SAMPLE_DIMENSIONS_KEY} image property value if defined.
      * That value can be an array, in which case the sample dimension of the visible band is taken.
      *
-     * <h4>Properties used</h4>
-     * This operation uses the following properties in addition to method parameters:
+     * <p>This operation uses the following properties in addition to method parameters:</p>
      * <ul>
      *   <li>(none)</li>
      * </ul>
      *
-     * <h4>Limitation</h4>
+     * <p><b>Limitation:</b>
      * Current implementation can stretch only gray scale images (a future version may extend support to images
      * using {@linkplain java.awt.image.IndexColorModel index color models}). If this method cannot stretch the
-     * color ramp, for example because the given image is an RGB image, then the image is returned unchanged.
+     * color ramp, for example because the given image is an RGB image, then the image is returned unchanged.</p>
      *
      * @param  source     the image to recolor.
      * @param  modifiers  modifiers for narrowing the range of values, or {@code null} if none.
@@ -833,8 +860,7 @@ public class ImageProcessor implements Cloneable {
      * then the returned image will also be a {@link WritableRenderedImage}.
      * In such case values written in the returned image will be written directly in the source image.</p>
      *
-     * <h4>Properties used</h4>
-     * This operation uses the following properties in addition to method parameters:
+     * <p>This operation uses the following properties in addition to method parameters:</p>
      * <ul>
      *   <li>(none)</li>
      * </ul>
@@ -882,30 +908,29 @@ public class ImageProcessor implements Cloneable {
      * An empty array element (i.e. zero band to select) discards the corresponding source image.
      * In the latter case, the discarded element in the {@code sources} array may be {@code null}.
      *
-     * <h4>Restrictions</h4>
+     * <p><b>Restrictions:</b>
      * All images shall use the same {@linkplain SampleModel#getDataType() data type},
      * and all source images shall intersect each other with a non-empty intersection area.
-     * However it is not required that all images have the same bounds or the same tiling scheme.
+     * However it is not required that all images have the same bounds or the same tiling scheme.</p>
      *
-     * <h4>Writable image</h4>
+     * <p><b>Writable image:</b>
      * If all source images are {@link WritableRenderedImage} instances,
      * then the returned image will also be a {@link WritableRenderedImage}.
      * In such case values written in the returned image will be copied back
-     * to the source images.
+     * to the source images.</p>
      *
-     * <h4>Memory saving</h4>
+     * <p><b>Memory saving:</b>
      * The returned image may opportunistically share the underlying data arrays of
      * some source images. Bands are really copied only when sharing is not possible.
-     * The actual strategy may be a mix of both arrays sharing and bands copies.
+     * The actual strategy may be a mix of both arrays sharing and bands copies.</p>
      *
-     * <h4>Repeated bands</h4>
+     * <p><b>Repeated bands:</b>
      * For any value of <var>i</var>, the array at {@code bandsPerSource[i]} shall not contain duplicated values.
      * This restriction is for capturing common errors, in order to reduce the risk of accidental band repetition.
      * However the same band can be repeated indirectly if the same image is repeated at different values of <var>i</var>.
-     * But even when a source band is referenced many times, all occurrences still share pixel data copied at most once.
+     * But even when a source band is referenced many times, all occurrences still share pixel data copied at most once.</p>
      *
-     * <h4>Properties used</h4>
-     * This operation uses the following properties in addition to method parameters:
+     * <p>This operation uses the following properties in addition to method parameters:</p>
      * <ul>
      *   <li>{@linkplain #getColorizer() Colorizer}.</li>
      *   <li>{@linkplain #getExecutionMode() Execution mode} (parallel or sequential).</li>
@@ -943,17 +968,16 @@ public class ImageProcessor implements Cloneable {
      * that some sources will never be drawn (i.e., are fully hidden behind the first images).
      * If only one source appears to be effectively used, this method returns that image directly.</p>
      *
-     * <h4>Optimization</h4>
+     * <p><b>Optimization:</b>
      * The returned image may share some tiles from any source images (without copy)
-     * if the tile can be used directly with no change.
+     * if the tile can be used directly with no change.</p>
      *
      * <p><b>Preconditions:</b>
      * All source images shall have the same number of bands (but not necessarily the same sample model).
      * All source images should have equivalent color model, otherwise color consistency is not guaranteed.
      * At least one image shall intersect the given bounds.</p>
      *
-     * <h4>Properties used</h4>
-     * This operation uses the following properties in addition to method parameters:
+     * <p>This operation uses the following properties in addition to method parameters:</p>
      * <ul>
      *   <li>{@linkplain #getImageLayout() Image layout} for the desired sample model and color model.</li>
      *   <li>{@linkplain ImageLayout#isImageBoundsAdjustmentAllowed Image bounds adjustment flag} for deciding
@@ -997,8 +1021,7 @@ public class ImageProcessor implements Cloneable {
      * <p><b>Precondition:</b>
      * The new sample model shall have the same number of bands as in the given image.</p>
      *
-     * <h4>Properties used</h4>
-     * This operation uses the following properties in addition to method parameters:
+     * <p>This operation uses the following properties in addition to method parameters:</p>
      * <ul>
      *   <li>{@linkplain #getImageLayout() Image layout} for the default sample model.</li>
      *   <li>{@linkplain ImageLayout#isImageBoundsAdjustmentAllowed Image bounds adjustment flag} for deciding
@@ -1019,7 +1042,7 @@ public class ImageProcessor implements Cloneable {
         final boolean parallel;
         synchronized (this) {
             layout = this.layout;
-            parallel = executionMode != Mode.SEQUENTIAL;
+            parallel = parallel(source);
         }
         if (sampleModel == null) {
             sampleModel = layout.sampleModel;
@@ -1034,8 +1057,7 @@ public class ImageProcessor implements Cloneable {
      * If {@code maskInside} is {@code false}, then the mask is reversed:
      * the pixels set to fill values are the ones outside the shape.
      *
-     * <h4>Properties used</h4>
-     * This operation uses the following properties in addition to method parameters:
+     * <p>This operation uses the following properties in addition to method parameters:</p>
      * <ul>
      *   <li>{@linkplain #getFillValues() Fill values} values to assign to pixels inside/outside the shape.</li>
      * </ul>
@@ -1082,15 +1104,14 @@ public class ImageProcessor implements Cloneable {
      * and extraneous elements are ignored. Those ranges do not need to encompass all possible values;
      * it is sufficient to provide only typical or "most interesting" ranges.</p>
      *
-     * <h4>Properties used</h4>
-     * This operation uses the following properties in addition to method parameters:
+     * <p>This operation uses the following properties in addition to method parameters:</p>
      * <ul>
      *   <li>{@linkplain #getColorizer() Colorizer} for customizing the rendered image color model.</li>
      * </ul>
      *
-     * <h4>Result relationship with source</h4>
+     * <p><b>Result relationship with source:</b>
      * Changes in the source image are reflected in the returned image
-     * if the source image notifies {@linkplain java.awt.image.TileObserver tile observers}.
+     * if the source image notifies {@linkplain java.awt.image.TileObserver tile observers}.</p>
      *
      * @param  source        the image for which to convert sample values.
      * @param  sourceRanges  approximate ranges of values for each band in source image, or {@code null} if unknown.
@@ -1127,16 +1148,18 @@ public class ImageProcessor implements Cloneable {
     /**
      * Verifies that the given rectangle is non-empty.
      * This method assumes that the argument name is "bounds".
+     * Null argument is accepted because the bounds can be optional for some operations.
      */
     private static void ensureNonEmpty(final Rectangle bounds) {
-        if (bounds.isEmpty()) {
+        if (bounds != null && bounds.isEmpty()) {
             throw new IllegalArgumentException(Errors.format(Errors.Keys.EmptyArgument_1, "bounds"));
         }
     }
 
     /**
-     * Creates a new image which will resample the given image. The resampling operation is defined
-     * by a potentially non-linear transform from the <em>new</em> image to the specified <em>source</em> image.
+     * Creates a new image which will resample the given image.
+     * The resampling operation is defined by a potentially non-linear transform
+     * of pixel coordinates from the <em>new</em> image to the specified <em>source</em> image.
      * That transform should map {@linkplain org.apache.sis.coverage.grid.PixelInCell#CELL_CENTER pixel centers}.
      * If that transform produces coordinates that are outside source envelope bounds, then the corresponding pixels
      * in the new image are set to {@linkplain #getFillValues() fill values}. Otherwise sample values are interpolated
@@ -1146,8 +1169,7 @@ public class ImageProcessor implements Cloneable {
      * then this method will use {@linkplain PlanarImage#getSources() the source} of the given source.
      * The intent is to avoid resampling a resampled image; instead this method works on the original data.</p>
      *
-     * <h4>Properties used</h4>
-     * This operation uses the following properties in addition to method parameters:
+     * <p>This operation uses the following properties in addition to method parameters:</p>
      * <ul>
      *   <li>{@linkplain #getInterpolation() Interpolation method} (nearest neighbor, bilinear, <i>etc</i>).</li>
      *   <li>{@linkplain #getFillValues() Fill values} for pixels outside source image.</li>
@@ -1157,9 +1179,9 @@ public class ImageProcessor implements Cloneable {
      *       for enabling faster resampling at the cost of lower precision.</li>
      * </ul>
      *
-     * <h4>Result relationship with source</h4>
+     * <p><b>Result relationship with source:</b>
      * Changes in the source image are reflected in the returned images
-     * if the source image notifies {@linkplain java.awt.image.TileObserver tile observers}.
+     * if the source image notifies {@linkplain java.awt.image.TileObserver tile observers}.</p>
      *
      * @param  source    the image to be resampled.
      * @param  bounds    domain of pixel coordinates of resampled image to create. Fields are updated in-place
@@ -1180,8 +1202,10 @@ public class ImageProcessor implements Cloneable {
         boolean isIdentity = toSource.isIdentity();
         RenderedImage resampled = null;
         for (;;) {
-            if (isIdentity && bounds.x == source.getMinX() && bounds.y == source.getMinY() &&
-                    bounds.width == source.getWidth() && bounds.height == source.getHeight())
+            if (isIdentity && bounds.x      == source.getMinX()
+                           && bounds.y      == source.getMinY()
+                           && bounds.width  == source.getWidth()
+                           && bounds.height == source.getHeight())
             {
                 resampled = source;
                 break;
@@ -1235,6 +1259,96 @@ public class ImageProcessor implements Cloneable {
     }
 
     /**
+     * Creates a new image which will aggregate the pixel values of the given image.
+     * The aggregating operation is defined by a potentially non-linear transform
+     * of pixel coordinates from the specified <em>source</em> image to the <em>new</em> image.
+     * That transform should map {@linkplain org.apache.sis.coverage.grid.PixelInCell#CELL_CORNER pixel corners}.
+     *
+     * <p>This operation can be used as an alternative to
+     * {@link #resample(RenderedImage, Rectangle, MathTransform) resample(…)}
+     * when an aggregation method is desired instead of an interpolation method.
+     * For example, weighted averages are preferred to bilinear interpolations when
+     * pixel values are proportional to physical energy and the total energy needs to be preserved.
+     * This operation can also be used as a fallback
+     * when {@code resample(…)} fails because of a {@link TransformException}.
+     * Since {@code resample(…)} and {@code aggregate(…)} use {@link MathTransform} in opposite directions,
+     * an exception thrown in one direction may be absent in the opposite direction.</p>
+     *
+     * <p>Contrary to {@code resample(…)} , this operation computes all tiles immediately when one tile is requested.
+     * For very large images, {@link #resample(RenderedImage, Rectangle, MathTransform) resample(…)} is preferred
+     * because it defers computation on a tile-by-tile basis instead of computing the whole image.</p>
+     *
+     * <p>This operation uses the following properties in addition to method parameters:</p>
+     * <ul>
+     *   <li>{@linkplain #getAggregation()   Aggregation method} (weighted average, <i>etc</i>).</li>
+     *   <li>{@linkplain #getFillValues()    Fill values} for missing bands in source images.</li>
+     *   <li>{@linkplain #getImageLayout()   Image layout} for inferring a sample model.</li>
+     *   <li>{@linkplain #getExecutionMode() Execution mode} (parallel or sequential).</li>
+     * </ul>
+     *
+     * @param  source      the image to be resampled.
+     * @param  bounds      domain of pixel coordinates of the aggregated image, or {@code null} for automatic.
+     * @param  fromSource  conversion of pixel corner coordinates from {@code source} image to aggregated image.
+     * @return aggregation of pixel values of the given source image.
+     *
+     * @since SIS 1.8
+     */
+    public RenderedImage aggregate(final RenderedImage source, final Rectangle bounds, final MathTransform fromSource) {
+        ArgumentChecks.ensureNonNull("source", source);
+        ArgumentChecks.ensureNonNull("fromSource", fromSource);
+        return aggregate(Map.of(source, fromSource), bounds);
+    }
+
+    /**
+     * Creates a new image which will aggregate the pixel values of the given images.
+     * Aggregating is the action of computing the pixel values of an image from the
+     * values of overlapping pixels in one or many source images.
+     * The aggregation can be performed by statistic methods such as weighted average.
+     * Each source image is associated with a potentially non-linear transform of
+     * pixel coordinates from the <em>source</em> image to the <em>new</em> image.
+     * These transforms should map {@linkplain org.apache.sis.coverage.grid.PixelInCell#CELL_CORNER pixel corners}.
+     *
+     * <p>This operation uses the following properties in addition to method parameters:</p>
+     * <ul>
+     *   <li>{@linkplain #getAggregation()   Aggregation method} (weighted average, <i>etc</i>).</li>
+     *   <li>{@linkplain #getFillValues()    Fill values} for missing bands in source images.</li>
+     *   <li>{@linkplain #getImageLayout()   Image layout} for inferring a sample model.</li>
+     *   <li>{@linkplain #getExecutionMode() Execution mode} (parallel or sequential).</li>
+     * </ul>
+     *
+     * @param  sources   the images to aggregate with their transforms from <em>source</em> to <em>new</em> image.
+     * @param  bounds    domain of pixel coordinates of the aggregated image, or {@code null} for automatic.
+     * @return aggregation of pixel values of all given source images.
+     *
+     * @since SIS 1.8
+     */
+    @SuppressWarnings("LocalVariableHidesMemberVariable")
+    public RenderedImage aggregate(final Map<RenderedImage, MathTransform> sources, final Rectangle bounds) {
+        ArgumentChecks.ensureNonNull("sources", sources);
+        final RenderedImage source = Containers.peekFirst(sources.keySet());
+        ensureNonEmpty(bounds);
+        final ImageLayout layout;
+        final Aggregation aggregation;
+        final Number[]    fillValues;
+        final boolean     parallel;
+        synchronized (this) {
+            layout      = this.layout;
+            aggregation = this.aggregation;
+            fillValues  = this.fillValues;
+            parallel    = parallel(source);
+        }
+        final AggregatedImage image;
+        try {
+            image = new AggregatedImage(sources, layout, bounds, aggregation, fillValues);
+        } catch (TransformException e) {
+            throw (ImagingOpException) new ImagingOpException(null).initCause(e);
+        }
+        image.parallel = parallel;
+        // We do not invoke `unique(…)` because `equals/hashCode` are not implemented yet.
+        return image;
+    }
+
+    /**
      * Creates an overview of the given image computed by the average of 4 pixels.
      * NaN values are omitted from the average. If all values in a block of 4 pixels are NaN,
      * then the first value (the upper-left corner of the 4 pixels block) is retained.
@@ -1252,9 +1366,9 @@ public class ImageProcessor implements Cloneable {
      * └               ┘
      * }
      *
-     * <h4>Result relationship with source</h4>
+     * <p><b>Result relationship with source:</b>
      * Changes in the source image are reflected in the returned images
-     * if the source image notifies {@linkplain java.awt.image.TileObserver tile observers}.
+     * if the source image notifies {@linkplain java.awt.image.TileObserver tile observers}.</p>
      *
      * @param  source  the image for which to compute an overview.
      * @return image overview.
@@ -1270,8 +1384,7 @@ public class ImageProcessor implements Cloneable {
      * Computes immediately all tiles in the given region of interest, then returns an image with those tiles ready.
      * Computations will use many threads if {@linkplain #getExecutionMode() execution mode} is parallel.
      *
-     * <h4>Properties used</h4>
-     * This operation uses the following properties in addition to method parameters:
+     * <p>This operation uses the following properties in addition to method parameters:</p>
      * <ul>
      *   <li>{@linkplain #getExecutionMode() Execution mode} (parallel or sequential).</li>
      *   <li>{@linkplain #getErrorHandler() Error handler} (whether to fail if an exception is thrown).</li>
@@ -1310,7 +1423,7 @@ public class ImageProcessor implements Cloneable {
      * There is no guarantee about the number of bands in returned image or about which formula is used for converting
      * floating point values to integer values.</p>
      *
-     * <h4>How to specify colors</h4>
+     * <h4>How to specify image colors</h4>
      * The image colors can be controlled by the {@link Colorizer} set on this image processor.
      * It is possible to {@linkplain Colorizer#forInstance(ColorModel) specify explicitly} the
      * {@link ColorModel} to use, but this approach is unsafe because it depends on the pixel values
@@ -1372,8 +1485,7 @@ public class ImageProcessor implements Cloneable {
      * The {@link Color} arrays may have any length; colors will be interpolated as needed for fitting
      * the ranges of values in the destination image.
      *
-     * <h4>Properties used</h4>
-     * This operation uses the following properties in addition to method parameters:
+     * <p>This operation uses the following properties in addition to method parameters:</p>
      * <ul>
      *   <li>{@linkplain #getColorizer() Colorizer} for customizing the rendered image color model.</li>
      * </ul>
@@ -1410,8 +1522,7 @@ public class ImageProcessor implements Cloneable {
      * There is no guarantee about the number of bands in returned image or about which formula is used for converting
      * floating point values to integer values.</p>
      *
-     * <h4>Properties used</h4>
-     * This operation uses the following properties in addition to method parameters:
+     * <p>This operation uses the following properties in addition to method parameters:</p>
      * <ul>
      *   <li>{@linkplain #getInterpolation() Interpolation method} (nearest neighbor, bilinear, <i>etc</i>).</li>
      *   <li>{@linkplain #getFillValues() Fill values} for pixels outside source image.</li>
@@ -1465,8 +1576,7 @@ public class ImageProcessor implements Cloneable {
      * and values are the isolines at the associated level.
      * If there are no isolines for a given level, there will be no corresponding entry in the map.
      *
-     * <h4>Properties used</h4>
-     * This operation uses the following properties in addition to method parameters:
+     * <p>This operation uses the following properties in addition to method parameters:</p>
      * <ul>
      *   <li>{@linkplain #getExecutionMode() Execution mode} (parallel or sequential).</li>
      * </ul>
@@ -1514,6 +1624,7 @@ public class ImageProcessor implements Cloneable {
             final Mode          executionMode;
             final ErrorHandler  errorHandler;
             final Interpolation interpolation;
+            final Aggregation   aggregation;
             final Number[]      fillValues;
             final ImageLayout   layout;
             final Colorizer     colorizer;
@@ -1522,19 +1633,21 @@ public class ImageProcessor implements Cloneable {
                 executionMode           = this.executionMode;
                 errorHandler            = this.errorHandler;
                 interpolation           = this.interpolation;
+                aggregation             = this.aggregation;
                 fillValues              = this.fillValues;
                 layout                  = this.layout;
                 colorizer               = this.colorizer;
                 positionalAccuracyHints = this.positionalAccuracyHints;
             }
             synchronized (other) {
-                return layout.equals(other.layout)                &&
-                      errorHandler.equals(other.errorHandler)     &&
-                      executionMode.equals(other.executionMode)   &&
-                      interpolation.equals(other.interpolation)   &&
-                      Objects.equals(colorizer, other.colorizer)  &&
-                      Arrays.equals(fillValues, other.fillValues) &&
-                      Arrays.equals(positionalAccuracyHints, other.positionalAccuracyHints);
+                return layout.equals(other.layout)
+                        && errorHandler      .equals(other.errorHandler)
+                        && executionMode     .equals(other.executionMode)
+                        && interpolation     .equals(other.interpolation)
+                        && aggregation       .equals(other.aggregation)
+                        && Objects.equals(colorizer, other.colorizer)
+                        && Arrays.equals(fillValues, other.fillValues)
+                        && Arrays.equals(positionalAccuracyHints, other.positionalAccuracyHints);
             }
         }
         return false;
@@ -1547,7 +1660,7 @@ public class ImageProcessor implements Cloneable {
      */
     @Override
     public synchronized int hashCode() {
-        return Objects.hash(getClass(), errorHandler, executionMode, colorizer, interpolation, layout)
+        return Objects.hash(getClass(), errorHandler, executionMode, colorizer, interpolation, aggregation, layout)
                 + 37 * Arrays.hashCode(fillValues)
                 + 39 * Arrays.hashCode(positionalAccuracyHints);
     }

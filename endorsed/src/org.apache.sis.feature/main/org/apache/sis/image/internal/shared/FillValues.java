@@ -119,6 +119,7 @@ public final class FillValues {
      *
      * @see #isFullyZero
      */
+    @SuppressWarnings("SuspiciousSystemArraycopy")
     public void fill(final WritableRaster tile) {
         final int xmin       = tile.getMinX();
         final int width      = tile.getWidth();
@@ -200,6 +201,8 @@ public final class FillValues {
 
     /**
      * Returns a hash code for the fill values.
+     *
+     * @return a hash code for this fill values container.
      */
     @Override
     public int hashCode() {

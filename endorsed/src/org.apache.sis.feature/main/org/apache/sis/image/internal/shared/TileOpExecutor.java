@@ -22,6 +22,7 @@ import java.util.stream.Collector;
 import java.util.function.BiConsumer;
 import java.util.function.BinaryOperator;
 import java.util.concurrent.ExecutionException;
+import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Future;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.awt.Point;
@@ -950,9 +951,10 @@ public class TileOpExecutor {
                 final Collector<? super Raster, A, R> collector, final TileErrorHandler errorHandler)
         {
             final Cursor<RenderedImage,A> cursor = executor.new Cursor<>(source, collector, errorHandler.isThrow());
-            final Future<?>[] workers = new Future<?>[cursor.getNumWorkers()];
+            final var workers = new Future<?>[cursor.getNumWorkers()];
+            final ExecutorService background = CommonExecutor.instance();
             for (int i=0; i<workers.length; i++) {
-                workers[i] = CommonExecutor.instance().submit(new ReadWork<>(cursor, collector));
+                workers[i] = background.submit(new ReadWork<>(cursor, collector));
             }
             final ReadWork<A> worker = new ReadWork<>(cursor, collector);
             worker.run();
@@ -1008,11 +1010,12 @@ public class TileOpExecutor {
                 final Collector<? super WritableRaster,A,R> collector, final TileErrorHandler errorHandler)
         {
             final Cursor<WritableRenderedImage,A> cursor = executor.new Cursor<>(target, collector, false);
-            final Future<?>[] workers = new Future<?>[cursor.getNumWorkers()];
+            final var workers = new Future<?>[cursor.getNumWorkers()];
+            final ExecutorService background = CommonExecutor.instance();
             for (int i=0; i<workers.length; i++) {
-                workers[i] = CommonExecutor.instance().submit(new WriteWork<>(cursor, collector));
+                workers[i] = background.submit(new WriteWork<>(cursor, collector));
             }
-            final WriteWork<A> worker = new WriteWork<>(cursor, collector);
+            final var worker = new WriteWork<A>(cursor, collector);
             worker.run();
             return cursor.finish(workers, collector, errorHandler);
         }
