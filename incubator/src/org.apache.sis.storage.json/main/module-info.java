@@ -43,9 +43,11 @@ module org.apache.sis.storage.json {
     exports org.apache.sis.storage.json;
     exports org.apache.sis.storage.coveragejson;
     exports org.apache.sis.storage.coveragejson.binding;
-    exports org.apache.sis.storage.geopose;
+    exports org.apache.sis.storage.geojson;
     exports org.apache.sis.storage.geojson.binding;
-    exports org.apache.sis.storage.ogcjson;
+    opens   org.apache.sis.storage.geojson.binding to com.fasterxml.jackson.databind;
+    exports org.apache.sis.storage.geopose;
     exports org.apache.sis.storage.geopose.binding;
+    exports org.apache.sis.storage.ogcjson;
     exports org.apache.sis.storage.ubjson;
 }
