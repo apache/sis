@@ -1286,6 +1286,10 @@ public class ImageProcessor implements Cloneable {
      *   <li>{@linkplain #getExecutionMode() Execution mode} (parallel or sequential).</li>
      * </ul>
      *
+     * <p><b>Result relationship with source:</b>
+     * Changes in the source image will cause a recomputation of the returned image
+     * if the source image notifies {@linkplain java.awt.image.TileObserver tile observers}.</p>
+     *
      * @param  source      the image to be resampled.
      * @param  bounds      domain of pixel coordinates of the aggregated image, or {@code null} for automatic.
      * @param  fromSource  conversion of pixel corner coordinates from {@code source} image to aggregated image.
@@ -1315,6 +1319,10 @@ public class ImageProcessor implements Cloneable {
      *   <li>{@linkplain #getImageLayout()   Image layout} for inferring a sample model.</li>
      *   <li>{@linkplain #getExecutionMode() Execution mode} (parallel or sequential).</li>
      * </ul>
+     *
+     * <p><b>Result relationship with source:</b>
+     * Changes in any source image will cause a recomputation of the returned image
+     * if the source images notify {@linkplain java.awt.image.TileObserver tile observers}.</p>
      *
      * @param  sources   the images to aggregate with their transforms from <em>source</em> to <em>new</em> image.
      * @param  bounds    domain of pixel coordinates of the aggregated image, or {@code null} for automatic.

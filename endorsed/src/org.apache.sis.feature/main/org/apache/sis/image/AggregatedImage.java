@@ -42,6 +42,7 @@ import org.apache.sis.image.internal.shared.ImageUtilities;
 import org.apache.sis.coverage.grid.PixelInCell;
 import org.apache.sis.pending.jdk.JDK18;
 import org.apache.sis.system.CommonExecutor;
+import org.apache.sis.util.Disposable;
 import org.apache.sis.util.Exceptions;
 import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.resources.Errors;
@@ -76,7 +77,7 @@ import org.opengis.coverage.grid.SequenceType;
  *
  * @since SIS 1.8
  */
-public class AggregatedImage extends PlanarImage {
+public class AggregatedImage extends MonolithicImage implements Disposable {
     /**
      * The images containing the pixels to aggregate in this image.
      */
@@ -141,6 +142,17 @@ public class AggregatedImage extends PlanarImage {
      * @see #getTile(int, int)
      */
     private WritableRaster[] tiles;
+
+    /**
+     * Whether the tile content have been computed.
+     */
+    private boolean isComputed;
+
+    /**
+     * Whether listeners to writable images have been registered.
+     * This is done only when first needed and use weak references.
+     */
+    private boolean hasAddedListeners;
 
     /**
      * Whether parallel execution is allowed.
@@ -378,7 +390,14 @@ public class AggregatedImage extends PlanarImage {
         checkTileIndex("tileX", minTileX, numXTiles, tileX);
         checkTileIndex("tileY", minTileY, numYTiles, tileY);
         final int chunkCellStride = effectiveNumBands * NUM_ACCUMULATORS;
-        if (tiles == null) try {
+        if (!isComputed) try {
+            if (tiles == null) {
+                tiles = new WritableRaster[Math.multiplyExact(numXTiles, numYTiles)];
+            }
+            if (!hasAddedListeners) {
+                hasAddedListeners = true;
+                addListeners(sources);
+            }
             // Execute the aggregation now, possibly using many threads.
             final double[][] data = new SourceScanner().call();
             /*
@@ -394,7 +413,7 @@ public class AggregatedImage extends PlanarImage {
                     getSampleModel(),
                     new Rectangle(minX, minY, width, height),
                     new Point(minTileX, minTileY),
-                    tiles = new WritableRaster[numXTiles * numYTiles]);
+                    tiles);
 
             for (int i=0; i<data.length; i++) {
                 final double[] tileData = data[i];
@@ -426,6 +445,7 @@ public class AggregatedImage extends PlanarImage {
                     }
                 }
             }
+            isComputed = true;
         } catch (ImagingOpException e) {
             throw e;
         } catch (Exception cause) {
@@ -674,5 +694,28 @@ public class AggregatedImage extends PlanarImage {
             }
             return data;
         }
+    }
+
+    /**
+     * Discards all tiles and marks this image as in need to be recomputed.
+     * This method is invoked automatically if any source image is an instance of
+     * {@link java.awt.image.WritableRenderedImage} and the content of that image changed.
+     */
+    @Override
+    protected synchronized void recompute() {
+        isComputed = false;
+    }
+
+    /**
+     * Advises this image that its tiles will no longer be requested.
+     * This method removes all tiles from the cache and stops observation
+     * of {@link java.awt.image.WritableRenderedImage} sources.
+     * This image should not be used anymore after this method call.
+     */
+    @Override
+    public synchronized void dispose() {
+        tiles = null;
+        isComputed = false;
+        removeListeners(sources);
     }
 }
