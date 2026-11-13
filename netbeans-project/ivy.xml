@@ -24,7 +24,8 @@
         <dependency org="joda-time"              name="joda-time"               rev="2.12.7"/>
         <dependency org="com.google.guava"       name="guava"                   rev="33.7.2-jre"/>
         <dependency org="org.libreoffice"        name="libreoffice"             rev="26.2.2"/>
-        <dependency org="software.amazon.awssdk" name="s3"                      rev="2.55.9"/>
+        <dependency org="software.amazon.awssdk" name="aws-core"                rev="2.57.13"/>
+        <dependency org="software.amazon.awssdk" name="s3"                      rev="2.57.13"/>
         <dependency org="org.antlr"              name="antlr4-maven-plugin"     rev="4.13.2"/>
         <dependency org="javax.servlet"          name="javax.servlet-api"       rev="4.0.1"/>
         <dependency org="jakarta.servlet"        name="jakarta.servlet-api"     rev="6.1.0"/>

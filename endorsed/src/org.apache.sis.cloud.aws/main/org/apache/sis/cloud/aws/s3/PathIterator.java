@@ -187,7 +187,8 @@ verify:     do if (directories == null || !nextDirectory()) {
             int last = path.length();
             do if ((last -= separatorLength) < 0) return false;
             while (path.startsWith(separator, last));
-            if (path.regionMatches(0, directory.key, 0, last + separatorLength)) {
+            // `directory.key` is null when listing the root of a bucket (no object can have the name of the bucket).
+            if (directory.key != null && path.regionMatches(0, directory.key, 0, last + separatorLength)) {
                 return false;
             }
         }

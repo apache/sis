@@ -54,6 +54,7 @@ import software.amazon.awssdk.services.s3.model.S3Object;
 import software.amazon.awssdk.services.s3.model.GetObjectRequest;
 import software.amazon.awssdk.services.s3.model.GetObjectResponse;
 import software.amazon.awssdk.services.s3.model.NoSuchBucketException;
+import software.amazon.awssdk.services.s3.model.HeadBucketRequest;
 import org.apache.sis.util.CharSequences;
 import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.resources.Errors;
@@ -673,7 +674,8 @@ public class FileService extends FileSystemProvider {
             final boolean exists;
             if (kp.isDirectory) {
                 final Bucket bucket = kp.bucket();
-                exists = (bucket != null) && (bucket.creationDate() != null);
+                // A bucket built from its name only (e.g. from an URI) has no creation date: ask the server.
+                exists = (bucket != null) && (bucket.creationDate() != null || bucketExists(kp));
             } else {
                 final S3Object metadata = kp.metadata();
                 exists = (metadata != null) && (metadata.size() != null);
@@ -691,6 +693,22 @@ public class FileService extends FileSystemProvider {
                 case EXECUTE: throw new AccessDeniedException(path.toString());
                 default: throw new UnsupportedOperationException(Errors.format(Errors.Keys.UnsupportedArgumentValue_1, mode));
             }
+        }
+    }
+
+    /**
+     * Returns whether the bucket of the given path exists on the server.
+     *
+     * @param  kp  an absolute path.
+     * @return {@code false} if the server reports that the bucket does not exist.
+     * @throws SdkException if the request failed for another reason (e.g. access denied).
+     */
+    private static boolean bucketExists(final KeyPath kp) {
+        try {
+            kp.fs.client().headBucket(HeadBucketRequest.builder().bucket(kp.bucket).build());
+            return true;
+        } catch (NoSuchBucketException e) {
+            return false;
         }
     }
 

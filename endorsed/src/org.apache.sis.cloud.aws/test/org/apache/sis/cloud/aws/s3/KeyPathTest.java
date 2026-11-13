@@ -129,6 +129,23 @@ public final class KeyPathTest extends TestCase {
     }
 
     /**
+     * Tests {@link KeyPath#toString()} on the name of a directory.
+     * It used to contain the server part, for example {@code "S3://testhost:8581/second"}.
+     *
+     * @throws URISyntaxException if an error occurred while creating the <abbr>URI</abbr> for the self-hosted S3.
+     */
+    @Test
+    public void testDirectoryFileName() throws URISyntaxException {
+        for (final boolean selfHosted : new boolean[] {false, true}) {
+            createPaths(selfHosted);
+            assertNotNull(absolute.getRoot());
+            final var directory = new KeyPath((KeyPath) absolute.getRoot(), "first/second", true);
+            assertEquals("second", directory.getFileName().toString());
+            assertEquals("second", new KeyPath(fs, "second", true).toString());
+        }
+    }
+
+    /**
      * Tests {@link KeyPath#getParent()}.
      *
      * @throws URISyntaxException if an error occurred while creating the <abbr>URI</abbr> for the self-hosted S3.

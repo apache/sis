@@ -744,8 +744,8 @@ search:     if (key != null) {
      */
     @Override
     public String toString() {
-        if (bucket == null && !isDirectory) {
-            return key;
+        if (bucket == null && (key != null || !isDirectory)) {
+            return key; // Relative path (e.g. a file name), possibly a directory: no "server part".
         }
         final var sb = fs.server.toString(bucket);
         if (key != null) {
