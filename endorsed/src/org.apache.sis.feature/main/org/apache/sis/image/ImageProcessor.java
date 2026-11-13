@@ -52,7 +52,6 @@ import org.apache.sis.math.Statistics;
 import org.apache.sis.util.ArraysExt;
 import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.resources.Errors;
-import org.apache.sis.util.collection.Containers;
 import org.apache.sis.util.collection.WeakHashSet;
 import org.apache.sis.system.Modules;
 import org.apache.sis.image.processing.isoline.Isolines;
@@ -1300,7 +1299,7 @@ public class ImageProcessor implements Cloneable {
     public RenderedImage aggregate(final RenderedImage source, final Rectangle bounds, final MathTransform fromSource) {
         ArgumentChecks.ensureNonNull("source", source);
         ArgumentChecks.ensureNonNull("fromSource", fromSource);
-        return aggregate(Map.of(source, fromSource), bounds);
+        return aggregate(bounds, new AggregatedImage.Source(source, fromSource));
     }
 
     /**
@@ -1324,16 +1323,15 @@ public class ImageProcessor implements Cloneable {
      * Changes in any source image will cause a recomputation of the returned image
      * if the source images notify {@linkplain java.awt.image.TileObserver tile observers}.</p>
      *
-     * @param  sources   the images to aggregate with their transforms from <em>source</em> to <em>new</em> image.
-     * @param  bounds    domain of pixel coordinates of the aggregated image, or {@code null} for automatic.
+     * @param  bounds   domain of pixel coordinates of the aggregated image, or {@code null} for automatic.
+     * @param  sources  the images to aggregate with their transforms from <em>source</em> to <em>new</em> image.
      * @return aggregation of pixel values of all given source images.
      *
      * @since SIS 1.8
      */
     @SuppressWarnings("LocalVariableHidesMemberVariable")
-    public RenderedImage aggregate(final Map<RenderedImage, MathTransform> sources, final Rectangle bounds) {
-        ArgumentChecks.ensureNonNull("sources", sources);
-        final RenderedImage source = Containers.peekFirst(sources.keySet());
+    public RenderedImage aggregate(final Rectangle bounds, final AggregatedImage.Source... sources) {
+        ArgumentChecks.ensureNonEmpty("sources", sources);
         ensureNonEmpty(bounds);
         final ImageLayout layout;
         final Aggregation aggregation;
@@ -1343,7 +1341,7 @@ public class ImageProcessor implements Cloneable {
             layout      = this.layout;
             aggregation = this.aggregation;
             fillValues  = this.fillValues;
-            parallel    = parallel(source);
+            parallel    = parallel(sources[0].source);
         }
         final AggregatedImage image;
         try {

@@ -16,11 +16,10 @@
  */
 package org.apache.sis.image;
 
-import java.util.Map;
 import java.util.Vector;
 import java.util.Arrays;
 import java.util.ArrayList;
-import java.util.ConcurrentModificationException;
+import java.util.Objects;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Callable;
 import java.util.concurrent.Future;
@@ -79,15 +78,49 @@ import org.opengis.coverage.grid.SequenceType;
  */
 public class AggregatedImage extends MonolithicImage implements Disposable {
     /**
-     * The images containing the pixels to aggregate in this image.
+     * An image to aggregate together with its transforms from <em>source</em> to <em>aggregated</em> image.
+     *
+     * @author  Martin Desruisseaux (Geomatys)
+     * @version 1.8
+     *
+     * @since SIS 1.8
      */
-    private final RenderedImage[] sources;
+    public static class Source {
+        /**
+         * A source image providing values for the aggregated image to create.
+         */
+        public final RenderedImage source;
+
+        /**
+         * Transform of pixel coordinates from <em>source</em> image to <em>aggregated</em> image.
+         * The transform shall map {@linkplain PixelInCell#CELL_CORNER pixel corners}.
+         */
+        public final MathTransform fromSource;
+
+        /**
+         * Creates a new (source, transform) pair.
+         *
+         * @param source     a source image providing values for the aggregated image to create.
+         * @param fromSource transform of pixel coordinates from <em>source</em> image to <em>aggregated</em> image.
+         */
+        public Source(final RenderedImage source, final MathTransform fromSource) {
+            this.source     = Objects.requireNonNull(source);
+            this.fromSource = Objects.requireNonNull(fromSource);
+            ArgumentChecks.ensureDimensionsMatch("fromSource", BIDIMENSIONAL, BIDIMENSIONAL, fromSource);
+        }
+
+        /*
+         * A future version may add a global weight for the whole image. It may be useful
+         * for aggregating images at different times or heights, with some times or heights
+         * closer than others to the targeted time or height.
+         */
+    }
 
     /**
-     * Conversions from pixel coordinates of <em>source</em> images to <em>this</em> image.
-     * The transforms map {@linkplain PixelInCell#CELL_CORNER pixel corners}.
+     * Images containing the pixels to aggregate in this image, together with their conversions
+     * of pixel coordinates from <em>source</em> images to <em>this</em> image.
      */
-    private final MathTransform[] fromSources;
+    private final Source[] sources;
 
     /**
      * Domain of pixel coordinates in this image.
@@ -172,49 +205,36 @@ public class AggregatedImage extends MonolithicImage implements Disposable {
      * @param  fillValues   the values to use if the source images have missing bands, or {@code null} for NaNs.
      * @throws TransformException if {@code bounds} is null and an error occurred while computing automatic bounds.
      */
-    public AggregatedImage(final Map<RenderedImage, MathTransform> sources,
-                           final ImageLayout layout,
+    public AggregatedImage(Source[] sources,
+                     final ImageLayout layout,
                            Rectangle bounds,
-                           final Aggregation aggregation,
-                           final Number[] fillValues)
+                     final Aggregation aggregation,
+                     final Number[] fillValues)
             throws TransformException
     {
-        ArgumentChecks.ensureNonNull("sources",     sources);
-        ArgumentChecks.ensureNonNull("layout",      layout);
-        ArgumentChecks.ensureNonNull("aggregation", aggregation);   // Anticipation for a future version.
-        final int numSources = sources.size();
-        if (numSources == 0) {
-            throw new IllegalArgumentException(Errors.format(Errors.Keys.EmptyArgument_1, "sources"));
-        }
-        this.sources     = new RenderedImage[numSources];
-        this.fromSources = new MathTransform[numSources];
+        ArgumentChecks.ensureNonEmpty("sources",     sources);
+        ArgumentChecks.ensureNonNull ("layout",      layout);
+        ArgumentChecks.ensureNonNull ("aggregation", aggregation);   // Anticipation for a future version.
+        this.sources = sources = sources.clone();
         /*
          * Store sources and transforms, checking their validity in same time.
          * Also compute the image bounds if it was not explicitly specified.
          */
         final boolean computeBounds = (bounds == null);
-        int i = 0, numBands = 0;
-        for (final var entry : sources.entrySet()) {
-            final RenderedImage source = entry.getKey();
-            final MathTransform fromSource = entry.getValue();
-            ArgumentChecks.ensureNonNullElement("sources[#].key",   i, source);
-            ArgumentChecks.ensureNonNullElement("sources[#].value", i, fromSource);
-            ArgumentChecks.ensureDimensionsMatch("sources", BIDIMENSIONAL, BIDIMENSIONAL, fromSource);
-            fromSources[i] = fromSource;
-            this.sources[i++] = source;
-            numBands = Math.max(numBands, ImageUtilities.getNumBands(source));
+        int numBands = 0;
+        for (int i=0; i<sources.length; i++) {
+            final Source entry = sources[i];
+            ArgumentChecks.ensureNonNullElement("sources", i, entry);
+            numBands = Math.max(numBands, ImageUtilities.getNumBands(entry.source));
             if (computeBounds) {
-                final Rectangle boundsOfSource = ImageUtilities.getBounds(source);
-                Shapes2D.transform(MathTransforms.bidimensional(fromSource), boundsOfSource, boundsOfSource);
+                final Rectangle boundsOfSource = ImageUtilities.getBounds(entry.source);
+                Shapes2D.transform(MathTransforms.bidimensional(entry.fromSource), boundsOfSource, boundsOfSource);
                 if (bounds == null) {
                     bounds = boundsOfSource;
                 } else {
                     bounds.add(boundsOfSource);
                 }
             }
-        }
-        if (i != numSources) {
-            throw new ConcurrentModificationException();    // New entries added while we were iterating.
         }
         /*
          * Store the specified or inferred image bounds.
@@ -227,7 +247,7 @@ public class AggregatedImage extends MonolithicImage implements Disposable {
         minY              = bounds.y;
         minTileX          = layout.preferredMinTileX;
         minTileY          = layout.preferredMinTileY;
-        sampleModel       = layout.createCompatibleSampleModel(this.sources[0], bounds);
+        sampleModel       = layout.createCompatibleSampleModel(sources[0].source, bounds);
         effectiveNumBands = Math.min(sampleModel.getNumBands(), numBands);
         if (effectiveNumBands >= Integer.MAX_VALUE / (CHUNK_SIZE * CHUNK_SIZE * NUM_ACCUMULATORS)) {
             throw new RasterFormatException(Errors.format(Errors.Keys.IllegalPropertyValue_2, "numBands", effectiveNumBands));
@@ -235,7 +255,7 @@ public class AggregatedImage extends MonolithicImage implements Disposable {
         final var values = new double[sampleModel.getNumBands()];
         Arrays.fill(values, Double.NaN);
         if (fillValues != null) {
-            for (i = Math.min(values.length, fillValues.length); --i >= 0;) {
+            for (int i = Math.min(values.length, fillValues.length); --i >= 0;) {
                 final Number value = fillValues[i];
                 if (value != null) {
                     values[i] = value.doubleValue();
@@ -256,6 +276,16 @@ public class AggregatedImage extends MonolithicImage implements Disposable {
     }
 
     /**
+     * Returns all source images.
+     */
+    @Override
+    final RenderedImage[] getSourceImages() {
+        final var images = new RenderedImage[sources.length];
+        Arrays.setAll(images, (i) -> sources[i].source);
+        return images;
+    }
+
+    /**
      * Returns the immediate sources of image data for this image.
      * This method returns all sources specified at construction time.
      *
@@ -264,7 +294,7 @@ public class AggregatedImage extends MonolithicImage implements Disposable {
     @Override
     @SuppressWarnings("UseOfObsoleteCollectionType")
     public Vector<RenderedImage> getSources() {
-        return new Vector<>(Arrays.asList(sources));
+        return new Vector<>(Arrays.asList(getSourceImages()));
     }
 
     /**
@@ -275,8 +305,8 @@ public class AggregatedImage extends MonolithicImage implements Disposable {
      */
     @Override
     public ColorModel getColorModel() {
-        for (final RenderedImage source : sources) {
-            final ColorModel cm = source.getColorModel();
+        for (final Source entry : sources) {
+            final ColorModel cm = entry.source.getColorModel();
             if (cm != null && cm.isCompatibleSampleModel(getSampleModel())) {
                 return cm;
             }
@@ -396,7 +426,7 @@ public class AggregatedImage extends MonolithicImage implements Disposable {
             }
             if (!hasAddedListeners) {
                 hasAddedListeners = true;
-                addListeners(sources);
+                registerSourceListeners();
             }
             // Execute the aggregation now, possibly using many threads.
             final double[][] data = new SourceScanner().call();
@@ -568,8 +598,8 @@ public class AggregatedImage extends MonolithicImage implements Disposable {
             final int chunkValueStride = effectiveNumBands * NUM_ACCUMULATORS;
             final int chunksPerImageRow = numChunks(getWidth());
             while (imageIndex < upperImageIndex) {
-                final MathTransform fromSource = fromSources[imageIndex];
-                final RenderedImage source = sources[imageIndex];
+                final MathTransform fromSource = sources[imageIndex].fromSource;
+                final RenderedImage source = sources[imageIndex].source;
                 final double[][] coordinates = new double[2][(source.getTileWidth() + 1) * BIDIMENSIONAL];
                 final int srcMinTileX = source.getMinTileX();
                 final int srcMinTileY = source.getMinTileY();
@@ -704,6 +734,10 @@ public class AggregatedImage extends MonolithicImage implements Disposable {
     @Override
     protected synchronized void recompute() {
         isComputed = false;
+        /*
+         * Existing tiles will be overwritten. No need to clear the tile content because
+         * every pixels will be overwritten, since they stay at the exact same locations.
+         */
     }
 
     /**
@@ -716,6 +750,6 @@ public class AggregatedImage extends MonolithicImage implements Disposable {
     public synchronized void dispose() {
         tiles = null;
         isComputed = false;
-        removeListeners(sources);
+        unregisterSourceListeners();
     }
 }

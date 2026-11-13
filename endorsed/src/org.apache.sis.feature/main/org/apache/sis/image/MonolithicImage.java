@@ -31,25 +31,30 @@ import java.awt.image.WritableRenderedImage;
  */
 abstract class MonolithicImage extends PlanarImage {
     /**
+     * The listener, or {@code null} if none.
+     */
+    private TileObserver listener;
+
+    /**
      * Creates a new monolithic image.
      */
     MonolithicImage() {
     }
 
     /**
-     * The listener, or {@code null} if none.
+     * Returns all source images as an array.
+     *
+     * @return source images, or an empty array if none.
      */
-    private TileObserver listener;
+    abstract RenderedImage[] getSourceImages();
 
     /**
      * Removes the listener from all images that are writable.
      * This method should be invoked in a synchronized block.
-     *
-     * @param  sources  the source images for which to remove the listener.
      */
-    final void removeListeners(final RenderedImage[] sources) {
+    final void unregisterSourceListeners() {
         if (listener != null) {
-            for (final RenderedImage source : sources) {
+            for (final RenderedImage source : getSourceImages()) {
                 if (source instanceof WritableRenderedImage) {
                     ((WritableRenderedImage) source).removeTileObserver(listener);
                 }
@@ -61,11 +66,9 @@ abstract class MonolithicImage extends PlanarImage {
     /**
      * Adds a listener by weak reference to all images that are writable.
      * This method should be invoked in a synchronized block.
-     *
-     * @param  sources  the source images for which to add a listener.
      */
-    final void addListeners(final RenderedImage[] sources) {
-        for (final RenderedImage source : sources) {
+    final void registerSourceListeners() {
+        for (final RenderedImage source : getSourceImages()) {
             if (source instanceof WritableRenderedImage) {
                 if (listener == null) {
                     listener = new Listener(this);
