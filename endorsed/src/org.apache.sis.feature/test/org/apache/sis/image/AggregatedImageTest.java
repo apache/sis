@@ -82,6 +82,11 @@ public final class AggregatedImageTest extends TestCase {
     private AggregatedImage image;
 
     /**
+     * Whether to enable parallel execution.
+     */
+    private boolean parallel;
+
+    /**
      * Creates a new test case.
      */
     public AggregatedImageTest() {
@@ -134,12 +139,9 @@ public final class AggregatedImageTest extends TestCase {
     private void createAggregatedImage(final AggregatedImage.Source... sources) throws TransformException {
         final var tileSize = new Dimension(tileWidth, tileHeight);
         final var minTile  = new Point(minTileX, minTileY);
-        image = new AggregatedImage(
-                sources,
-                new ImageLayout(null, tileSize, false, false, true, minTile),
-                bounds,
-                Aggregation.RASTER_SPACE_WEIGHTING,
-                null);      // Fill values.
+        final var layout   = new ImageLayout(null, tileSize, false, false, true, minTile);
+        image = new AggregatedImage(sources, layout, bounds, Aggregation.RASTER_SPACE_WEIGHTING, null);
+        image.parallel = parallel;
     }
 
     /**
@@ -273,6 +275,22 @@ public final class AggregatedImageTest extends TestCase {
                 1311, 1312, 1855, 1856, 1906,       2401,     NaN,  NaN,  NaN,  NaN,
                  NaN,  NaN, 2310, 2311, 2410,       2411,     NaN,  NaN,  NaN,  NaN,
                  NaN,  NaN, 2320, 2321, 2420,       2421,     NaN,  NaN,  NaN,  NaN);
+    }
+
+    /**
+     * Tests the aggregation of three source images using parallel execution.
+     * This is the same test as {@link #testThreeSources()}, with the same expected values.
+     * With three sources, the aggregation task is split in background tasks working on different images,
+     * and the task working on the last image is split again in background tasks working on different tiles.
+     * Since all partial sums in this test are exact, the result does not depend on the order in which the
+     * background tasks are merged.
+     *
+     * @throws TransformException if an error occurred while computing the bounds of the aggregated image.
+     */
+    @Test
+    public void testParallelExecution() throws TransformException {
+        parallel = true;
+        testThreeSources();
     }
 
     /**
