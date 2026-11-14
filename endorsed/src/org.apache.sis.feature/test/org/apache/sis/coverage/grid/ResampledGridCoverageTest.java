@@ -113,7 +113,7 @@ public final class ResampledGridCoverageTest extends TestCase {
                 random.nextInt(32) - 10,        // minTileX
                 random.nextInt(32) - 10,        // minTileY
                 random.nextBoolean());          // Banded or interleaved sample model
-        image.validate();
+        image.validate(false);
         image.initializeAllTiles(0);
         final int x = random.nextInt(32) - 10;
         final int y = random.nextInt(32) - 10;

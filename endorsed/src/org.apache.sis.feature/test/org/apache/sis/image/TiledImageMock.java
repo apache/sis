@@ -168,7 +168,7 @@ public final class TiledImageMock extends PlanarImage implements WritableRendere
     }
 
     /**
-     * Creates a new tiled image. Testers should invoke {@link #validate()} after construction.
+     * Creates a new tiled image. Testers should invoke {@link #validate(boolean)} after construction.
      *
      * @param dataType     sample data type as one of the {@link java.awt.image.DataBuffer} constants.
      * @param numBands     number of bands in the sample model to create.
@@ -294,10 +294,19 @@ public final class TiledImageMock extends PlanarImage implements WritableRendere
      * Verifies that image and tile layouts are consistent.
      * This method should be invoked after construction.
      *
+     * @param  lenient  whether to be tolerant to differences in "width" and "height" attributes.
+     *         The validation should be lenient if the image size is not a multiple of tile size.
+     *
      * @see #verify()
      */
-    public synchronized void validate() {
-        assertNull(verify());
+    public synchronized void validate(final boolean lenient) {
+        String inconsistency = verify();
+        if (lenient) {
+            if (inconsistency.equals("width") || inconsistency.equals("height")) {
+                inconsistency = null;
+            }
+        }
+        assertNull(inconsistency);
     }
 
     /**

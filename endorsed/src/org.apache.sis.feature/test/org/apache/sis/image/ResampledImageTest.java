@@ -99,7 +99,7 @@ public final class ResampledImageTest extends TestCase {
                 random.nextInt(32) - 10,        // minTileX
                 random.nextInt(32) - 10,        // minTileY
                 random.nextBoolean());          // Banded or interleaved sample model
-        image.validate();
+        image.validate(false);
         image.initializeAllTiles(0);
         image.setRandomValues(1, random, 1024);
         return image;

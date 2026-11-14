@@ -117,7 +117,7 @@ public class CoverageCanvasApp extends Application {
                 random.nextInt(10) - 5,             // minTileX
                 random.nextInt(10) - 5,             // minTileY
                 false);
-        image.validate();
+        image.validate(false);
         final double sc = 500d / Math.max(width, height);
         final var it = WritablePixelIterator.create(image);
         while (it.next()) {

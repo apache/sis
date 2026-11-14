@@ -102,7 +102,7 @@ public final class GridViewApp extends Application {
                 3,                              // minTileX
                 -5,                             // minTileY
                 false);
-        image.validate();
+        image.validate(false);
         image.initializeAllTiles(0);
         image.failRandomly(new Random(), true);
         return image;

@@ -162,7 +162,7 @@ public final class ReshapedImageTest extends TestCase {
         final var data = new TiledImageMock(DataBuffer.TYPE_USHORT, 1, dataMinX, dataMinY,
                 width, height, TILE_WIDTH, TILE_HEIGHT, minTileX, minTileY,
                 random.nextBoolean());  // Banded or interleaved sample model
-        data.validate();
+        data.validate(false);
         data.initializeAllTiles(0);
         /*
          * Apply only a translation, keep all tiles.
@@ -209,7 +209,7 @@ public final class ReshapedImageTest extends TestCase {
     @Test
     public void testExposeSingleTileFromTiledImage() {
         var source  = new TiledImageMock(4, 4, 2, 2, 1, false);
-        source.validate();
+        source.validate(false);
         source.initializeAllTiles(0);
         RenderedImage lastTile = ReshapedImage.singleTile(source, 1, 1);
         assertMessageContains(assertThrows(IndexOutOfBoundsException.class,

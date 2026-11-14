@@ -72,9 +72,9 @@ public final class ImageCombinerTest extends ImageTestCase {
                  5,  9,                         // minTileX, minTileY
                 false);
 
-        source.validate();
+        source.validate(false);
         source.initializeAllTiles(0);
-        destination.validate();
+        destination.validate(false);
         destination.initializeAllTiles(0);
         toAdd = source;
         return new ImageCombiner(destination.toWritableTiledImage());

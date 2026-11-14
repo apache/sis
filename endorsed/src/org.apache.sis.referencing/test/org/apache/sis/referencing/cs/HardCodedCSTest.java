@@ -30,6 +30,7 @@ import static org.apache.sis.test.Assertions.assertSerializedEquals;
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
  */
+@SuppressWarnings("exports")
 public final class HardCodedCSTest extends TestCase {
     /**
      * Creates a new test case.

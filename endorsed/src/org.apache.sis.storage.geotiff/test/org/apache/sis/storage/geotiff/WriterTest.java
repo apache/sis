@@ -150,7 +150,7 @@ public final class WriterTest extends TestCase {
                 random.nextInt(16) - 8,         // minTileY
                 banded);
 
-        image.validate();
+        image.validate(false);
         image.initializeAllTiles();
         output = new ByteArrayChannel(new byte[image.getWidth() * image.getHeight() * numBands * type.bytes() + 800], false);
         final var buffer = ByteBuffer.allocate(random.nextInt(128) + MIN_BUFFER_SIZE).order(order);
