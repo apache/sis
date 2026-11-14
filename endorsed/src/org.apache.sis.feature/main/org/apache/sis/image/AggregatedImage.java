@@ -216,16 +216,19 @@ public class AggregatedImage extends MonolithicImage implements Disposable {
         ArgumentChecks.ensureNonNull ("layout",      layout);
         ArgumentChecks.ensureNonNull ("aggregation", aggregation);   // Anticipation for a future version.
         this.sources = sources = sources.clone();
+        RenderedImage template = null;
         /*
          * Store sources and transforms, checking their validity in same time.
          * Also compute the image bounds if it was not explicitly specified.
          */
         final boolean computeBounds = (bounds == null);
-        int numBands = 0;
         for (int i=0; i<sources.length; i++) {
             final Source entry = sources[i];
             ArgumentChecks.ensureNonNullElement("sources", i, entry);
-            numBands = Math.max(numBands, ImageUtilities.getNumBands(entry.source));
+            final int n = ImageUtilities.getNumBands(entry.source);
+            if (n > ImageUtilities.getNumBands(template)) {
+                template = entry.source;
+            }
             if (computeBounds) {
                 final Rectangle boundsOfSource = ImageUtilities.getBounds(entry.source);
                 Shapes2D.transform(MathTransforms.bidimensional(entry.fromSource), boundsOfSource, boundsOfSource);
@@ -247,8 +250,8 @@ public class AggregatedImage extends MonolithicImage implements Disposable {
         minY              = bounds.y;
         minTileX          = layout.preferredMinTileX;
         minTileY          = layout.preferredMinTileY;
-        sampleModel       = layout.createCompatibleSampleModel(sources[0].source, bounds);
-        effectiveNumBands = Math.min(sampleModel.getNumBands(), numBands);
+        sampleModel       = layout.createCompatibleSampleModel(template, bounds);
+        effectiveNumBands = Math.min(sampleModel.getNumBands(), ImageUtilities.getNumBands(template));
         if (effectiveNumBands >= Integer.MAX_VALUE / (CHUNK_SIZE * CHUNK_SIZE * NUM_ACCUMULATORS)) {
             throw new RasterFormatException(Errors.format(Errors.Keys.IllegalPropertyValue_2, "numBands", effectiveNumBands));
         }
@@ -449,8 +452,8 @@ public class AggregatedImage extends MonolithicImage implements Disposable {
                 final double[] tileData = data[i];
                 if (tileData != null) {
                     data[i] = null;
-                    bounds.y = (i / chunksPerImageRow) * CHUNK_SIZE + minX;
-                    bounds.x = (i % chunksPerImageRow) * CHUNK_SIZE + minY;
+                    bounds.y = (i / chunksPerImageRow) * CHUNK_SIZE + minY;
+                    bounds.x = (i % chunksPerImageRow) * CHUNK_SIZE + minX;
                     try (WritablePixelIterator it = new PixelIterator.Builder()
                                 .setIteratorOrder(SequenceType.LINEAR)
                                 .setRegionOfInterest(bounds)
@@ -624,10 +627,10 @@ public class AggregatedImage extends MonolithicImage implements Disposable {
                     final Raster tile = source.getTile(srcMinTileX + (int) (srcTileIndex % srcNumTileX),
                                                        srcMinTileY + (int) (srcTileIndex / srcNumTileX));
                     final int numBands = Math.min(tile.getNumBands(), effectiveNumBands);
-                    final int scanline = tile.getWidth();
+                    final int scanline = tile.getWidth() + 1;   // +1 become xmax will be inclusive.
                     final int xmin     = tile.getMinX();
                     final int ymin     = tile.getMinY();
-                    final int xmax     = Math.addExact(xmin, scanline);
+                    final int xmax     = Math.addExact(xmin, scanline - 1);
                     final int ymax     = Math.addExact(ymin, tile.getHeight());
                     double[]  xyBottom = coordinates[ymax & 1];
                     for (int i=0, x=xmin; x <= xmax; x++) {     // Really the <= comparator.
