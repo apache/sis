@@ -94,22 +94,38 @@ abstract class MonolithicImage extends PlanarImage {
         /**
          * Invoked when a source image changed.
          * The enclosed image is notified only after the tile calculation finished.
+         *
+         * @param source  the image that owns the updated tile.
+         * @param tileX   the <var>x</var> index of the tile that is being updated.
+         * @param tileY   the <var>y</var> index of the tile that is being updated.
+         * @param willBeWritable  {@code true} before writing, {@code false} after released.
          */
         @Override
-        public void tileUpdate(WritableRenderedImage source, int tileX, int tileY, boolean willBeWritable) {
-            if (!willBeWritable) {
-                final MonolithicImage target = get();
-                if (target != null) {
-                    target.recompute();
-                } else {
-                    source.removeTileObserver(this);
-                }
+        public void tileUpdate(final WritableRenderedImage source, final int tileX, final int tileY,
+                               final boolean willBeWritable)
+        {
+            final MonolithicImage target = get();
+            if (target == null) {
+                source.removeTileObserver(this);
+            } else if (willBeWritable) {
+                /*
+                 * Wait for completion before to mark source tile as updated. We should also ensure
+                 * that the tile is not used before completion, but this is not yet implemented.
+                 */
+            } else {
+                target.sourceTileChanged(source, tileX, tileY);
             }
         }
     }
 
     /**
-     * Invoked when the image needs to be recomputed.
+     * Invoked when a tile of a source image has been updated.
+     *
+     * @param source  the image that own the tile which has been updated.
+     * @param tileX   the <var>x</var> index of the tile that has been updated.
+     * @param tileY   the <var>y</var> index of the tile that has been updated.
+     *
+     * @see ComputedImage#sourceTileChanged(RenderedImage, int, int)
      */
-    protected abstract void recompute();
+    protected abstract void sourceTileChanged(RenderedImage source, int tileX, int tileY);
 }

@@ -240,22 +240,6 @@ public class TiledImage extends PlanarImage {
     }
 
     /**
-     * Returns the tile width in pixels. All tiles must have the same width.
-     */
-    @Override
-    public int getTileWidth() {
-        return sampleModel.getWidth();
-    }
-
-    /**
-     * Returns the tile height in pixels. All tiles must have the same height.
-     */
-    @Override
-    public int getTileHeight() {
-        return sampleModel.getHeight();
-    }
-
-    /**
      * Returns the minimum tile index in the <var>x</var> direction.
      */
     @Override

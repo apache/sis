@@ -16,6 +16,7 @@
  */
 package org.apache.sis.image;
 
+import java.util.BitSet;
 import java.util.Vector;
 import java.util.Arrays;
 import java.util.ArrayList;
@@ -34,6 +35,7 @@ import java.awt.image.RenderedImage;
 import java.awt.image.ImagingOpException;
 import org.apache.sis.geometry.Shapes2D;
 import org.opengis.referencing.operation.MathTransform;
+import org.opengis.referencing.operation.MathTransform2D;
 import org.opengis.referencing.operation.TransformException;
 import org.apache.sis.referencing.operation.transform.MathTransforms;
 import org.apache.sis.image.internal.shared.WritableTiledImage;
@@ -44,6 +46,7 @@ import org.apache.sis.system.CommonExecutor;
 import org.apache.sis.util.Disposable;
 import org.apache.sis.util.Exceptions;
 import org.apache.sis.util.ArgumentChecks;
+import org.apache.sis.util.logging.Logging;
 import org.apache.sis.util.resources.Errors;
 
 // Specific to the GeoAPI 3.1 and 4.0 branches:
@@ -119,6 +122,8 @@ public class AggregatedImage extends MonolithicImage implements Disposable {
     /**
      * Images containing the pixels to aggregate in this image, together with their conversions
      * of pixel coordinates from <em>source</em> images to <em>this</em> image.
+     *
+     * The array is also used as a lock for things related to change detection in sources.
      */
     private final Source[] sources;
 
@@ -131,6 +136,12 @@ public class AggregatedImage extends MonolithicImage implements Disposable {
      * Index of the first tile. This is usually 0.
      */
     private final int minTileX, minTileY;
+
+    /**
+     * Number of tiles along the <var>x</var> and <var>y</var> directions.
+     * Stored in order to guarantee that those values are stable.
+     */
+    private final int numXTiles, numYTiles;
 
     /**
      * The sample model declared at construction time.
@@ -170,16 +181,23 @@ public class AggregatedImage extends MonolithicImage implements Disposable {
     private final int numChunks;
 
     /**
-     * All tiles in a row-major fashion, created when first requested.
+     * All tiles in a row-major fashion. The array elements are initially {@code null}.
+     * All tiles will be created together the first time that a tile is requested.
      *
      * @see #getTile(int, int)
      */
-    private WritableRaster[] tiles;
+    private final WritableRaster[] tiles;
 
     /**
-     * Whether the tile content have been computed.
+     * Indexes of updated tiles for each source, or {@code null} if there are no change in the sources.
+     * If the array is non-null, some elements may still be {@code null} if the source didn't changed.
+     * Indexes are the same as {@link #sources}, i.e. {@code updatedSourceTiles[i]} lists which tiles
+     * of {@code sources[i].source} need to be scanned again for updating this aggregated image.
+     * Accesses to this flag should be synchronized on the {@link #sources} lock.
+     *
+     * @see #sourceTileChanged(RenderedImage, int, int)
      */
-    private boolean isComputed;
+    private BitSet[] updatedSourceTiles;
 
     /**
      * Whether listeners to writable images have been registered.
@@ -251,6 +269,9 @@ public class AggregatedImage extends MonolithicImage implements Disposable {
         minTileX          = layout.preferredMinTileX;
         minTileY          = layout.preferredMinTileY;
         sampleModel       = layout.createCompatibleSampleModel(template, bounds);
+        numXTiles         = JDK18.ceilDiv(width,  sampleModel.getWidth());
+        numYTiles         = JDK18.ceilDiv(height, sampleModel.getHeight());
+        tiles             = new WritableRaster[Math.multiplyExact(numXTiles, numYTiles)];
         effectiveNumBands = Math.min(sampleModel.getNumBands(), ImageUtilities.getNumBands(template));
         if (effectiveNumBands >= Integer.MAX_VALUE / (CHUNK_SIZE * CHUNK_SIZE * NUM_ACCUMULATORS)) {
             throw new RasterFormatException(Errors.format(Errors.Keys.IllegalPropertyValue_2, "numBands", effectiveNumBands));
@@ -335,7 +356,7 @@ public class AggregatedImage extends MonolithicImage implements Disposable {
      * @return number of columns in this image.
      */
     @Override
-    public final int getWidth() {
+    public int getWidth() {
         return width;
     }
 
@@ -346,7 +367,7 @@ public class AggregatedImage extends MonolithicImage implements Disposable {
      * @return number of rows in this image.
      */
     @Override
-    public final int getHeight() {
+    public int getHeight() {
         return height;
     }
 
@@ -356,7 +377,7 @@ public class AggregatedImage extends MonolithicImage implements Disposable {
      * or inferred at construction time.
      */
     @Override
-    public final int getMinX() {
+    public int getMinX() {
         return minX;
     }
 
@@ -366,7 +387,7 @@ public class AggregatedImage extends MonolithicImage implements Disposable {
      * or inferred at construction time.
      */
     @Override
-    public final int getMinY() {
+    public int getMinY() {
         return minY;
     }
 
@@ -382,28 +403,24 @@ public class AggregatedImage extends MonolithicImage implements Disposable {
      * Returns the minimum tile index in the <var>y</var> direction. This is often 0.
      */
     @Override
-    public final int getMinTileY() {
+    public int getMinTileY() {
         return minTileY;
     }
 
     /**
-     * Returns the width of tiles in this image.
-     *
-     * @return the width (in pixels) of all tiles in this image.
+     * Returns the number of tiles in the <var>x</var> direction.
      */
     @Override
-    public int getTileWidth() {
-        return getSampleModel().getWidth();
+    public int getNumXTiles() {
+        return numXTiles;
     }
 
     /**
-     * Returns the height of tiles in this image.
-     *
-     * @return the height (in pixels) of all tiles in this image.
+     * Returns the number of tiles in the <var>y</var> direction.
      */
     @Override
-    public int getTileHeight() {
-        return getSampleModel().getHeight();
+    public int getNumYTiles() {
+        return numYTiles;
     }
 
     /**
@@ -416,61 +433,86 @@ public class AggregatedImage extends MonolithicImage implements Disposable {
      * @throws ImagingOpException if an error occurred while computing the image.
      */
     @Override
-    @SuppressWarnings("UseSpecificCatch")
+    @SuppressWarnings({"UseSpecificCatch", "NestedSynchronizedStatement"})
     public synchronized Raster getTile(final int tileX, final int tileY) {
-        final int numXTiles = getNumXTiles();
-        final int numYTiles = getNumYTiles();
         checkTileIndex("tileX", minTileX, numXTiles, tileX);
         checkTileIndex("tileY", minTileY, numYTiles, tileY);
-        final int chunkCellStride = effectiveNumBands * NUM_ACCUMULATORS;
-        if (!isComputed) try {
-            if (tiles == null) {
-                tiles = new WritableRaster[Math.multiplyExact(numXTiles, numYTiles)];
-            }
+        final int tileIndex = (tileY - minTileY) * numXTiles + (tileX - minTileX);
+        Raster tile = tiles[tileIndex];
+        BitSet[] sourcesToScan;
+        synchronized (sources) {
+            sourcesToScan = updatedSourceTiles;
+            updatedSourceTiles = null;
+        }
+        if (tile == null || sourcesToScan != null) {
             if (!hasAddedListeners) {
                 hasAddedListeners = true;
                 registerSourceListeners();
             }
-            // Execute the aggregation now, possibly using many threads.
-            final double[][] data = new SourceScanner().call();
-            /*
-             * At this point, the calculatuon of all aggregated values is completed.
-             * Dispatch the results in the tiles of this image.
-             */
-            final int chunksPerImageRow = numChunks(width);
-            final var bounds = new Rectangle(CHUNK_SIZE, CHUNK_SIZE);
-            final double[] samples = fillValues.clone();
-            final var writable = new WritableTiledImage(
-                    null,           // Properties,  not needed for dispatching values.
-                    null,           // Color model, not needed for dispatching values.
-                    getSampleModel(),
-                    new Rectangle(minX, minY, width, height),
-                    new Point(minTileX, minTileY),
-                    tiles);
+            BitSet dirtyTiles = null;
+            if (sourcesToScan != null) try {
+                dirtyTiles = findDirtyTiles(sourcesToScan);
+            } catch (TransformException e) {
+                sourcesToScan = null;   // Mean to recompute everything.
+                Logging.unexpectedException(ImageUtilities.LOGGER, AggregatedImage.class, "getTile", e);
+            }
+            try {
+                // Execute the aggregation now, possibly using many threads.
+                createTiles(new SourceScanner(sourcesToScan).call(), dirtyTiles);
+            } catch (ImagingOpException e) {
+                throw e;
+            } catch (Exception cause) {
+                final var e = new ImagingOpException(cause.getLocalizedMessage());
+                e.initCause(Exceptions.unwrap(cause));
+                throw e;
+            }
+            tile = tiles[tileIndex];
+        }
+        return tile;
+    }
 
-            for (int i=0; i<data.length; i++) {
-                final double[] tileData = data[i];
-                if (tileData != null) {
-                    data[i] = null;
-                    bounds.y = (i / chunksPerImageRow) * CHUNK_SIZE + minY;
-                    bounds.x = (i % chunksPerImageRow) * CHUNK_SIZE + minX;
-                    try (WritablePixelIterator it = new PixelIterator.Builder()
-                                .setIteratorOrder(SequenceType.LINEAR)
-                                .setRegionOfInterest(bounds)
-                                .createWritable(writable))
-                    {
-                        // Should always be zero because the first chunck starts at the image corner, but check anyway.
-                        int valueIndex = ((it.lowerY - bounds.y)  * CHUNK_SIZE
-                                       +  (it.lowerX - bounds.x)) * chunkCellStride;
-                        final int toNextRow = (bounds.x + CHUNK_SIZE - it.upperX) * chunkCellStride;
-                        while (it.next()) {
-                            if (it.isBeginningOfNewRow()) {
-                                valueIndex += toNextRow;
-                            }
+    /**
+     * Creates the tiles from the data computed by {@code SourceScanner}.
+     * The data layout is described in {@link SourceScanner#call()}.
+     *
+     * @param  data        row-major results of the aggregation of source images, separated in chunks.
+     * @param  dirtyTiles  tiles in this image to recreate, or {@code null} for all tiles.
+     */
+    private void createTiles(final double[][] data, final BitSet dirtyTiles) {
+        final int chunksPerImageRow = numChunks(width);
+        final int chunkCellStride = effectiveNumBands * NUM_ACCUMULATORS;
+        final var bounds = new Rectangle(CHUNK_SIZE, CHUNK_SIZE);
+        final double[] samples = fillValues.clone();
+        final var writable = new WriteAdapter(
+                getSampleModel(),
+                new Rectangle(minX, minY, width, height),
+                new Point(minTileX, minTileY), numXTiles,
+                tiles, dirtyTiles);
+
+        for (int i=0; i<data.length; i++) {
+            final double[] dataChunk = data[i];
+            if (dataChunk != null) {
+                data[i] = null;
+                bounds.y = (i / chunksPerImageRow) * CHUNK_SIZE + minY;
+                bounds.x = (i % chunksPerImageRow) * CHUNK_SIZE + minX;
+                try (WritablePixelIterator it = new PixelIterator.Builder()
+                            .setIteratorOrder(SequenceType.LINEAR)
+                            .setRegionOfInterest(bounds)
+                            .createWritable(writable))
+                {
+                    // Should always be zero because the first chunck starts at the image corner, but check anyway.
+                    int valueIndex = ((it.lowerY - bounds.y)  * CHUNK_SIZE
+                                   +  (it.lowerX - bounds.x)) * chunkCellStride;
+                    final int toNextRow = (bounds.x + CHUNK_SIZE - it.upperX) * chunkCellStride;
+                    while (it.next()) {
+                        if (it.isBeginningOfNewRow()) {
+                            valueIndex += toNextRow;
+                        }
+                        if (writable.dirtyTile) {
                             for (int j=0; j < effectiveNumBands; j++) {
                                 // The two values counted by `NUM_ACCUMULATORS`.
-                                final double sum = tileData[valueIndex++];
-                                final double num = tileData[valueIndex++];
+                                final double sum = dataChunk[valueIndex++];
+                                final double num = dataChunk[valueIndex++];
                                 samples[j] = (num != 0) ? sum/num : fillValues[j];
                             }
                             it.setPixel(samples);
@@ -478,15 +520,47 @@ public class AggregatedImage extends MonolithicImage implements Disposable {
                     }
                 }
             }
-            isComputed = true;
-        } catch (ImagingOpException e) {
-            throw e;
-        } catch (Exception cause) {
-            final var e = new ImagingOpException(cause.getLocalizedMessage());
-            e.initCause(Exceptions.unwrap(cause));
-            throw e;
         }
-        return tiles[(tileX - minTileX) + (tileY - minTileY) * numXTiles];
+    }
+
+    /**
+     * An adapter for allowing {@link WritablePixelIterator} to write in this image.
+     * This adapter also maintains a flag about whether the currently traversed tile
+     * should be written. Non-dirty tiles should not be modified because all needed
+     * source tiles may not have been scanned.
+     */
+    private static final class WriteAdapter extends WritableTiledImage {
+        /** Whether the current tile should be updated. */
+        boolean dirtyTile;
+
+        /** List of all dirty tiles, or {@code null} for all. */
+        private final BitSet dirtyTiles;
+
+        /** Copy of {@link AggregatedImage#numXTiles}. */
+        private final int numXTiles;
+
+        /** Creates a new adapter for writing a tile. */
+        WriteAdapter(final SampleModel sampleModel,
+                     final Rectangle   bounds,
+                     final Point       minTile,
+                     final int         numXTiles,
+                     final WritableRaster[] tiles,
+                     final BitSet dirtyTiles)
+        {
+            super(null, null, sampleModel, bounds, minTile, tiles);
+            this.dirtyTiles = dirtyTiles;
+            this.numXTiles  = numXTiles;
+            dirtyTile = (dirtyTiles == null);
+        }
+
+        /** Gets a writable tile and set the flag saying whether this tile should be updated. */
+        @Override public WritableRaster getWritableTile(final int tileX, final int tileY) {
+            if (dirtyTiles != null) {
+                final int tileIndex = (tileY - minTileY) * numXTiles + (tileX - minTileX);
+                dirtyTile = dirtyTiles.get(tileIndex);
+            }
+            return super.getWritableTile(tileX, tileY);
+        }
     }
 
     /**
@@ -518,14 +592,21 @@ public class AggregatedImage extends MonolithicImage implements Disposable {
          * Index of the next tile to read in the current image.
          * This is initially 0, unless the work has been divided between many threads.
          */
-        private long srcTileIndex;
+        private int srcTileIndex;
 
         /**
          * Index after the last source image tile to aggregate, or -1 for aggregating all remaining tiles.
-         * This is {@code numTileX} × {@code numTileY}, unless the work has been divided between many threads.
+         * This is {@code numXTiles} × {@code numYTiles}, unless the work has been divided between many threads.
          * This value is updated every time that {@link #call()} iterates over a new image.
          */
-        private long upperTileIndex;
+        private int upperTileIndex;
+
+        /**
+         * For each source image, the row-major indexes of the tiles to scan.
+         * If the array is {@code null}, there is no filtering to apply (all tiles are scanned).
+         * If the array is non-null but an array element is {@code null}, the source is skipped.
+         */
+        private final BitSet[] sourcesToScan;
 
         /**
          * Number of forks that are allowed. This is 0 if parallel execution is not enabled.
@@ -537,11 +618,14 @@ public class AggregatedImage extends MonolithicImage implements Disposable {
 
         /**
          * Creates a new task initialized for aggregating all tiles of all images.
+         *
+         * @param  updatedSourceTiles  row-major indexes of tiles to scan in each image, or {@code null} for all.
          */
-        SourceScanner() {
+        SourceScanner(final BitSet[] updatedSourceTiles) {
             upperImageIndex = sources.length;
             upperTileIndex  = -1;
             numAllowedForks = parallel ? (byte) 3 : 0;
+            sourcesToScan   = updatedSourceTiles;
         }
 
         /**
@@ -549,12 +633,13 @@ public class AggregatedImage extends MonolithicImage implements Disposable {
          * This new task will work on a prefix of the tile collection while the given task
          * will work on the suffix.
          */
-        private SourceScanner(final SourceScanner suffix, final int upperImageIndex, final long upperTileIndex) {
+        private SourceScanner(final SourceScanner suffix, final int upperImageIndex, final int upperTileIndex) {
             this.imageIndex      = suffix.imageIndex;
             this.upperImageIndex = upperImageIndex;
             this.srcTileIndex    = suffix.srcTileIndex;
             this.upperTileIndex  = upperTileIndex;
             this.numAllowedForks = --suffix.numAllowedForks;
+            this.sourcesToScan   = suffix.sourcesToScan;
         }
 
         /**
@@ -573,7 +658,7 @@ public class AggregatedImage extends MonolithicImage implements Disposable {
          * value index with <var>y</var> pixel coordinate varying slowest, then <var>x</var> pixel coordinate,
          * then band index, then accumulator index for a total length of {@link #accumulatorValuesPerChunk()}.
          *
-         * @return result of the aggregation for each tile in the enclosing target image.
+         * @return row-major results of the aggregation of source images, separated in chunks.
          * @throws TransformException if an error occurred while transforming coordinates.
          * @throws InterruptedException if the current thread was interrupted while waiting for other threads.
          */
@@ -595,12 +680,21 @@ public class AggregatedImage extends MonolithicImage implements Disposable {
              * The code may decide again, inside the loop, to delegate half of the tiles
              * to a background thread.
              */
-            final double[] imageOffset = {getMinX(), getMinY()};
+            final double[] imageOffset = {minX, minY};
             final double[][] data = new double[numChunks][];
             final double[] sourcePixelCorners = new double[BIDIMENSIONAL * 2];  // Bounds of a single source pixel in target coordinates.
             final int chunkValueStride = effectiveNumBands * NUM_ACCUMULATORS;
-            final int chunksPerImageRow = numChunks(getWidth());
-            while (imageIndex < upperImageIndex) {
+            final int chunksPerImageRow = numChunks(width);
+images:     while (imageIndex < upperImageIndex) {
+                BitSet tilesToScan = null;
+                if (sourcesToScan != null) {
+                    // Will compute only a subset of the sources and the tiles.
+                    while ((tilesToScan = sourcesToScan[imageIndex]) == null) {
+                        if (++imageIndex >= upperImageIndex) {
+                            break images;
+                        }
+                    }
+                }
                 final MathTransform fromSource = sources[imageIndex].fromSource;
                 final RenderedImage source = sources[imageIndex].source;
                 final double[][] coordinates = new double[2][(source.getTileWidth() + 1) * BIDIMENSIONAL];
@@ -608,24 +702,37 @@ public class AggregatedImage extends MonolithicImage implements Disposable {
                 final int srcMinTileY = source.getMinTileY();
                 final int srcNumTileX = source.getNumXTiles();
                 if (upperTileIndex < 0) {
-                    upperTileIndex = Math.multiplyFull(srcNumTileX, source.getNumYTiles());
+                    upperTileIndex = Math.multiplyExact(srcNumTileX, source.getNumYTiles());
                 }
                 while (numAllowedForks > 0) {
                     // Try to delegate half of the tiles to a background thread.
-                    final long half = (upperTileIndex - srcTileIndex) / 2 + srcTileIndex;
+                    final int half = (upperTileIndex - srcTileIndex) / 2 + srcTileIndex;
                     if (half <= srcTileIndex) break;
+                    if (tilesToScan != null && tilesToScan.previousSetBit(half - 1) < 0) break;  // No tile before.
                     parallelTasks.add(CommonExecutor.instance().submit(new SourceScanner(this, imageIndex + 1, half)));
                     srcTileIndex = half;
                 }
+                /*
+                 * About to iterate over the tiles of a single image, or a subset of those tiles.
+                 * Subset can be applied twice: we may be iterating over half, or a quarter, etc.
+                 * of the tiles because of task division for parallelism (done in above block).
+                 * In addition, we may have only a subset of the tiles which have been modified.
+                 */
                 while (srcTileIndex < upperTileIndex) {
+                    if (tilesToScan != null) {
+                        srcTileIndex = tilesToScan.nextSetBit(srcTileIndex);
+                        if (srcTileIndex < 0 || srcTileIndex >= upperTileIndex) {
+                            break;  // No other source tiles flagged as updated.
+                        }
+                    }
                     /*
                      * We will iterate over all pixels of a single tile of a source image.
                      * For each pixel, the coordinates of the 4 corners will be transformed
                      * to coordinates of a bounding box in the target image (conceptually,
                      * actual implementation tries to be more efficient).
                      */
-                    final Raster tile = source.getTile(srcMinTileX + (int) (srcTileIndex % srcNumTileX),
-                                                       srcMinTileY + (int) (srcTileIndex / srcNumTileX));
+                    final Raster tile = source.getTile(srcMinTileX + (srcTileIndex % srcNumTileX),
+                                                       srcMinTileY + (srcTileIndex / srcNumTileX));
                     final int numBands = Math.min(tile.getNumBands(), effectiveNumBands);
                     final int scanline = tile.getWidth() + 1;   // +1 become xmax will be inclusive.
                     final int xmin     = tile.getMinX();
@@ -681,14 +788,14 @@ public class AggregatedImage extends MonolithicImage implements Disposable {
                                         final double weight = weightX * weightY;
                                         final int cellIndex  = (px % CHUNK_SIZE) + cellIndexBase;
                                         final int chunkIndex = (px / CHUNK_SIZE) + chunkIndexBase;
-                                        double[] tileData = data[chunkIndex];
-                                        if (tileData == null) {
-                                            data[chunkIndex] = tileData = new double[accumulatorValuesPerChunk()];
+                                        double[] dataChunk = data[chunkIndex];
+                                        if (dataChunk == null) {
+                                            data[chunkIndex] = dataChunk = new double[accumulatorValuesPerChunk()];
                                         }
                                         int valueIndex = cellIndex * chunkValueStride;
                                         for (int j=0; j<numBands; j++) {
-                                            tileData[valueIndex++] += weight * sampleValues[j];
-                                            tileData[valueIndex++] += weight;
+                                            dataChunk[valueIndex++] += weight * sampleValues[j];
+                                            dataChunk[valueIndex++] += weight;
                                         }
                                     }
                                 }
@@ -705,6 +812,8 @@ public class AggregatedImage extends MonolithicImage implements Disposable {
                 imageIndex++;
             }
             /*
+             * At this point, we finished to compute aggregations for all source images and tiles assigned
+             * to this thread. More aggregations may have been computed in parallel by background threads.
              * Merges the data computed by other threads with the data computed by this thread.
              * The loop is executed only if parallel computation was enabled.
              */
@@ -714,12 +823,12 @@ public class AggregatedImage extends MonolithicImage implements Disposable {
                     final double[] otherTile = other[i];
                     if (otherTile != null) {
                         other[i] = null;
-                        final double[] tileData = data[i];
-                        if (tileData == null) {
+                        final double[] dataChunk = data[i];
+                        if (dataChunk == null) {
                             data[i] = otherTile;
                         } else {
                             for (int j = otherTile.length; --j >= 0;) {
-                                tileData[j] += otherTile[j];
+                                dataChunk[j] += otherTile[j];
                             }
                         }
                     }
@@ -730,17 +839,122 @@ public class AggregatedImage extends MonolithicImage implements Disposable {
     }
 
     /**
-     * Discards all tiles and marks this image as in need to be recomputed.
-     * This method is invoked automatically if any source image is an instance of
-     * {@link java.awt.image.WritableRenderedImage} and the content of that image changed.
+     * Invoked when a tile of a source image has been updated.
+     * The tile identified by the arguments may be scanned again the next time that {@link #getTile(int, int)} is
+     * invoked, together with other source images and tiles involved in the same aggregation as the updated tile.
+     *
+     * @param source  the image that own the tile which has been updated.
+     * @param tileX   the <var>x</var> index of the tile that has been updated.
+     * @param tileY   the <var>y</var> index of the tile that has been updated.
+     *
+     * @see ComputedImage#sourceTileChanged(RenderedImage, int, int)
      */
     @Override
-    protected synchronized void recompute() {
-        isComputed = false;
+    protected void sourceTileChanged(final RenderedImage source, int tileX, int tileY) {
+        tileX -= source.getMinTileX();
+        tileY -= source.getMinTileY();
+        if ((tileX | tileY) >= 0) {     // Paranoiac check.
+            for (int imageIndex = 0; imageIndex < sources.length; imageIndex++) {
+                if (sources[imageIndex].source == source) {
+                    synchronized (sources) {
+                        BitSet[] sourcesToScan = updatedSourceTiles;
+                        if (sourcesToScan == null) {
+                            updatedSourceTiles = sourcesToScan = new BitSet[sources.length];
+                        }
+                        BitSet tilesToScan = sourcesToScan[imageIndex];
+                        if (tilesToScan == null) {
+                            sourcesToScan[imageIndex] = tilesToScan = new BitSet();
+                        }
+                        tilesToScan.set(tileY * source.getNumXTiles() + tileX);
+                    }
+                    break;
+                }
+            }
+        }
+    }
+
+    /**
+     * Finds which tiles of this images need to be computed after the specified changes in source images.
+     * In addition, updates the given {@code sourcesToScan} for scanning all sources overlapping the dirty tiles.
+     *
+     * <p>Note: the dirty tiles will not necessarily have all their pixel overwritten with new values,
+     * because the tiles of source images are not necessarily aligned with the tiles of this images.
+     * This is okay because the pixel that were not overwritten are still valid is the source used
+     * for computing their values did not changed.</p>
+     *
+     * @param  sourcesToScan  for each source image, the row-major indexes of the tiles to scan. May be updated.
+     * @return row-major indexes of the dirty tiles in this image.
+     * @throws TransformException if the bounds of a tile cannot be computed.
+     */
+    private BitSet findDirtyTiles(final BitSet[] sourcesToScan) throws TransformException {
+        final var dirtyTiles = new BitSet();
+        final var oneTile = new Rectangle(1, 1);
+        final var limit = new Rectangle(minTileX, minTileY, numXTiles, numYTiles);
+        for (int imageIndex = 0; imageIndex < sourcesToScan.length; imageIndex++) {
+            final BitSet tilesToScan = sourcesToScan[imageIndex];
+            if (tilesToScan != null) {
+                final MathTransform2D fromSource = MathTransforms.bidimensional(sources[imageIndex].fromSource);
+                final RenderedImage source = sources[imageIndex].source;
+                final int srcMinTileX = source.getMinTileX();
+                final int srcMinTileY = source.getMinTileY();
+                final int srcNumTileX = source.getNumXTiles();
+                for (int srcTileIndex = 0; (srcTileIndex = tilesToScan.nextSetBit(srcTileIndex)) >= 0; srcTileIndex++) {
+                    oneTile.x = srcMinTileX + (srcTileIndex % srcNumTileX);
+                    oneTile.y = srcMinTileY + (srcTileIndex / srcNumTileX);
+                    Rectangle bounds = ImageUtilities.tilesToPixels(source, oneTile);
+                    Shapes2D.transform(fromSource, bounds, bounds);
+                    bounds = ImageUtilities.pixelsToTiles(this, bounds);
+                    bounds = bounds.intersection(limit);
+                    bounds.x -= minTileX;
+                    bounds.y -= minTileY;
+                    setInRect(dirtyTiles, bounds, numXTiles);
+                }
+            }
+        }
         /*
-         * Existing tiles will be overwritten. No need to clear the tile content because
-         * every pixels will be overwritten, since they stay at the exact same locations.
+         * Found all dirty tiles in this image. Now perform the reverse operation:
+         * flags all source tiles that overlap with the dirty tiles.
          */
+        for (int imageIndex = 0; imageIndex < sourcesToScan.length; imageIndex++) {
+            final MathTransform2D toSource = MathTransforms.bidimensional(sources[imageIndex].fromSource.inverse());
+            final RenderedImage source = sources[imageIndex].source;
+            final int srcMinTileX = source.getMinTileX();
+            final int srcMinTileY = source.getMinTileY();
+            final int srcNumTileX = source.getNumXTiles();
+            limit.setBounds(srcMinTileX, srcMinTileY, srcNumTileX, source.getNumYTiles());
+            BitSet tilesToScan = sourcesToScan[imageIndex];
+            for (int tileIndex = 0; (tileIndex = dirtyTiles.nextSetBit(tileIndex)) >= 0; tileIndex++) {
+                oneTile.x = minTileX + (tileIndex % numXTiles);
+                oneTile.y = minTileY + (tileIndex / numXTiles);
+                Rectangle bounds = ImageUtilities.tilesToPixels(this, oneTile);
+                Shapes2D.transform(toSource, bounds, bounds);
+                bounds = ImageUtilities.pixelsToTiles(source, bounds);
+                bounds = bounds.intersection(limit);
+                bounds.x -= srcMinTileX;
+                bounds.y -= srcMinTileY;
+                if (!bounds.isEmpty()) {
+                    if (tilesToScan == null) {
+                        sourcesToScan[imageIndex] = tilesToScan = new BitSet();
+                    }
+                    setInRect(tilesToScan, bounds, srcNumTileX);
+                }
+            }
+        }
+        return dirtyTiles;
+    }
+
+    /**
+     * Sets the bits in {@code dirtyTiles} for all tiles in the given rectangle.
+     *
+     * @param dirtyTiles  the bit set where to set some bits in a row-major fashion.
+     * @param bounds      bounds of the bits to set.
+     * @param scanline    the row length.
+     */
+    private static void setInRect(final BitSet dirtyTiles, final Rectangle bounds, final int scanline) {
+        for (int y = bounds.y + bounds.height; --y >= bounds.y;) {
+            final int base = y * scanline + bounds.x;
+            dirtyTiles.set(base, base + bounds.width);
+        }
     }
 
     /**
@@ -751,8 +965,8 @@ public class AggregatedImage extends MonolithicImage implements Disposable {
      */
     @Override
     public synchronized void dispose() {
-        tiles = null;
-        isComputed = false;
+        Arrays.fill(tiles, null);
+        updatedSourceTiles = null;
         unregisterSourceListeners();
     }
 }

@@ -107,7 +107,8 @@ import org.apache.sis.pending.jdk.JDK18;
  *
  * @author  Johann Sorel (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.7
+ * @version 1.8
+ *
  * @since SIS 1.1
  */
 public abstract class PlanarImage implements RenderedImage {
@@ -427,6 +428,34 @@ public abstract class PlanarImage implements RenderedImage {
     @Override
     public int getMinTileY() {
         return 0;
+    }
+
+    /**
+     * Returns the width of tiles in this image. All tiles must have the same width.
+     * The default implementation returns {@link SampleModel#getWidth()}.
+     *
+     * @return the width (in pixels) of all tiles in this image.
+     *
+     * @see #getSampleModel()
+     * @since SIS 1.8
+     */
+    @Override
+    public int getTileWidth() {
+        return getSampleModel().getWidth();
+    }
+
+    /**
+     * Returns the height of tiles in this image. All tiles must have the same height.
+     * The default implementation returns {@link SampleModel#getHeight()}.
+     *
+     * @return the height (in pixels) of all tiles in this image.
+     *
+     * @see #getSampleModel()
+     * @since SIS 1.8
+     */
+    @Override
+    public int getTileHeight() {
+        return getSampleModel().getHeight();
     }
 
     /**
