@@ -45,6 +45,11 @@ import org.apache.sis.util.Utilities;
  */
 public final class S2 {
 
+    /**
+     * Maximal length in degrees of envelope edge segments.
+     */
+    private static final double MAX_STEP = 1;
+
     private static final GeometryFactory GF = new GeometryFactory();
 
     /**
@@ -54,6 +59,17 @@ public final class S2 {
     }
 
     /**
+     * Converts an envelope to a polygon whose edges follow the envelope parallels and meridians.
+     * <p>
+     * Polygon edges are great circle arcs, so envelope edges are split in steps of at most 1°.
+     * <ul>
+     *   <li>The envelope must be in CRS:84.</li>
+     *   <li>Envelopes crossing the anti-meridian (lower &gt; upper longitude) are supported.</li>
+     *   <li>An envelope spanning 360° of longitude becomes a cap when it reaches one pole,
+     *       the whole sphere when it reaches both, and a band otherwise.</li>
+     *   <li>An envelope reaching a pole with a narrower longitude span has a single vertex on that pole.</li>
+     * </ul>
+     *
      * @param env in CRS:84
      * @return S2 polygon
      */
@@ -61,79 +77,75 @@ public final class S2 {
         if (!Utilities.equalsIgnoreMetadata(env.getCoordinateReferenceSystem(), CommonCRS.WGS84.normalizedGeographic())) {
             throw new IllegalArgumentException("Envelope must be in CRS:84");
         }
+        final GeneralEnvelope genv = GeneralEnvelope.castOrCopy(env);
+        final double west  = genv.getLower(0);
+        final double width = genv.getSpan(0);
+        final double south = Math.max(-90, genv.getLower(1));
+        final double north = Math.min( 90, genv.getUpper(1));
+        final boolean southPole = south <= -90;
+        final boolean northPole = north >=  90;
 
-        GeneralEnvelope genv = GeneralEnvelope.castOrCopy(env);
-
-        final double minLon = genv.getLower(0);
-        final double minLat = genv.getLower(1);
-        final double maxLon = genv.getUpper(0);
-        final double maxLat = genv.getUpper(1);
-        final double spanLon = genv.getSpan(0);
-        final double spanLat = genv.getSpan(1);
-
-        final double[] lons;
-        final double[] lats;
-
-        if (spanLon >= 360) {
-            //add 2 split points
-            lons = new double[]{
-                minLon,
-                minLon + (maxLon - minLon) * (1.0/3.0),
-                minLon + (maxLon - minLon) * (2.0/3.0),
-                maxLon
-            };
-        } else if (spanLon >= 180) {
-            lons = new double[]{
-                minLon,
-                minLon + (maxLon - minLon) * (1.0/2.0),
-                maxLon
-            };
-        } else {
-            lons = new double[]{
-                minLon,
-                maxLon
-            };
+        if (width >= 360) {
+            if (southPole && northPole) {
+                return new S2Polygon(S2Loop.full());
+            }
+            // The polygon interior is made of points contained by an odd number of loops.
+            final List<S2Loop> loops = new ArrayList<>(2);
+            if (southPole) {
+                loops.add(parallelLoop(north, west, false));
+            } else {
+                loops.add(parallelLoop(south, west, true));
+                if (!northPole) {
+                    loops.add(parallelLoop(north, west, true));
+                }
+            }
+            return new S2Polygon(loops);
         }
 
-        if (spanLat >= 180) {
-            lats = new double[]{
-                minLat,
-                minLat + (maxLat - minLat) * (1.0/2.0),
-                maxLat
-            };
+        final int columns = Math.max(1, (int) Math.ceil(width / MAX_STEP));
+        final int rows    = Math.max(1, (int) Math.ceil((north - south) / MAX_STEP));
+        final double east = west + width;
+        final List<S2Point> points = new ArrayList<>();
+        // Counter-clockwise: south edge eastward, east edge northward, north edge westward, west edge southward.
+        if (southPole) {
+            points.add(S2LatLng.fromDegrees(-90, west).toPoint());
         } else {
-            lats = new double[]{
-                minLat,
-                maxLat
-            };
-        }
-
-        //crosses the antimeridian
-        if (minLon > maxLon) {
-            //reverse array to preserve CCW direction
-            for (int i = 0; i < lons.length / 2; i++) {
-                double t = lons[i];
-                lons[i] = lons[lons.length - 1 - i];
-                lons[lons.length - 1 - i] = t;
+            for (int i = 0; i < columns; i++) {
+                points.add(S2LatLng.fromDegrees(south, west + width * i / columns).toPoint());
             }
         }
-
-        //create polygon in counter-clockwise direction
-        final List<S2Point> points = new ArrayList<>();
-        for (int i = 0; i < lons.length; i++) {
-            points.add(S2LatLng.fromDegrees(lats[0], lons[i]).toPoint());
+        for (int i = southPole ? 1 : 0; i < rows; i++) {
+            points.add(S2LatLng.fromDegrees(south + (north - south) * i / rows, east).toPoint());
         }
-        for (int i = 1; i < lats.length-1; i++) { //start at 1, end at size-2, do not duplicate corner point
-            points.add(S2LatLng.fromDegrees(lats[i], lons[lons.length-1]).toPoint());
+        if (northPole) {
+            points.add(S2LatLng.fromDegrees(90, east).toPoint());
+        } else {
+            for (int i = 0; i < columns; i++) {
+                points.add(S2LatLng.fromDegrees(north, east - width * i / columns).toPoint());
+            }
         }
-        for (int i = lons.length-1; i >= 0; i--) {
-            points.add(S2LatLng.fromDegrees(lats[lats.length-1], lons[i]).toPoint());
+        for (int i = northPole ? 1 : 0; i < rows; i++) {
+            points.add(S2LatLng.fromDegrees(north - (north - south) * i / rows, west).toPoint());
         }
-        for (int i = lats.length-2; i >= 1; i--) { //start at size-2, end at 1, do not duplicate corner point
-            points.add(S2LatLng.fromDegrees(lats[i], lons[0]).toPoint());
-        }
-
         return new S2Polygon(new S2Loop(points));
+    }
+
+    /**
+     * Returns a loop following a parallel over 360° of longitude.
+     *
+     * @param  latitude  latitude of the parallel in degrees.
+     * @param  start     longitude of the first vertex in degrees.
+     * @param  eastward  {@code true} for a loop enclosing the cap north of the parallel,
+     *                   {@code false} for the cap south of it.
+     */
+    private static S2Loop parallelLoop(final double latitude, final double start, final boolean eastward) {
+        final int count = (int) Math.ceil(360 / MAX_STEP);
+        final double direction = eastward ? 360 : -360;
+        final List<S2Point> points = new ArrayList<>(count);
+        for (int i = 0; i < count; i++) {
+            points.add(S2LatLng.fromDegrees(latitude, start + direction * i / count).toPoint());
+        }
+        return new S2Loop(points);
     }
 
     /**
