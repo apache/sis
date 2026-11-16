@@ -24,7 +24,17 @@
 module org.apache.sis.storage.ogcwxs {
     // Dependencies used in public API.
     requires transitive org.apache.sis.storage;
+    requires transitive java.net.http;
+
+    // Dependencies internal to the implementation.
+    requires com.fasterxml.jackson.core;
+    requires com.fasterxml.jackson.annotation;
+    requires com.fasterxml.jackson.databind;
+    requires com.fasterxml.jackson.datatype.jsr310;
+    requires org.openapitools.jackson.nullable;
 
     // Uncomment when the package contains at least one class.
     // exports org.apache.sis.storage.ogcwxs;
+    exports org.apache.sis.storage.web.service;
+    exports org.apache.sis.storage.web.openapi;
 }

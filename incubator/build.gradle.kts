@@ -62,6 +62,8 @@ dependencies {
     implementation(group = "com.fasterxml.jackson.core", name = "jackson-core",        version = "2.22.1")
     implementation(group = "com.fasterxml.jackson.core", name = "jackson-annotations", version = "2.22")
     implementation(group = "com.fasterxml.jackson.core", name = "jackson-databind",    version = "2.22.1")
+    implementation(group = "com.fasterxml.jackson.datatype", name = "jackson-datatype-jsr310", version = "2.22.1")
+    implementation(group = "org.openapitools",           name = "jackson-databind-nullable", version = "0.2.6")
     implementation(group = "org.antlr",                  name = "antlr4-maven-plugin", version = "4.13.2")
     implementation(group = "org.xerial",                 name = "sqlite-jdbc",         version = "3.45.1.0")
     implementation(group = "org.apache.xmlgraphics",     name = "batik-bridge",        version = "1.19") {
