@@ -36,7 +36,6 @@ import java.awt.image.PixelInterleavedSampleModel;
 import java.awt.image.Raster;
 import java.awt.image.RasterFormatException;
 import java.awt.image.SampleModel;
-import java.awt.image.TileObserver;
 import java.awt.image.WritableRaster;
 import java.awt.image.WritableRenderedImage;
 import org.apache.sis.image.internal.shared.ImageUtilities;
@@ -559,20 +558,6 @@ public final class TiledImageMock extends PlanarImage implements WritableRendere
     @Override
     public synchronized Point[] getWritableTileIndices() {
         return isTileAcquired ? new Point[] {new Point(acquiredTileX, acquiredTileY)} : null;
-    }
-
-    /**
-     * Ignored since we do not need tile observers for the tests.
-     */
-    @Override
-    public void addTileObserver(TileObserver to) {
-    }
-
-    /**
-     * Ignored since no listener can have been registered.
-     */
-    @Override
-    public void removeTileObserver(TileObserver to) {
     }
 
     /**

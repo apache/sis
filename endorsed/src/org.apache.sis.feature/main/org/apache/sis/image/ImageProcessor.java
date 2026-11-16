@@ -34,6 +34,7 @@ import java.awt.image.RenderedImage;
 import java.awt.image.ImagingOpException;
 import java.awt.image.IndexColorModel;
 import java.awt.image.WritableRenderedImage;
+import java.awt.image.TileObserver;
 import javax.measure.Quantity;
 import org.opengis.referencing.operation.MathTransform;
 import org.opengis.referencing.operation.MathTransform1D;
@@ -1110,7 +1111,7 @@ public class ImageProcessor implements Cloneable {
      *
      * <p><b>Result relationship with source:</b>
      * Changes in the source image are reflected in the returned image
-     * if the source image notifies {@linkplain java.awt.image.TileObserver tile observers}.</p>
+     * if the source image notifies {@linkplain TileObserver tile observers}.</p>
      *
      * @param  source        the image for which to convert sample values.
      * @param  sourceRanges  approximate ranges of values for each band in source image, or {@code null} if unknown.
@@ -1180,7 +1181,7 @@ public class ImageProcessor implements Cloneable {
      *
      * <p><b>Result relationship with source:</b>
      * Changes in the source image are reflected in the returned images
-     * if the source image notifies {@linkplain java.awt.image.TileObserver tile observers}.</p>
+     * if the source image notifies {@linkplain TileObserver tile observers}.</p>
      *
      * @param  source    the image to be resampled.
      * @param  bounds    domain of pixel coordinates of resampled image to create. Fields are updated in-place
@@ -1280,14 +1281,14 @@ public class ImageProcessor implements Cloneable {
      * <p>This operation uses the following properties in addition to method parameters:</p>
      * <ul>
      *   <li>{@linkplain #getAggregation()   Aggregation method} (weighted average, <i>etc</i>).</li>
-     *   <li>{@linkplain #getFillValues()    Fill values} for missing bands in source images.</li>
+     *   <li>{@linkplain #getFillValues()    Fill values} for sample values not covered by a source.</li>
      *   <li>{@linkplain #getImageLayout()   Image layout} for inferring a sample model.</li>
      *   <li>{@linkplain #getExecutionMode() Execution mode} (parallel or sequential).</li>
      * </ul>
      *
      * <p><b>Result relationship with source:</b>
      * Changes in the source image will cause a recomputation of the returned image
-     * if the source image notifies {@linkplain java.awt.image.TileObserver tile observers}.</p>
+     * if the source image notifies {@linkplain TileObserver tile observers}.</p>
      *
      * @param  source      the image to be resampled.
      * @param  bounds      domain of pixel coordinates of the aggregated image, or {@code null} for automatic.
@@ -1314,14 +1315,14 @@ public class ImageProcessor implements Cloneable {
      * <p>This operation uses the following properties in addition to method parameters:</p>
      * <ul>
      *   <li>{@linkplain #getAggregation()   Aggregation method} (weighted average, <i>etc</i>).</li>
-     *   <li>{@linkplain #getFillValues()    Fill values} for missing bands in source images.</li>
+     *   <li>{@linkplain #getFillValues()    Fill values} for sample values not covered by a source.</li>
      *   <li>{@linkplain #getImageLayout()   Image layout} for inferring a sample model.</li>
      *   <li>{@linkplain #getExecutionMode() Execution mode} (parallel or sequential).</li>
      * </ul>
      *
      * <p><b>Result relationship with source:</b>
      * Changes in any source image will cause a recomputation of the returned image
-     * if the source images notify {@linkplain java.awt.image.TileObserver tile observers}.</p>
+     * if the source images notify {@linkplain TileObserver tile observers}.</p>
      *
      * @param  bounds   domain of pixel coordinates of the aggregated image, or {@code null} for automatic.
      * @param  sources  the images to aggregate with their transforms from <em>source</em> to <em>new</em> image.
@@ -1374,7 +1375,7 @@ public class ImageProcessor implements Cloneable {
      *
      * <p><b>Result relationship with source:</b>
      * Changes in the source image are reflected in the returned images
-     * if the source image notifies {@linkplain java.awt.image.TileObserver tile observers}.</p>
+     * if the source image notifies {@linkplain TileObserver tile observers}.</p>
      *
      * @param  source  the image for which to compute an overview.
      * @return image overview.

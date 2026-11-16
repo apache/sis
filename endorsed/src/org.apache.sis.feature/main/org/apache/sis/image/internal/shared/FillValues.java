@@ -107,13 +107,26 @@ public final class FillValues {
     }
 
     /**
+     * Returns the content of {@link #asPrimitiveArray} as an array of double-precision values.
+     * This method always returns copy, the backing array is never returned.
+     *
+     * @return the fill values as an array of double-precision values.
+     */
+    public double[] asDoubles() {
+        final var values = new double[Array.getLength(asPrimitiveArray)];
+        Arrays.fill(values, Double.NaN);
+        Arrays.setAll(values, (i) -> Array.getDouble(asPrimitiveArray, i));
+        return values;
+    }
+
+    /**
      * Fills the given raster with the fill value. The raster sample model should be the same
      * than the sample model specified at construction time of this {@code FillValues} object.
      *
-     * <h4>Implementation note</h4>
+     * <p><b>Implementation note</b>
      * This method fills the raster using its API, without direct access to the backing array.
      * We do not use direct array access because it would disable Java2D hardware acceleration
-     * in subsequent operations.
+     * in subsequent operations.</p>
      *
      * @param  tile  the raster to fill.
      *

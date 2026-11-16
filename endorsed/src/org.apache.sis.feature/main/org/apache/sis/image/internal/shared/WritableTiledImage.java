@@ -139,11 +139,22 @@ public class WritableTiledImage extends TiledImage implements WritableRenderedIm
             if (tile == null) {
                 final int x = ImageUtilities.tileToPixelX(this, tileX);
                 final int y = ImageUtilities.tileToPixelY(this, tileY);
-                tile = WritableRaster.createWritableRaster(sampleModel, new Point(x, y));
-                tiles[index] = tile;
+                tiles[index] = tile = createTile(new Point(x, y));
             }
             return tile;
         }
+    }
+
+    /**
+     * Creates an initially empty tile. This method is invoked when {@link #getTile(int, int)}
+     * is requested for a tile that does not exist yet. Subclasses can override this method in
+     * order, for example, to fill the new tile with a fill value.
+     *
+     * @param  location  the upper-left corner of the tile.
+     * @return a new raster for a tile at the given location.
+     */
+    protected WritableRaster createTile(final Point location) {
+        return WritableRaster.createWritableRaster(sampleModel, location);
     }
 
     /**

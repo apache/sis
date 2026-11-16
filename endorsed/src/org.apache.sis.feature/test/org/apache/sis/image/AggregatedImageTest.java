@@ -16,11 +16,14 @@
  */
 package org.apache.sis.image;
 
+import java.util.Map;
+import java.util.HashMap;
 import java.awt.Point;
 import java.awt.Dimension;
 import java.awt.Rectangle;
 import java.awt.image.DataBuffer;
 import java.awt.image.Raster;
+import java.awt.image.RenderedImage;
 import java.awt.image.WritableRaster;
 import org.opengis.referencing.operation.TransformException;
 import org.apache.sis.image.internal.shared.WritableTiledImage;
@@ -50,7 +53,7 @@ import org.apache.sis.test.TestCase;
  * @author  Martin Desruisseaux (Geomatys)
  */
 @SuppressWarnings("exports")
-public final class AggregatedImageTest extends TestCase {
+public final class AggregatedImageTest extends TestCase implements PlanarImage.Observer {
     /**
      * The image bounds, or {@code null} for automatic.
      * Used at construction and for verifying the properties of the result.
@@ -87,9 +90,42 @@ public final class AggregatedImageTest extends TestCase {
     private boolean parallel;
 
     /**
+     * Indexes of tiles which are updated. Keys are the last value of the {@code writing} argument
+     * in the call to {@link #tileUpdate(java.awt.image.RenderedImage, int, int, boolean)} method.
+     */
+    private final Map<Point, Boolean> updatedTiles;
+
+    /**
      * Creates a new test case.
      */
     public AggregatedImageTest() {
+        updatedTiles = new HashMap<>();
+    }
+
+    /**
+     * Invoked when a tile is about to be updated or has been updated.
+     * This method asserts that for each tile, the method is invoked once
+     * with {@code writing} equals to {@code true} then once with {@code false}.
+     */
+    @Override
+    public void tileUpdate(final RenderedImage image, final int tileX, final int tileY, final boolean writing) {
+        final Boolean previous = updatedTiles.put(new Point(tileX, tileY), writing);
+        if (writing) {
+            assertNull(previous);
+        } else {
+            assertEquals(Boolean.TRUE, previous);
+        }
+    }
+
+    /**
+     * Asserts that the file at the given index has been updated.
+     *
+     * @param tileX  the <var>x</var> index of the modified tile.
+     * @param tileY  the <var>y</var> index of the modified tile.
+     */
+    private void assertUpdatedTile(final int tileX, final int tileY) {
+        assertEquals(Boolean.FALSE, updatedTiles.remove(new Point(tileX, tileY)),
+                () -> "Tile (" + tileX + ", " + tileY + ')');
     }
 
     /**
@@ -142,6 +178,7 @@ public final class AggregatedImageTest extends TestCase {
         final var layout   = new ImageLayout(null, tileSize, false, false, true, minTile);
         image = new AggregatedImage(sources, layout, bounds, Aggregation.RASTER_SPACE_WEIGHTING, null);
         image.parallel = parallel;
+        image.addTileObserver(this);
     }
 
     /**
@@ -229,6 +266,9 @@ public final class AggregatedImageTest extends TestCase {
                 1105.5f, 1107.5f, 1205.5f, 1207.5f,
                 1210.5f, 1212.5f, 1310.5f, 1312.5f,
                 1315.5f, 1317.5f, 1415.5f, 1417.5f);
+
+        // Expect no tile update event.
+        assertTrue(updatedTiles.isEmpty());
     }
 
     /**
@@ -275,6 +315,9 @@ public final class AggregatedImageTest extends TestCase {
                 1311, 1312, 1855, 1856, 1906,       2401,     NaN,  NaN,  NaN,  NaN,
                  NaN,  NaN, 2310, 2311, 2410,       2411,     NaN,  NaN,  NaN,  NaN,
                  NaN,  NaN, 2320, 2321, 2420,       2421,     NaN,  NaN,  NaN,  NaN);
+
+        // Expect no tile update event.
+        assertTrue(updatedTiles.isEmpty());
     }
 
     /**
@@ -349,6 +392,9 @@ public final class AggregatedImageTest extends TestCase {
                 NaN, NaN, 5100.5f, 5200.5f, 5300.5f,
                 NaN, NaN, 5110.5f, 5210.5f, 5310.5f,
                 NaN, NaN, 5120.5f, 5220.5f, 5320.5f);
+
+        // Expect no tile update event.
+        assertTrue(updatedTiles.isEmpty());
     }
 
     /**
@@ -360,6 +406,16 @@ public final class AggregatedImageTest extends TestCase {
      */
     @Test
     public void testRecompute() throws TransformException {
+        testRecompute(true);
+    }
+
+    /**
+     * Implementation of {@link #testRecompute()} and {@link #testRecomputeOnlyDirtyTiles()}.
+     *
+     * @param  twoChanges  {@code true} for updating two tiles, or {@code false} for updating only one time.
+     * @throws TransformException if an error occurred while computing the bounds of the aggregated image.
+     */
+    private void testRecompute(final boolean twoChanges) throws TransformException {
         tileWidth  =  5;
         tileHeight =  3;
         minTileX   =  4;
@@ -376,21 +432,51 @@ public final class AggregatedImageTest extends TestCase {
                 1400, 1401, 1500, 1501, 1600, 1601,
                 1410, 1411, 1510, 1511, 1610, 1611);
         /*
-         * Modify the pixel at (10, -2) in the second tile and the pixel at (11, 0) in the sixth tile.
+         * Modify the pixel at (10, -2) in the second tile of the source image.
+         * This is the pixel at (1, 3) in the aggregated image, in tile (4, -1).
          * The tile observers are notified when the writable tiles are released.
          */
         WritableRaster tile = source.getWritableTile(-2, 2);
         tile.setSample(10, -2, 0, 5000);
         source.releaseWritableTile(-2, 2);
-
-        tile = source.getWritableTile(-1, 3);
-        tile.setSample(11, 0, 0, 6000);
-        source.releaseWritableTile(-1, 3);
-
+        /*
+         * Modify the pixel at (10, -2) in the second tile and the pixel at (11, 0) in the sixth tile.
+         * The tile observers are notified when the writable tiles are released.
+         */
+        float flag = 1610;
+        if (twoChanges) {
+            tile = source.getWritableTile(-1, 3);
+            tile.setSample(11, 0, 0, 6000);
+            source.releaseWritableTile(-1, 3);
+            flag = 6000;
+        }
         verify(0,   // Number of the band to verify
                 1100, 1101, 1200, 1201, 1300, 1301,
                 1110, 1111, 1210, 5000, 1310, 1311,
                 1400, 1401, 1500, 1501, 1600, 1601,
-                1410, 1411, 1510, 1511, 6000, 1611);
+                1410, 1411, 1510, 1511, flag, 1611);
+
+        assertFalse(updatedTiles.isEmpty());
+        assertUpdatedTile(4, -1);
+        if (twoChanges) {
+            assertUpdatedTile(4,  0);
+            assertUpdatedTile(5,  0);
+            assertUpdatedTile(5, -1);
+        }
+        assertTrue(updatedTiles.isEmpty());
+    }
+
+    /**
+     * Tests that only the tiles affected by a change in a source image are recomputed.
+     * This is the same setup as {@link #testRecompute()},
+     * but with a single modification in the source image.
+     * That modification affects only the upper-left tile of the aggregated image.
+     * Other tiles shall not be recomputed and shall keep their values.
+     *
+     * @throws TransformException if an error occurred while computing the bounds of the aggregated image.
+     */
+    @Test
+    public void testRecomputeOnlyDirtyTiles() throws TransformException {
+        testRecompute(false);
     }
 }

@@ -16,6 +16,8 @@
  */
 package org.apache.sis.image;
 
+import java.util.Map;
+import java.util.LinkedHashMap;
 import java.util.BitSet;
 import java.util.Vector;
 import java.util.Arrays;
@@ -40,6 +42,7 @@ import org.opengis.referencing.operation.TransformException;
 import org.apache.sis.referencing.operation.transform.MathTransforms;
 import org.apache.sis.image.internal.shared.WritableTiledImage;
 import org.apache.sis.image.internal.shared.ImageUtilities;
+import org.apache.sis.image.internal.shared.FillValues;
 import org.apache.sis.coverage.grid.PixelInCell;
 import org.apache.sis.pending.jdk.JDK18;
 import org.apache.sis.system.CommonExecutor;
@@ -149,9 +152,9 @@ public class AggregatedImage extends MonolithicImage implements Disposable {
     protected final SampleModel sampleModel;
 
     /**
-     * The values to use if the source images provide no value.
+     * The fill values in a helper class for filling new tiles to that value.
      */
-    private final double[] fillValues;
+    private final FillValues filler;
 
     /**
      * Number of bands in which some values will be aggregated.
@@ -220,7 +223,7 @@ public class AggregatedImage extends MonolithicImage implements Disposable {
      * @param  layout       preferences about how to derive a sample model for this aggregated image.
      * @param  bounds       domain of pixel coordinates of this aggregated image, or {@code null} for automatic.
      * @param  aggregation  the method to use for performing aggregations.
-     * @param  fillValues   the values to use if the source images have missing bands, or {@code null} for NaNs.
+     * @param  fillValues   the values to use for sample values not covered by a source.
      * @throws TransformException if {@code bounds} is null and an error occurred while computing automatic bounds.
      */
     public AggregatedImage(Source[] sources,
@@ -276,17 +279,7 @@ public class AggregatedImage extends MonolithicImage implements Disposable {
         if (effectiveNumBands >= Integer.MAX_VALUE / (CHUNK_SIZE * CHUNK_SIZE * NUM_ACCUMULATORS)) {
             throw new RasterFormatException(Errors.format(Errors.Keys.IllegalPropertyValue_2, "numBands", effectiveNumBands));
         }
-        final var values = new double[sampleModel.getNumBands()];
-        Arrays.fill(values, Double.NaN);
-        if (fillValues != null) {
-            for (int i = Math.min(values.length, fillValues.length); --i >= 0;) {
-                final Number value = fillValues[i];
-                if (value != null) {
-                    values[i] = value.doubleValue();
-                }
-            }
-        }
-        this.fillValues = values;
+        filler = new FillValues(sampleModel, fillValues, true);
     }
 
     /**
@@ -482,11 +475,12 @@ public class AggregatedImage extends MonolithicImage implements Disposable {
         final int chunksPerImageRow = numChunks(width);
         final int chunkCellStride = effectiveNumBands * NUM_ACCUMULATORS;
         final var bounds = new Rectangle(CHUNK_SIZE, CHUNK_SIZE);
+        final double[] fillValues = filler.asDoubles();
         final double[] samples = fillValues.clone();
         final var writable = new WriteAdapter(
-                getSampleModel(),
+                sampleModel,
                 new Rectangle(minX, minY, width, height),
-                new Point(minTileX, minTileY), numXTiles,
+                new Point(minTileX, minTileY),
                 tiles, dirtyTiles);
 
         for (int i=0; i<data.length; i++) {
@@ -516,8 +510,12 @@ public class AggregatedImage extends MonolithicImage implements Disposable {
                                 samples[j] = (num != 0) ? sum/num : fillValues[j];
                             }
                             it.setPixel(samples);
+                        } else {
+                            valueIndex += chunkCellStride;      // Skip the pixel without writing it.
                         }
                     }
+                } finally {
+                    writable.fireTilesUpdated();
                 }
             }
         }
@@ -529,37 +527,83 @@ public class AggregatedImage extends MonolithicImage implements Disposable {
      * should be written. Non-dirty tiles should not be modified because all needed
      * source tiles may not have been scanned.
      */
-    private static final class WriteAdapter extends WritableTiledImage {
-        /** Whether the current tile should be updated. */
+    private final class WriteAdapter extends WritableTiledImage {
+        /**
+         * Whether the current tile should be updated.
+         * If {@code false}, {@link AggregatedImage} shall not update the current tile.
+         * Skipping such tiles is necessary otherwise their content would be corrupted because
+         * of incomplete aggregated data when only a subset of the sources have been scanned.
+         * This flag is updated when the pixel iterator moves from one tile to another.
+         */
         boolean dirtyTile;
 
-        /** List of all dirty tiles, or {@code null} for all. */
+        /**
+         * Row-major indexes of dirty tiles, or {@code null} if all tiles need to be computed.
+         */
         private final BitSet dirtyTiles;
 
-        /** Copy of {@link AggregatedImage#numXTiles}. */
-        private final int numXTiles;
+        /**
+         * Indexes of tiles which are updated, together with whether to notify the listener.
+         * The values are {@code false} when a tile is created for the first time.
+         */
+        private final Map<Point, Boolean> updatedTiles;
 
-        /** Creates a new adapter for writing a tile. */
+        /**
+         * Creates a new adapter for writing the tiles of the enclosing aggregated image.
+         * This is an adapter for allowing the use of {@link WritablePixelIterator}.
+         */
         WriteAdapter(final SampleModel sampleModel,
                      final Rectangle   bounds,
                      final Point       minTile,
-                     final int         numXTiles,
                      final WritableRaster[] tiles,
                      final BitSet dirtyTiles)
         {
             super(null, null, sampleModel, bounds, minTile, tiles);
             this.dirtyTiles = dirtyTiles;
-            this.numXTiles  = numXTiles;
-            dirtyTile = (dirtyTiles == null);
+            updatedTiles = new LinkedHashMap<>();
         }
 
-        /** Gets a writable tile and set the flag saying whether this tile should be updated. */
-        @Override public WritableRaster getWritableTile(final int tileX, final int tileY) {
-            if (dirtyTiles != null) {
-                final int tileIndex = (tileY - minTileY) * numXTiles + (tileX - minTileX);
-                dirtyTile = dirtyTiles.get(tileIndex);
+        /**
+         * Creates an initially empty tile filled with the fill value.
+         */
+        @Override
+        protected WritableRaster createTile(final Point location) {
+            final WritableRaster tile = super.createTile(location);
+            if (!filler.isFullyZero) filler.fill(tile);
+            return tile;
+        }
+
+        /**
+         * Gets a writable tile and set the flag saying whether this tile should be updated.
+         * If {@link #dirtyTile} is {@code false} after the invocation of this method, then
+         * the caller shall not update the current tile.
+         */
+        @Override
+        public WritableRaster getWritableTile(final int tileX, final int tileY) {
+            final int tileIndex = (tileY - minTileY) * numXTiles + (tileX - minTileX);
+            dirtyTile = (dirtyTiles == null) || dirtyTiles.get(tileIndex);
+            if (dirtyTile) {
+                final boolean tileExists = (tiles[tileIndex] != null);
+                if (updatedTiles.putIfAbsent(new Point(tileX, tileY), tileExists) == null && tileExists) {
+                    fireTileUpdate(tileX, tileY, true);
+                }
             }
             return super.getWritableTile(tileX, tileY);
+        }
+
+        /**
+         * Notifies listeners after we are sure that the tile updates are finished.
+         * We wait until the iteration finished because the same tiles may be acquired, released,
+         * then acquired again many times, and we want to notify the listeners only once.
+         */
+        final void fireTilesUpdated() {
+            for (final Map.Entry<Point, Boolean> entry : updatedTiles.entrySet()) {
+                if (entry.getValue()) {
+                    final Point tile = entry.getKey();
+                    fireTileUpdate(tile.x, tile.y, false);
+                }
+            }
+            updatedTiles.clear();
         }
     }
 
@@ -794,8 +838,11 @@ images:     while (imageIndex < upperImageIndex) {
                                         }
                                         int valueIndex = cellIndex * chunkValueStride;
                                         for (int j=0; j<numBands; j++) {
-                                            dataChunk[valueIndex++] += weight * sampleValues[j];
-                                            dataChunk[valueIndex++] += weight;
+                                            final double value = sampleValues[j];
+                                            if (!Double.isNaN(value)) {
+                                                dataChunk[valueIndex++] += weight * value;
+                                                dataChunk[valueIndex++] += weight;
+                                            }
                                         }
                                     }
                                 }

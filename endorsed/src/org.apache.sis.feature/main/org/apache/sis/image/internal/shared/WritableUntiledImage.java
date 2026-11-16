@@ -260,8 +260,8 @@ public final class WritableUntiledImage extends BufferedImage {
      * @param tileY           the <var>y</var> index of the tile that is being updated.
      * @param willBeWritable  if {@code true}, the tile will be grabbed for writing; otherwise it is being released.
      */
-    public static void fireTileUpdate(final TileObserver[] observers, final WritableRenderedImage image,
-                                      final int tileX, final int tileY, final boolean willBeWritable)
+    static void fireTileUpdate(final TileObserver[] observers, final WritableRenderedImage image,
+                               final int tileX, final int tileY, final boolean willBeWritable)
     {
         if (observers != null) {
             for (final TileObserver observer : observers) {

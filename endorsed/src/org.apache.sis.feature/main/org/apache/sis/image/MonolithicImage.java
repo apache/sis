@@ -20,6 +20,7 @@ import java.lang.ref.WeakReference;
 import java.awt.image.TileObserver;
 import java.awt.image.RenderedImage;
 import java.awt.image.WritableRenderedImage;
+import org.apache.sis.image.internal.shared.WritableUntiledImage;
 
 
 /**
@@ -31,9 +32,25 @@ import java.awt.image.WritableRenderedImage;
  */
 abstract class MonolithicImage extends PlanarImage {
     /**
-     * The listener, or {@code null} if none.
+     * The observers, or {@code null} if none. This is a copy-on-write array:
+     * values are never modified after construction (new arrays are created).
+     *
+     * This field is declared volatile because it is read without synchronization by
+     * {@link #markTileWritable(int, int, boolean)}. Since this is a copy-on-write array,
+     * it is okay to omit synchronization for that method but we still need the memory effect.
+     *
+     * @see #addTileObserver(TileObserver)
+     * @see #removeTileObserver(TileObserver)
      */
-    private TileObserver listener;
+    @SuppressWarnings("VolatileArrayField")
+    private volatile TileObserver[] observers;
+
+    /**
+     * The common listener registered on all source images, or {@code null} if none.
+     * This listener use weak reference, therefore it should not cause retention of
+     * large amount of memory.
+     */
+    private TileObserver sourceListener;
 
     /**
      * Creates a new monolithic image.
@@ -49,39 +66,43 @@ abstract class MonolithicImage extends PlanarImage {
     abstract RenderedImage[] getSourceImages();
 
     /**
-     * Removes the listener from all images that are writable.
+     * Adds a listener by weak reference to all images that are writable or planar.
      * This method should be invoked in a synchronized block.
      */
-    final void unregisterSourceListeners() {
-        if (listener != null) {
+    final void registerSourceListeners() {
+        boolean registered = false;
+        TileObserver listener = sourceListener;
+        try {
             for (final RenderedImage source : getSourceImages()) {
-                if (source instanceof WritableRenderedImage) {
-                    ((WritableRenderedImage) source).removeTileObserver(listener);
+                if (listener == null) {
+                    listener = new Listener(this);
                 }
+                registered |= addTileObserver(source, listener);
             }
-            listener = null;
+        } finally {
+            if (registered) {
+                sourceListener = listener;
+            }
         }
     }
 
     /**
-     * Adds a listener by weak reference to all images that are writable.
+     * Removes the listener from all images that are writable or planar.
      * This method should be invoked in a synchronized block.
      */
-    final void registerSourceListeners() {
-        for (final RenderedImage source : getSourceImages()) {
-            if (source instanceof WritableRenderedImage) {
-                if (listener == null) {
-                    listener = new Listener(this);
-                }
-                ((WritableRenderedImage) source).addTileObserver(listener);
+    final void unregisterSourceListeners() {
+        if (sourceListener != null) {
+            for (final RenderedImage source : getSourceImages()) {
+                removeTileObserver(source, sourceListener);
             }
+            sourceListener = null;
         }
     }
 
     /**
      * A listener using weak reference for notifying the enclosed image that a source changed.
      */
-    private static final class Listener extends WeakReference<MonolithicImage> implements TileObserver {
+    private static final class Listener extends WeakReference<MonolithicImage> implements PlanarImage.Observer {
         /**
          * Creates a new listener which will notify the given image.
          *
@@ -95,19 +116,17 @@ abstract class MonolithicImage extends PlanarImage {
          * Invoked when a source image changed.
          * The enclosed image is notified only after the tile calculation finished.
          *
-         * @param source  the image that owns the updated tile.
-         * @param tileX   the <var>x</var> index of the tile that is being updated.
-         * @param tileY   the <var>y</var> index of the tile that is being updated.
-         * @param willBeWritable  {@code true} before writing, {@code false} after released.
+         * @param source   the image that owns the updated tile.
+         * @param tileX    the <var>x</var> index of the tile that is being updated.
+         * @param tileY    the <var>y</var> index of the tile that is being updated.
+         * @param writing  {@code true} before writing, {@code false} after update.
          */
         @Override
-        public void tileUpdate(final WritableRenderedImage source, final int tileX, final int tileY,
-                               final boolean willBeWritable)
-        {
+        public void tileUpdate(final RenderedImage source, final int tileX, final int tileY, final boolean writing) {
             final MonolithicImage target = get();
             if (target == null) {
-                source.removeTileObserver(this);
-            } else if (willBeWritable) {
+                removeTileObserver(source, this);
+            } else if (writing) {
                 /*
                  * Wait for completion before to mark source tile as updated. We should also ensure
                  * that the tile is not used before completion, but this is not yet implemented.
@@ -128,4 +147,43 @@ abstract class MonolithicImage extends PlanarImage {
      * @see ComputedImage#sourceTileChanged(RenderedImage, int, int)
      */
     protected abstract void sourceTileChanged(RenderedImage source, int tileX, int tileY);
+
+    /**
+     * Adds an observer to be notified when a tile is about to be modified.
+     * A tile can be modified indirectly if one of the source images changed.
+     * The given listener should be an instance of {@link Observer} in order
+     * to be notified even if this image is not a {@link WritableRenderedImage}.
+     *
+     * @param  observer  the observer to notify, ignored if {@code null}.
+     *         If already present, it will receive multiple notifications.
+     */
+    @Override
+    public synchronized void addTileObserver(final TileObserver observer) {
+        if (observer instanceof Observer || this instanceof WritableRenderedImage) {
+            observers = WritableUntiledImage.addTileObserver(observers, observer);
+        }
+    }
+
+    /**
+     * Removes an observer from the list of observers notified when a tile is modified.
+     * If the observer was not registered, nothing happens.
+     * If the observer was registered for multiple notifications, it will now be registered for one fewer.
+     *
+     * @param  observer  the observer to stop notifying.
+     */
+    @Override
+    public synchronized void removeTileObserver(final TileObserver observer) {
+        observers = WritableUntiledImage.removeTileObserver(observers, observer);
+    }
+
+    /**
+     * Notifies listeners that a tile is about to be modified or has been modified.
+     *
+     * @param  tileX    the <var>x</var> index of the tile to acquire or release.
+     * @param  tileY    the <var>y</var> index of the tile to acquire or release.
+     * @param  writing  {@code true} if the tile will be modified, or {@code false} if the modification is done.
+     */
+    final void fireTileUpdate(final int tileX, final int tileY, final boolean writing) {
+        fireTileUpdate(observers, this, tileX, tileY, writing);
+    }
 }

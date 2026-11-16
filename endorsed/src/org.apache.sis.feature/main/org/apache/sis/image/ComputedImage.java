@@ -33,7 +33,6 @@ import java.awt.image.SampleModel;
 import java.awt.image.TileObserver;
 import java.awt.image.ImagingOpException;
 import org.apache.sis.util.ArgumentChecks;
-import org.apache.sis.util.ArraysExt;
 import org.apache.sis.util.Disposable;
 import org.apache.sis.util.Exceptions;
 import org.apache.sis.util.internal.shared.Numerics;
@@ -42,6 +41,7 @@ import org.apache.sis.util.resources.Errors;
 import org.apache.sis.coverage.grid.GridExtent;     // For javadoc
 import org.apache.sis.feature.internal.Resources;
 import org.apache.sis.image.internal.shared.ImageUtilities;
+import org.apache.sis.image.internal.shared.WritableUntiledImage;
 
 
 /**
@@ -53,9 +53,9 @@ import org.apache.sis.image.internal.shared.ImageUtilities;
  *
  * <p>{@code ComputedImage} may have an arbitrary number of source images, including zero.
  * A {@link TileObserver} is automatically registered to all sources that are instances of
- * {@link WritableRenderedImage}. If one of those sources sends a change event, then all
- * {@code ComputedImage} tiles that may be impacted by that change are marked as <dfn>dirty</dfn>
- * and will be computed again when needed.</p>
+ * {@link WritableRenderedImage} or {@link PlanarImage}.
+ * If one of those sources sends a change event, then all {@code ComputedImage} tiles that may be
+ * impacted by that change are marked as <dfn>dirty</dfn> and will be computed again when needed.</p>
  *
  * <p>When this {@code ComputedImage} is garbage collected, all cached tiles are discarded
  * and the above-cited {@link TileObserver} is automatically removed from all sources.
@@ -117,7 +117,8 @@ import org.apache.sis.image.internal.shared.ImageUtilities;
  * if the change to dirty state happened after the call to {@link #getTile(int, int) getTile(…)}.</p>
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.7
+ * @version 1.8
+ *
  * @since SIS 1.1
  */
 public abstract class ComputedImage extends PlanarImage implements Disposable {
@@ -211,11 +212,25 @@ public abstract class ComputedImage extends PlanarImage implements Disposable {
     protected final SampleModel sampleModel;
 
     /**
+     * The observers, or {@code null} if none. This is a copy-on-write array:
+     * values are never modified after construction (new arrays are created).
+     *
+     * This field is declared volatile because it is read without synchronization by
+     * {@link #markTileWritable(int, int, boolean)}. Since this is a copy-on-write array,
+     * it is okay to omit synchronization for that method but we still need the memory effect.
+     *
+     * @see #addTileObserver(TileObserver)
+     * @see #removeTileObserver(TileObserver)
+     */
+    @SuppressWarnings("VolatileArrayField")
+    private volatile TileObserver[] observers;
+
+    /**
      * Creates an initially empty image with the given sample model.
      * The default tile size will be the width and height of the given sample model
      * (this default setting minimizes the amount of memory consumed by {@link #createTile(int, int)}).
-     * This constructor automatically registers a {@link TileObserver}
-     * for all sources that are {@link WritableRenderedImage} instances.
+     * This constructor automatically registers a {@link TileObserver} for all sources that are
+     * instances of {@link WritableRenderedImage} or {@link PlanarImage}.
      *
      * @param  sampleModel  the sample model shared by all tiles in this image.
      * @param  sources      sources of this image (may be an empty array), or a null array if unknown.
@@ -223,40 +238,14 @@ public abstract class ComputedImage extends PlanarImage implements Disposable {
     @SuppressWarnings("this-escape")        // `this` escaped as weak reference only.
     protected ComputedImage(final SampleModel sampleModel, RenderedImage... sources) {
         this.sampleModel = Objects.requireNonNull(sampleModel);
-        /*
-         * Verify the `sources` argument validity and opportunistically collect all writable sources
-         * in a separated array. If at the end it appears that the two arrays have the same content,
-         * the same array will be shared by this `ComputedImage` and its `TileObserver`.
-         */
-        WritableRenderedImage[] ws = null;
         if (sources != null) {
             sources = sources.clone();
-            int count = 0;
             for (int i=0; i<sources.length; i++) {
-                final RenderedImage source = sources[i];
-                ArgumentChecks.ensureNonNullElement("sources", i, source);
-                if (source instanceof WritableRenderedImage) {
-                    if (ws == null) {
-                        ws = new WritableRenderedImage[sources.length - i];
-                    }
-                    ws[count++] = (WritableRenderedImage) source;
-                }
-            }
-            /*
-             * If `count` is 0, then `ws` is null while `sources` is non-null. This is intentional:
-             * a null `sources` array does not have the same meaning as an empty `sources` array.
-             * In the case of `ws` however, the difference does not matter so we keep it to null.
-             */
-            if (count != 0) {
-                if (count == sources.length) {
-                    sources = ws;                   // The two arrays have the same content; share the same array.
-                } else {
-                    ws = ArraysExt.resize(ws, count);
-                }
+                ArgumentChecks.ensureNonNullElement("sources", i, sources[i]);
             }
         }
-        this.sources = sources;                     // Note: null value does not have same meaning as empty array.
-        reference = new ComputedTiles(this, ws);    // Create cleaner last after all arguments have been validated.
+        this.sources = sources;                         // Note: null value does not have same meaning as empty array.
+        reference = new ComputedTiles(this, sources);   // Create cleaner last after all arguments have been validated.
     }
 
     /**
@@ -511,6 +500,7 @@ public abstract class ComputedImage extends PlanarImage implements Disposable {
                     /*
                      * Actual computation.
                      */
+                    fireTileUpdate(tileX, tileY, true);
                     try {
                         tile = computeTile(tileX, tileY, previous);
                     } catch (Exception e) {
@@ -521,6 +511,7 @@ public abstract class ComputedImage extends PlanarImage implements Disposable {
                             destination.releaseWritableTile(tileX, tileY);
                         }
                     }
+                    fireTileUpdate(tileX, tileY, false);
                     if (marked) {
                         reference.endWrite(key, error == null);
                     }
@@ -680,7 +671,7 @@ public abstract class ComputedImage extends PlanarImage implements Disposable {
     }
 
     /**
-     * Sets or clears whether a tile is checked out for writing.
+     * Sets or clears whether a tile is checked out for writing and notifies the listeners if needed.
      * This method is provided for subclasses that implement the {@link WritableRenderedImage} interface.
      * This method can be used as below:
      *
@@ -714,12 +705,17 @@ public abstract class ComputedImage extends PlanarImage implements Disposable {
      * @see WritableRenderedImage#releaseWritableTile(int, int)
      */
     protected boolean markTileWritable(final int tileX, final int tileY, final boolean writing) {
-        final TileCache.Key key = new TileCache.Key(reference, tileX, tileY);
+        final var key = new TileCache.Key(reference, tileX, tileY);
+        final boolean notify;
         if (writing) {
-            return reference.startWrite(key);
+            notify = reference.startWrite(key);
         } else {
-            return reference.endWrite(key, true);
+            notify = reference.endWrite(key, true);
         }
+        if (notify) {
+            fireTileUpdate(tileX, tileY, writing);
+        }
+        return notify;
     }
 
     /**
@@ -731,8 +727,8 @@ public abstract class ComputedImage extends PlanarImage implements Disposable {
      * <p>Subclasses can invoke this method when the tiles in the given range depend on source data
      * that changed, typically (but not necessarily) {@linkplain #getSources() source images}.
      * Note that there is no need to invoke this method if the source images are instances of
-     * {@link WritableRenderedImage}, because {@code ComputedImage} already has {@link TileObserver}
-     * for them.</p>
+     * {@link WritableRenderedImage} or {@link PlanarImage},
+     * because {@code ComputedImage} already has {@link TileObserver} for them.</p>
      *
      * @param  tiles  indices of tiles to mark as dirty.
      * @return {@code true} if at least one tile has been marked dirty.
@@ -772,6 +768,59 @@ public abstract class ComputedImage extends PlanarImage implements Disposable {
         return reference.hasErrorFlag(tiles.x, tiles.y,
                           Math.addExact(tiles.x, tiles.width  - 1),
                           Math.addExact(tiles.y, tiles.height - 1));
+    }
+
+    /**
+     * Adds an observer to be notified when a tile is about to be modified.
+     * A tile can be modified directly if this image implements the {@link WritableRenderedImage} interface
+     * and a tile has been acquired for writing, or indirectly if this image is computed from other sources
+     * and one of the source images changed. In the latter case, the given listener should be an instance of
+     * {@link Observer} in order to be notified even if this image is not a {@link WritableRenderedImage},
+     *
+     * @param  observer  the observer to notify, ignored if {@code null}.
+     *         If already present, it will receive multiple notifications.
+     *
+     * @see WritableRenderedImage#addTileObserver(TileObserver)
+     * @see Observer
+     *
+     * @since SIS 1.8
+     */
+    @Override
+    public synchronized void addTileObserver(final TileObserver observer) {
+        if (observer instanceof Observer || this instanceof WritableRenderedImage) {
+            observers = WritableUntiledImage.addTileObserver(observers, observer);
+        }
+    }
+
+    /**
+     * Removes an observer from the list of observers notified when a tile is modified.
+     * If the observer was not registered, nothing happens.
+     * If the observer was registered for multiple notifications, it will now be registered for one fewer.
+     *
+     * <p>The default implementation does nothing except ensuring that the argument is non-null.
+     * This method is overridden by subclasses such as {@link ComputedImage}, {@link AggregatedImage}
+     * and all writable images.</p>
+     *
+     * @param  observer  the observer to stop notifying.
+     *
+     * @see WritableRenderedImage#removeTileObserver(TileObserver)
+     *
+     * @since SIS 1.8
+     */
+    @Override
+    public synchronized void removeTileObserver(final TileObserver observer) {
+        observers = WritableUntiledImage.removeTileObserver(observers, observer);
+    }
+
+    /**
+     * Notifies listeners that a tile is about to be modified or has been modified.
+     *
+     * @param  tileX    the <var>x</var> index of the tile to acquire or release.
+     * @param  tileY    the <var>y</var> index of the tile to acquire or release.
+     * @param  writing  {@code true} if the tile will be modified, or {@code false} if the modification is done.
+     */
+    private void fireTileUpdate(final int tileX, final int tileY, final boolean writing) {
+        fireTileUpdate(observers, this, tileX, tileY, writing);
     }
 
     /**

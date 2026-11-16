@@ -17,12 +17,10 @@
 package org.apache.sis.image;
 
 import java.awt.image.SampleModel;
-import java.awt.image.TileObserver;
 import java.awt.image.Raster;
 import java.awt.image.RenderedImage;
 import java.awt.image.WritableRaster;
 import java.awt.image.WritableRenderedImage;
-import org.apache.sis.image.internal.shared.WritableUntiledImage;
 
 
 /**
@@ -73,17 +71,6 @@ import org.apache.sis.image.internal.shared.WritableUntiledImage;
  */
 abstract class WritableComputedImage extends ComputedImage {
     /**
-     * The observers, or {@code null} if none. This is a copy-on-write array:
-     * values are never modified after construction (new arrays are created).
-     *
-     * This field is declared volatile because it is read without synchronization by
-     * {@link #markTileWritable(int, int, boolean)}. Since this is a copy-on-write array,
-     * it is okay to omit synchronization for that method but we still need the memory effect.
-     */
-    @SuppressWarnings("VolatileArrayField")
-    private volatile TileObserver[] observers;
-
-    /**
      * Creates an initially empty image with the given sample model.
      * The source images are not necessarily {@link WritableRenderedImage}
      * because this {@code WritableComputedImage} instance may be effectively read-only.
@@ -95,43 +82,6 @@ abstract class WritableComputedImage extends ComputedImage {
      */
     protected WritableComputedImage(SampleModel sampleModel, RenderedImage... sources) {
         super(sampleModel, sources);
-    }
-
-    /**
-     * Adds an observer to be notified when a tile is checked out for writing.
-     * If the observer is already present, it will receive multiple notifications.
-     *
-     * @param  observer  the observer to notify.
-     */
-    public synchronized void addTileObserver(final TileObserver observer) {
-        observers = WritableUntiledImage.addTileObserver(observers, observer);
-    }
-
-    /**
-     * Removes an observer from the list of observers notified when a tile is checked out for writing.
-     * If the observer was not registered, nothing happens. If the observer was registered for multiple
-     * notifications, it will now be registered for one fewer.
-     *
-     * @param  observer  the observer to stop notifying.
-     */
-    public synchronized void removeTileObserver(final TileObserver observer) {
-        observers = WritableUntiledImage.removeTileObserver(observers, observer);
-    }
-
-    /**
-     * Sets or clears whether a tile is checked out for writing and notifies the listener if needed.
-     *
-     * @param  tileX    the <var>x</var> index of the tile to acquire or release.
-     * @param  tileY    the <var>y</var> index of the tile to acquire or release.
-     * @param  writing  {@code true} for acquiring the tile, or {@code false} for releasing it.
-     */
-    @Override
-    protected boolean markTileWritable(final int tileX, final int tileY, final boolean writing) {
-        final boolean notify = super.markTileWritable(tileX, tileY, writing);
-        if (notify && this instanceof WritableRenderedImage) {
-            WritableUntiledImage.fireTileUpdate(observers, (WritableRenderedImage) this, tileX, tileY, writing);
-        }
-        return notify;
     }
 
     /**

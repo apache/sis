@@ -26,6 +26,7 @@ import java.awt.image.WritableRaster;
 import java.awt.image.WritableRenderedImage;
 import java.awt.image.RenderedImage;
 import java.awt.image.ImagingOpException;
+import java.awt.image.TileObserver;
 import java.util.Objects;
 import java.util.Vector;
 import java.util.function.DoubleUnaryOperator;
@@ -83,7 +84,7 @@ import org.apache.sis.pending.jdk.JDK18;
  * {@link #getData(Rectangle)} and {@link #copyData(WritableRaster)}
  * in terms of above methods.
  *
- * <h2>Writable images</h2>
+ * <h2>Writing in a planar image</h2>
  * Some subclasses may implement the {@link WritableRenderedImage} interface. If this image is writable,
  * then the {@link WritableRenderedImage#getWritableTile WritableRenderedImage.getWritableTile(…)} and
  * {@link WritableRenderedImage#releaseWritableTile releaseWritableTile(…)} methods should be invoked in
@@ -100,7 +101,7 @@ import org.apache.sis.pending.jdk.JDK18;
  *     }
  *
  * This is recommended because implementations may count the number of acquisitions and releases for deciding
- * when to notify the {@link java.awt.image.TileObserver}s. Some implementations may also acquire and release
+ * when to notify the {@linkplain TileObserver tile observers}. Some implementations may also acquire and release
  * synchronization locks in the {@code getWritableTile(…)} and {@code releaseWritableTile(…)} methods.
  * Apache SIS <a href="https://issues.apache.org/jira/browse/SIS-487">does not yet define a synchronization policy</a>
  * for {@link WritableRenderedImage}, but such policy may be defined in a future version.
@@ -672,6 +673,152 @@ public abstract class PlanarImage implements RenderedImage {
      */
     Disposable prefetch(Rectangle tiles) {
         return null;
+    }
+
+    /**
+     * Adds an observer to be notified when a tile is about to be modified.
+     * A tile can be modified directly if this image implements the {@link WritableRenderedImage} interface
+     * and a tile has been acquired for writing, or indirectly if this image is computed from other sources
+     * and one of the source images changed. In the latter case, the given listener should be an instance of
+     * {@link Observer} in order to be notified even if this image is not a {@link WritableRenderedImage}.
+     *
+     * <p>The default implementation does nothing. This method is overridden by subclasses
+     * such as {@link ComputedImage}, {@link AggregatedImage} and all writable images.</p>
+     *
+     * @param  observer  the observer to notify, ignored if {@code null}.
+     *         If already present, it will receive multiple notifications.
+     *
+     * @see WritableRenderedImage#addTileObserver(TileObserver)
+     * @see Observer
+     *
+     * @since SIS 1.8
+     */
+    public void addTileObserver(TileObserver observer) {
+    }
+
+    /**
+     * Removes an observer from the list of observers notified when a tile is modified.
+     * If the observer was not registered, nothing happens.
+     * If the observer was registered for multiple notifications, it will now be registered for one fewer.
+     *
+     * <p>The default implementation does nothing. This method is overridden by subclasses
+     * such as {@link ComputedImage}, {@link AggregatedImage} and all writable images.</p>
+     *
+     * @param  observer  the observer to stop notifying. Ignored if {@code null} or absent.
+     *
+     * @see WritableRenderedImage#removeTileObserver(TileObserver)
+     *
+     * @since SIS 1.8
+     */
+    public void removeTileObserver(TileObserver observer) {
+    }
+
+    /**
+     * Adds an observer to the given image if possible.
+     *
+     * @param  image     the image on which to add an observer.
+     * @param  observer  the observer to add.
+     * @return whether a listener has been added.
+     */
+    static boolean addTileObserver(final RenderedImage image, final TileObserver observer) {
+        if (image instanceof PlanarImage) {
+            ((PlanarImage) image).addTileObserver(observer);
+        } else if (image instanceof WritableRenderedImage) {
+            ((WritableRenderedImage) image).addTileObserver(observer);
+        } else {
+            return false;
+        }
+        return false;
+    }
+
+    /**
+     * Removes an observer from the given image if present.
+     *
+     * @param  image     the image from which to remove an observer.
+     * @param  observer  the observer to add.
+     */
+    static void removeTileObserver(final RenderedImage image, final TileObserver observer) {
+        if (image instanceof PlanarImage) {
+            ((PlanarImage) image).removeTileObserver(observer);
+        } else if (image instanceof WritableRenderedImage) {
+            ((WritableRenderedImage) image).removeTileObserver(observer);
+        }
+    }
+
+    /**
+     * Notifies all listeners that the specified tile is about to change or has changed.
+     *
+     * @param observers  the observers to notify, or {@code null} if none.
+     * @param image      the image that owns the tile.
+     * @param tileX      the <var>x</var> index of the modified tile.
+     * @param tileY      the <var>y</var> index of the modified tile.
+     * @param writing    {@code true} if the tile will be modified, or {@code false} if the modification is done.
+     */
+    static void fireTileUpdate(final TileObserver[] observers, final RenderedImage image,
+                               final int tileX, final int tileY, final boolean writing)
+    {
+        if (observers != null) {
+            if (image instanceof WritableRenderedImage) {
+                final var writable = (WritableRenderedImage) image;
+                for (final TileObserver observer : observers) {
+                    observer.tileUpdate(writable, tileX, tileY, writing);
+                }
+            } else {
+                for (final TileObserver observer : observers) {
+                    if (observer instanceof Observer) {
+                        ((Observer) observer).tileUpdate(image, tileX, tileY, writing);
+                    }
+                }
+            }
+        }
+    }
+
+    /**
+     * An interface for objects that wish to be informed when an image is about to change or has changed.
+     * This is an extension of {@link TileObserver} where the modified image is not necessarily writable.
+     * The image can also be a {@linkplain ComputedImage computed image} when one of its sources changed.
+     *
+     * <p>When a change occurs, only one of the following methods will be invoked:</p>
+     * <ul>
+     *   <li>{@link #tileUpdate(WritableRenderedImage, int, int, boolean) tileUpdate(WritableRenderedImage, …)}
+     *       if the image that owns the modified tile is writable.</li>
+     *   <li>{@link #tileUpdate(RenderedImage, int, int, boolean) tileUpdate(RenderedImage, …)} otherwise.</li>
+     * </ul>
+     *
+     * Because the default implementation of the former delegates to the latter,
+     * it is okay to implement only the latter.
+     *
+     * @author  Martin Desruisseaux (Geomatys)
+     * @version 1.8
+     *
+     * @since SIS 1.8
+     */
+    public interface Observer extends TileObserver {
+        /**
+         * Invoked when a tile has been checked out for writing or has been released.
+         * The default implementation delegates to
+         * {@link #tileUpdate(RenderedImage, int, int, boolean) tileUpdate(RenderedImage, …)}.
+         *
+         * @param image  the writable image that owns the modified tile.
+         * @param tileX  the <var>x</var> index of the tile to acquire or release.
+         * @param tileY  the <var>y</var> index of the tile to acquire or release.
+         * @param willBeWritable {@code true} if the tile will be grabbed for writing,
+         *        or {@code false} if the tile is being released.
+         */
+        @Override
+        default void tileUpdate(WritableRenderedImage image, int tileX, int tileY, boolean willBeWritable) {
+            tileUpdate((RenderedImage) image, tileX, tileY, willBeWritable);
+        }
+
+        /**
+         * Invoked when a tile is about to be updated, and after the update is done.
+         *
+         * @param image    the image that owns the modified tile.
+         * @param tileX    the <var>x</var> index of the modified tile.
+         * @param tileY    the <var>y</var> index of the modified tile.
+         * @param writing  {@code true} if the tile will be modified, or {@code false} if the modification is done.
+         */
+        void tileUpdate(RenderedImage image, int tileX, int tileY, boolean writing);
     }
 
     /**
