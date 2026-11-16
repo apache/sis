@@ -1,1 +1,2 @@
 org.apache.sis.referencing.dggs.s2.S2Factory
+org.apache.sis.referencing.dggs.smc.SmcFactory
