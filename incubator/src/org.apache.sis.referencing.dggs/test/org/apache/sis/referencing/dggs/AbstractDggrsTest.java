@@ -25,6 +25,7 @@ import javax.measure.IncommensurableException;
 import org.opengis.geometry.DirectPosition;
 import org.opengis.geometry.Envelope;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
+import org.opengis.referencing.operation.MathTransform;
 import org.opengis.referencing.operation.TransformException;
 import org.opengis.util.FactoryException;
 import org.apache.sis.coverage.BandedCoverage;
@@ -35,6 +36,7 @@ import org.apache.sis.coverage.grid.GridOrientation;
 import org.apache.sis.geometries.DataPoints;
 import org.apache.sis.geometries.curve.LinearRing;
 import org.apache.sis.geometries.surface.Polygon;
+import org.apache.sis.geometry.DirectPosition2D;
 import org.apache.sis.maths.Vector2D;
 import org.apache.sis.maths.NDArrays;
 import org.apache.sis.maths.Vector;
@@ -149,6 +151,28 @@ public abstract class AbstractDggrsTest {
 
     }
 
+    /**
+     * Tests the conversions between zone positions and long identifiers.
+     */
+    @Test
+    public void testTransforms() throws TransformException {
+        final DiscreteGlobalGrid grid = dggrs.getGridSystem().getHierarchy().getGrids().get(2);
+        final MathTransform toIdentifiers = grid.createTransformToIdentifiers();
+        final MathTransform toCrs = grid.createTransformToCrs();
+        final List<Zone> zones = grid.getZones().limit(20).toList();
+        assertFalse(zones.isEmpty());
+        for (Zone zone : zones) {
+            final DirectPosition position = zone.getPosition();
+            final double[] identifier = new double[1];
+            toIdentifiers.transform(position.getCoordinates(), 0, identifier, 0, 1);
+            assertEquals(zone.getLongIdentifier(), Double.doubleToRawLongBits(identifier[0]));
+
+            final double[] back = new double[position.getDimension()];
+            toCrs.transform(identifier, 0, back, 0, 1);
+            assertEquals(zone, grid.getZone(new DirectPosition2D(position.getCoordinateReferenceSystem(), back[0], back[1])));
+        }
+    }
+
     @Disabled //TODO does not pass for all H3 and Healpix cells yet
     @Test
     public void testSearchEnvelope() throws TransformException, IncommensurableException {
@@ -180,7 +204,6 @@ public abstract class AbstractDggrsTest {
 
             //check the coder can find the zone using points inside the cell polygon
             for (Zone z : candidates) {
-                System.out.println(z.getGeographicIdentifier());
                 coder.setPrecisionLevel(z.getLocationType().getRefinementLevel());
 
                 final Polygon geometry = (Polygon) DiscreteGlobalGridSystems.toSISPolygon(z.getGeographicExtent());
@@ -200,11 +223,10 @@ public abstract class AbstractDggrsTest {
 
                     final String candidateInsideHash = coder.encode(candidateInside.asDirectPostion(null));
                     final String candidateOutsideHash = coder.encode(candidateOutside.asDirectPostion(null));
-                    System.out.println(z.getGeographicExtent().toString());
-                    System.out.println(candidateInside + " " +candidateOutside);
-                    System.out.println(candidateInsideHash + " " +candidateOutsideHash);
-                    assertEquals(z.getGeographicIdentifier().toString(), candidateInsideHash);
-                    assertNotEquals(z.getGeographicIdentifier().toString(), candidateOutsideHash);
+                    assertEquals(z.getGeographicIdentifier().toString(), candidateInsideHash,
+                            () -> "Point " + candidateInside + " inside " + z.getGeographicExtent());
+                    assertNotEquals(z.getGeographicIdentifier().toString(), candidateOutsideHash,
+                            () -> "Point " + candidateOutside + " outside " + z.getGeographicExtent());
                 }
             }
         }

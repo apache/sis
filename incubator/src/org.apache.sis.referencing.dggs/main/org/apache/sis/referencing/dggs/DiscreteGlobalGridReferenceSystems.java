@@ -99,7 +99,7 @@ public final class DiscreteGlobalGridReferenceSystems {
      */
     public static DiscreteGlobalGridReferenceSystem forCode(String code) throws FactoryException, NoSuchIdentifierException{
         if (code.startsWith("http")) {
-            code = code.substring(code.lastIndexOf('/'));
+            code = code.substring(code.lastIndexOf('/') + 1);
         }
         if (code.startsWith("[ogc-dggrs:") && code.endsWith("]")) {
             code = code.substring(11, code.length() - 1);

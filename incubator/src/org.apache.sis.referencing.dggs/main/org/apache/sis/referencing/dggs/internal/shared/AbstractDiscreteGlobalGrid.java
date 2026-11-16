@@ -59,8 +59,9 @@ public abstract class AbstractDiscreteGlobalGrid<T extends AbstractDiscreteGloba
     }
 
     /**
-     * Create the long identifer to/from transforms once.
-     * @return true if suceeded
+     * Creates the long identifier to/from CRS transforms once.
+     *
+     * @return {@code true} if long identifiers are supported and the transforms have been created.
      */
     private synchronized boolean initTransform() {
         if (crs != null) return crsToId != null;
@@ -82,8 +83,7 @@ public abstract class AbstractDiscreteGlobalGrid<T extends AbstractDiscreteGloba
 
             @Override
             public Matrix transform(double[] source, int soffset, double[] target, int toffset, boolean bln) throws TransformException {
-                final long zone = getZoneLongIdentifier(source, soffset);
-                target[toffset] = Double.longBitsToDouble(zone);
+                getZonePosition(Double.doubleToRawLongBits(source[soffset]), target, toffset);
                 return null;
             }
         };
@@ -100,7 +100,8 @@ public abstract class AbstractDiscreteGlobalGrid<T extends AbstractDiscreteGloba
 
             @Override
             public Matrix transform(double[] source, int soffset, double[] target, int toffset, boolean bln) throws TransformException {
-                getZonePosition(Double.doubleToRawLongBits(source[soffset]), target, toffset);
+                final long zone = getZoneLongIdentifier(source, soffset);
+                target[toffset] = Double.longBitsToDouble(zone);
                 return null;
             }
         };
@@ -110,24 +111,28 @@ public abstract class AbstractDiscreteGlobalGrid<T extends AbstractDiscreteGloba
 
     @Override
     public final MathTransform createTransformToCrs() throws UnsupportedOperationException {
-        if (initTransform()) throw new UnsupportedOperationException();
+        if (!initTransform()) throw new UnsupportedOperationException();
         return idToCrs;
     }
 
     @Override
     public final MathTransform createTransformToIdentifiers() throws UnsupportedOperationException {
-        if (initTransform()) throw new UnsupportedOperationException();
+        if (!initTransform()) throw new UnsupportedOperationException();
         return crsToId;
     }
 
     /**
-     * Convert on coordinate in base CRS to zone long identifier.
+     * Converts a coordinate in the base CRS to the identifier of the zone containing it.
+     *
+     * @throws TransformException if the coordinate cannot be converted or is outside the grid.
      */
-    protected abstract long getZoneLongIdentifier(double[] source, int soffset);
+    protected abstract long getZoneLongIdentifier(double[] source, int soffset) throws TransformException;
 
     /**
-     * Convert zone long identifier to coordinate in base CRS.
+     * Converts a zone identifier to the coordinate of the zone representative position in the base CRS.
+     *
+     * @throws TransformException if the position cannot be computed.
      */
-    protected abstract void getZonePosition(long zoneId, double[] target, int toffset);
+    protected abstract void getZonePosition(long zoneId, double[] target, int toffset) throws TransformException;
 
 }
