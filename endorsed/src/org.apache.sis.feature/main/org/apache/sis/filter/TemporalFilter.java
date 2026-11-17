@@ -117,7 +117,13 @@ class TemporalFilter<R,T> extends BinaryFunction<R,T,T>
          * `commonType` of type `Class<T>` no matter if <T> is a super-type or a sub-type of <V>, we can
          * assert that the parameterized type of the two expressions is `<? extends T>`.
          */
-        final TemporalOperation<?> operation = factory.create(TimeMethods.forType(commonType)).unique();
+        /*
+         * Periods are compared by their beginning and ending instants, never as whole objects.
+         * Therefore, the comparison methods are requested for the `Period` interface rather than
+         * for the implementation class, which may be a final class without natural ordering.
+         */
+        final Class<?> methodsType = Period.class.isAssignableFrom(commonType) ? Period.class : commonType;
+        final TemporalOperation<?> operation = factory.create(TimeMethods.forType(methodsType)).unique();
         assert operation.comparators.type.isAssignableFrom(commonType) : commonType;
         assert commonType.isAssignableFrom(c1) : c1;
         assert commonType.isAssignableFrom(c2) : c2;

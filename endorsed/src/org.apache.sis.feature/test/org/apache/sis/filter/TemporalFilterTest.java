@@ -18,6 +18,7 @@ package org.apache.sis.filter;
 
 import java.time.Instant;
 import org.apache.sis.geometry.WraparoundMethod;
+import org.apache.sis.temporal.TemporalObjects;
 import static org.apache.sis.util.internal.shared.Constants.MILLISECONDS_PER_DAY;
 
 // Test dependencies
@@ -358,5 +359,38 @@ public final class TemporalFilterTest extends TestCase {
     public void testOnPeriods() {
         factory = new DefaultFilterFactory.Features<>(Object.class, Period.class, WraparoundMethod.NONE);
         testAfter();
+    }
+
+    /**
+     * Tests filters between two period literals.
+     * The period class used by the literals is final and has no natural ordering.
+     */
+    @Test
+    public void testPeriodLiterals() {
+        final FilterFactory<Feature,Object,Object> ff = DefaultFilterFactory.forFeatures();
+        final Period inner = TemporalObjects.createPeriod(Instant.parse("2000-01-02T00:00:00Z"), Instant.parse("2000-01-03T00:00:00Z"));
+        final Period outer = TemporalObjects.createPeriod(Instant.parse("2000-01-01T00:00:00Z"), Instant.parse("2000-01-05T00:00:00Z"));
+        assertTrue (ff.during      (ff.literal(inner), ff.literal(outer)).test(null));
+        assertFalse(ff.during      (ff.literal(outer), ff.literal(inner)).test(null));
+        assertTrue (ff.anyInteracts(ff.literal(inner), ff.literal(outer)).test(null));
+    }
+
+    /**
+     * Tests "During" and "AnyInteracts" between an instant and a period.
+     */
+    @Test
+    public void testInstantAndPeriod() {
+        final FilterFactory<Feature,Object,Object> ff = DefaultFilterFactory.forFeatures();
+        final Period period = TemporalObjects.createPeriod(Instant.parse("2000-01-01T00:00:00Z"), Instant.parse("2000-01-05T00:00:00Z"));
+        final Instant inside  = Instant.parse("2000-01-03T00:00:00Z");
+        final Instant outside = Instant.parse("2000-01-07T00:00:00Z");
+        final Instant start   = Instant.parse("2000-01-01T00:00:00Z");
+        assertTrue (ff.during      (ff.literal(inside),  ff.literal(period)).test(null));
+        assertFalse(ff.during      (ff.literal(outside), ff.literal(period)).test(null));
+        assertFalse(ff.during      (ff.literal(start),   ff.literal(period)).test(null), "Boundaries are excluded.");
+        assertTrue (ff.anyInteracts(ff.literal(inside),  ff.literal(period)).test(null));
+        assertTrue (ff.anyInteracts(ff.literal(period),  ff.literal(inside)).test(null));
+        assertFalse(ff.anyInteracts(ff.literal(outside), ff.literal(period)).test(null));
+        assertFalse(ff.anyInteracts(ff.literal(start),   ff.literal(period)).test(null), "Meets is not an interaction.");
     }
 }

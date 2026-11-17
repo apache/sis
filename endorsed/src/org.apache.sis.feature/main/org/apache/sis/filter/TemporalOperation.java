@@ -650,6 +650,7 @@ abstract class TemporalOperation<T> implements Serializable {
     /**
      * The {@code "During"} operation. Defined by ISO 19108 as:
      * <ul>
+     *   <li>{@literal self > other.begin  AND  self < other.end}</li>
      *   <li>{@literal self.begin > other.begin  AND  self.end < other.end}</li>
      * </ul>
      *
@@ -672,6 +673,12 @@ abstract class TemporalOperation<T> implements Serializable {
         /** Symbol of this operation. */
         @Override protected char symbol() {
             return '⊊';         // `self` is a proper (or strict) subset of `other`.
+        }
+
+        /** Condition defined by ISO 19108:2006 (corrigendum) §5.2.3.5. */
+        @Override public boolean evaluate(final T self, final Period other) {
+            return compare(TimeMethods.Test.AFTER,  self, other.getBeginning()) &&
+                   compare(TimeMethods.Test.BEFORE, self, other.getEnding());
         }
 
         /** Condition defined by ISO 19108:2006 (corrigendum) §5.2.3.5. */
@@ -793,6 +800,8 @@ abstract class TemporalOperation<T> implements Serializable {
     /**
      * The {@code "AnyInteracts"} filter.
      * This is a shortcut for NOT (Before OR Meets OR MetBy OR After).
+     * An instant is handled as a tiny period, so an instant interacts with a period
+     * if it is after the period beginning and before the period ending.
      *
      * @param  <T>  the base type of temporal objects.
      */
@@ -808,6 +817,18 @@ abstract class TemporalOperation<T> implements Serializable {
         /** Identification of this operation. */
         @Override public TemporalOperatorName getOperatorType() {
             return TemporalOperatorName.ANY_INTERACTS;
+        }
+
+        /** Extension to ISO 19108: handle instant as a tiny period. */
+        @Override public boolean evaluate(final T self, final Period other) {
+            return compare(TimeMethods.Test.AFTER,  self, other.getBeginning()) &&
+                   compare(TimeMethods.Test.BEFORE, self, other.getEnding());
+        }
+
+        /** Extension to ISO 19108: handle instant as a tiny period. */
+        @Override public boolean evaluate(final Period self, final T other) {
+            return compare(TimeMethods.Test.AFTER,  other, self.getBeginning()) &&
+                   compare(TimeMethods.Test.BEFORE, other, self.getEnding());
         }
 
         /** Condition defined by OGC filter specification. */
