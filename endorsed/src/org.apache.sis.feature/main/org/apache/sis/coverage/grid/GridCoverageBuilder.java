@@ -615,35 +615,27 @@ public class GridCoverageBuilder {
      * @return an image computed from the {@link #calcAsDoubles} or {@link #calcAsIntegers} function.
      */
     private RenderedImage computeImage(final GridGeometry grid, final List<? extends SampleDimension> bands, final int numBands) {
-        final int xmin, ymin, width, height, tileWidth, tileHeight;
-        if (imageBounds != null) {
-            xmin   = imageBounds.x;
-            ymin   = imageBounds.y;
-            width  = imageBounds.width;
-            height = imageBounds.height;
-        } else {
-            final GridExtent extent = grid.getExtent();
-            final int[] imageAxes = extent.getSubspaceDimensions(GridCoverage.BIDIMENSIONAL);
-            xmin   = Math.toIntExact(extent.getLow (imageAxes[0]));
-            ymin   = Math.toIntExact(extent.getLow (imageAxes[1]));
-            width  = Math.toIntExact(extent.getSize(imageAxes[0]));
-            height = Math.toIntExact(extent.getSize(imageAxes[1]));
+        Rectangle bounds = imageBounds;
+        if (bounds == null) {
+            bounds = grid.getExtent().toRectangle(false);
         }
         Dimension tiling = tileSize;
         if (tiling == null) {
-            tiling = ImageLayout.DEFAULT.allowPartialTiles(false).suggestTileSize(width, height);
+            tiling = ImageLayout.DEFAULT.allowPartialTiles(false).suggestTileSize(bounds.width, bounds.height);
         }
-        final int numXTiles = JDK18.ceilDiv(width,  tileWidth  = tiling.width);
-        final int numYTiles = JDK18.ceilDiv(height, tileHeight = tiling.height);
+        final int tileWidth, tileHeight;
+        final int numXTiles = JDK18.ceilDiv(bounds.width,  tileWidth  = tiling.width);
+        final int numYTiles = JDK18.ceilDiv(bounds.height, tileHeight = tiling.height);
         final var sm        = new BandedSampleModel(dataType.toDataBufferType(), tileWidth, tileHeight, numBands);
         final var location  = new Point();
         final var tiles     = new WritableRaster[Math.multiplyExact(numXTiles, numYTiles)];
+        final int xmin      = bounds.x;
+        final int ymin      = bounds.y;
         for (int i=0; i<tiles.length; i++) {
             location.x = xmin + (i % numXTiles) * tileWidth;
             location.y = ymin + (i / numXTiles) * tileHeight;
             tiles[i] = WritableRaster.createWritableRaster(sm, location);
         }
-        final var bounds = new Rectangle(xmin, ymin, width, height);
         final var data = (WritableRenderedImage) createImage(sm, bands, bounds, tiles);
         final WritablePixelIterator i = WritablePixelIterator.create(data);
         if (calcAsDoubles != null) {
@@ -763,7 +755,7 @@ public class GridCoverageBuilder {
      */
     private static void verifyGridExtent(final GridExtent extent, final int... expectedSize) {
         final int[] imageAxes = extent.getSubspaceDimensions(expectedSize.length);
-        for (int i=0; i<expectedSize.length; i++) {
+        for (int i=0; i < expectedSize.length; i++) {
             final int imageSize = expectedSize[i];
             final long gridSize = extent.getSize(imageAxes[i]);
             if (imageSize != gridSize) {

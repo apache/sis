@@ -1328,6 +1328,8 @@ public class ImageProcessor implements Cloneable {
      * @param  sources  the images to aggregate with their transforms from <em>source</em> to <em>new</em> image.
      * @return aggregation of pixel values of all given source images.
      *
+     * @see GridCoverageProcessor#aggregate(GridGeometry, GridCoverage...)
+     *
      * @since SIS 1.8
      */
     @SuppressWarnings("LocalVariableHidesMemberVariable")

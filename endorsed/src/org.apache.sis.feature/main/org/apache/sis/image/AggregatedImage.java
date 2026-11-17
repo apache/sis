@@ -742,6 +742,10 @@ images:     while (imageIndex < upperImageIndex) {
                 final MathTransform fromSource = sources[imageIndex].fromSource;
                 final RenderedImage source = sources[imageIndex].source;
                 final double[][] coordinates = new double[2][(source.getTileWidth() + 1) * BIDIMENSIONAL];
+                final int srcMinX     = source.getMinX();
+                final int srcMinY     = source.getMinY();
+                final int srcMaxX     = Math.addExact(srcMinX, source.getWidth());
+                final int srcMaxY     = Math.addExact(srcMinY, source.getHeight());
                 final int srcMinTileX = source.getMinTileX();
                 final int srcMinTileY = source.getMinTileY();
                 final int srcNumTileX = source.getNumXTiles();
@@ -770,19 +774,20 @@ images:     while (imageIndex < upperImageIndex) {
                         }
                     }
                     /*
-                     * We will iterate over all pixels of a single tile of a source image.
-                     * For each pixel, the coordinates of the 4 corners will be transformed
-                     * to coordinates of a bounding box in the target image (conceptually,
-                     * actual implementation tries to be more efficient).
+                     * We will iterate over all pixels of a single tile of a source image,
+                     * clipped to the image bounds because tiles in the last row and column
+                     * may extend beyond the image. For each pixel, coordinates of 4 corners
+                     * will be transformed to coordinates of a bounding box in target image
+                     * (conceptually, actual implementation tries to be more efficient).
                      */
                     final Raster tile = source.getTile(srcMinTileX + (srcTileIndex % srcNumTileX),
                                                        srcMinTileY + (srcTileIndex / srcNumTileX));
                     final int numBands = Math.min(tile.getNumBands(), effectiveNumBands);
-                    final int scanline = tile.getWidth() + 1;   // +1 become xmax will be inclusive.
-                    final int xmin     = tile.getMinX();
-                    final int ymin     = tile.getMinY();
-                    final int xmax     = Math.addExact(xmin, scanline - 1);
-                    final int ymax     = Math.addExact(ymin, tile.getHeight());
+                    final int xmin     = Math.max(srcMinX, tile.getMinX());
+                    final int ymin     = Math.max(srcMinY, tile.getMinY());
+                    final int xmax     = Math.min(srcMaxX, Math.addExact(tile.getMinX(), tile.getWidth()));
+                    final int ymax     = Math.min(srcMaxY, Math.addExact(tile.getMinY(), tile.getHeight()));
+                    final int scanline = xmax - xmin + 1;       // +1 because xmax will be inclusive.
                     double[]  xyBottom = coordinates[ymax & 1];
                     for (int i=0, x=xmin; x <= xmax; x++) {     // Really the <= comparator.
                         xyBottom[i++] = x;

@@ -18,8 +18,9 @@ package org.apache.sis.coverage;
 
 
 /**
- * Thrown when the number of bands or sample dimensions specified to a method
- * is not equal to the number expected by a coverage.
+ * Thrown when the bands or sample dimensions given to a method do not match the expectations.
+ * It may be because an illegal number of sample dimensions have been given,
+ * or because the sample dimensions of two grid coverages are not the same.
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.0
