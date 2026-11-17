@@ -17,6 +17,7 @@
 package org.apache.sis.map.service;
 
 import java.awt.Shape;
+import java.util.List;
 import java.util.stream.Stream;
 import org.apache.sis.map.MapLayer;
 import org.apache.sis.map.Presentation;
@@ -45,6 +46,22 @@ public interface StylePainter {
      * @throws RenderingException if an error occured while rendering
      */
     void paint(Scene2D scene, MapLayer layer) throws RenderingException;
+
+    /**
+     * Stateless portraying of consecutive map layers using this painter.
+     * Painters can override this method for portraying across layers, for example for drawing
+     * labels on top of all layers or for ordering the drawings of all layers by rendering pass.
+     * The default implementation paints each layer in order.
+     *
+     * @param scene  parameters for rendering.
+     * @param layers layers having supported style class, in drawing order.
+     * @throws RenderingException if an error occurred while rendering.
+     */
+    default void paint(Scene2D scene, List<MapLayer> layers) throws RenderingException {
+        for (final MapLayer layer : layers) {
+            paint(scene, layer);
+        }
+    }
 
     /**
      * Statefull portraying of the given map layer.

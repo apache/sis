@@ -60,7 +60,10 @@ public abstract class SymbolizerToScene2D<S extends Symbolizer> {
         }
     }
 
-    protected static final Logger LOGGER = Logger.getLogger("com.examind.sdk.render");
+    /**
+     * The logger of the renderer, shared with {@link Scene2D}.
+     */
+    protected static final Logger LOGGER = Scene2D.LOGGER;
     protected final Scene2D state;
     protected final S symbolizer;
 

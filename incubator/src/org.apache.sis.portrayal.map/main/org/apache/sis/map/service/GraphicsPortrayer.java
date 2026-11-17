@@ -19,8 +19,8 @@ package org.apache.sis.map.service;
 import java.awt.Graphics2D;
 import java.awt.Shape;
 import java.awt.image.BufferedImage;
-import java.util.HashMap;
-import java.util.Map;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Objects;
 import java.util.ServiceLoader;
 import java.util.stream.Stream;
@@ -41,15 +41,10 @@ import org.apache.sis.style.Style;
 public final class GraphicsPortrayer {
 
     /**
-     * Reference all painters.
+     * All painters found on the module path or class path, indexed by the style class they support.
      */
-    private static final Map<Class<? extends Style>,StylePainter> PAINTERS = new HashMap<>();
-    static {
-        final ServiceLoader<StylePainter> loader = ServiceLoader.load(StylePainter.class, StylePainter.class.getClassLoader());
-        for (StylePainter painter : loader) {
-            PAINTERS.put(painter.getStyleClass(), painter);
-        }
-    }
+    private static final PainterRegistry PAINTERS = new PainterRegistry(
+            ServiceLoader.load(StylePainter.class, StylePainter.class.getClassLoader()));
 
     private Graphics2D graphics;
     private GridGeometry domain;
@@ -137,28 +132,51 @@ public final class GraphicsPortrayer {
      * @throws RenderingException if a rendering procedure fails.
      */
     public synchronized GraphicsPortrayer portray(MapItem map) throws RenderingException {
-        portray(init(), map);
-        return  this;
-    }
-
-    private void portray(Scene2D scene, MapItem map) throws RenderingException {
-        if (map == null || !map.isVisible()) return;
-        if (map instanceof MapLayer) {
-            portray(scene, (MapLayer) map);
-        } else if (map instanceof MapLayers) {
-            final MapLayers layers = (MapLayers) map;
-            for (MapItem item : layers.getComponents()) {
-                portray(scene, item);
+        final Scene2D scene = init();
+        final List<MapLayer> layers = new ArrayList<>();
+        collectVisibleLayers(map, layers);
+        /*
+         * Consecutive layers using the same painter are given together to that painter,
+         * which can then draw across layers (labels on top of all layers, rendering passes, etc.).
+         */
+        StylePainter painter = null;
+        final List<MapLayer> group = new ArrayList<>();
+        for (final MapLayer layer : layers) {
+            final StylePainter p = PAINTERS.get(layer.getStyle().getClass());
+            if (p != painter) {
+                if (painter != null) {
+                    painter.paint(scene, List.copyOf(group));
+                }
+                group.clear();
+                painter = p;
+            }
+            if (p != null) {
+                group.add(layer);
             }
         }
+        if (painter != null) {
+            painter.paint(scene, List.copyOf(group));
+        }
+        return this;
     }
 
-    private void portray(Scene2D scene, MapLayer layer) throws RenderingException {
-        final Style style = layer.getStyle();
-        if (style == null) return;
-        final StylePainter painter = PAINTERS.get(style.getClass());
-        if (painter == null) return;
-        painter.paint(scene, layer);
+    /**
+     * Adds the visible layers having a style to the given list, in drawing order.
+     *
+     * @param  map     the map item to traverse.
+     * @param  target  where to add the layers.
+     */
+    private static void collectVisibleLayers(final MapItem map, final List<MapLayer> target) {
+        if (map == null || !map.isVisible()) return;
+        if (map instanceof MapLayer layer) {
+            if (layer.getStyle() != null) {
+                target.add(layer);
+            }
+        } else if (map instanceof MapLayers layers) {
+            for (final MapItem item : layers.getComponents()) {
+                collectVisibleLayers(item, target);
+            }
+        }
     }
 
     /**
