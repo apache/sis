@@ -16,6 +16,7 @@
  */
 package org.apache.sis.geometries.internal.shared;
 
+import java.util.Objects;
 import javax.measure.Quantity;
 import org.apache.sis.geometries.DataPoints;
 import org.apache.sis.geometries.Geometries;
@@ -63,4 +64,25 @@ public non-sealed class DefaultLineString extends AbstractGeometry implements Li
         return asJTS().isValid();
     }
 
+    @Override
+    public int hashCode() {
+        return getClass().hashCode() + 19 * Objects.hashCode(points);
+    }
+
+    /**
+     * Compares this line string with the given object for equality.
+     *
+     * @param  obj  the object to compare with this line string.
+     * @return whether the given object is a line string of the same class with equal points.
+     */
+    @Override
+    public boolean equals(final Object obj) {
+        if (this == obj) {
+            return true;
+        }
+        if (obj == null || getClass() != obj.getClass()) {
+            return false;
+        }
+        return Objects.equals(points, ((DefaultLineString) obj).points);
+    }
 }

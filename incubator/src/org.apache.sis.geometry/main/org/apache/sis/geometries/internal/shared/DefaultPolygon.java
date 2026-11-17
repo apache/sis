@@ -166,4 +166,27 @@ public non-sealed class DefaultPolygon extends AbstractGeometry implements Polyg
         return asJTS().isValid();
     }
 
+    @Override
+    public int hashCode() {
+        return getClass().hashCode() + 19 * Objects.hash(exterior, interiors);
+    }
+
+    /**
+     * Compares this polygon with the given object for equality.
+     *
+     * @param  obj  the object to compare with this polygon.
+     * @return whether the given object is a polygon of the same class with equal rings.
+     */
+    @Override
+    public boolean equals(final Object obj) {
+        if (this == obj) {
+            return true;
+        }
+        if (obj == null || getClass() != obj.getClass()) {
+            return false;
+        }
+        final DefaultPolygon other = (DefaultPolygon) obj;
+        return Objects.equals(exterior, other.exterior)
+            && Objects.equals(interiors, other.interiors);
+    }
 }
