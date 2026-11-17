@@ -147,6 +147,6 @@ public class LineSymbolizer<R> extends Symbolizer<R> {
      * Clones the mutable style fields of this element.
      */
     private void selfClone() {
-        stroke = stroke.clone();
+        if (stroke != null) stroke = stroke.clone();
     }
 }
