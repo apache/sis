@@ -41,7 +41,7 @@ import org.apache.sis.util.resources.Errors;
 import org.apache.sis.coverage.grid.GridExtent;     // For javadoc
 import org.apache.sis.feature.internal.Resources;
 import org.apache.sis.image.internal.shared.ImageUtilities;
-import org.apache.sis.image.internal.shared.WritableUntiledImage;
+import org.apache.sis.system.Modules;
 
 
 /**
@@ -212,20 +212,6 @@ public abstract class ComputedImage extends PlanarImage implements Disposable {
     protected final SampleModel sampleModel;
 
     /**
-     * The observers, or {@code null} if none. This is a copy-on-write array:
-     * values are never modified after construction (new arrays are created).
-     *
-     * This field is declared volatile because it is read without synchronization by
-     * {@link #markTileWritable(int, int, boolean)}. Since this is a copy-on-write array,
-     * it is okay to omit synchronization for that method but we still need the memory effect.
-     *
-     * @see #addTileObserver(TileObserver)
-     * @see #removeTileObserver(TileObserver)
-     */
-    @SuppressWarnings("VolatileArrayField")
-    private volatile TileObserver[] observers;
-
-    /**
      * Creates an initially empty image with the given sample model.
      * The default tile size will be the width and height of the given sample model
      * (this default setting minimizes the amount of memory consumed by {@link #createTile(int, int)}).
@@ -255,6 +241,23 @@ public abstract class ComputedImage extends PlanarImage implements Disposable {
      */
     final Reference<ComputedImage> reference() {
         return reference;
+    }
+
+    /**
+     * Returns whether this image may notify its observers about tile updates.
+     * A value of {@code false} means that this image will not be notified about changes in its source,
+     * therefore this image will not forward tile update events, therefore observers registered on this
+     * class can be ignored in order to reduce the risk of memory leaks (listeners can be other images).
+     * In case of doubt (implementations that we do not control), conservatively returns {@code true}.
+     *
+     * <p>This method is ignored if this image implements the {@link WritableRenderedImage} interface.
+     * In such case, this method may return {@code false} even if tile update events are expected.</p>
+     *
+     * @return whether tile update events may occur.
+     */
+    @Override
+    final boolean mayFireTileUpdates() {
+        return reference.mayFireTileUpdates() || !getClass().getName().startsWith(Modules.CLASSNAME_PREFIX);
     }
 
     /**
@@ -768,59 +771,6 @@ public abstract class ComputedImage extends PlanarImage implements Disposable {
         return reference.hasErrorFlag(tiles.x, tiles.y,
                           Math.addExact(tiles.x, tiles.width  - 1),
                           Math.addExact(tiles.y, tiles.height - 1));
-    }
-
-    /**
-     * Adds an observer to be notified when a tile is about to be modified.
-     * A tile can be modified directly if this image implements the {@link WritableRenderedImage} interface
-     * and a tile has been acquired for writing, or indirectly if this image is computed from other sources
-     * and one of the source images changed. In the latter case, the given listener should be an instance of
-     * {@link Observer} in order to be notified even if this image is not a {@link WritableRenderedImage},
-     *
-     * @param  observer  the observer to notify, ignored if {@code null}.
-     *         If already present, it will receive multiple notifications.
-     *
-     * @see WritableRenderedImage#addTileObserver(TileObserver)
-     * @see Observer
-     *
-     * @since SIS 1.8
-     */
-    @Override
-    public synchronized void addTileObserver(final TileObserver observer) {
-        if (observer instanceof Observer || this instanceof WritableRenderedImage) {
-            observers = WritableUntiledImage.addTileObserver(observers, observer);
-        }
-    }
-
-    /**
-     * Removes an observer from the list of observers notified when a tile is modified.
-     * If the observer was not registered, nothing happens.
-     * If the observer was registered for multiple notifications, it will now be registered for one fewer.
-     *
-     * <p>The default implementation does nothing except ensuring that the argument is non-null.
-     * This method is overridden by subclasses such as {@link ComputedImage}, {@link AggregatedImage}
-     * and all writable images.</p>
-     *
-     * @param  observer  the observer to stop notifying.
-     *
-     * @see WritableRenderedImage#removeTileObserver(TileObserver)
-     *
-     * @since SIS 1.8
-     */
-    @Override
-    public synchronized void removeTileObserver(final TileObserver observer) {
-        observers = WritableUntiledImage.removeTileObserver(observers, observer);
-    }
-
-    /**
-     * Notifies listeners that a tile is about to be modified or has been modified.
-     *
-     * @param  tileX    the <var>x</var> index of the tile to acquire or release.
-     * @param  tileY    the <var>y</var> index of the tile to acquire or release.
-     * @param  writing  {@code true} if the tile will be modified, or {@code false} if the modification is done.
-     */
-    private void fireTileUpdate(final int tileX, final int tileY, final boolean writing) {
-        fireTileUpdate(observers, this, tileX, tileY, writing);
     }
 
     /**

@@ -19,30 +19,20 @@ package org.apache.sis.image;
 import java.util.Objects;
 import java.util.Vector;
 import java.awt.Image;
-import java.awt.Rectangle;
 import java.awt.image.ColorModel;
 import java.awt.image.SampleModel;
 import java.awt.image.RenderedImage;
-import java.awt.image.Raster;
-import java.awt.image.WritableRaster;
-import org.apache.sis.util.Disposable;
+import java.awt.image.TileObserver;
+import java.lang.ref.WeakReference;
 
 
 /**
- * An image which wraps an existing image unchanged, except for properties and/or color model.
- * All {@link RenderedImage} methods related to coordinate systems (pixel coordinates or tile
- * indices), and all methods fetching tiles, delegate to the wrapped image.
+ * An image which wraps an existing image and keep the same pixel coordinate systems and tile indices.
+ * All {@link RenderedImage} methods related to coordinate systems (pixel coordinates or tile indices)
+ * delegate to the wrapped image.
+ * This class is similar to {@link SourceAlignedImage} except that it does not extend {@link ComputedImage}.
  *
- * <h2>Design note</h2>
- * Most non-abstract methods are final because {@link PixelIterator} (among others) relies
- * on the fact that it can unwrap this image and still get the same pixel values.
- *
- * <h2>Relationship with other classes</h2>
- * This class is similar to {@link SourceAlignedImage} except that it does not extend {@link ComputedImage}
- * and forwards {@link #getTile(int, int)}, {@link #getData()} and other data methods to the source image.
- *
- * <h2>Requirements for subclasses</h2>
- * All subclasses shall override {@link #equals(Object)} and {@link #hashCode()}.
+ * <p>All subclasses shall override {@link #equals(Object)} and {@link #hashCode()}.</p>
  *
  * @author  Martin Desruisseaux (Geomatys)
  */
@@ -51,6 +41,13 @@ abstract class ImageAdapter extends PlanarImage {
      * The source image wrapped by this adapter.
      */
     protected final RenderedImage source;
+
+    /**
+     * The listener registered on source image, or {@code null} if none.
+     * This listener use weak reference, therefore it should not cause
+     * retention of large amount of memory.
+     */
+    private TileObserver sourceListener;
 
     /**
      * Creates a new wrapper for the given image.
@@ -104,40 +101,79 @@ abstract class ImageAdapter extends PlanarImage {
         return source.getColorModel();
     }
 
-    /** Delegates to the wrapped image. */
-    @Override public final SampleModel    getSampleModel()           {return source.getSampleModel();}
-    @Override public final int            getWidth()                 {return source.getWidth();}
-    @Override public final int            getHeight()                {return source.getHeight();}
-    @Override public final int            getMinX()                  {return source.getMinX();}
-    @Override public final int            getMinY()                  {return source.getMinY();}
-    @Override public final int            getNumXTiles()             {return source.getNumXTiles();}
-    @Override public final int            getNumYTiles()             {return source.getNumYTiles();}
-    @Override public final int            getMinTileX()              {return source.getMinTileX();}
-    @Override public final int            getMinTileY()              {return source.getMinTileY();}
-    @Override public final int            getTileWidth()             {return source.getTileWidth();}
-    @Override public final int            getTileHeight()            {return source.getTileHeight();}
-    @Override public final int            getTileGridXOffset()       {return source.getTileGridXOffset();}
-    @Override public final int            getTileGridYOffset()       {return source.getTileGridYOffset();}
-    @Override public final Raster         getTile(int tx, int ty)    {return source.getTile(tx, ty);}
-    @Override public final Raster         getData()                  {return source.getData();}
-    @Override public final Raster         getData(Rectangle region)  {return source.getData(region);}
-    @Override public final WritableRaster copyData(WritableRaster r) {return source.copyData(r);}
-
     /**
-     * Notifies the source image that tiles will be computed soon in the given region.
-     * If the source image is an instance of {@link PlanarImage}, then this method
-     * forwards the notification to it. Otherwise default implementation does nothing.
+     * Returns the sample model of this image.
      */
     @Override
-    protected Disposable prefetch(final Rectangle tiles) {
-        if (source instanceof PlanarImage) {
-            /*
-             * Forwarding directly is possible because the contract
-             * of this class said that tile indices must be the same.
-             */
-            return ((PlanarImage) source).prefetch(tiles);
-        } else {
-            return super.prefetch(tiles);
+    public final SampleModel getSampleModel() {
+        return source.getSampleModel();
+    }
+
+    /** Delegates to the wrapped image. */
+    @Override public final int getWidth()           {return source.getWidth();}
+    @Override public final int getHeight()          {return source.getHeight();}
+    @Override public final int getMinX()            {return source.getMinX();}
+    @Override public final int getMinY()            {return source.getMinY();}
+    @Override public final int getNumXTiles()       {return source.getNumXTiles();}
+    @Override public final int getNumYTiles()       {return source.getNumYTiles();}
+    @Override public final int getMinTileX()        {return source.getMinTileX();}
+    @Override public final int getMinTileY()        {return source.getMinTileY();}
+    @Override public final int getTileWidth()       {return source.getTileWidth();}
+    @Override public final int getTileHeight()      {return source.getTileHeight();}
+    @Override public final int getTileGridXOffset() {return source.getTileGridXOffset();}
+    @Override public final int getTileGridYOffset() {return source.getTileGridYOffset();}
+
+    /**
+     * Returns whether this image may notify its observers about tile updates.
+     * A value of {@code false} means that this image will not be notified about changes in its source,
+     * therefore this image will not forward tile update events, therefore observers registered on this
+     * class can be ignored in order to reduce the risk of memory leaks (listeners can be other images).
+     * In case of doubt (implementations that we do not control), conservatively returns {@code true}.
+     *
+     * @return whether tile update events may occur.
+     */
+    @Override
+    final boolean mayFireTileUpdates() {
+        assert Thread.holdsLock(this);
+        if (sourceListener == null) {
+            final var listener = new Listener(this);
+            if (addTileObserver(source, listener)) {
+                sourceListener = listener;
+            }
+        }
+        return sourceListener != null;
+    }
+
+    /**
+     * A listener using weak reference for notifying the enclosed image that a source changed.
+     */
+    private static final class Listener extends WeakReference<ImageAdapter> implements Observer {
+        /**
+         * Creates a new listener which will notify the given image.
+         *
+         * @param  target  the image to notify when a source changed.
+         */
+        Listener(final ImageAdapter target) {
+            super(target);
+        }
+
+        /**
+         * Invoked when a source image changed.
+         * The enclosed image is notified only after the tile calculation finished.
+         *
+         * @param source   the image that owns the updated tile.
+         * @param tileX    the <var>x</var> index of the tile that is being updated.
+         * @param tileY    the <var>y</var> index of the tile that is being updated.
+         * @param writing  {@code true} before writing, {@code false} after update.
+         */
+        @Override
+        public void tileUpdate(final RenderedImage source, final int tileX, final int tileY, final boolean writing) {
+            final ImageAdapter target = get();
+            if (target != null) {
+                target.fireTileUpdate(tileX, tileY, writing);
+            } else {
+                removeTileObserver(source, this);
+            }
         }
     }
 

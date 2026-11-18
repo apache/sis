@@ -385,8 +385,8 @@ public class PixelIterator {
          * also necessary for allowing the builder to recognize the {@link BufferedImage} case.
          */
         private static RenderedImage unwrap(RenderedImage image) {
-            while (image instanceof ImageAdapter) {
-                image = ((ImageAdapter) image).source;
+            while (image instanceof TileForwardingImage) {
+                image = ((TileForwardingImage) image).source;
             }
             return image;
         }

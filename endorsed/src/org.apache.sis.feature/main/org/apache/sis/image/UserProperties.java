@@ -31,7 +31,7 @@ import java.awt.image.RenderedImage;
  *
  * @author  Martin Desruisseaux (Geomatys)
  */
-final class UserProperties extends ImageAdapter {
+final class UserProperties extends TileForwardingImage {
     /**
      * The user-specified properties which may overwrite source image properties.
      * This is a reference to the map specified at construction time, not a copy.
@@ -114,7 +114,7 @@ final class UserProperties extends ImageAdapter {
      * Appends a content to show in the {@link #toString()} representation.
      */
     @Override
-    Class<? extends ImageAdapter> appendStringContent(final StringBuilder buffer) {
+    Class<UserProperties> appendStringContent(final StringBuilder buffer) {
         buffer.append(properties.keySet());
         return UserProperties.class;
     }

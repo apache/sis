@@ -438,9 +438,9 @@ public class ResampledImage extends ComputedImage {
     private synchronized RenderedImage getMask() {
         ComputedImage image = (mask != null) ? mask.get() : null;
         if (image == null) {
-            mask = null;                    // Cleared first in case an error occurs below.
+            mask  = null;                   // Cleared first in case an error occurs below.
             image = new MaskImage(this);
-            mask = image.reference();
+            mask  = image.reference();
         }
         return image;
     }

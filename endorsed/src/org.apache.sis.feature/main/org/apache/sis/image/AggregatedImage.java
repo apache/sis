@@ -203,12 +203,6 @@ public class AggregatedImage extends MonolithicImage implements Disposable {
     private BitSet[] updatedSourceTiles;
 
     /**
-     * Whether listeners to writable images have been registered.
-     * This is done only when first needed and use weak references.
-     */
-    private boolean hasAddedListeners;
-
-    /**
      * Whether parallel execution is allowed.
      * If {@code true}, may threads can be used for aggregating the pixel values.
      */
@@ -438,10 +432,7 @@ public class AggregatedImage extends MonolithicImage implements Disposable {
             updatedSourceTiles = null;
         }
         if (tile == null || sourcesToScan != null) {
-            if (!hasAddedListeners) {
-                hasAddedListeners = true;
-                registerSourceListeners();
-            }
+            registerSourceListeners();      // Does nothing if already registered.
             BitSet dirtyTiles = null;
             if (sourcesToScan != null) try {
                 dirtyTiles = findDirtyTiles(sourcesToScan);
@@ -585,7 +576,7 @@ public class AggregatedImage extends MonolithicImage implements Disposable {
             if (dirtyTile) {
                 final boolean tileExists = (tiles[tileIndex] != null);
                 if (updatedTiles.putIfAbsent(new Point(tileX, tileY), tileExists) == null && tileExists) {
-                    fireTileUpdate(tileX, tileY, true);
+                    AggregatedImage.this.fireTileUpdate(tileX, tileY, true);
                 }
             }
             return super.getWritableTile(tileX, tileY);
@@ -600,7 +591,7 @@ public class AggregatedImage extends MonolithicImage implements Disposable {
             for (final Map.Entry<Point, Boolean> entry : updatedTiles.entrySet()) {
                 if (entry.getValue()) {
                     final Point tile = entry.getKey();
-                    fireTileUpdate(tile.x, tile.y, false);
+                    AggregatedImage.this.fireTileUpdate(tile.x, tile.y, false);
                 }
             }
             updatedTiles.clear();

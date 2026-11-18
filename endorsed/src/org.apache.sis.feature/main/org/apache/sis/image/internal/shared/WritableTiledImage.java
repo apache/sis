@@ -23,7 +23,6 @@ import java.awt.Rectangle;
 import java.awt.image.ColorModel;
 import java.awt.image.SampleModel;
 import java.awt.image.Raster;
-import java.awt.image.TileObserver;
 import java.awt.image.WritableRaster;
 import java.awt.image.WritableRenderedImage;
 import org.apache.sis.feature.internal.Resources;
@@ -37,18 +36,6 @@ import org.apache.sis.feature.internal.Resources;
  * @author  Martin Desruisseaux (Geomatys)
  */
 public class WritableTiledImage extends TiledImage implements WritableRenderedImage {
-    /**
-     * The observers, or {@code null} if none. This is a copy-on-write array:
-     * values are never modified after construction (new arrays are created).
-     *
-     * This field is declared volatile because it is read without synchronization by
-     * {@link #getWritableTile(int, int)} and {@link #releaseWritableTile(int, int)}.
-     * Since this is a copy-on-write array, it is okay to omit synchronization for
-     * those methods but we still need the memory effect.
-     */
-    @SuppressWarnings("VolatileArrayField")
-    private volatile TileObserver[] observers;
-
     /**
      * Indices of tiles taken for a write operation.
      * Values are counter of calls to {@link #getWritableTile(int, int)}.
@@ -98,29 +85,6 @@ public class WritableTiledImage extends TiledImage implements WritableRenderedIm
     @Override
     public SampleModel getSampleModel() {
         return sampleModel;
-    }
-
-    /**
-     * Adds an observer to be notified when a tile is checked out for writing.
-     * If the observer is already present, it will receive multiple notifications.
-     *
-     * @param  observer  the observer to notify.
-     */
-    @Override
-    public synchronized void addTileObserver(final TileObserver observer) {
-        observers = WritableUntiledImage.addTileObserver(observers, observer);
-    }
-
-    /**
-     * Removes an observer from the list of observers notified when a tile is checked out for writing.
-     * If the observer was not registered, nothing happens. If the observer was registered for multiple
-     * notifications, it will now be registered for one fewer.
-     *
-     * @param  observer  the observer to stop notifying.
-     */
-    @Override
-    public synchronized void removeTileObserver(final TileObserver observer) {
-        observers = WritableUntiledImage.removeTileObserver(observers, observer);
     }
 
     /**
@@ -174,7 +138,7 @@ public class WritableTiledImage extends TiledImage implements WritableRenderedIm
             count = writables.merge(key, 1, (old, one) -> old + 1);
         }
         if (count <= 1) {
-            WritableUntiledImage.fireTileUpdate(observers, this, tileX, tileY, true);
+            fireTileUpdate(tileX, tileY, true);
         }
         return tile;
     }
@@ -203,7 +167,7 @@ public class WritableTiledImage extends TiledImage implements WritableRenderedIm
             throw new IllegalArgumentException(Resources.format(Resources.Keys.TileNotWritable_2, tileX, tileY));
         }
         if (close) {
-            WritableUntiledImage.fireTileUpdate(observers, this, tileX, tileY, false);
+            fireTileUpdate(tileX, tileY, false);
         }
     }
 

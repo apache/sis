@@ -632,7 +632,7 @@ abstract class Transferer {
         if (target.getMinX() == aoi.x && target.getWidth() == aoi.width) {
             final SampleModel sm = target.getSampleModel();
             if (sm instanceof ComponentSampleModel) {
-                final ComponentSampleModel cm = (ComponentSampleModel) sm;
+                final var cm = (ComponentSampleModel) sm;
                 if (cm.getPixelStride() == 1 && cm.getScanlineStride() == target.getWidth()) {
                     for (final int offset : target.getDataBuffer().getOffsets()) {
                         if (offset != 0) {

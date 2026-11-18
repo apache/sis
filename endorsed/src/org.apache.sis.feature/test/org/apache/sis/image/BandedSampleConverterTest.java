@@ -69,9 +69,15 @@ public final class BandedSampleConverterTest extends ImageTestCase {
                 random.nextBoolean());          // Banded or interleaved sample model
         source.validate(false);
         source.initializeAllTiles(0);
-        image = BandedSampleConverter.create(source, ImageLayout.DEFAULT, null,
-                new MathTransform1D[] {(MathTransform1D) MathTransforms.linear(scale, 0)},
-                targetType, null);
+        image = new BandedSampleConverter.Builder(
+                source,
+                ImageLayout.DEFAULT,
+                null,
+                new MathTransform1D[] {
+                    (MathTransform1D) MathTransforms.linear(scale, 0)
+                },
+                targetType,
+                null).create();
     }
 
     /**

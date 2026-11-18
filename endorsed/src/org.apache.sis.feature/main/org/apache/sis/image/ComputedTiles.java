@@ -19,19 +19,16 @@ package org.apache.sis.image;
 import java.util.Map;
 import java.util.HashMap;
 import java.util.List;
-import java.util.Arrays;
 import java.lang.ref.WeakReference;
 import java.lang.reflect.UndeclaredThrowableException;
 import java.awt.Point;
 import java.awt.Rectangle;
-import java.awt.image.TileObserver;
 import java.awt.image.RenderedImage;
 import java.awt.image.ImagingOpException;
 import org.apache.sis.feature.internal.Resources;
 import org.apache.sis.system.ReferenceQueueConsumer;
-import org.apache.sis.image.internal.shared.ImageUtilities;
+import org.apache.sis.util.ArraysExt;
 import org.apache.sis.util.Disposable;
-import org.apache.sis.util.logging.Logging;
 
 
 /**
@@ -92,17 +89,16 @@ final class ComputedTiles extends WeakReference<ComputedImage> implements Dispos
         super(image, ReferenceQueueConsumer.QUEUE);
         cachedTiles = new HashMap<>();
         if (ws != null) {
-            sources = ws;
             ws = ws.clone();
             int count = 0;
             try {
                 for (final RenderedImage source : ws) {
-                    if (PlanarImage.addTileObserver(source, this) && !listenerWasIgnored(source)) {
+                    if (PlanarImage.addTileObserver(source, this)) {
                         ws[count++] = source;
                     }
                 }
-                if (count != ws.length) {
-                    sources = Arrays.copyOf(ws, count);
+                if (count != 0) {
+                    sources = ArraysExt.resize(ws, count);
                 }
             } catch (Throwable e) {
                 unregister(ws, count + 1, e);   // `unregister(…)` will rethrow the given exception.
@@ -111,25 +107,13 @@ final class ComputedTiles extends WeakReference<ComputedImage> implements Dispos
     }
 
     /**
-     * Returns whether the given image has ignored the listener.
-     * This is used for avoiding to keep unnecessary references to source images in this class,
-     * for reducing the risk of memory leak (images may potentially hold large amount of memory).
+     * Returns whether at least one observer has been registered.
+     * If no listener has been registered, no tile update events will occur.
      *
-     * <p>This method uses reflection with the knowledge that the default implementation
-     * of {@link PlanarImage#addTileObserver(TileObserver)} does nothing. If this method
-     * has not been overridden, the listener has been ignored.</p>
-     *
-     * @param  image  the image where a listener has been added.
-     * @return whether the image has ignored the listener (determined by reflection.
+     * @see ComputedImage#mayFireTileUpdates()
      */
-    private static boolean listenerWasIgnored(final RenderedImage image) {
-        if (image instanceof PlanarImage) try {
-            return image.getClass().getMethod("addTileObserver", TileObserver.class).getDeclaringClass() == PlanarImage.class;
-        } catch (ReflectiveOperationException e) {
-            // Should never happen. If happen anyway, conservatively assume that the listener is not ignored.
-            Logging.unexpectedException(ImageUtilities.LOGGER, PlanarImage.class, "addTileObserver", e);
-        }
-        return false;
+    final boolean mayFireTileUpdates() {
+        return sources != null;
     }
 
     /**

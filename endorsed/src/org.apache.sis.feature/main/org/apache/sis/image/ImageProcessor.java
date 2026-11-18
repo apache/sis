@@ -1142,7 +1142,7 @@ public class ImageProcessor implements Cloneable {
             colorizer = this.colorizer;
         }
         // No need to clone `sourceRanges` because it is not stored by `BandedSampleConverter`.
-        return unique(BandedSampleConverter.create(source, layout, sourceRanges, converters, targetType, colorizer));
+        return unique(new BandedSampleConverter.Builder(source, layout, sourceRanges, converters, targetType, colorizer).create());
     }
 
     /**
@@ -1211,8 +1211,8 @@ public class ImageProcessor implements Cloneable {
                 break;
             }
             if (Objects.equals(sm, source.getSampleModel())) {
-                if (source instanceof ImageAdapter) {
-                    source = ((ImageAdapter) source).source;
+                if (source instanceof TileForwardingImage) {
+                    source = ((TileForwardingImage) source).source;
                     continue;
                 }
                 if (source instanceof ResampledImage) {

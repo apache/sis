@@ -241,8 +241,8 @@ final class Visualization extends ResampledImage {
                 toSource = MathTransforms.identity(BIDIMENSIONAL);
             }
             for (;;) {
-                if (source instanceof ImageAdapter) {
-                    source = ((ImageAdapter) source).source;
+                if (source instanceof TileForwardingImage) {
+                    source = ((TileForwardingImage) source).source;
                 } else if (source instanceof ResampledImage) {
                     final var resampled = (ResampledImage) source;
                     toSource = MathTransforms.concatenate(toSource, resampled.toSource);
