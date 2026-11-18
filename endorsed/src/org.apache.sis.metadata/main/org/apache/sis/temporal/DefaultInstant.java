@@ -43,17 +43,23 @@ import org.opengis.filter.TemporalOperatorName;
  * This is not the same as {@link java.time.Instant}, because the
  * instant can actually be a date, or may be indeterminate.
  *
- * <h2>Thread-safety</h2>
- * Instances of this class are mostly immutable, except for the list of identifiers.
- * All instances are thread-safe.
+ * <p>Instances of this class are mostly immutable, except for the list of identifiers.
+ * All instances are thread-safe.</p>
  *
  * @author  Martin Desruisseaux (Geomatys)
+ *
+ * @see TemporalObjects#createInstant(Temporal)
  */
 final class DefaultInstant extends TemporalObject implements Instant {
     /**
      * For cross-version compatibility.
      */
     private static final long serialVersionUID = 3898772638524283287L;
+
+    /**
+     * The constant for the "now" instant.
+     */
+    static final DefaultInstant NOW = new DefaultInstant(null, IndeterminateValue.NOW);
 
     /**
      * The constant for the "unknown" instant.

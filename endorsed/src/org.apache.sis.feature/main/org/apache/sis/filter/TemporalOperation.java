@@ -58,7 +58,7 @@ abstract class TemporalOperation<T> implements Serializable {
     private static final long serialVersionUID = -5304814915639460679L;
 
     /**
-     * Temporal operations created in the current JVM.
+     * Temporal operations created in the current <abbr>JVM</abbr>.
      */
     @SuppressWarnings("unchecked")
     private static final WeakHashSet<TemporalOperation<?>> POOL = new WeakHashSet<>((Class) TemporalOperation.class);
@@ -650,7 +650,6 @@ abstract class TemporalOperation<T> implements Serializable {
     /**
      * The {@code "During"} operation. Defined by ISO 19108 as:
      * <ul>
-     *   <li>{@literal self > other.begin  AND  self < other.end}</li>
      *   <li>{@literal self.begin > other.begin  AND  self.end < other.end}</li>
      * </ul>
      *
@@ -675,7 +674,7 @@ abstract class TemporalOperation<T> implements Serializable {
             return '⊊';         // `self` is a proper (or strict) subset of `other`.
         }
 
-        /** Condition defined by ISO 19108:2006 (corrigendum) §5.2.3.5. */
+        /** Extension to ISO 19108: handle instant as a tiny period. */
         @Override public boolean evaluate(final T self, final Period other) {
             return compare(TimeMethods.Test.AFTER,  self, other.getBeginning()) &&
                    compare(TimeMethods.Test.BEFORE, self, other.getEnding());
@@ -755,11 +754,11 @@ abstract class TemporalOperation<T> implements Serializable {
 
         /** Condition defined by ISO 19108:2006 (corrigendum) §5.2.3.5. */
         @Override public boolean evaluate(final Period self, final Period other) {
-            final Instant selfBegin, selfEnd, otherBegin, otherEnd;
-            return ((otherBegin = other.getBeginning()) != null) &&
-                   ((selfBegin  = self.getBeginning())  != null) && compare(TimeMethods.Test.BEFORE, selfBegin, otherBegin) &&
-                   ((selfEnd    = self.   getEnding())  != null) && compare(TimeMethods.Test.AFTER,  selfEnd,   otherBegin) &&
-                   ((otherEnd   = other.  getEnding())  != null) && compare(TimeMethods.Test.BEFORE, selfEnd,   otherEnd);
+            final Instant otherBegin = other.getBeginning();
+            final Instant selfEnd;  // Assignation inlined for invoking method only if needed.
+            return compare(TimeMethods.Test.BEFORE, self.getBeginning(),        otherBegin) &&
+                   compare(TimeMethods.Test.AFTER,  selfEnd = self.getEnding(), otherBegin) &&
+                   compare(TimeMethods.Test.BEFORE, selfEnd, other.getEnding());
         }
     }
 
@@ -788,11 +787,11 @@ abstract class TemporalOperation<T> implements Serializable {
 
         /** Condition defined by ISO 19108:2006 (corrigendum) §5.2.3.5. */
         @Override public boolean evaluate(final Period self, final Period other) {
-            final Instant selfBegin, selfEnd, otherBegin, otherEnd;
-            return ((selfBegin  = self.getBeginning())  != null) &&
-                   ((otherBegin = other.getBeginning()) != null) && compare(TimeMethods.Test.AFTER,  selfBegin,  otherBegin) &&
-                   ((otherEnd   = other.  getEnding())  != null) && compare(TimeMethods.Test.BEFORE, selfBegin,  otherEnd)   &&
-                   ((selfEnd    = self.   getEnding())  != null) && compare(TimeMethods.Test.AFTER,  selfEnd,    otherEnd);
+            final Instant selfBegin = self.getBeginning();
+            final Instant otherEnd;  // Assignation inlined for invoking method only if needed.
+            return compare(TimeMethods.Test.AFTER,  selfBegin,        other.getBeginning()) &&
+                   compare(TimeMethods.Test.BEFORE, selfBegin,        otherEnd = other.getEnding()) &&
+                   compare(TimeMethods.Test.AFTER,  self.getEnding(), otherEnd);
         }
     }
 
@@ -800,8 +799,7 @@ abstract class TemporalOperation<T> implements Serializable {
     /**
      * The {@code "AnyInteracts"} filter.
      * This is a shortcut for NOT (Before OR Meets OR MetBy OR After).
-     * An instant is handled as a tiny period, so an instant interacts with a period
-     * if it is after the period beginning and before the period ending.
+     * As an extension to OGC filter specification, an instant is handled as a tiny period.
      *
      * @param  <T>  the base type of temporal objects.
      */
@@ -833,11 +831,8 @@ abstract class TemporalOperation<T> implements Serializable {
 
         /** Condition defined by OGC filter specification. */
         @Override public boolean evaluate(final Period self, final Period other) {
-            final Instant selfBegin, selfEnd, otherBegin, otherEnd;
-            return ((selfBegin  = self.getBeginning())  != null) &&
-                   ((otherEnd   = other.  getEnding())  != null) && compare(TimeMethods.Test.BEFORE, selfBegin, otherEnd) &&
-                   ((selfEnd    = self.   getEnding())  != null) &&
-                   ((otherBegin = other.getBeginning()) != null) && compare(TimeMethods.Test.AFTER, selfEnd, otherBegin);
+            return compare(TimeMethods.Test.BEFORE, self.getBeginning(), other.getEnding()) &&
+                   compare(TimeMethods.Test.AFTER,  self.getEnding(), other.getBeginning());
         }
     }
 }
