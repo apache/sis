@@ -97,7 +97,8 @@
  *
  * @author  Martin Desruisseaux (MPO, IRD, Geomatys)
  * @author  Alexis Manin (Geomatys)
- * @version 1.7
+ * @version 1.8
+ *
  * @since SIS 0.3
  */
 package org.apache.sis.measure;
