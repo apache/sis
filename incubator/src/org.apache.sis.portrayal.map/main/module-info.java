@@ -32,7 +32,6 @@ module org.apache.sis.portrayal.map {
 
     exports org.apache.sis.map;
     exports org.apache.sis.map.service;
-    exports org.apache.sis.style.xml;
 
     uses org.apache.sis.map.service.StylePainter;
     uses org.apache.sis.map.service.se1.SymbolizerToScene2D.Spi;
