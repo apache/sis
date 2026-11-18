@@ -63,6 +63,7 @@ import org.apache.sis.map.Presentation;
 import org.apache.sis.map.SEPresentation;
 import org.apache.sis.map.service.Scene2D;
 import org.apache.sis.map.service.RenderingException;
+import org.apache.sis.map.service.common.HillShader;
 import org.apache.sis.measure.Units;
 import org.apache.sis.storage.Aggregate;
 import org.apache.sis.storage.DataStoreException;
@@ -105,7 +106,7 @@ import org.apache.sis.style.se1.Symbolizer;
  *       of the coverages if all of them have a temporal extent, or to the rendering order otherwise.</li>
  *   <li>ImageOutline: the footprint of each coverage is drawn with the given line or polygon symbolizer.</li>
  *   <li>ShadedRelief: hill shading of the elevations given by the gray channel, the color map band or the first band,
- *       see {@link ReliefShading}. Elevations are multiplied by the relief factor, and converted to metres if their
+ *       see {@link HillShader}. The relief factor multiplies the slopes, and elevations are converted to metres if their
  *       unit is linear (metres are assumed otherwise). The colors of the raster are shaded, or if brightness only
  *       is true, the raster colors are not painted and the shading is applied on the canvas painted so far.</li>
  * </ul>
@@ -150,7 +151,7 @@ public final class RasterToScene2D extends SymbolizerToScene2D<RasterSymbolizer<
         colorize(rasters, feature);
         BufferedImage image = compose(rasters);
         if (reliefFactor > 0) {
-            image = shade(image, rasters, feature);
+            image = shade(image, rasters, feature, reliefFactor);
         }
         if (image != null) {
             final double opacity = StrokeStyle.clamp(evaluateNumber(feature, symbolizer.getOpacity(), 1.0));
@@ -247,7 +248,7 @@ public final class RasterToScene2D extends SymbolizerToScene2D<RasterSymbolizer<
         double[][] values;
         /** Non-zero for display pixels inside the footprint, or {@code null} if unknown. */
         byte[] inside;
-        /** Elevations in metres multiplied by the relief factor, or {@code null} if no relief shading. */
+        /** Elevations in metres, or {@code null} if no relief shading. */
         double[] elevations;
         /** The colorized image of the display size, computed by {@code colorize(…)}. */
         BufferedImage image;
@@ -314,7 +315,7 @@ public final class RasterToScene2D extends SymbolizerToScene2D<RasterSymbolizer<
                 processor.setInterpolation(Interpolation.BILINEAR);
                 final RenderedImage image = processor.resample(converted, state.grid).render(null);
                 final double[] z = samples(image, new int[] {bands[0]}, raster.inside)[0];
-                final double scale = reliefFactor * toMetres(sampleDimensions.get(bands[0]));
+                final double scale = toMetres(sampleDimensions.get(bands[0]));
                 for (int i = 0; i < z.length; i++) z[i] *= scale;
                 raster.elevations = z;
             }
@@ -708,10 +709,11 @@ public final class RasterToScene2D extends SymbolizerToScene2D<RasterSymbolizer<
      * Applies the relief shading on the colors of the given image. If the shading shall be applied
      * on the brightness of the canvas painted so far by other layers, returns the shading alone.
      *
-     * @param  image  the colorized rasters, or {@code null} if none.
+     * @param  image         the colorized rasters, or {@code null} if none.
+     * @param  reliefFactor  the relief shading exaggeration.
      * @return the image to paint, or {@code null} if none.
      */
-    private BufferedImage shade(BufferedImage image, List<DisplayRaster> rasters, Feature feature) throws RenderingException {
+    private BufferedImage shade(BufferedImage image, List<DisplayRaster> rasters, Feature feature, double reliefFactor) {
         double[] elevations = null;
         for (DisplayRaster raster : rasters) {          // Rasters painted later overwrite the previous ones.
             final double[] z = raster.elevations;
@@ -726,8 +728,8 @@ public final class RasterToScene2D extends SymbolizerToScene2D<RasterSymbolizer<
             return image;
         }
         final GridExtent extent = state.grid.getExtent();
-        final BufferedImage overlay = ReliefShading.overlay(elevations, (int) extent.getSize(0), (int) extent.getSize(1),
-                                                            1 / state.getPixelsPerUnit(Units.METRE));
+        final BufferedImage overlay = new HillShader(elevations, (int) extent.getSize(0), (int) extent.getSize(1))
+                .setGrid(state.grid).setFactor(reliefFactor).createOverlay();
         if (evaluateBoolean(feature, symbolizer.getShadedRelief().get().isBrightnessOnly(), false)) {
             return overlay;
         }
