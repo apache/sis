@@ -57,7 +57,7 @@ public final class PlanarImageTest extends TestCase {
                 random.nextInt(20) - 10,        // minTileX
                 random.nextInt(20) - 10,        // minTileY
                 random.nextBoolean());          // Banded or interleaved sample model
-        image.validate();
+        image.validate(false);
         image.initializeAllTiles(0);
         return image;
     }

@@ -17,9 +17,6 @@
 package org.apache.sis.style.se1;
 
 import java.util.Optional;
-import jakarta.xml.bind.annotation.XmlType;
-import jakarta.xml.bind.annotation.XmlElement;
-import jakarta.xml.bind.annotation.XmlRootElement;
 import org.opengis.util.InternationalString;
 
 
@@ -41,11 +38,6 @@ import org.opengis.util.InternationalString;
  *
  * @todo Consider replacing this class by {@link org.opengis.metadata.identification.Identification}.
  */
-@XmlType(name = "DescriptionType", propOrder = {
-    "title",
-    "summary"
-})
-@XmlRootElement(name = "Description")
 public class Description<R> extends StyleElement<R> {
     /**
      * Human readable title of the style, or {@code null} if none.
@@ -53,7 +45,6 @@ public class Description<R> extends StyleElement<R> {
      * @see #getTitle()
      * @see #setTitle(InternationalString)
      */
-    @XmlElement(name = "Title")
     protected InternationalString title;
 
     /**
@@ -63,15 +54,7 @@ public class Description<R> extends StyleElement<R> {
      * @see #getAbstract()
      * @see #setAbstract(InternationalString)
      */
-    @XmlElement(name = "Abstract")
     protected InternationalString summary;
-
-    /**
-     * For JAXB unmarshalling only.
-     */
-    private Description() {
-        // Thread-local factory will be used.
-    }
 
     /**
      * Creates an initially empty description.

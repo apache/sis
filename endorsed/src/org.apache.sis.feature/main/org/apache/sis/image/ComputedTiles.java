@@ -20,13 +20,14 @@ import java.util.Map;
 import java.util.HashMap;
 import java.util.List;
 import java.lang.ref.WeakReference;
+import java.lang.reflect.UndeclaredThrowableException;
 import java.awt.Point;
 import java.awt.Rectangle;
-import java.awt.image.TileObserver;
+import java.awt.image.RenderedImage;
 import java.awt.image.ImagingOpException;
-import java.awt.image.WritableRenderedImage;
 import org.apache.sis.feature.internal.Resources;
 import org.apache.sis.system.ReferenceQueueConsumer;
+import org.apache.sis.util.ArraysExt;
 import org.apache.sis.util.Disposable;
 
 
@@ -41,7 +42,7 @@ import org.apache.sis.util.Disposable;
  *
  * @author  Martin Desruisseaux (Geomatys)
  */
-final class ComputedTiles extends WeakReference<ComputedImage> implements Disposable, TileObserver {
+final class ComputedTiles extends WeakReference<ComputedImage> implements Disposable, PlanarImage.Observer {
     /**
      * Whether a tile in the cache is ready for use or needs to be recomputed because one if its sources
      * changed its data. Those values are stored in {@link #cachedTiles} map.
@@ -70,10 +71,10 @@ final class ComputedTiles extends WeakReference<ComputedImage> implements Dispos
     private final Map<TileCache.Key, Integer> cachedTiles;
 
     /**
-     * All {@link ComputedImage#sources} that are writable, or {@code null} if none.
+     * All {@link ComputedImage#sources} for which a listener has been registered, or {@code null} if none.
      * This is used for removing tile observers when the {@link ComputedImage} is garbage-collected.
      */
-    private WritableRenderedImage[] sources;
+    private RenderedImage[] sources;
 
     /**
      * Creates a new weak reference to the given image and registers this {@link ComputedTiles}
@@ -84,21 +85,35 @@ final class ComputedTiles extends WeakReference<ComputedImage> implements Dispos
      * @param  ws     sources to observe for changes, or {@code null} if none.
      */
     @SuppressWarnings("LeakingThisInConstructor")
-    ComputedTiles(final ComputedImage image, final WritableRenderedImage[] ws) {
+    ComputedTiles(final ComputedImage image, RenderedImage[] ws) {
         super(image, ReferenceQueueConsumer.QUEUE);
         cachedTiles = new HashMap<>();
-        sources = ws;
         if (ws != null) {
-            int i = 0;
+            ws = ws.clone();
+            int count = 0;
             try {
-                while (i < ws.length) {
-                    WritableRenderedImage source = ws[i++];     // `i++` must be before `addTileObserver(…)` call.
-                    source.addTileObserver(this);
+                for (final RenderedImage source : ws) {
+                    if (PlanarImage.addTileObserver(source, this)) {
+                        ws[count++] = source;
+                    }
                 }
-            } catch (RuntimeException e) {
-                unregister(ws, i, e);                           // `unregister(…)` will rethrow the given exception.
+                if (count != 0) {
+                    sources = ArraysExt.resize(ws, count);
+                }
+            } catch (Throwable e) {
+                unregister(ws, count + 1, e);   // `unregister(…)` will rethrow the given exception.
             }
         }
+    }
+
+    /**
+     * Returns whether at least one observer has been registered.
+     * If no listener has been registered, no tile update events will occur.
+     *
+     * @see ComputedImage#mayFireTileUpdates()
+     */
+    final boolean mayFireTileUpdates() {
+        return sources != null;
     }
 
     /**
@@ -310,14 +325,14 @@ final class ComputedTiles extends WeakReference<ComputedImage> implements Dispos
      * This method is interested only in events fired after the change is done.
      * The tiles that depend on the modified tile are marked in need to be recomputed.
      *
-     * @param source          the image that own the tile which is about to be updated.
-     * @param tileX           the <var>x</var> index of the tile that is being updated.
-     * @param tileY           the <var>y</var> index of the tile that is being updated.
-     * @param willBeWritable  if {@code true}, the tile is grabbed for writing; otherwise it is being released.
+     * @param source   the image that own the tile which is about to be updated.
+     * @param tileX    the <var>x</var> index of the tile that is being updated.
+     * @param tileY    the <var>y</var> index of the tile that is being updated.
+     * @param writing  {@code true} if the tile will be modified, or {@code false} if the modification is done.
      */
     @Override
-    public void tileUpdate(final WritableRenderedImage source, int tileX, int tileY, final boolean willBeWritable) {
-        if (!willBeWritable) {
+    public void tileUpdate(final RenderedImage source, int tileX, int tileY, final boolean writing) {
+        if (!writing) {
             final ComputedImage target = get();
             if (target != null) {
                 target.sourceTileChanged(source, tileX, tileY);
@@ -327,7 +342,7 @@ final class ComputedTiles extends WeakReference<ComputedImage> implements Dispos
                  * its work. Or maybe we have a bug in our code and this `ComputedTiles` is still alive when
                  * it should not. In any cases there is no point to continue observing the source.
                  */
-                source.removeTileObserver(this);
+                PlanarImage.removeTileObserver(source, this);
             }
         }
     }
@@ -338,10 +353,10 @@ final class ComputedTiles extends WeakReference<ComputedImage> implements Dispos
      * shared by many images, other images are not impacted.
      *
      * <p>This method should not perform other cleaning work because it is not guaranteed to be invoked.
-     * In some case, there is nothing preventing this weak reference to be garbage collected before this
-     * {@code dispose()} method is invoked. The case is: if {@code ComputedTiles} is not registered as a
-     * {@link TileObserver} and if {@link TileCache#GLOBAL} does not contain any tile associated with this
-     * {@link ComputedImage} in its key.</p>
+     * In some cases, this weak reference can be garbage collected before this {@code dispose()} method
+     * is invoked. Example: if {@code ComputedTiles} is not registered as a {@link PlanarImage.Observer}
+     * and if {@link TileCache#GLOBAL} does not contain any tile associated with the {@link ComputedImage}
+     * in its key.</p>
      *
      * @see ComputedImage#dispose()
      */
@@ -351,7 +366,7 @@ final class ComputedTiles extends WeakReference<ComputedImage> implements Dispos
             cachedTiles.keySet().forEach(TileCache.Key::dispose);
             cachedTiles.clear();
         }
-        final WritableRenderedImage[] ws = sources;
+        final RenderedImage[] ws = sources;
         if (ws != null) {
             unregister(ws, ws.length, null);
         }
@@ -368,16 +383,22 @@ final class ComputedTiles extends WeakReference<ComputedImage> implements Dispos
      * @param  i        index after the last source to stop observing.
      * @param  failure  if this method is invoked because an exception occurred, that exception.
      */
-    private void unregister(final WritableRenderedImage[] ws, int i, RuntimeException failure) {
+    private void unregister(final RenderedImage[] ws, int i, Throwable failure) {
         sources = null;                     // Let GC to its work in case of error in this method.
         while (--i >= 0) try {
-            ws[i].removeTileObserver(this);
-        } catch (RuntimeException e) {
+            PlanarImage.removeTileObserver(ws[i], this);
+        } catch (Throwable e) {
             if (failure == null) failure = e;
             else failure.addSuppressed(e);
         }
         if (failure != null) {
-            throw failure;
+            if (failure instanceof RuntimeException) {
+                throw (RuntimeException) failure;
+            } else if (failure instanceof Error) {
+                throw (Error) failure;
+            } else {
+                throw new UndeclaredThrowableException(failure);
+            }
         }
     }
 }

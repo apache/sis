@@ -198,10 +198,19 @@ public final class Assertions {
 
     /**
      * Returns the error message for a test failure in an {@code assertValuesEqual(…)} method.
+     *
+     * @param  x         the <var>x</var> pixel coordinate.
+     * @param  y         the <var>y</var> pixel coordinate.
+     * @param  tx        the tile index in the <var>x</var> direction.
+     * @param  ty        the tile index in the <var>y</var> direction.
+     * @param  band      the band number where the mismatch was found.
+     * @param  expected  the expected value.
+     * @param  actual    the actual value.
+     * @return an error message to report as a JUnit test failure.
      */
-    private static String mismatchedSampleValue(int x, int y, int i, int j, int band, Number expected, Number actual) {
+    public static String mismatchedSampleValue(int x, int y, int tx, int ty, int band, Number expected, Number actual) {
         return "Mismatched sample value at image coordinates (" + x + ", " + y + ") "
-                + "— matrix indices (" + i + ", " + j + ") band " + band
+                + "— matrix indices (" + tx + ", " + ty + ") band " + band
                 + ": expected " + expected + " but found " + actual;
     }
 }

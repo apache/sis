@@ -75,8 +75,8 @@ class BandAggregateImage extends MultiSourceImage {
     static void unwrap(final BandAggregateArgument<RenderedImage>.Unwrapper unwrapper) {
         RenderedImage source = unwrapper.source;
         int[] bands = unwrapper.bands;
-        while (source instanceof ImageAdapter) {
-            source = ((ImageAdapter) source).source;
+        while (source instanceof TileForwardingImage) {
+            source = ((TileForwardingImage) source).source;
         }
         if (source instanceof BandSelectImage) {
             final var select = (BandSelectImage) source;
@@ -106,8 +106,8 @@ class BandAggregateImage extends MultiSourceImage {
     final RenderedImage subset(final int[] bands, final ColorModel colors,
             final BandAggregateArgument<RenderedImage>.Unwrapper unwrapper)
     {
-        final RenderedImage[] sources = new RenderedImage[bands.length];
-        final int[][] bandsPerSource = new int[bands.length][];
+        final var sources = new RenderedImage[bands.length];
+        final var bandsPerSource = new int[bands.length][];
         int lower=0, upper=0, sourceIndex = -1;
         RenderedImage source = null;
         for (int i=0; i<bands.length; i++) {

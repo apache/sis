@@ -39,26 +39,4 @@
  * @author  Johann Sorel (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
  */
-@XmlSchema(location="https://schemas.opengis.net/se/1.1.0/FeatureStyle.xsd",
-           elementFormDefault=XmlNsForm.QUALIFIED, namespace=Namespaces.SE,
-           xmlns = {
-                @XmlNs(prefix = "se", namespaceURI = Namespaces.SE)
-})
-@XmlAccessorType(XmlAccessType.NONE)
-@XmlJavaTypeAdapters({
-    @XmlJavaTypeAdapter(ExpressionAdapter.class),
-    @XmlJavaTypeAdapter(InternationalStringConverter.class),
-    @XmlJavaTypeAdapter(UnitAdapter.class)
-})
 package org.apache.sis.style.se1;
-
-import jakarta.xml.bind.annotation.XmlAccessType;
-import jakarta.xml.bind.annotation.XmlAccessorType;
-import jakarta.xml.bind.annotation.XmlNs;
-import jakarta.xml.bind.annotation.XmlNsForm;
-import jakarta.xml.bind.annotation.XmlSchema;
-import jakarta.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
-import jakarta.xml.bind.annotation.adapters.XmlJavaTypeAdapters;
-import org.apache.sis.xml.Namespaces;
-import org.apache.sis.xml.bind.gco.InternationalStringConverter;
-import org.apache.sis.xml.bind.gco.UnitAdapter;

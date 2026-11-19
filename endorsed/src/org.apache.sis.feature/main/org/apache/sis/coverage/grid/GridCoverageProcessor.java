@@ -29,6 +29,7 @@ import java.lang.reflect.InaccessibleObjectException;
 import java.awt.Shape;
 import java.awt.Rectangle;
 import java.awt.image.RenderedImage;
+import java.awt.image.WritableRenderedImage;
 import javax.measure.Quantity;
 import org.opengis.util.FactoryException;
 import org.opengis.metadata.spatial.DimensionNameType;
@@ -45,6 +46,7 @@ import org.apache.sis.image.DataType;
 import org.apache.sis.image.Colorizer;
 import org.apache.sis.image.PlanarImage;
 import org.apache.sis.image.ImageProcessor;
+import org.apache.sis.image.Aggregation;
 import org.apache.sis.image.Interpolation;
 import org.apache.sis.coverage.internal.shared.SampleDimensions;
 import org.apache.sis.coverage.internal.shared.BandAggregateArgument;
@@ -85,7 +87,7 @@ import org.apache.sis.measure.NumberRange;
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @author  Alexis Manin (Geomatys)
- * @version 1.5
+ * @version 1.8
  *
  * @see org.apache.sis.image.ImageProcessor
  *
@@ -162,6 +164,7 @@ public class GridCoverageProcessor implements Cloneable {
      * @return interpolation method to use in resampling operations.
      *
      * @see ImageProcessor#getInterpolation()
+     * @see #resample(GridCoverage, CoordinateReferenceSystem)
      */
     public Interpolation getInterpolation() {
         return imageProcessor.getInterpolation();
@@ -177,6 +180,35 @@ public class GridCoverageProcessor implements Cloneable {
      */
     public void setInterpolation(final Interpolation method) {
         imageProcessor.setInterpolation(method);
+    }
+
+    /**
+     * Returns the aggregation method to use for aggregating operations.
+     * The default implementation delegates to the image processor.
+     *
+     * @return aggregation method to use in aggregating operations.
+     *
+     * @see ImageProcessor#getAggregation()
+     * @see #aggregate(GridCoverage, CoordinateReferenceSystem)
+     *
+     * @since SIS 1.8
+     */
+    public Aggregation getAggregation() {
+        return imageProcessor.getAggregation();
+    }
+
+    /**
+     * Sets the aggregation method to use for aggregating operations.
+     * The default implementation delegates to the image processor.
+     *
+     * @param  method  aggregation method to use in aggregating operations.
+     *
+     * @see ImageProcessor#setAggregation(Aggregation)
+     *
+     * @since SIS 1.8
+     */
+    public void setAggregation(final Aggregation method) {
+        imageProcessor.setAggregation(method);
     }
 
     /**
@@ -356,8 +388,7 @@ public class GridCoverageProcessor implements Cloneable {
      * If {@code maskInside} is {@code false}, then the mask is reversed:
      * the pixels set to fill values are the ones outside the ROI.
      *
-     * <h4>Properties used</h4>
-     * This operation uses the following properties in addition to method parameters:
+     * <p>This operation uses the following properties in addition to method parameters:</p>
      * <ul>
      *   <li>{@linkplain #getFillValues() Fill values} values to assign to pixels inside/outside the region of interest.</li>
      * </ul>
@@ -390,7 +421,7 @@ public class GridCoverageProcessor implements Cloneable {
      * If the {@code converters} array length is less than the number of source sample dimensions,
      * then all sample dimensions at index ≥ {@code converters.length} will be ignored.
      *
-     * <h4>Sample dimensions customization</h4>
+     * <h4>Customizing the result of sample dimension conversions</h4>
      * By default, this method creates new sample dimensions with the same names and categories than in the
      * previous coverage, but with {@linkplain org.apache.sis.coverage.Category#getSampleRange() sample ranges}
      * converted using the given converters and with {@linkplain SampleDimension#getUnits() units of measurement}
@@ -399,15 +430,14 @@ public class GridCoverageProcessor implements Cloneable {
      * The {@code sampleDimensionModifier} function can {@linkplain SampleDimension.Builder#setName(CharSequence)
      * change the sample dimension name} or {@linkplain SampleDimension.Builder#categories() rebuild the categories}.
      *
-     * <h4>Result relationship with source</h4>
-     * If the source coverage is backed by a {@link java.awt.image.WritableRenderedImage},
-     * then changes in the source coverage are reflected in the returned coverage and conversely.
-     *
-     * <h4>Properties used</h4>
-     * This operation uses the following properties in addition to method parameters:
+     * <p>This operation uses the following properties in addition to method parameters:</p>
      * <ul>
      *   <li>{@linkplain #getColorizer() Colorizer} for customizing the rendered image color model.</li>
      * </ul>
+     *
+     * <p><b>Result relationship with source:</b>
+     * If the source coverage is backed by a {@link WritableRenderedImage} or {@link PlanarImage},
+     * then changes in the source coverage are reflected in the returned coverage and conversely.</p>
      *
      * @param  source      the coverage for which to convert sample values.
      * @param  converters  the transfer functions to apply on each sample dimension of the source coverage.
@@ -426,8 +456,8 @@ public class GridCoverageProcessor implements Cloneable {
         ArgumentChecks.ensureNonNull("converters", converters);
         final List<SampleDimension> sourceBands = source.getSampleDimensions();
         ArgumentChecks.ensureCountBetween("converters", true, 1, sourceBands.size(), converters.length);
-        final SampleDimension[] targetBands = new SampleDimension[converters.length];
-        final SampleDimension.Builder builder = new SampleDimension.Builder();
+        final var targetBands = new SampleDimension[converters.length];
+        final var builder = new SampleDimension.Builder();
         if (sampleDimensionModifier == null) {
             sampleDimensionModifier = SampleDimension.Builder::build;
         }
@@ -469,8 +499,7 @@ public class GridCoverageProcessor implements Cloneable {
      *       of this {@code translate(…)} method into a single translation.</li>
      * </ul>
      *
-     * <h4>Properties used</h4>
-     * This operation uses the following properties in addition to method parameters:
+     * <p>This operation uses the following properties in addition to method parameters:</p>
      * <ul>
      *   <li>(none)</li>
      * </ul>
@@ -561,8 +590,7 @@ public class GridCoverageProcessor implements Cloneable {
      *       by {@code translate(…)} when possible.</li>
      * </ul>
      *
-     * <h4>Properties used</h4>
-     * This operation uses the following properties in addition to method parameters:
+     * <p>This operation uses the following properties in addition to method parameters:</p>
      * <ul>
      *   <li>{@linkplain #getInterpolation() Interpolation method} (nearest neighbor, bilinear, <i>etc</i>).</li>
      *   <li>{@linkplain #getFillValues() Fill values} for pixels outside source image.</li>
@@ -574,7 +602,7 @@ public class GridCoverageProcessor implements Cloneable {
      * @param  target  the desired geometry of returned grid coverage. May be incomplete.
      * @return a grid coverage with the characteristics specified in the given grid geometry.
      * @throws IncompleteGridGeometryException if the source grid geometry is missing an information.
-     *         It may be the source CRS, the source extent, <i>etc.</i> depending on context.
+     *         It may be the source <abbr>CRS</abbr>, the source extent, <i>etc.</i> depending on context.
      * @throws TransformException if some coordinates cannot be transformed to the specified target.
      *
      * @see ImageProcessor#resample(RenderedImage, Rectangle, MathTransform)
@@ -587,7 +615,7 @@ public class GridCoverageProcessor implements Cloneable {
             allowSourceReplacement    = optimizations.contains(Optimization.REPLACE_SOURCE);
             allowOperationReplacement = optimizations.contains(Optimization.REPLACE_OPERATION);
         }
-        final boolean isConverted = source == source.forConvertedValues(true);
+        final boolean isConverted = (source == source.forConvertedValues(true));
         /*
          * If the source coverage is already the result of a previous "resample" or "translate" operation,
          * use the original data in order to avoid interpolating values that are already interpolated.
@@ -596,7 +624,7 @@ public class GridCoverageProcessor implements Cloneable {
             if (ResampledGridCoverage.equivalent(source.getGridGeometry(), target)) {
                 return source;
             } else if (allowSourceReplacement && source instanceof DerivedGridCoverage) {
-                final DerivedGridCoverage derived = (DerivedGridCoverage) source;
+                final var derived = (DerivedGridCoverage) source;
                 if (derived.isNotRepleacable()) break;
                 source = derived.source;
             } else {
@@ -618,12 +646,8 @@ public class GridCoverageProcessor implements Cloneable {
             // `ResampledGridCoverage` will create itself a clone of `imageProcessor`.
             resampled = ResampledGridCoverage.create(source, target, imageProcessor, allowOperationReplacement);
         } catch (IllegalGridGeometryException e) {
-            final Throwable cause = e.getCause();
-            if (cause instanceof TransformException) {
-                throw (TransformException) cause;
-            } else {
-                throw e;
-            }
+            rethrowIfTransformException(e.getCause());
+            throw e;
         } catch (FactoryException e) {
             throw new TransformFactoryException(e);
         }
@@ -645,12 +669,112 @@ public class GridCoverageProcessor implements Cloneable {
      * @throws IncompleteGridGeometryException if the source grid geometry is missing an information.
      * @throws TransformException if some coordinates cannot be transformed to the specified target.
      *
+     * @see #aggregate(GridCoverage, CoordinateReferenceSystem)
+     *
      * @since SIS 1.3
      */
     public GridCoverage resample(final GridCoverage source, final CoordinateReferenceSystem target) throws TransformException {
         ArgumentChecks.ensureNonNull("source", source);
         ArgumentChecks.ensureNonNull("target", target);
         return resample(source, new GridGeometry(null, PixelInCell.CELL_CENTER, null, target));
+    }
+
+    /**
+     * Creates a new coverage with aggregated values of one or many source grid coverages.
+     * The desired properties are specified by the {@link GridGeometry} argument, which may be incomplete.
+     * The missing grid geometry components are completed as below:
+     *
+     * <table class="sis">
+     *   <caption>Default values for undefined grid geometry components</caption>
+     *   <tr>
+     *     <th>Component</th>
+     *     <th>Default value</th>
+     *   </tr><tr>
+     *     <td>{@linkplain GridGeometry#getExtent() Grid extent}</td>
+     *     <td>A default size preserving resolution at source
+     *       {@linkplain GridExtent#getPointOfInterest(PixelInCell) point of interest}.</td>
+     *   </tr><tr>
+     *     <td>{@linkplain GridGeometry#getGridToCRS Grid to CRS transform}</td>
+     *     <td>Whatever it takes for fitting data inside the supplied extent.</td>
+     *   </tr><tr>
+     *     <td>{@linkplain GridGeometry#getCoordinateReferenceSystem() Coordinate reference system}</td>
+     *     <td>Same as source coverage.</td>
+     *   </tr>
+     * </table>
+     *
+     * <p>This operation uses the following properties in addition to method parameters:</p>
+     * <ul>
+     *   <li>{@linkplain #getAggregation() Aggregation method} (weighted average, <i>etc</i>).</li>
+     *   <li>{@linkplain #getFillValues()  Fill values} for sample values not covered by a source.</li>
+     *   <li>{@linkplain #getPositionalAccuracyHints() Positional accuracy hints}
+     *       for enabling faster aggregation at the cost of lower precision.</li>
+     * </ul>
+     *
+     * <p><b>Performance note:</b>
+     * Contrary to {@code resample(…)}, this operation computes all tiles immediately when one tile is requested.
+     * For very large images, {@link #resample(GridCoverage, GridGeometry) resample(…)} is preferred because it
+     * defers computation on a tile-by-tile basis instead of computing the whole image.</p>
+     *
+     * @param  target   the desired geometry of returned grid coverage. May be incomplete.
+     * @param  sources  the grid coverages to aggregate.
+     * @return a grid coverage with the characteristics specified in the given grid geometry.
+     * @throws IncompleteGridGeometryException if the source grid geometry is missing an information.
+     *         It may be the source <abbr>CRS</abbr>, the source extent, <i>etc.</i> depending on context.
+     * @throws TransformException if some coordinates cannot be transformed to the specified target.
+     *
+     * @see ImageProcessor#aggregate(RenderedImage, Rectangle, MathTransform)
+     *
+     * @since SIS 1.8
+     */
+    public GridCoverage aggregate(final GridGeometry target, GridCoverage... sources) throws TransformException {
+        ArgumentChecks.ensureNonNull ("target",  target);
+        ArgumentChecks.ensureNonEmpty("sources", sources);
+        sources = sources.clone();
+        boolean isConverted = false;
+        for (int i=0; i<sources.length; i++) {
+            final GridCoverage source = sources[i];
+            ArgumentChecks.ensureNonNullElement("sources", i, source);
+            isConverted |= (source == (sources[i] = source.forConvertedValues(true)));
+        }
+        final GridCoverage aggregated;
+        try {
+            // `AggregatedGridCoverage` will create itself a clone of `imageProcessor`.
+            aggregated = AggregatedGridCoverage.create(sources, target, imageProcessor);
+        } catch (IllegalGridGeometryException e) {
+            rethrowIfTransformException(e.getCause());
+            throw e;
+        } catch (FactoryException e) {
+            throw new TransformFactoryException(e);
+        }
+        return aggregated.forConvertedValues(isConverted);
+    }
+
+    /**
+     * Creates a new coverage with values aggregated in a different coordinate reference system.
+     * The grid extent and "grid to CRS" transform are determined automatically
+     * with default values preserving the resolution of source coverage at its
+     * {@linkplain GridExtent#getPointOfInterest(PixelInCell) point of interest}.
+     *
+     * <p>This method is an alternative to {@link #resample(GridCoverage, CoordinateReferenceSystem)}
+     * which uses the {@link MathTransform} in the opposite direction.
+     * This method may succeed when {@code resample(…)} fails if the transform is difficult to inverse.
+     * However, this operation may be slower and consume more memory for a less smooth result.
+     * See {@link #aggregate(GridGeometry, GridCoverage...)} for more information about aggregations.</p>
+     *
+     * @param  source  the grid coverage to aggregate.
+     * @param  target  the desired coordinate reference system.
+     * @return a grid coverage with the given coordinate reference system.
+     * @throws IncompleteGridGeometryException if the source grid geometry is missing an information.
+     * @throws TransformException if some coordinates cannot be transformed to the specified target.
+     *
+     * @see #resample(GridCoverage, CoordinateReferenceSystem)
+     *
+     * @since SIS 1.8
+     */
+    public GridCoverage aggregate(final GridCoverage source, final CoordinateReferenceSystem target) throws TransformException {
+        ArgumentChecks.ensureNonNull("source", source);
+        ArgumentChecks.ensureNonNull("target", target);
+        return aggregate(new GridGeometry(null, PixelInCell.CELL_CORNER, null, target), source);
     }
 
     /**
@@ -700,9 +824,9 @@ public class GridCoverageProcessor implements Cloneable {
          * It also has the desirable side-effect to increase the chances that slices share the same
          * "grid to CRS" transform.
          */
-        final long index = Numerics.roundAndClamp(lower / span);
-        final long[] indices = new long[] {index};
-        final GridExtent extent = new GridExtent(GridExtent.typeFromAxes(crs, 1), indices, indices, true);
+        final long index   = Numerics.roundAndClamp(lower / span);
+        final var  indices = new long[] {index};
+        final var  extent  = new GridExtent(GridExtent.typeFromAxes(crs, 1), indices, indices, true);
         final MathTransform gridToCRS = MathTransforms.linear(span, Math.fma(index, -span, lower));
         return appendDimensions(source, new GridGeometry(extent, PixelInCell.CELL_CORNER, gridToCRS, crs));
     }
@@ -947,8 +1071,7 @@ public class GridCoverageProcessor implements Cloneable {
      *     RenderedImage visualization = processor.visualize(source, slice);
      *     }
      *
-     * <h4>Properties used</h4>
-     * This operation uses the following properties in addition to method parameters:
+     * <p>This operation uses the following properties in addition to method parameters:</p>
      * <ul>
      *   <li>{@linkplain #getColorizer() Colorizer} for customizing the rendered image color model.</li>
      * </ul>
@@ -972,6 +1095,16 @@ public class GridCoverageProcessor implements Cloneable {
             return imageProcessor.visualize(image);
         } finally {
             SampleDimensions.IMAGE_PROCESSOR_ARGUMENT.remove();
+        }
+    }
+
+    /**
+     * Retrows the given exception if it is an instance of {@link TransformException}.
+     * This is used for unwrapping unchecked exception used as wrapper for a checked exception.
+     */
+    private static void rethrowIfTransformException(final Throwable cause) throws TransformException {
+        if (cause instanceof TransformException) {
+            throw (TransformException) cause;
         }
     }
 

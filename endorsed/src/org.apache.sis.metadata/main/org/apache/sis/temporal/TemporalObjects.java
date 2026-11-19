@@ -63,6 +63,9 @@ public final class TemporalObjects {
         if (indeterminate == IndeterminateValue.UNKNOWN) {
             return DefaultInstant.UNKNOWN;
         }
+        if (indeterminate == IndeterminateValue.NOW) {
+            return DefaultInstant.NOW;
+        }
         if (indeterminate == null || indeterminate == IndeterminateValue.BEFORE || indeterminate == IndeterminateValue.AFTER) {
             ArgumentChecks.ensureNonNull("position", position);
         }
@@ -82,7 +85,7 @@ public final class TemporalObjects {
         if (indeterminate == IndeterminateValue.BEFORE || indeterminate == IndeterminateValue.AFTER) {
             throw new IllegalArgumentException(Errors.format(Errors.Keys.IllegalArgumentValue_2, "indeterminate", indeterminate));
         }
-        return (indeterminate == IndeterminateValue.UNKNOWN) ? DefaultInstant.UNKNOWN : new DefaultInstant(null, indeterminate);
+        return createInstant(null, indeterminate);
     }
 
     /**

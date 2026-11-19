@@ -24,6 +24,7 @@ import org.apache.sis.temporal.TimeMethods;
 import org.apache.sis.feature.internal.shared.FeatureExpression;
 
 // Specific to the geoapi-3.1 and geoapi-4.0 branches:
+import org.opengis.temporal.Instant;
 import org.opengis.temporal.Period;
 import org.opengis.filter.Filter;
 import org.opengis.filter.Expression;
@@ -84,7 +85,6 @@ class TemporalFilter<R,T> extends BinaryFunction<R,T,T>
      * @param  expression1  the first of the two expressions to be used by this function.
      * @param  expression2  the second of the two expressions to be used by this function.
      */
-    @SuppressWarnings({"rawtypes", "unchecked"})
     public static <R,V> TemporalFilter<R,?> create(
             final Class<V> type,
             final TemporalOperation.Factory factory,
@@ -93,19 +93,21 @@ class TemporalFilter<R,T> extends BinaryFunction<R,T,T>
     {
         final Class<? extends V> c1 = getValueClass(expression1, type);
         final Class<? extends V> c2 = getValueClass(expression2, type);
-        Class<? extends V> commonType = type;
+        Class<?> commonType = type;
         if (type.isInterface()) {
             for (final Class<?> c : Classes.findCommonInterfaces(c1, c2)) {
                 if (commonType.isAssignableFrom(c)) {
-                    commonType = (Class<? extends V>) c;        // Safe because verified by `isAssignableFrom(c)`.
+                    commonType = c;
                 }
             }
         } else {
             final Class<?> c = Classes.findCommonClass(c1, c2);
             if (commonType.isAssignableFrom(c)) {
-                commonType = (Class<? extends V>) c;            // Safe because verified by `isAssignableFrom(c)`.
+                commonType = c;
             }
         }
+        assert commonType.isAssignableFrom(c1) : c1;
+        assert commonType.isAssignableFrom(c2) : c2;
         /*
          * We cannot use a more specific type here because the `find(…)` method argument is parameterized
          * with `<? extends T>` while its return value is parameterized with `<? super T>`. Java language
@@ -117,12 +119,15 @@ class TemporalFilter<R,T> extends BinaryFunction<R,T,T>
          * `commonType` of type `Class<T>` no matter if <T> is a super-type or a sub-type of <V>, we can
          * assert that the parameterized type of the two expressions is `<? extends T>`.
          */
+        final boolean arePeriods = Period.class.isAssignableFrom(commonType);
+        if (arePeriods) {
+            // Periods are compared by their beginning and ending instants, never as whole objects.
+            commonType = Instant.class;
+        }
         final TemporalOperation<?> operation = factory.create(TimeMethods.forType(commonType)).unique();
         assert operation.comparators.type.isAssignableFrom(commonType) : commonType;
-        assert commonType.isAssignableFrom(c1) : c1;
-        assert commonType.isAssignableFrom(c2) : c2;
-        if (Period.class.isAssignableFrom(commonType)) {
-            // Safe because `commonType` extends both Period and T.
+        if (arePeriods) {
+            // Safe because `commonType` (before replacement) extends both `Period` and <T>.
             return new Periods(operation, expression1, expression2);
         }
         if (operation.comparators.isDynamic) {

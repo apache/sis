@@ -17,8 +17,6 @@
 package org.apache.sis.style.se1;
 
 import java.util.Optional;
-import jakarta.xml.bind.annotation.XmlType;
-import jakarta.xml.bind.annotation.XmlRootElement;
 
 // Specific to the geoapi-3.1 and geoapi-4.0 branches:
 import org.opengis.filter.Expression;
@@ -44,12 +42,6 @@ import org.opengis.filter.Expression;
  *
  * @param <R>  the type of data to style, such as {@code Feature} or {@code Coverage}.
  */
-@XmlType(name = "ColorMapType", propOrder = {
-//  "categorize",
-//  "interpolate",
-//  "jenks"
-})
-@XmlRootElement(name = "ColorMap")
 public class ColorMap<R> extends StyleElement<R> {
     /**
      * The function computing colors from the raster data, or {@code null} if none.
@@ -58,13 +50,6 @@ public class ColorMap<R> extends StyleElement<R> {
      * @see #setFunction(Expression)
      */
     protected Expression<R,?> function;
-
-    /**
-     * For JAXB unmarshalling only.
-     */
-    private ColorMap() {
-        // Thread-local factory will be used.
-    }
 
     /**
      * Creates an initially empty color map.

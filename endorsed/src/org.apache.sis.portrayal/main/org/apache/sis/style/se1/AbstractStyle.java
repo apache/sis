@@ -21,10 +21,6 @@ import java.util.List;
 import java.util.ArrayList;
 import java.util.EnumSet;
 import java.util.Optional;
-import jakarta.xml.bind.Unmarshaller;
-import jakarta.xml.bind.annotation.XmlType;
-import jakarta.xml.bind.annotation.XmlElement;
-import jakarta.xml.bind.annotation.XmlAttribute;
 import org.opengis.util.GenericName;
 
 // Specific to the geoapi-3.1 and geoapi-4.0 branches:
@@ -43,13 +39,6 @@ import org.opengis.filter.ResourceId;
  *
  * @param <R>  the type of data to style, such as {@code Feature} or {@code Coverage}.
  */
-@XmlType(propOrder = {
-    "name",
-    "description",
-    "featureTypeName",
-//  "semanticTypeIdentifiers",
-    "rules"
-})
 public abstract class AbstractStyle<R> extends StyleElement<R> {
     /**
      * Version number of the Symbology Encoding Implementation Specification standard currently implemented.
@@ -65,7 +54,6 @@ public abstract class AbstractStyle<R> extends StyleElement<R> {
      *
      * @see #getVersion()
      */
-    @XmlAttribute
     protected String version;
 
     /**
@@ -74,7 +62,6 @@ public abstract class AbstractStyle<R> extends StyleElement<R> {
      * @see #getName()
      * @see #setName(String)
      */
-    @XmlElement(name = "Name")
     protected String name;
 
     /**
@@ -83,7 +70,6 @@ public abstract class AbstractStyle<R> extends StyleElement<R> {
      * @see #getDescription()
      * @see #setDescription(Description)
      */
-    @XmlElement(name = "Description")
     protected Description<R> description;
 
     /**
@@ -100,7 +86,6 @@ public abstract class AbstractStyle<R> extends StyleElement<R> {
      * @see #getFeatureTypeName()
      * @see #setFeatureTypeName(GenericName)
      */
-    @XmlElement(name = "FeatureTypeName")
     protected GenericName featureTypeName;
 
     /**
@@ -109,7 +94,6 @@ public abstract class AbstractStyle<R> extends StyleElement<R> {
      *
      * @see #semanticTypeIdentifiers()
      */
-//  @XmlElement(name = "SemanticTypeIdentifier")
     private EnumSet<SemanticType> semanticTypeIdentifiers;
 
     /**
@@ -117,25 +101,15 @@ public abstract class AbstractStyle<R> extends StyleElement<R> {
      *
      * <h4>Online rules</h4>
      * A XML document may contain links to rules instead of a full definitions.
-     * Such {@code se:OnlineResource} elements are handled at marshalling time.
-     * When reading a XML document, the rule links are resolved automatically.
+     * When reading a XML document, each {@code se:OnlineResource} link is represented by
+     * a rule having only an {@linkplain Rule#getOnlineSource() online source}.
+     * The link is not resolved.
      * When writing a XML document, some rules may be replaced by online resources
      * if {@link Rule#getOnlineSource()} is provided.
      *
-     * @todo JAXB adapter for handling the online case is not yet written.
-     *
      * @see #rules()
      */
-    @XmlElement(name = "Rule")
     private List<Rule<R>> rules;
-
-    /**
-     * Invoked by JAXB before unmarshalling this mark.
-     * Avoid giving the false impression that the XML document contained a version string.
-     */
-    private void beforeUnmarshal(Unmarshaller caller, Object parent) {
-        version = "unspecified";
-    }
 
     /**
      * Creates an initially empty feature type style.

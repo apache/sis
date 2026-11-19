@@ -18,12 +18,6 @@ package org.apache.sis.style.se1;
 
 import java.util.Objects;
 import java.util.Optional;
-import jakarta.xml.bind.annotation.XmlType;
-import jakarta.xml.bind.annotation.XmlElement;
-import jakarta.xml.bind.annotation.XmlRootElement;
-import jakarta.xml.bind.annotation.XmlSchemaType;
-import jakarta.xml.bind.annotation.XmlAttribute;
-import jakarta.xml.bind.annotation.XmlSeeAlso;
 import javax.measure.Unit;
 import org.apache.sis.measure.Units;
 import org.apache.sis.util.resources.Errors;
@@ -53,19 +47,6 @@ import org.opengis.filter.ValueReference;
  *
  * @param <R>  the type of data to style, such as {@code Feature} or {@code Coverage}.
  */
-@XmlType(name = "SymbolizerType", propOrder = {
-    "name",
-    "description",
-    "geometry"
-})
-@XmlSeeAlso({
-    LineSymbolizer.class,
-    PointSymbolizer.class,
-    PolygonSymbolizer.class,
-    TextSymbolizer.class,
-    RasterSymbolizer.class
-})
-@XmlRootElement(name = "Symbolizer")
 public abstract class Symbolizer<R> extends StyleElement<R> {
     /**
      * Name for this style, or {@code null} if none.
@@ -73,7 +54,6 @@ public abstract class Symbolizer<R> extends StyleElement<R> {
      * @see #getName()
      * @see #setName(String)
      */
-    @XmlElement(name = "Name")
     protected String name;
 
     /**
@@ -82,7 +62,6 @@ public abstract class Symbolizer<R> extends StyleElement<R> {
      * @see #getDescription()
      * @see #setDescription(Description)
      */
-    @XmlElement(name = "Description")
     protected Description<R> description;
 
     /**
@@ -93,7 +72,6 @@ public abstract class Symbolizer<R> extends StyleElement<R> {
      * @see #getGeometry()
      * @see #setGeometry(Expression)
      */
-    @XmlElement(name = "Geometry")
     protected Expression<R,?> geometry;
 
     /**
@@ -106,21 +84,10 @@ public abstract class Symbolizer<R> extends StyleElement<R> {
      *   <li>uom="http://www.opengeospatial.org/se/units/pixel"</li>
      * </ul>
      *
-     * @todo Recommended XML representation is not yet implemented.
-     *
      * @see #getUnitOfMeasure()
      * @see #setUnitOfMeasure(Unit)
      */
-    @XmlAttribute(name = "uom")
-    @XmlSchemaType(name = "anyURI")
     protected Unit<?> unit;
-
-    /**
-     * For JAXB unmarshalling only.
-     */
-    Symbolizer() {
-        // Thread-local factory will be used.
-    }
 
     /**
      * Creates a symbolizer initialized to default geometries and pixel unit of measurement.

@@ -231,7 +231,7 @@ public class PixelIteratorTest extends TestCase {
         expected = new float[StrictMath.max(subMaxX - subMinX, 0) * StrictMath.max(subMaxY - subMinY, 0) * numBands];
         final var image = new TiledImageMock(dataType, numBands, xmin, ymin, width, height,
                     tileWidth, tileHeight, minTileX, minTileY, useBandedSampleModel);
-        image.validate();
+        image.validate(false);
         /*
          * At this point, all data structures have been created an initialized to zero sample values.
          * Now fill the data structures with arbitrary values. We fill them tile-by-tile by default,

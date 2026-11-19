@@ -18,9 +18,6 @@ package org.apache.sis.style.se1;
 
 import java.awt.Color;
 import java.util.Optional;
-import jakarta.xml.bind.annotation.XmlType;
-import jakarta.xml.bind.annotation.XmlElement;
-import jakarta.xml.bind.annotation.XmlRootElement;
 
 // Specific to the geoapi-3.1 and geoapi-4.0 branches:
 import org.opengis.filter.Expression;
@@ -43,12 +40,6 @@ import org.opengis.filter.Expression;
  *
  * @param <R>  the type of data to style, such as {@code Feature} or {@code Coverage}.
  */
-@XmlType(name = "StrokeType", propOrder = {
-    "graphicFill",
-    "graphicStroke",
-//  "svgParameter"
-})
-@XmlRootElement(name = "Stroke")
 public class Stroke<R> extends StyleElement<R> implements Translucent<R> {
     /**
      * Graphic for tiling the (thin) area of the line, or {@code null} if none.
@@ -57,7 +48,6 @@ public class Stroke<R> extends StyleElement<R> implements Translucent<R> {
      * @see #getGraphicFill()
      * @see #setGraphicFill(GraphicFill)
      */
-    @XmlElement(name = "GraphicFill")
     protected GraphicFill<R> graphicFill;
 
     /**
@@ -67,7 +57,6 @@ public class Stroke<R> extends StyleElement<R> implements Translucent<R> {
      * @see #getGraphicStroke()
      * @see #setGraphicStroke(GraphicStroke)
      */
-    @XmlElement(name = "GraphicStroke")
     protected GraphicStroke<R> graphicStroke;
 
     /**
@@ -146,13 +135,6 @@ public class Stroke<R> extends StyleElement<R> implements Translucent<R> {
      * @see #setDashOffset(Expression)
      */
     protected Expression<R,Integer> dashOffset;
-
-    /**
-     * For JAXB unmarshalling only.
-     */
-    private Stroke() {
-        // Thread-local factory will be used.
-    }
 
     /**
      * Creates a stroke initialized to solid line of black opaque color, 1 pixel width.
@@ -436,26 +418,6 @@ public class Stroke<R> extends StyleElement<R> implements Translucent<R> {
     public void setDashOffset(final Expression<R,Integer> value) {
         dashOffset = value;
     }
-
-    /*
-     * TODO: we need a private method like below for formatting above SVG parameters:
-     *
-     *     @XmlElement(name = "SvgParameter")
-     *     private List<SvgParameter> svgParameters();
-     *
-     * Where:
-     *
-     *     class SvgParameter {
-     *         @XmlAttribute(required = true)
-     *         private String name;
-     *
-     *         @XmlMixed
-     *         @XmlElementRef(name = "expression", namespace = "http://www.opengis.net/ogc")
-     *         private List<Expression<?,?>> content;
-     *     }
-     *
-     * See 05-077r4 §11.1.3.
-     */
 
     /**
      * Returns all properties contained in this class.

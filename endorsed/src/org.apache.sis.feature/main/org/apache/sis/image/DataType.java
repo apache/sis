@@ -38,7 +38,7 @@ import static org.apache.sis.util.internal.shared.Numerics.MAX_INTEGER_CONVERTIB
  * except that this enumeration distinguishes signed and unsigned 32 bits integers.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.5
+ * @version 1.8
  *
  * @see org.apache.sis.math.NumberType
  *
@@ -214,7 +214,7 @@ public enum DataType {
          * If a bounds is NaN, fallback on TYPE_FLOAT.
          */
         final DataType type;
-        if (min >= -0.5 && max < 0xFFFFFFFF + 0.5) {
+        if (min >= -0.5 && max < 0xFFFFFFFFL + 0.5) {
             type = (max < 0xFF + 0.5) ? BYTE : (max < 0xFFFF + 0.5) ? USHORT : UINT;
         } else if (min >= Short.MIN_VALUE - 0.5 && max < Short.MAX_VALUE + 0.5) {
             type = SHORT;

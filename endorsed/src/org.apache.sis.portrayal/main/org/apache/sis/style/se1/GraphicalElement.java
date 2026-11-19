@@ -37,10 +37,10 @@ public interface GraphicalElement<R> {
     /**
      * Sets the graphic.
      * The given instance is stored by reference, it is not cloned.
-     * If this method is never invoked, then the default value is a {@linkplain Graphic#Graphic() default instance}.
+     * If this method is never invoked, then the default value is a {@linkplain Graphic#Graphic(StyleFactory) default instance}.
      *
      * <p>The interpretation of {@code null} argument value depends on whether the graphic is mandatory or optional.
-     * If mandatory, then a {@code null} argument value resets the {@linkplain Graphic#Graphic() default graphic}.
+     * If mandatory, then a {@code null} argument value resets the {@linkplain Graphic#Graphic(StyleFactory) default graphic}.
      * If optional, then a {@code null} argument value specifies to plot nothing.
      *
      * @param  value  new picture, or {@code null} for none or for resetting the default value.

@@ -30,6 +30,7 @@ import static org.apache.sis.referencing.crs.HardCodedCRS.*;
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
  */
+@SuppressWarnings("exports")
 public final class HardCodedCRSTest extends TestCase {
     /**
      * Creates a new test case.

@@ -45,7 +45,7 @@ import org.apache.sis.measure.NumberRange;
  *
  * @author  Martin Desruisseaux (Geomatys)
  */
-final class RecoloredImage extends ImageAdapter {
+final class RecoloredImage extends TileForwardingImage {
     /**
      * The color model to associate with this recolored image.
      *
@@ -134,15 +134,15 @@ final class RecoloredImage extends ImageAdapter {
         }
         /*
          * Find the image which contains the minimum and maximum values that we want to keep.
-         * We can skip `ImageAdapter` because those images may modify properties but not sample values.
+         * We can skip `TileForwardingImage` because those images may modify properties but not sample values.
          */
         RecoloredImage expected = null;
-        while (colored instanceof ImageAdapter) {
+        while (colored instanceof TileForwardingImage) {
             if (colored instanceof RecoloredImage) {
                 expected = (RecoloredImage) colored;
                 break;
             }
-            colored = ((ImageAdapter) colored).source;
+            colored = ((TileForwardingImage) colored).source;
         }
         /*
          * Verify if the given image, or one of its sources, has the expected color model.

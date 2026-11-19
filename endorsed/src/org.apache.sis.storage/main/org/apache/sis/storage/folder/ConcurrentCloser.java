@@ -75,7 +75,7 @@ public abstract class ConcurrentCloser<R> {
      */
     public final void closeAll(final Collection<? extends R> resources) throws DataStoreException {
         final ExecutorService executor = CommonExecutor.instance();
-        final Future<?>[] results = new Future<?>[resources.size()];
+        final var results = new Future<?>[resources.size()];
         int n = 0;
         for (final R r : resources) {
             final Callable<?> c = closer(r);

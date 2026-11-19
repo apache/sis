@@ -18,8 +18,6 @@ package org.apache.sis.style.se1;
 
 import java.util.List;
 import java.util.ArrayList;
-import jakarta.xml.bind.annotation.XmlType;
-import jakarta.xml.bind.annotation.XmlRootElement;
 
 // Specific to the geoapi-3.1 and geoapi-4.0 branches:
 import org.opengis.filter.Expression;
@@ -35,8 +33,6 @@ import org.opengis.filter.Expression;
  *
  * @param <R>  the type of data to style, such as {@code Feature} or {@code Coverage}.
  */
-@XmlType(name = "FontType")
-@XmlRootElement(name = "Font")
 public class Font<R> extends StyleElement<R> {
     /**
      * Family names of the font to use, in preference order.
@@ -76,13 +72,6 @@ public class Font<R> extends StyleElement<R> {
      * @see #setSize(Expression)
      */
     protected Expression<R, ? extends Number> size;
-
-    /**
-     * For JAXB unmarshalling only.
-     */
-    private Font() {
-        // Thread-local factory will be used.
-    }
 
     /**
      * Creates a font initialized to normal style, normal weight and a size of 10 pixels.

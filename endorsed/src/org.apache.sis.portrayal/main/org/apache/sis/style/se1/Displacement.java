@@ -16,10 +16,6 @@
  */
 package org.apache.sis.style.se1;
 
-import jakarta.xml.bind.annotation.XmlType;
-import jakarta.xml.bind.annotation.XmlElement;
-import jakarta.xml.bind.annotation.XmlRootElement;
-
 // Specific to the geoapi-3.1 and geoapi-4.0 branches:
 import org.opengis.filter.Expression;
 
@@ -46,11 +42,6 @@ import org.opengis.filter.Expression;
  * @see Graphic#getDisplacement()
  * @see PolygonSymbolizer#getDisplacement()
  */
-@XmlType(name = "DisplacementType", propOrder = {
-    "displacementX",
-    "displacementY"
-})
-@XmlRootElement(name = "Displacement")
 public class Displacement<R> extends StyleElement<R> {
     /**
      * The <var>x</var> offset from the geometry point.
@@ -59,7 +50,6 @@ public class Displacement<R> extends StyleElement<R> {
      * @see #getDisplacementX()
      * @see #setDisplacementX(Expression)
      */
-    @XmlElement(name = "DisplacementX", required = true)
     protected Expression<R, ? extends Number> displacementX;
 
     /**
@@ -69,15 +59,7 @@ public class Displacement<R> extends StyleElement<R> {
      * @see #getDisplacementY()
      * @see #setDisplacementY(Expression)
      */
-    @XmlElement(name = "DisplacementY", required = true)
     protected Expression<R, ? extends Number> displacementY;
-
-    /**
-     * For JAXB unmarshalling only.
-     */
-    private Displacement() {
-        // Thread-local factory will be used.
-    }
 
     /**
      * Creates a displacement initialized to zero offsets.

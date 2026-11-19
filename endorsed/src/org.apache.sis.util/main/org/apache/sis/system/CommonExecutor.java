@@ -66,7 +66,7 @@ public final class CommonExecutor extends AtomicInteger implements ThreadFactory
      */
     private static final ThreadPoolExecutor INSTANCE;
     static {
-        final ThreadPoolExecutor executor = new ThreadPoolExecutor(PARALLELISM, PARALLELISM, 2, TimeUnit.MINUTES,
+        final var executor = new ThreadPoolExecutor(PARALLELISM, PARALLELISM, 2, TimeUnit.MINUTES,
                 new LinkedBlockingQueue<>(1000000),         // Arbitrary limit against excessive queue expansion.
                 new CommonExecutor());
         executor.allowCoreThreadTimeOut(true);
@@ -74,12 +74,21 @@ public final class CommonExecutor extends AtomicInteger implements ThreadFactory
     }
 
     /**
-     * Returns the executor service shared by SIS modules for most costly calculations.
+     * Returns the executor service shared by <abbr>SIS</abbr> modules for most costly calculations.
      *
-     * @return the executor service for SIS tasks to run in background.
+     * @return the executor service for <abbr>SIS</abbr> tasks to run in background.
      */
     public static ExecutorService instance() {
         return INSTANCE;
+    }
+
+    /**
+     * Submit a task for execution in a background thread.
+     *
+     * @param  task  the task to run in a background thread.
+     */
+    public static void submit(final Runnable task) {
+        INSTANCE.submit(task);
     }
 
     /**
@@ -122,7 +131,7 @@ public final class CommonExecutor extends AtomicInteger implements ThreadFactory
      */
     @Override
     public Thread newThread(final Runnable r) {
-        final Thread t = new Thread(Threads.SIS, r, "Background worker #" + incrementAndGet());
+        final var t = new Thread(Threads.SIS, r, "Background worker #" + incrementAndGet());
         t.setPriority(Thread.NORM_PRIORITY - 2);
         t.setDaemon(true);
         return t;

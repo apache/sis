@@ -720,10 +720,10 @@ public class ImagePropertyExplorer extends Widget {
     }
 
     /**
-     * Update the list of properties for the given image.
+     * Updates the list of properties for the given image.
      * The {@link #propertyRows} are updated with an effort for reusing existing items when
      * the property name is the same. The intent is to keep selection unchanged if possible
-     * (because removing a selected row may make it unselected).
+     * (because removing a selected row may makes it unselected).
      */
     private void updatePropertyList(final RenderedImage selected) {
         if (selected != null) {
@@ -732,10 +732,9 @@ public class ImagePropertyExplorer extends Widget {
                 int insertAt = 0;
 nextProp:       for (final String property : properties) {
                     if (property != null) {
-                        for (int i=insertAt; i < propertyRows.size(); i++) {
+                        for (int i = insertAt; i < propertyRows.size(); i++) {
                             if (propertyRows.get(i).update(selected, property)) {
-                                propertyRows.remove(insertAt, i);
-                                insertAt = i + 1;
+                                propertyRows.remove(insertAt++, i);
                                 continue nextProp;
                             }
                         }

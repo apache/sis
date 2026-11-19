@@ -61,6 +61,26 @@ public final class ContrastEnhancementTest extends StyleTestCase {
         // Check get/set
         cdt.setGammaValue(literal(2));
         assertLiteralEquals(2, cdt.getGammaValue());
-        assertEquals(ContrastMethod.GAMMA, cdt.getMethod());
+        assertEquals(ContrastMethod.NONE, cdt.getMethod());
+    }
+
+    /**
+     * Verifies that a gamma value can be combined with the normalize or histogram method.
+     * OGC 05-077r4 and OGC 02-070 allow {@code <GammaValue>} after {@code <Normalize>} or {@code <Histogram>}.
+     * The result shall not depend on the order in which the properties are set.
+     */
+    @Test
+    public void testMethodWithGammaValue() {
+        var cdt = factory.createContrastEnhancement();
+        cdt.setMethod(ContrastMethod.NORMALIZE);
+        cdt.setGammaValue(literal(2.5));
+        assertEquals(ContrastMethod.NORMALIZE, cdt.getMethod());
+        assertLiteralEquals(2.5, cdt.getGammaValue());
+
+        cdt = factory.createContrastEnhancement();
+        cdt.setGammaValue(literal(2.5));
+        cdt.setMethod(ContrastMethod.HISTOGRAM);
+        assertEquals(ContrastMethod.HISTOGRAM, cdt.getMethod());
+        assertLiteralEquals(2.5, cdt.getGammaValue());
     }
 }

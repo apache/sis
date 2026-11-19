@@ -18,10 +18,6 @@ package org.apache.sis.style.se1;
 
 import java.util.List;
 import java.util.ArrayList;
-import jakarta.xml.bind.annotation.XmlType;
-import jakarta.xml.bind.annotation.XmlElement;
-import jakarta.xml.bind.annotation.XmlElements;
-import jakarta.xml.bind.annotation.XmlRootElement;
 
 // Specific to the geoapi-3.1 and geoapi-4.0 branches:
 import org.opengis.filter.Expression;
@@ -39,15 +35,6 @@ import org.opengis.filter.Expression;
  *
  * @param <R>  the type of data to style, such as {@code Feature} or {@code Coverage}.
  */
-@XmlType(name = "GraphicType", propOrder = {
-    "graphicalSymbols",
-    "opacity",
-    "size",
-    "rotation",
-    "anchorPoint",
-    "displacement"
-})
-@XmlRootElement(name = "Graphic")
 public class Graphic<R> extends StyleElement<R> implements Translucent<R> {
     /**
      * List of external image files or marks that comprise this graphic.
@@ -56,10 +43,6 @@ public class Graphic<R> extends StyleElement<R> implements Translucent<R> {
      *
      * @see #graphicalSymbols()
      */
-    @XmlElements({
-        @XmlElement(name = "Mark", type = Mark.class),
-        @XmlElement(name = "ExternalGraphic", type = ExternalGraphic.class)
-    })
     private List<GraphicalSymbol<R>> graphicalSymbols;
 
     /**
@@ -67,10 +50,7 @@ public class Graphic<R> extends StyleElement<R> implements Translucent<R> {
      *
      * @see #getOpacity()
      * @see #setOpacity(Expression)
-     *
-     * @todo Needs a JAXB adapter to {@code ParameterValueType}.
      */
-    @XmlElement(name = "Opacity")
     protected Expression<R, ? extends Number> opacity;
 
     /**
@@ -78,10 +58,7 @@ public class Graphic<R> extends StyleElement<R> implements Translucent<R> {
      *
      * @see #getSize()
      * @see #setSize(Expression)
-     *
-     * @todo Needs a JAXB adapter to {@code ParameterValueType}.
      */
-    @XmlElement(name = "Size")
     protected Expression<R, ? extends Number> size;
 
     /**
@@ -89,10 +66,7 @@ public class Graphic<R> extends StyleElement<R> implements Translucent<R> {
      *
      * @see #getRotation()
      * @see #setRotation(Expression)
-     *
-     * @todo Needs a JAXB adapter to {@code ParameterValueType}.
      */
-    @XmlElement(name = "Rotation")
     protected Expression<R, ? extends Number> rotation;
 
     /**
@@ -101,7 +75,6 @@ public class Graphic<R> extends StyleElement<R> implements Translucent<R> {
      * @see #getAnchorPoint()
      * @see #setAnchorPoint(AnchorPoint)
      */
-    @XmlElement(name = "AnchorPoint")
     protected AnchorPoint<R> anchorPoint;
 
     /**
@@ -110,15 +83,7 @@ public class Graphic<R> extends StyleElement<R> implements Translucent<R> {
      * @see #getDisplacement()
      * @see #setDisplacement(Displacement)
      */
-    @XmlElement(name = "Displacement")
     protected Displacement<R> displacement;
-
-    /**
-     * For JAXB unmarshalling only.
-     */
-    private Graphic() {
-        // Thread-local factory will be used.
-    }
 
     /**
      * Creates a graphic initialized to opaque default mark, default size and no rotation.
@@ -273,7 +238,7 @@ public class Graphic<R> extends StyleElement<R> implements Translucent<R> {
     /**
      * Sets the location inside of a graphic to use for anchoring the graphic to the main-geometry point.
      * The given instance is stored by reference, it is not cloned. If this method is never invoked,
-     * then the default value is a {@linkplain AnchorPoint#AnchorPoint() default anchor point}.
+     * then the default value is a {@linkplain AnchorPoint#AnchorPoint(StyleFactory) default anchor point}.
      *
      * @param  value  new anchor point, or {@code null} for resetting the default value.
      */
@@ -306,7 +271,7 @@ public class Graphic<R> extends StyleElement<R> implements Translucent<R> {
     /**
      * Sets the two-dimensional displacement from the "hot-spot" point.
      * The given instance is stored by reference, it is not cloned. If this method is never invoked,
-     * then the default value is a {@linkplain Displacement#Displacement() default displacement}.
+     * then the default value is a {@linkplain Displacement#Displacement(StyleFactory) default displacement}.
      *
      * @param  value  new displacement from the "hot-spot" point, or {@code null} for resetting the default value.
      */

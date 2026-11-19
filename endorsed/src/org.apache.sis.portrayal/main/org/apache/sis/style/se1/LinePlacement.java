@@ -16,10 +16,6 @@
  */
 package org.apache.sis.style.se1;
 
-import jakarta.xml.bind.annotation.XmlType;
-import jakarta.xml.bind.annotation.XmlElement;
-import jakarta.xml.bind.annotation.XmlRootElement;
-
 // Specific to the geoapi-3.1 and geoapi-4.0 branches:
 import org.opengis.filter.Expression;
 
@@ -34,15 +30,6 @@ import org.opengis.filter.Expression;
  *
  * @param <R>  the type of data to style, such as {@code Feature} or {@code Coverage}.
  */
-@XmlType(name = "LinePlacementType", propOrder = {
-    "perpendicularOffset",
-    "isRepeated",
-    "initialGap",
-    "gap",
-    "isAligned",
-    "generalizeLine"
-})
-@XmlRootElement(name = "LinePlacement")
 public class LinePlacement<R> extends LabelPlacement<R> {
     /**
      * Perpendicular distance away from a line where to draw a label, or {@code null} for the default value.
@@ -50,7 +37,6 @@ public class LinePlacement<R> extends LabelPlacement<R> {
      * @see #getPerpendicularOffset()
      * @see #setPerpendicularOffset(Expression)
      */
-    @XmlElement(name = "PerpendicularOffset")
     protected Expression<R, ? extends Number> perpendicularOffset;
 
     /**
@@ -58,10 +44,7 @@ public class LinePlacement<R> extends LabelPlacement<R> {
      *
      * @see #isRepeated()
      * @see #setRepeated(Expression)
-     *
-     * @todo Needs an adapter from expression to plain boolean.
      */
-    @XmlElement(name = "IsRepeated")
     protected Expression<R,Boolean> isRepeated;
 
     /**
@@ -70,7 +53,6 @@ public class LinePlacement<R> extends LabelPlacement<R> {
      * @see #getInitialGap()
      * @see #setInitialGap(Expression)
      */
-    @XmlElement(name = "InitialGap")
     protected Expression<R, ? extends Number> initialGap;
 
     /**
@@ -79,7 +61,6 @@ public class LinePlacement<R> extends LabelPlacement<R> {
      * @see #getGap()
      * @see #setGap(Expression)
      */
-    @XmlElement(name = "Gap")
     protected Expression<R, ? extends Number> gap;
 
     /**
@@ -88,10 +69,7 @@ public class LinePlacement<R> extends LabelPlacement<R> {
      *
      * @see #isAligned()
      * @see #setAligned(Expression)
-     *
-     * @todo Needs an adapter from expression to plain boolean.
      */
-    @XmlElement(name = "IsAligned")
     protected Expression<R,Boolean> isAligned;
 
     /**
@@ -99,18 +77,8 @@ public class LinePlacement<R> extends LabelPlacement<R> {
      *
      * @see #getGeneralizeLine()
      * @see #setGeneralizeLine(Expression)
-     *
-     * @todo Needs an adapter from expression to plain boolean.
      */
-    @XmlElement(name = "GeneralizeLine")
     protected Expression<R,Boolean> generalizeLine;
-
-    /**
-     * For JAXB unmarshalling only.
-     */
-    private LinePlacement() {
-        // Thread-local factory will be used.
-    }
 
     /**
      * Creates a line placement initialized to no offset, no repetition and no gap.

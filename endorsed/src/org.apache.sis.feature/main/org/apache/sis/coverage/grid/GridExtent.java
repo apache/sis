@@ -1043,6 +1043,18 @@ public class GridExtent implements GridEnvelope, LenientComparable, Serializable
     }
 
     /**
+     * Returns the tangent of the given transform at the point of interest.
+     *
+     * @param  gridToCRS  the transform for which to take the tangent.
+     * @param  anchor  the convention to be used for conversion to "real world" coordinates.
+     * @return tangent of the given transform at the point of interest.
+     * @throws TransformException if the tangent cannot be computed.
+     */
+    final LinearTransform tangentAtPOI(final MathTransform gridToCRS, final PixelInCell anchor) throws TransformException {
+        return MathTransforms.tangent(gridToCRS, new DirectPositionView.Double(getPointOfInterest(anchor)));
+    }
+
+    /**
      * Returns the grid coordinates for all dimensions where the grid has a size of 1.
      * Keys are dimensions as values from 0 inclusive to {@link #getDimension()} exclusive.
      * Values are the {@linkplain #getLow(int) low} and {@linkplain #getHigh(int) high} coordinates
@@ -1107,7 +1119,7 @@ public class GridExtent implements GridEnvelope, LenientComparable, Serializable
      * @param  numDim  number of dimensions of the sub-space.
      * @return indices of sub-space dimensions, in increasing order in an array of length {@code numDim}.
      * @throws SubspaceNotSpecifiedException if there is more than {@code numDim} dimensions having a size greater than 1.
-     * @throws CannotEvaluateException if this grid extent does not have at least {@code numDim} dimensions.
+     * @throws CannotEvaluateException if this grid extent has less than {@code numDim} dimensions.
      *
      * @see #getDegreesOfFreedom()
      */
@@ -1299,6 +1311,30 @@ public class GridExtent implements GridEnvelope, LenientComparable, Serializable
         copy.coordinates[index] = low;
         copy.coordinates[ih] = high;
         return copy;
+    }
+
+    /**
+     * Returns this extent as a rectangle. If this extent has more than two dimensions,
+     * at most two of them can have a size greater than 1.
+     *
+     * @param  atZero  whether to force the rectangle to start at (0, 0).
+     * @return a rectangle initialized with this extent in two dimensions.
+     * @throws SubspaceNotSpecifiedException if there is more than 2 dimensions having a size greater than 1.
+     * @throws CannotEvaluateException if this grid extent has less than 2 dimensions.
+     * @throws ArithmeticException if the two-dimensional extent cannot be represented by 32-bits integers.
+     *
+     * @since SIS 1.8
+     */
+    public Rectangle toRectangle(final boolean atZero) {
+        final int[] selected = getSubspaceDimensions(GridCoverage.BIDIMENSIONAL);
+        final var bounds = new Rectangle(
+                Math.toIntExact(getSize(selected[0])),
+                Math.toIntExact(getSize(selected[1])));
+        if (!atZero) {
+            bounds.x = Math.toIntExact(getLow(selected[0]));
+            bounds.x = Math.toIntExact(getLow(selected[1]));
+        }
+        return bounds;
     }
 
     /**

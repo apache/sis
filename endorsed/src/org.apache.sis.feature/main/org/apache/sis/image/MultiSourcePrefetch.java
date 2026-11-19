@@ -114,7 +114,7 @@ final class MultiSourcePrefetch implements Disposable {
         for (int i=0; i<count; i++) {
             final PlanarImage source = sources[i];
             final Rectangle r = tileIndices[i];
-            if (parallel) {
+            if (workers != null) {
                 Callable<Disposable> worker = () -> source.prefetch(r);
                 workers[i] = CommonExecutor.instance().submit(worker);
             } else {
@@ -128,7 +128,7 @@ final class MultiSourcePrefetch implements Disposable {
          * Block until all background threads finished their work. This is needed because `PrefetchedImage`
          * will start to query tiles after this method returned, so the source images need to be ready.
          */
-        if (parallel) {
+        if (workers != null) {
             for (final Future<Disposable> worker : workers) try {
                 final Disposable cleaner = worker.get();
                 if (cleaner != null) {

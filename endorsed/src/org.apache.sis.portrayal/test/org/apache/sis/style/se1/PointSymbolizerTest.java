@@ -53,4 +53,33 @@ public final class PointSymbolizerTest extends StyleTestCase {
         cdt.setGraphic(value);
         assertEquals(value, cdt.getGraphic());
     }
+
+    /**
+     * Verifies that an explicit {@code null} graphic means "no graphic"
+     * and is not replaced by a default graphic when requested.
+     */
+    @Test
+    public void testNoGraphic() {
+        final var cdt = factory.createPointSymbolizer();
+        assertTrue(cdt.isVisible());
+
+        cdt.setGraphic(null);
+        assertFalse(cdt.isVisible());
+        assertNull(cdt.getGraphic());
+        assertFalse(cdt.isVisible());
+    }
+
+    /**
+     * Verifies that the copy constructor preserves the explicit absence of graphic.
+     */
+    @Test
+    public void testCopyConstructor() {
+        final var cdt = factory.createPointSymbolizer();
+        cdt.setGraphic(null);
+
+        final var copy = new PointSymbolizer<>(cdt);
+        assertEquals(cdt, copy);
+        assertFalse(copy.isVisible());
+        assertNull(copy.getGraphic());
+    }
 }

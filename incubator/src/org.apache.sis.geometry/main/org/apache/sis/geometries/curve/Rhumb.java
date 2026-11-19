@@ -82,16 +82,25 @@ public sealed interface Rhumb extends Curve
     }
 
     /**
-     * Constant azimuth followed by this curve.
+     * Constant azimuth followed by the given segment of this curve.
      *
-     * <p>Note: this attribute appears in the ISO 19107 UML (figure 23) but not in its
-     * {@code Rhumb} clause.</p>
+     * <p>Constraints:</p>
+     * <ul>
+     *   <li>Segment <var>i</var> goes from data point <var>i</var> to data point <var>i</var> + 1,
+     *       so the index ranges from 0 inclusive to {@link #getNumPoints()} − 1 exclusive.</li>
+     * </ul>
      *
-     * @return constant bearing of this curve.
+     * <p>Difference with ISO 19107: the UML (figure 23) declares a single derived {@code bearing}
+     * attribute, which does not appear in the {@code Rhumb} clause. Since each rhumb segment has its
+     * own constant azimuth, the bearing is given per segment.</p>
      *
-     * @see ISO 19107:2019 - 7.5.1
+     * @param  segment  index of the segment.
+     * @return constant bearing of the segment, or {@code null} if the segment has no length.
+     * @throws IndexOutOfBoundsException if the index is outside the range of segments.
+     *
+     * @see ISO 19107:2019 - 7.5.1, 7.5.2
      */
-    Bearing getBearing();
+    Bearing getBearing(int segment);
 
     /**
      * The number of Points in this Rhumb.

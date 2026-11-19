@@ -290,7 +290,7 @@ public final class MaskedImageTest extends TestCase {
      */
     private static BufferedImage monoTile(final int[] pixels) {
         assertEquals(WIDTH*HEIGHT, pixels.length, "Input raster must be " + WIDTH + "×" + HEIGHT);
-        final BufferedImage image = new BufferedImage(WIDTH, HEIGHT, BufferedImage.TYPE_BYTE_INDEXED, colorPalette());
+        final var image = new BufferedImage(WIDTH, HEIGHT, BufferedImage.TYPE_BYTE_INDEXED, colorPalette());
         final WritableRaster raster = image.getRaster();
         raster.setPixels(0, 0, WIDTH, HEIGHT, pixels);
         return image;
@@ -301,8 +301,14 @@ public final class MaskedImageTest extends TestCase {
      * Image size is {@value #WIDTH}×{@value #HEIGHT} pixels.
      */
     private static RenderedImage multiTile() {
-        final TiledImage image = new TiledImage(null, colorPalette(), WIDTH, HEIGHT, 0, 0,
-                tile(         0,           0, 0),
+        final WritableRaster firstTile = tile(0, 0, 0);
+        final var image = new TiledImage(
+                null,
+                colorPalette(),
+                firstTile.getSampleModel(),
+                new Rectangle(WIDTH, HEIGHT),
+                null,
+                firstTile,
                 tile(TILE_WIDTH,           0, 1),
                 tile(         0, TILE_HEIGHT, 3),
                 tile(TILE_WIDTH, TILE_HEIGHT, 2));
@@ -353,7 +359,7 @@ public final class MaskedImageTest extends TestCase {
         if (source == null) {
             source = monoTile();
         }
-        final BufferedImage debugImg = new BufferedImage(source.getWidth(), source.getHeight(), BufferedImage.TYPE_INT_RGB);
+        final var debugImg = new BufferedImage(source.getWidth(), source.getHeight(), BufferedImage.TYPE_INT_RGB);
         final Graphics2D painter = debugImg.createGraphics();
         painter.drawRenderedImage(source, new AffineTransform());
         if (geometry != null) {

@@ -101,7 +101,6 @@ public final class GeneralDuration implements TemporalAmount, Serializable {
      *
      * @param  text  the text to parse.
      * @return the parsed period and/or duration.
-     * @throws DateTimeParseException if the given text cannot be parsed.
      *
      * @see Period#parse(CharSequence)
      * @see Duration#parse(CharSequence)

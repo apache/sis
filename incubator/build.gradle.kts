@@ -62,6 +62,8 @@ dependencies {
     implementation(group = "com.fasterxml.jackson.core", name = "jackson-core",        version = "2.22.1")
     implementation(group = "com.fasterxml.jackson.core", name = "jackson-annotations", version = "2.22")
     implementation(group = "com.fasterxml.jackson.core", name = "jackson-databind",    version = "2.22.1")
+    implementation(group = "com.fasterxml.jackson.datatype", name = "jackson-datatype-jsr310", version = "2.22.1")
+    implementation(group = "org.openapitools",           name = "jackson-databind-nullable", version = "0.2.6")
     implementation(group = "org.antlr",                  name = "antlr4-maven-plugin", version = "4.13.2")
     implementation(group = "org.xerial",                 name = "sqlite-jdbc",         version = "3.45.1.0")
     implementation(group = "org.apache.xmlgraphics",     name = "batik-bridge",        version = "1.19") {
@@ -201,6 +203,18 @@ publishing {
                 description = "Discrete Global Grid Systems (DGGS)."
             }
         }
+        create<MavenPublication>("process") {
+            var module = "org.apache.sis.process"
+            groupId    = "org.apache.sis.core"
+            artifactId = "sis-process"
+            artifact(layout.buildDirectory.file("libs/${module}.jar"))
+            artifact(layout.buildDirectory.file("docs/${module}-sources.jar")) {classifier = "sources"}
+            artifact(layout.buildDirectory.file("docs/${module}-javadoc.jar")) {classifier = "javadoc"}
+            pom {
+                name        = "Apache SIS Process"
+                description = "Description and execution of processes."
+            }
+        }
         create<MavenPublication>("storage.shapefile") {
             var module = "org.apache.sis.storage.shapefile"
             groupId    = "org.apache.sis.storage"
@@ -247,6 +261,42 @@ publishing {
             pom {
                 name        = "Apache SIS JSON Coverage storage"
                 description = "Read and write files in the JSON Coverage format."
+            }
+        }
+        create<MavenPublication>("storage.hdf") {
+            var module = "org.apache.sis.storage.hdf"
+            groupId    = "org.apache.sis.storage"
+            artifactId = "sis-hdf"
+            artifact(layout.buildDirectory.file("libs/${module}.jar"))
+            artifact(layout.buildDirectory.file("docs/${module}-sources.jar")) {classifier = "sources"}
+            artifact(layout.buildDirectory.file("docs/${module}-javadoc.jar")) {classifier = "javadoc"}
+            pom {
+                name        = "Apache SIS HDF5 storage"
+                description = "Read files in the HDF5 format."
+            }
+        }
+        create<MavenPublication>("storage.ogcwxs") {
+            var module = "org.apache.sis.storage.ogcwxs"
+            groupId    = "org.apache.sis.storage"
+            artifactId = "sis-ogcwxs"
+            artifact(layout.buildDirectory.file("libs/${module}.jar"))
+            artifact(layout.buildDirectory.file("docs/${module}-sources.jar")) {classifier = "sources"}
+            artifact(layout.buildDirectory.file("docs/${module}-javadoc.jar")) {classifier = "javadoc"}
+            pom {
+                name        = "Apache SIS OGC Web Services storage"
+                description = "Access to OGC web services of the W*S family (WMS, WMTS, WFS, WCS...)."
+            }
+        }
+        create<MavenPublication>("storage.ogcapi") {
+            var module = "org.apache.sis.storage.ogcapi"
+            groupId    = "org.apache.sis.storage"
+            artifactId = "sis-ogcapi"
+            artifact(layout.buildDirectory.file("libs/${module}.jar"))
+            artifact(layout.buildDirectory.file("docs/${module}-sources.jar")) {classifier = "sources"}
+            artifact(layout.buildDirectory.file("docs/${module}-javadoc.jar")) {classifier = "javadoc"}
+            pom {
+                name        = "Apache SIS OGC API storage"
+                description = "Access to OGC API services (Features, Coverages, Maps, Tiles...)."
             }
         }
         create<MavenPublication>("portrayal.map") {

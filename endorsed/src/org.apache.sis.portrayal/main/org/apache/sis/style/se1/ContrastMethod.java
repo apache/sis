@@ -38,13 +38,6 @@ public enum ContrastMethod {
     HISTOGRAM,
 
     /**
-     * Contrast based on a gamma value.
-     * A gamma value tells how much to brighten (value greater than 1)
-     * or dim (value less than 1) an image, with 1 meaning no change.
-     */
-    GAMMA,
-
-    /**
      * No enhancement.
      * This is the default value.
      */

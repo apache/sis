@@ -91,8 +91,8 @@ public final class RefinementLevel implements LocationType {
 
     @Override
     public Collection<? extends LocationType> getChildren() {
-        final int maxLevel = dggrs.getGridSystem().getHierarchy().getGrids().size();
-        if (level >= maxLevel) return Collections.EMPTY_LIST;
+        final int gridCount = dggrs.getGridSystem().getHierarchy().getGrids().size();
+        if (level >= gridCount - 1) return Collections.EMPTY_LIST;
         return List.of(new RefinementLevel(dggrs, level+1));
     }
 

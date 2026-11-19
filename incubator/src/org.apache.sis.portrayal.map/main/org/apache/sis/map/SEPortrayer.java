@@ -210,6 +210,12 @@ public final class SEPortrayer {
             }
 
             type = null;
+        } else if (resource instanceof Aggregate && isCoverageAggregate((Aggregate) resource)) {
+            /*
+             * An aggregate of coverages is styled as a whole, for allowing the raster symbolizer
+             * to apply its overlap behavior between the coverages.
+             */
+            type = null;
         } else if (resource instanceof Aggregate) {
             try {
                 // Combine each component resource in the stream.
@@ -279,7 +285,7 @@ public final class SEPortrayer {
                     names = null;
                 }
             }
-            if (resource instanceof GridCoverageResource) {
+            if (type == null) {         // Coverage resource or aggregate of coverages.
                 boolean painted = false;
                 for (int i = 0; i < elseRuleIndex; i++) {
                     final Stream<Presentation> subStream = present(rules.get(i), layer, resource, resource, null);
@@ -347,6 +353,25 @@ public final class SEPortrayer {
             }
         }
         return stream;
+    }
+
+    /**
+     * Returns whether the given aggregate contains only coverage resources, directly or in sub-aggregates.
+     * Empty aggregates are not considered as coverage aggregates.
+     */
+    private static boolean isCoverageAggregate(final Aggregate aggregate) {
+        try {
+            boolean any = false;
+            for (final Resource component : aggregate.components()) {
+                if (!(component instanceof GridCoverageResource || (component instanceof Aggregate a && isCoverageAggregate(a)))) {
+                    return false;
+                }
+                any = true;
+            }
+            return any;
+        } catch (DataStoreException ex) {
+            return false;
+        }
     }
 
     private static Stream<Presentation> present(Rule<Feature> rule, MapLayer layer,

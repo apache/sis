@@ -88,7 +88,7 @@ public final class BandSelectImageTest extends TestCase {
                 image.setRandomValues(i, random, 100);
             }
         }
-        image.validate();
+        image.validate(false);
         final ColorModel cm;
         if (icm) {
             final int[] ARGB = new int[256];

@@ -17,11 +17,11 @@
 package org.apache.sis.map.service.se1;
 
 import java.awt.AlphaComposite;
+import java.awt.Composite;
 import java.awt.Graphics2D;
 import java.awt.Paint;
 import java.awt.Shape;
 import java.awt.Stroke;
-import java.awt.geom.Area;
 
 
 /**
@@ -29,7 +29,7 @@ import java.awt.geom.Area;
  *
  * @author Johann Sorel (Geomatys)
  */
-final class RenderedShape {
+final class RenderedShape implements RenderedVisual {
 
     public static final AlphaComposite ALPHA_COMPOSITE_0F = AlphaComposite.getInstance(AlphaComposite.CLEAR, 0.0f);
     public static final AlphaComposite ALPHA_COMPOSITE_1F = AlphaComposite.getInstance(AlphaComposite.SRC_OVER, 1f);
@@ -60,26 +60,39 @@ final class RenderedShape {
 
     /**
      * Paint this shape with given Graphics2D.
+     * The Graphics2D composite, paint and stroke are restored after painting.
      *
      * @param g2d not null
      * @return true if something was painted.
      */
+    @Override
     public boolean paint(Graphics2D g2d) {
         if (shape == null) return false;
 
         boolean painted = false;
-        if (fillPaint != null) {
-            g2d.setComposite(fillComposite);
-            g2d.setPaint(fillPaint);
-            g2d.fill(shape);
-            painted = true;
-        }
-        if (stroke != null && strokePaint != null) {
-            g2d.setComposite(strokeComposite);
-            g2d.setPaint(strokePaint);
-            g2d.setStroke(stroke);
-            g2d.draw(shape);
-            painted = true;
+        synchronized (g2d) {
+            final Composite oldComposite = g2d.getComposite();
+            final Paint oldPaint = g2d.getPaint();
+            final Stroke oldStroke = g2d.getStroke();
+            try {
+                if (fillPaint != null) {
+                    g2d.setComposite(fillComposite);
+                    g2d.setPaint(fillPaint);
+                    g2d.fill(shape);
+                    painted = true;
+                }
+                if (stroke != null && strokePaint != null) {
+                    g2d.setComposite(strokeComposite);
+                    g2d.setPaint(strokePaint);
+                    g2d.setStroke(stroke);
+                    g2d.draw(shape);
+                    painted = true;
+                }
+            } finally {
+                g2d.setComposite(oldComposite);
+                g2d.setPaint(oldPaint);
+                g2d.setStroke(oldStroke);
+            }
         }
         return painted;
     }
@@ -89,23 +102,15 @@ final class RenderedShape {
      * @param mask not null.
      * @return true if rendered shape intersects the mask.
      */
+    @Override
     public boolean intersects(Shape mask) {
+        if (shape == null) return false;
 
-        //test intersection with fill if defined
-        if (fillPaint != null) {
-            final Area maskArea = new Area(mask);
-            final Area shapeArea = new Area(shape);
-            maskArea.intersect(shapeArea);
-            if (!maskArea.isEmpty()) {
-                return true;
-            }
+        if (fillPaint != null && RenderedVisual.intersects(shape, mask)) {
+            return true;
         }
-        //test intersection with stroke if defined
         if (stroke != null && strokePaint != null) {
-            final Area maskArea = new Area(mask);
-            final Area shapeArea = new Area(stroke.createStrokedShape(shape));
-            maskArea.intersect(shapeArea);
-            return !maskArea.isEmpty();
+            return RenderedVisual.intersects(stroke.createStrokedShape(shape), mask);
         }
         return false;
     }

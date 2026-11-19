@@ -76,7 +76,7 @@ import static org.apache.sis.util.internal.shared.Constants.MILLIS_PER_TROPICAL_
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @author  Alexis Manin (Geomatys)
- * @version 1.5
+ * @version 1.8
  * @since SIS 0.3
  */
 public final class Units {
@@ -1270,7 +1270,7 @@ public final class Units {
         CLARKE_FOOT    = add(m, LinearConverter.scale(3047972654d, 1E10), "ftCla", OTHER,    (short) 9005);
         FOOT           = add(m, LinearConverter.scale(   3048,    10000), "ft",    IMPERIAL, (short) 9002);
         INCH           = add(m, LinearConverter.scale(    254,    10000), "in",    IMPERIAL, (short) 0);
-        POINT          = add(m, LinearConverter.scale( 996264, 72000000), "pt",    OTHER,    (short) 0);
+        POINT          = add(m, LinearConverter.scale(253051056,  72E10), "pt",    OTHER,    (short) 0);
         /*
          * All Unit<Time>.
          */

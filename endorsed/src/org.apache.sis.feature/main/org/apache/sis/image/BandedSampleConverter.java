@@ -18,6 +18,7 @@ package org.apache.sis.image;
 
 import java.util.List;
 import java.util.Arrays;
+import java.util.Vector;
 import java.util.Objects;
 import java.awt.Rectangle;
 import java.awt.image.Raster;
@@ -37,6 +38,7 @@ import org.apache.sis.image.internal.shared.ImageUtilities;
 import org.apache.sis.image.internal.shared.TileOpExecutor;
 import org.apache.sis.image.internal.shared.ColorScaleBuilder;
 import org.apache.sis.util.Disposable;
+import org.apache.sis.util.ComparisonMode;
 import org.apache.sis.util.logging.Logging;
 import org.apache.sis.math.DecimalFunctions;
 import org.apache.sis.math.NumberType;
@@ -100,167 +102,308 @@ class BandedSampleConverter extends WritableComputedImage {
     private final List<SampleDimension> sampleDimensions;
 
     /**
-     * The sample resolutions, or {@code null} if unknown.
+     * The resolution of sample values, or {@code null} if unknown.
      */
     private final double[] sampleResolutions;
 
     /**
      * Creates a new image which will compute values using the given converters.
      *
-     * @param  source       the image for which to convert sample values.
-     * @param  sampleModel  the sample model shared by all tiles in this image.
-     * @param  colorModel   the color model for the expected range of values, or {@code null}.
-     * @param  ranges       the expected range of values for each band, or {@code null} if unknown.
-     * @param  converters   the transfer functions to apply on each band of the source image.
-     *                      If this array was a user-provided parameter, should be cloned by caller.
-     * @param  sampleDimensions  description of conversion result, or {@code null} if unknown.
+     * @param  builder  contains all parameters for the image to construct.
      */
-    private BandedSampleConverter(final RenderedImage         source,
-                                  final BandedSampleModel     sampleModel,
-                                  final ColorModel            colorModel,
-                                  final NumberRange<?>[]      ranges,
-                                  final MathTransform1D[]     converters,
-                                  final List<SampleDimension> sampleDimensions)
-    {
-        super(sampleModel, source);
-        this.colorModel       = colorModel;
-        this.converters       = converters;
-        this.sampleDimensions = sampleDimensions;
+    private BandedSampleConverter(final Builder builder) {
+        super(builder.sampleModel, builder.source);
+        colorModel        = builder.colorModel;
+        converters        = builder.converters;
+        sampleDimensions  = builder.sampleDimensions;
+        sampleResolutions = builder.resolution();
         ensureCompatible(sampleModel, colorModel);
-        /*
-         * Get an estimation of the resolution, arbitrarily looking in the middle of the range of values.
-         * If the converters are linear (which is the most common case), the middle value does not matter
-         * except if it falls on a "no data" value.
-         */
-        boolean hasResolutions = false;
-        final double[] resolutions = new double[converters.length];
-        final Object sr = source.getProperty(SAMPLE_RESOLUTIONS_KEY);
-        final int n = (sr != null && NumberType.isReal(sr.getClass().getComponentType())) ? Array.getLength(sr) : 0;
-        for (int i=0; i<resolutions.length; i++) {
-            /*
-             * Get the sample value in the middle of the range of valid values for the current band.
-             * If no range was explicitly given, use the approximate average of all possible values.
-             */
-            double middle = Double.NaN;
-            if (ranges != null && i < ranges.length) {
-                final NumberRange<?> range = ranges[i];
-                if (range != null) {
-                    middle = range.getMedian();
-                }
-            }
-            if (!Double.isFinite(middle)) {
-                final SampleModel sm = source.getSampleModel();
-                if (DataType.isUnsigned(sm)) {
-                    middle = Math.scalb(0.5, sm.getSampleSize(i));
-                } else {
-                    middle = 0;
-                }
-            }
-            /*
-             * Get the derivative in the middle value, which is constant everywhere
-             * in the common case of a linear transform.
-             */
-            final MathTransform1D c = converters[i];
-            double r;
-            try {
-                r = c.derivative(middle);
-                if (!Double.isFinite(r)) {
-                    r = c.derivative(1);                // Second attempt if the middle value didn't work.
-                }
-            } catch (TransformException e) {
-                r = Double.NaN;
-            }
-            /*
-             * The implicit source resolution is 1 on the assumption that we are converting from
-             * integer values. But if the source image specifies a resolution, use the specified
-             * value instead of the implicit 1 value.
-             */
-            if (i < n) {
-                final Number v = (Number) Array.get(sr, i);
-                if (v != null) {
-                    double f = (v instanceof Float) ? DecimalFunctions.floatToDouble(v.floatValue()) : v.doubleValue();
-                    if (f > 0) r *= f;      // Ignore also NaN.
-                }
-            }
-            resolutions[i] = r;
-            hasResolutions |= Double.isFinite(r);
-        }
-        sampleResolutions = hasResolutions ? resolutions : null;
     }
 
     /**
-     * Creates a new image of the given data type which will compute values using the given converters.
-     * The number of bands is the length of the {@code converters} array, which must be greater than 0
-     * and not greater than the number of bands in the source image.
-     *
-     * @param  source        the image for which to convert sample values.
-     * @param  layout        object to use for computing tile size.
-     * @param  sourceRanges  the expected range of values for each band in source image, or {@code null} if unknown.
-     * @param  converters    the transfer functions to apply on each band of the source image.
-     * @param  targetType    the type of this image resulting from conversion of given image.
-     * @param  colorizer     provider of color model for the expected range of values, or {@code null}.
-     * @return the image which compute converted values from the given source.
+     * Builder of {@link BandedSampleConverter} instances or instances of its writable subclass.
+     * Using a builder is more convenient than processing arguments inside the image constructor
+     * because it allows temporary storage of more information, modification before final values,
+     * recursive invocation, and easier transfer from {@link Writable} class to parent class.
      *
      * @see ImageProcessor#convert(RenderedImage, NumberRange[], MathTransform1D[], DataType)
      */
-    static BandedSampleConverter create(RenderedImage     source,
-                                  final ImageLayout       layout,
-                                  final NumberRange<?>[]  sourceRanges,
-                                  final MathTransform1D[] converters,
-                                  final DataType          targetType,
-                                  final Colorizer         colorizer)
-    {
-        /*
-         * Since this operation applies its own ColorModel anyway, skip operation that was doing nothing else
-         * than changing the color model. The new color model may be specified by the user if (s)he provided
-         * a `Colorizer` instance. Otherwise a default color model will be inferred.
+    static final class Builder {
+        /**
+         * The image for which to convert sample values.
+         * The user-supplied image may be replaced by its source if this change has no visible effect.
          */
-        if (source instanceof RecoloredImage) {
-            source = ((RecoloredImage) source).source;
-        }
-        final int numBands = converters.length;
-        final BandedSampleModel sampleModel = layout.createBandedSampleModel(source, null, targetType, numBands, 0);
-        final List<SampleDimension> sampleDimensions = SampleDimensions.IMAGE_PROCESSOR_ARGUMENT.get();
-        final int visibleBand = ImageUtilities.getVisibleBand(source);
-        ColorModel colorModel = ColorScaleBuilder.NULL_COLOR_MODEL;
-        if (colorizer != null) {
-            var target = new Colorizer.Target(sampleModel, sampleDimensions, visibleBand);
-            colorModel = colorizer.apply(target).orElse(null);
-        }
-        if (colorModel == null) {
+        RenderedImage source;
+
+        /**
+         * The sample model shared by all tiles in the image.
+         */
+        final BandedSampleModel sampleModel;
+
+        /**
+         * The color model for the expected range of values, or {@code null}.
+         */
+        ColorModel colorModel;
+
+        /**
+         * The expected range of values for each band, or {@code null} if unknown.
+         */
+        final NumberRange<?>[] sourceRanges;
+
+        /**
+         * The transfer functions to apply on each band of the source image.
+         * If this array was a user-provided parameter, should be cloned by caller.
+         */
+        final MathTransform1D[] converters;
+
+        /**
+         * Inverses of {@link #converters}, or {@code nuull} if none or unneeded or unavailable.
+         *
+         * @see #inverses()
+         */
+        MathTransform1D[] inverses;
+
+        /**
+         * Whether the attempt to create {@link #inverses} is already done.
+         * If {@code true} and {@link #inverses} is still null, it means that the inversion failed.
+         */
+        private boolean inverted;
+
+        /**
+         * Description of conversion result, or {@code null} if unknown.
+         */
+        final List<SampleDimension> sampleDimensions;
+
+        /**
+         * Prepares an image of the given data type which will compute values using the given converters.
+         * The number of bands is the length of the {@code converters} array, which must be greater than 0
+         * and not greater than the number of bands in the source image.
+         *
+         * @param  source        the image for which to convert sample values.
+         * @param  layout        object to use for computing tile size.
+         * @param  sourceRanges  the expected range of values for each band in source image, or {@code null} if unknown.
+         * @param  converters    the transfer functions to apply on each band of the source image.
+         * @param  targetType    the type of this image resulting from conversion of given image.
+         * @param  colorizer     provider of color model for the expected range of values, or {@code null}.
+         */
+        Builder(final RenderedImage     source,
+                final ImageLayout       layout,
+                final NumberRange<?>[]  sourceRanges,
+                final MathTransform1D[] converters,
+                final DataType          targetType,
+                final Colorizer         colorizer)
+        {
+            this.source       = source;
+            this.sourceRanges = sourceRanges;
+            this.converters   = converters;
+            final int numBands = converters.length;
+            final int visibleBand;
             /*
-             * If no color model was specified or inferred from a colorizer,
-             * default to grayscale for a range inferred from the sample dimension.
-             * If no sample dimension is specified, infer value range from data type.
+             * Create the sample model and get the color model if it was explicitly specified.
              */
-            SampleDimension sd = null;
-            if (sampleDimensions != null && visibleBand >= 0 && visibleBand < sampleDimensions.size()) {
-                sd = sampleDimensions.get(visibleBand);
+            sampleModel      = layout.createBandedSampleModel(source, null, targetType, numBands, 0);
+            sampleDimensions = SampleDimensions.IMAGE_PROCESSOR_ARGUMENT.get();
+            visibleBand      = ImageUtilities.getVisibleBand(source);
+            colorModel       = ColorScaleBuilder.NULL_COLOR_MODEL;
+            if (colorizer != null) {
+                var target = new Colorizer.Target(sampleModel, sampleDimensions, visibleBand);
+                colorModel = colorizer.apply(target).orElse(null);
             }
-            final var builder = new ColorScaleBuilder(ColorScaleBuilder.GRAYSCALE, null, false);
-            if (builder.initialize(source.getSampleModel(), sd) ||
-                builder.initialize(source.getColorModel()))
-            {
-                colorModel = builder.createColorModel(targetType, numBands, Math.max(visibleBand, 0));
+            /*
+             * If no color model was specified or inferred from a colorizer, search for the color model
+             * of another `BandedSampleConverter` doing the inverse conversion. The intent is to retrieve
+             * the original color model in an (RGB) → (floating point values) → (resampling) → (RGB) chain.
+             * If we find no color model, default to grayscale for a range inferred from the sample dimensions.
+             * If no sample dimension is specified, infer value range from the data type.
+             */
+            if (colorModel == null && (colorModel = searchColorModelInSources(source)) == null) {
+                SampleDimension sd = null;
+                if (sampleDimensions != null && visibleBand >= 0 && visibleBand < sampleDimensions.size()) {
+                    sd = sampleDimensions.get(visibleBand);
+                }
+                final var builder = new ColorScaleBuilder(ColorScaleBuilder.GRAYSCALE, null, false);
+                if (builder.initialize(source.getSampleModel(), sd) ||
+                    builder.initialize(source.getColorModel()))
+                {
+                    colorModel = builder.createColorModel(targetType, numBands, Math.max(visibleBand, 0));
+                }
             }
         }
-        /*
-         * If the source image is writable, then change in the converted image may be retro-propagated
-         * to that source image. If we fail to compute the required inverse transforms, log a notice at
-         * a low level because this is not a serious problem; writable BandedSampleConverter is a plus
-         * but not a requirement.
+
+        /**
+         * Searches for the color model of a source {@link BandedSampleConverter} doing the inverse conversion.
+         * The use case is a "(RGB) → (floating point values) → (resampling) → (RGB)" chain of image operations,
+         * in which case we want to retrieve the original color model. The dependency tree of the first source
+         * is traversed before the dependency tree of the second source, which is probably desirable considering
+         * that the first source is more likely to be the main source.
+         *
+         * @param  image  the image in which to scan the sources.
+         * @return the color model, or {@code null} if not found.
          */
-        if (source instanceof WritableRenderedImage) try {
-            final MathTransform1D[] inverses = new MathTransform1D[numBands];
-            for (int i=0; i<numBands; i++) {
-                inverses[i] = converters[i].inverse();
+        private ColorModel searchColorModelInSources(final RenderedImage image) {
+            if (image instanceof BandedSampleConverter) {
+                final var other = (BandedSampleConverter) image;
+candidate:      if (Arrays.equals(inverses(), other.converters)) {
+                    // Additional check performed if available.
+                    if (sampleDimensions != null && other.sampleDimensions != null) {
+                        final int count = sampleDimensions.size();
+                        if (count == other.sampleDimensions.size()) {
+                            for (int i=0; i<count; i++) {
+                                final SampleDimension s1 = this. sampleDimensions.get(i);
+                                final SampleDimension s2 = other.sampleDimensions.get(i);
+                                final boolean isConverted = (s1 == s1.forConvertedValues(true));
+                                if (!s1.equals(s2.forConvertedValues(isConverted), ComparisonMode.IGNORE_METADATA)) {
+                                    break candidate;
+                                }
+                            }
+                        }
+                    }
+                    return getCompatibleColorModel(other.getSource());
+                }
             }
-            return new Writable((WritableRenderedImage) source, sampleModel, colorModel,
-                                sourceRanges, converters, inverses, sampleDimensions);
-        } catch (NoninvertibleTransformException e) {
-            Logging.recoverableException(LOGGER, ImageProcessor.class, "convert", e);
+            /*
+             * If the current image is not retained, search in its sources.
+             */
+            final Vector<RenderedImage> sources = image.getSources();
+            if (sources != null) {
+                for (final RenderedImage dependency : sources) {
+                    ColorModel found = searchColorModelInSources(dependency);
+                    if (found != null) {
+                        return found;
+                    }
+                }
+            }
+            return null;
         }
-        return new BandedSampleConverter(source, sampleModel, colorModel, sourceRanges, converters, sampleDimensions);
+
+        /**
+         * Returns the color model of the given image if it is compatible with the image to create,
+         * or {@code null} otherwise.
+         *
+         * <p><b>Possible evolution:</b>
+         * If this method produces false negatives, a future version could update the {@link #sampleModel}
+         * with the model of the given image resized to the width and height of the current sample model.
+         * We would do that only if {@link ImageLayout#sampleModel} was null (no user-supplied model).</p>
+         */
+        private ColorModel getCompatibleColorModel(final RenderedImage image) {
+            final ColorModel found = image.getColorModel();
+            if (found.isCompatibleSampleModel(sampleModel)) {
+                return found;
+            }
+            return null;
+        }
+
+        /**
+         * Gets an estimation of the resolution of sample values. This method arbitrarily looks in the
+         * middle of the range of values. If the converters are linear (which is the most common case),
+         * the middle value does not matter except if it falls on a "no data" value.
+         *
+         * @return the resolution of sample values, or {@code null} if unknown.
+         */
+        final double[] resolution() {
+            boolean hasResolutions = false;
+            final double[] resolutions = new double[converters.length];
+            final Object sr = source.getProperty(SAMPLE_RESOLUTIONS_KEY);
+            final int n = (sr != null && NumberType.isReal(sr.getClass().getComponentType())) ? Array.getLength(sr) : 0;
+            for (int i=0; i<resolutions.length; i++) {
+                /*
+                 * Get the sample value in the middle of the range of valid values for the current band.
+                 * If no range was explicitly given, use the approximate average of all possible values.
+                 */
+                double middle = Double.NaN;
+                if (sourceRanges != null && i < sourceRanges.length) {
+                    final NumberRange<?> range = sourceRanges[i];
+                    if (range != null) {
+                        middle = range.getMedian();
+                    }
+                }
+                if (!Double.isFinite(middle)) {
+                    final SampleModel sm = source.getSampleModel();
+                    if (DataType.isUnsigned(sm)) {
+                        middle = Math.scalb(0.5, sm.getSampleSize(i));
+                    } else {
+                        middle = 0;
+                    }
+                }
+                /*
+                 * Get the derivative in the middle value, which is constant everywhere
+                 * in the common case of a linear transform.
+                 */
+                final MathTransform1D c = converters[i];
+                double r;
+                try {
+                    r = c.derivative(middle);
+                    if (!Double.isFinite(r)) {
+                        r = c.derivative(1);                // Second attempt if the middle value didn't work.
+                    }
+                } catch (TransformException e) {
+                    r = Double.NaN;
+                }
+                /*
+                 * The implicit source resolution is 1 on the assumption that we are converting from
+                 * integer values. But if the source image specifies a resolution, use the specified
+                 * value instead of the implicit 1 value.
+                 */
+                if (i < n) {
+                    final Number v = (Number) Array.get(sr, i);
+                    if (v != null) {
+                        double f = (v instanceof Float) ? DecimalFunctions.floatToDouble(v.floatValue()) : v.doubleValue();
+                        if (f > 0) r *= f;      // Ignore also NaN.
+                    }
+                }
+                resolutions[i] = r;
+                hasResolutions |= Double.isFinite(r);
+            }
+            return hasResolutions ? resolutions : null;
+        }
+
+        /**
+         * Returns the inverse of the converters, or {@code null} if none.
+         * This method returns the internal cache, do not modify the array.
+         *
+         * @return the inverse of the converters in a cached array, or {@code null} if none.
+         */
+        private MathTransform1D[] inverses() {
+            @SuppressWarnings("LocalVariableHidesMemberVariable")
+            MathTransform1D[] inverses = this.inverses;
+            if (inverses == null && !inverted) {
+                inverses = new MathTransform1D[converters.length];
+                try {
+                    for (int i=0; i<inverses.length; i++) {
+                        inverses[i] = converters[i].inverse();
+                    }
+                    this.inverses = inverses;   // Cache only if successful.
+                } catch (NoninvertibleTransformException e) {
+                    Logging.recoverableException(LOGGER, ImageProcessor.class, "convert", e);
+                }
+                inverted = true;
+            }
+            return inverses;
+        }
+
+        /**
+         * Creates the converted image.
+         * Since this operation applies its own {@link ColorModel} anyway, the {@linkplain #source}
+         * will skip operations that was doing nothing else than changing the color model.
+         * The new color model may be specified by the user if (s)he provided a {@link Colorizer} instance.
+         * Otherwise, a default color model has been inferred.
+         *
+         * <p>If the source image is writable, then change in the converted image may be retro-propagated
+         * to that source image. If we fail to compute the required inverse transforms, a notice is logged
+         * at a low level because this is not a serious problem: writable {@link BandedSampleConverter} is
+         * a plus but not a requirement.</p>
+         *
+         * @return the image which compute converted values from the source given at construction time.
+         */
+        final RenderedImage create() {
+            if (source instanceof RecoloredImage) {
+                source = ((RecoloredImage) source).source;
+            }
+            if (source instanceof WritableRenderedImage && inverses() != null) {
+                return new Writable(this);
+            }
+            return new BandedSampleConverter(this);
+        }
     }
 
     /**
@@ -432,16 +575,9 @@ class BandedSampleConverter extends WritableComputedImage {
         /**
          * Creates a new writable image which will compute values using the given converters.
          */
-        Writable(final WritableRenderedImage source,
-                 final BandedSampleModel     sampleModel,
-                 final ColorModel            colorModel,
-                 final NumberRange<?>[]      ranges,
-                 final MathTransform1D[]     converters,
-                 final MathTransform1D[]     inverses,
-                 final List<SampleDimension> sampleDimensions)
-        {
-            super(source, sampleModel, colorModel, ranges, converters, sampleDimensions);
-            this.inverses = inverses;
+        Writable(final Builder builder) {
+            super(builder);
+            this.inverses = builder.inverses;
         }
 
         /**
@@ -509,6 +645,7 @@ class BandedSampleConverter extends WritableComputedImage {
             final var other = (BandedSampleConverter) object;
             return Arrays .equals(converters, other.converters) &&
                    Objects.equals(colorModel, other.colorModel) &&
+                   Objects.equals(sampleDimensions,  other.sampleDimensions) &&
                    Arrays .equals(sampleResolutions, other.sampleResolutions);
         }
         return false;

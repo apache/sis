@@ -30,6 +30,7 @@ module org.apache.sis.referencing.dggs {
 
     exports org.apache.sis.referencing.dggs;
     exports org.apache.sis.referencing.dggs.s2;
+    exports org.apache.sis.referencing.dggs.smc;
     exports org.apache.sis.referencing.rs;
     exports org.apache.sis.storage.coverage;
     exports org.apache.sis.storage.dggs;
@@ -38,5 +39,6 @@ module org.apache.sis.referencing.dggs {
 
     uses org.apache.sis.referencing.dggs.DiscreteGlobalGridReferenceSystemFactory;
     provides org.apache.sis.referencing.dggs.DiscreteGlobalGridReferenceSystemFactory
-        with org.apache.sis.referencing.dggs.s2.S2Factory;
+        with org.apache.sis.referencing.dggs.s2.S2Factory,
+             org.apache.sis.referencing.dggs.smc.SmcFactory;
 }

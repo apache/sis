@@ -21,6 +21,7 @@ import java.awt.image.RasterFormatException;
 import java.awt.image.SampleModel;
 import java.awt.image.BandedSampleModel;
 import java.awt.image.SinglePixelPackedSampleModel;
+import org.apache.sis.measure.NumberRange;
 
 // Test dependencies
 import org.junit.jupiter.api.Test;
@@ -144,6 +145,21 @@ public final class DataTypeTest extends TestCase {
                 () -> DataType.forNumberOfBits(Byte.SIZE, false, true),
                 "Signed bytes should be invalid.");
         assertMessageContains(e, "signed", "true");
+    }
+
+    /**
+     * Tests {@link DataType#forRange(NumberRange, boolean)}.
+     */
+    @Test
+    public void testForRange() {
+        assertEquals(DataType.BYTE,   DataType.forRange(NumberRange.create((short) 0, true, (short) 255, true), true));
+        assertEquals(DataType.USHORT, DataType.forRange(NumberRange.create(0,  true, 0xFFFF,  true), true));
+        assertEquals(DataType.UINT,   DataType.forRange(NumberRange.create(0,  true, 0x10000, true), true));
+        assertEquals(DataType.SHORT,  DataType.forRange(NumberRange.create(-1, true, 255,     true), true));
+        assertEquals(DataType.INT,    DataType.forRange(NumberRange.create(-1, true, 0xFFFF,  true), true));
+        assertEquals(DataType.BYTE,   DataType.forRange(NumberRange.create(0d, true, 255d,    true), true));
+        assertEquals(DataType.FLOAT,  DataType.forRange(NumberRange.create(0f, true, 255f,    true), false));
+        assertEquals(DataType.DOUBLE, DataType.forRange(NumberRange.create(0d, true, 255d,    true), false));
     }
 
     /**

@@ -71,7 +71,7 @@ dependencyResolutionManagement {
             library("ucar",          "edu.ucar",               "cdm-core")            .version {strictly("[5.0, 6.0[");  prefer("5.11.0")}
             library("udunits",       "edu.ucar",               "udunits")             .version {strictly("[5.0, 6.0[");  prefer("5.11.0")}
             library("guava",         "com.google.guava",       "guava")               .version {                         prefer("33.7.2-jre")}
-            library("aws.s3",        "software.amazon.awssdk", "s3")                  .version {strictly("[2.0, 3.0[");  prefer("2.55.9")}
+            library("aws.s3",        "software.amazon.awssdk", "s3")                  .version {strictly("[2.0, 3.0[");  prefer("2.57.13")}
         }
         create("tests") {
             library("geoapi",        "org.opengis",            "geoapi-conformance")     .version {strictly(geoapiVersion)}

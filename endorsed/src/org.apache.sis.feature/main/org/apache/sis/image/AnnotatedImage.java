@@ -57,7 +57,7 @@ import org.apache.sis.util.internal.shared.Strings;
  *
  * @author  Martin Desruisseaux (Geomatys)
  */
-abstract class AnnotatedImage extends ImageAdapter {
+abstract class AnnotatedImage extends TileForwardingImage {
     /**
      * The suffix to add to property name for errors that occurred during computation.
      * A property with suffix is automatically created if an exception is thrown during
@@ -237,12 +237,12 @@ abstract class AnnotatedImage extends ImageAdapter {
          * cache is shared by all images using the same data. This is okay if calculation depends
          * only on sample value, not on other data.
          */
-        while (source instanceof ImageAdapter) {
+        while (source instanceof TileForwardingImage) {
             if (source instanceof AnnotatedImage) {
                 cache = ((AnnotatedImage) source).cache;        // Cache for the source of the source.
                 return;
             }
-            source = ((ImageAdapter) source).source;
+            source = ((TileForwardingImage) source).source;
         }
         synchronized (CACHE) {
             cache = CACHE.computeIfAbsent(source, (k) -> new Cache<>(8, 200, false));

@@ -17,7 +17,10 @@
 package org.apache.sis.gml;
 
 import java.io.ByteArrayOutputStream;
+import java.io.StringWriter;
 import java.nio.charset.StandardCharsets;
+import javax.xml.stream.XMLOutputFactory;
+import javax.xml.stream.XMLStreamWriter;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import org.apache.sis.geometries.GeometryFactory;
 import org.apache.sis.geometries.Point;
@@ -27,6 +30,7 @@ import org.apache.sis.referencing.CRS;
 
 // Test dependencies
 import org.junit.jupiter.api.Test;
+import static org.junit.jupiter.api.Assertions.*;
 
 
 /**
@@ -75,5 +79,40 @@ public final class GMLWriterTest extends TestCase {
     @Test
     public void testWriteGML3Version() throws Exception {
         assertXmlEquals(TestData.V3.openStream(TestData.POINT), write(GMLVersion.V3), "xmlns:*");
+    }
+
+    /**
+     * Tests that {@link GMLVersion#V3_1} writes the GML 3 encoding in the unversioned namespace.
+     */
+    @Test
+    public void testWriteGML31Version() throws Exception {
+        final String xml = write(GMLVersion.V3_1);
+        assertTrue(xml.contains("\"http://www.opengis.net/gml\""), xml);
+        assertFalse(xml.contains("http://www.opengis.net/gml/3.2"), xml);
+        assertTrue(xml.contains("<pos>"), xml);
+    }
+
+    /**
+     * Tests writing a geometry inside a document owned by the caller.
+     * The fragment writer shall neither write a second XML header nor close the document.
+     */
+    @Test
+    public void testFragment() throws Exception {
+        final Point g = GeometryFactory.DEFAULT.createPoint(
+                GeometryFactory.DEFAULT.createDataPoints(NDArrays.of(SampleSystem.of(wgs84), 10.0, 20.0)));
+        final var buffer = new StringWriter();
+        final XMLStreamWriter xml = XMLOutputFactory.newInstance().createXMLStreamWriter(buffer);
+        xml.writeStartDocument();
+        xml.writeStartElement("container");
+        try (GMLWriter writer = GMLWriter.fragment(xml, GMLVersion.V2)) {
+            writer.writeGeometry(g);
+        }
+        xml.writeEndElement();      // Shall still be possible after the fragment writer has been closed.
+        xml.writeEndDocument();
+        xml.close();
+        final String text = buffer.toString();
+        assertEquals(text.indexOf("<?xml"), text.lastIndexOf("<?xml"), text);
+        assertTrue(text.contains("<container><Point xmlns=\"http://www.opengis.net/gml\""), text);
+        assertTrue(text.endsWith("</Point></container>"), text);
     }
 }

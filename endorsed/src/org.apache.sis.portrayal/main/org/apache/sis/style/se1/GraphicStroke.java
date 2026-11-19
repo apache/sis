@@ -16,10 +16,6 @@
  */
 package org.apache.sis.style.se1;
 
-import jakarta.xml.bind.annotation.XmlType;
-import jakarta.xml.bind.annotation.XmlElement;
-import jakarta.xml.bind.annotation.XmlRootElement;
-
 // Specific to the geoapi-3.1 and geoapi-4.0 branches:
 import org.opengis.filter.Expression;
 
@@ -36,12 +32,6 @@ import org.opengis.filter.Expression;
  *
  * @param <R>  the type of data to style, such as {@code Feature} or {@code Coverage}.
  */
-@XmlType(name = "GraphicStrokeType", propOrder = {
-    "graphic",
-    "initialGap",
-    "gap"
-})
-@XmlRootElement(name = "GraphicStroke")
 public class GraphicStroke<R> extends StyleElement<R> implements GraphicalElement<R> {
     /**
      * The graphic to be repeated, or {@code null} for lazily constructed default.
@@ -58,7 +48,6 @@ public class GraphicStroke<R> extends StyleElement<R> implements GraphicalElemen
      * @see #getInitialGap()
      * @see #setInitialGap(Expression)
      */
-    @XmlElement(name = "InitialGap")
     protected Expression<R, ? extends Number> initialGap;
 
     /**
@@ -67,15 +56,7 @@ public class GraphicStroke<R> extends StyleElement<R> implements GraphicalElemen
      * @see #getGap()
      * @see #setGap(Expression)
      */
-    @XmlElement(name = "Gap")
     protected Expression<R, ? extends Number> gap;
-
-    /**
-     * For JAXB unmarshalling only.
-     */
-    private GraphicStroke() {
-        // Thread-local factory will be used.
-    }
 
     /**
      * Creates a graphic stroke initialized to a default graphic and no gap.
@@ -109,7 +90,6 @@ public class GraphicStroke<R> extends StyleElement<R> implements GraphicalElemen
      * @see GraphicFill#getGraphic()
      */
     @Override
-    @XmlElement(name = "Graphic", required = true)
     public final Graphic<R> getGraphic() {
         if (graphic == null) {
             graphic = factory.createGraphic();
@@ -120,7 +100,7 @@ public class GraphicStroke<R> extends StyleElement<R> implements GraphicalElemen
     /**
      * Sets the graphic to be repeated.
      * The given instance is stored by reference, it is not cloned.
-     * If this method is never invoked, then the default value is a {@linkplain Graphic#Graphic() default instance}.
+     * If this method is never invoked, then the default value is a {@linkplain Graphic#Graphic(StyleFactory) default instance}.
      *
      * @param  value  new graphic, or {@code null} for resetting the default value.
      *

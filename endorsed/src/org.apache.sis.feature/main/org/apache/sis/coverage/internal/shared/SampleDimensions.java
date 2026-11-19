@@ -118,8 +118,8 @@ public final class SampleDimensions {
         if (bands == null) {
             return null;
         }
-        final Number[] fillValues = new Number[bands.size()];
-        for (int i=fillValues.length; --i >= 0;) {
+        final var fillValues = new Number[bands.size()];
+        for (int i = fillValues.length; --i >= 0;) {
             final SampleDimension band = bands.get(i);
             if (band != null) {
                 final Optional<Number> bg = band.getBackground();
@@ -150,7 +150,7 @@ public final class SampleDimensions {
         if (bands == null) {
             return null;
         }
-        final DoubleUnaryOperator[] sampleFilters = new DoubleUnaryOperator[bands.size()];
+        final var sampleFilters = new DoubleUnaryOperator[bands.size()];
         for (int i = 0; i < sampleFilters.length; i++) {
             final SampleDimension band = bands.get(i);
             if (band != null) {

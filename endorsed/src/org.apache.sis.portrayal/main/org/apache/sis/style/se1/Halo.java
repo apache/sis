@@ -16,10 +16,6 @@
  */
 package org.apache.sis.style.se1;
 
-import jakarta.xml.bind.annotation.XmlType;
-import jakarta.xml.bind.annotation.XmlElement;
-import jakarta.xml.bind.annotation.XmlRootElement;
-
 // Specific to the geoapi-3.1 and geoapi-4.0 branches:
 import org.opengis.filter.Expression;
 
@@ -35,11 +31,6 @@ import org.opengis.filter.Expression;
  *
  * @param <R>  the type of data to style, such as {@code Feature} or {@code Coverage}.
  */
-@XmlType(name = "HaloType", propOrder = {
-    "radius",
-    "fill"
-})
-@XmlRootElement(name = "Halo")
 public class Halo<R> extends StyleElement<R> {
     /**
      * Radius (in pixels) of the halo around the text, or {@code null} for the default value.
@@ -47,7 +38,6 @@ public class Halo<R> extends StyleElement<R> {
      * @see #getRadius()
      * @see #setRadius(Expression)
      */
-    @XmlElement(name = "Radius")
     protected Expression<R, ? extends Number> radius;
 
     /**
@@ -56,15 +46,7 @@ public class Halo<R> extends StyleElement<R> {
      * @see #getFill()
      * @see #setFill(Fill)
      */
-    @XmlElement(name = "Fill")
     protected Fill<R> fill;
-
-    /**
-     * For JAXB unmarshalling only.
-     */
-    private Halo() {
-        // Thread-local factory will be used.
-    }
 
     /**
      * Creates an halo initialized to a white color and a radius of 1 pixel.

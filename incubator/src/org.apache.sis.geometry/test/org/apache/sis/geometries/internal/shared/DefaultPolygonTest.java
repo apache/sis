@@ -24,8 +24,11 @@ import org.apache.sis.geometries.curve.LinearRing;
 import org.apache.sis.geometries.surface.Polygon;
 import org.apache.sis.maths.NDArrays;
 import org.apache.sis.maths.SampleSystem;
+import org.apache.sis.referencing.CommonCRS;
 
 // Test dependencies
+import static org.junit.jupiter.api.Assertions.*;
+import org.junit.jupiter.api.Test;
 import org.apache.sis.geometries.surface.PolygonTest;
 
 
@@ -45,6 +48,25 @@ public class DefaultPolygonTest extends PolygonTest {
             interiors.add(new DefaultLinearRing(sequence(crs, hole)));
         }
         return new DefaultPolygon(new DefaultLinearRing(sequence(crs, exterior)), interiors);
+    }
+
+    /**
+     * Tests {@code equals} and {@code hashCode} of polygons and of their rings.
+     */
+    @Test
+    public void testEquals() {
+        final CoordinateReferenceSystem crs = CommonCRS.WGS84.normalizedGeographic();
+        final double[] exterior = {0,0, 10,0, 10,10, 0,10, 0,0};
+        final double[] hole     = {2,2, 3,2, 3,3, 2,2};
+        final Polygon polygon = createPolygon(crs, exterior, hole);
+        final Polygon same    = createPolygon(crs, exterior, hole);
+        assertNotSame(polygon, same);
+        assertEquals(polygon, same);
+        assertEquals(polygon.hashCode(), same.hashCode());
+        assertEquals(polygon.getExteriorRing(), same.getExteriorRing());
+        assertNotEquals(polygon, createPolygon(crs, exterior));
+        assertNotEquals(new DefaultLineString(sequence(crs, hole)), new DefaultLinearRing(sequence(crs, hole)),
+                        "A line string is not equal to a linear ring.");
     }
 
     /**

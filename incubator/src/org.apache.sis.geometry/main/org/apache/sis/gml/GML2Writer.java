@@ -57,6 +57,18 @@ public final class GML2Writer extends AbstractGMLWriter {
     }
 
     /**
+     * Creates a new writer using the given StAX cursor, optionally as a fragment writer
+     * which writes geometries inside a document owned by the caller.
+     *
+     * @param  writer    the StAX cursor to write to.
+     * @param  fragment  whether to write geometries inside a document owned by the caller.
+     * @throws XMLStreamException if the XML document header cannot be written.
+     */
+    GML2Writer(final XMLStreamWriter writer, final boolean fragment) throws XMLStreamException {
+        super(writer, fragment);
+    }
+
+    /**
      * Creates a new writer for the given output stream.
      *
      * @param  out  the stream to write to.
