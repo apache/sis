@@ -17,13 +17,11 @@
 package org.apache.sis.map.service.se1;
 
 import java.awt.AlphaComposite;
-import java.awt.Composite;
 import java.awt.Graphics2D;
 import java.awt.Shape;
 import java.awt.geom.AffineTransform;
 import java.awt.image.BufferedImage;
 import java.awt.image.ColorModel;
-import java.awt.image.DataBufferByte;
 import java.awt.image.IndexColorModel;
 import java.awt.image.RenderedImage;
 import java.time.Instant;
@@ -31,12 +29,9 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.Comparator;
-import java.util.EnumSet;
 import java.util.List;
 import java.util.Locale;
-import java.util.function.Consumer;
 import java.util.logging.Level;
-import java.util.stream.Stream;
 import javax.measure.Unit;
 import javax.measure.quantity.Length;
 import org.opengis.feature.Feature;
@@ -44,10 +39,8 @@ import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import org.opengis.referencing.operation.MathTransform;
 import org.opengis.referencing.operation.TransformException;
 import org.apache.sis.coverage.SampleDimension;
-import org.apache.sis.coverage.grid.DimensionalityReduction;
 import org.apache.sis.coverage.grid.DisjointExtentException;
 import org.apache.sis.coverage.grid.GridCoverage;
-import org.apache.sis.coverage.grid.GridCoverageProcessor;
 import org.apache.sis.coverage.grid.GridExtent;
 import org.apache.sis.coverage.grid.GridGeometry;
 import org.apache.sis.coverage.grid.PixelInCell;
@@ -58,12 +51,17 @@ import org.apache.sis.geometries.curve.LinearRing;
 import org.apache.sis.geometries.operation.OperationException;
 import org.apache.sis.geometries.surface.Polygon;
 import org.apache.sis.image.Interpolation;
-import org.apache.sis.image.PixelIterator;
-import org.apache.sis.map.Presentation;
 import org.apache.sis.map.SEPresentation;
 import org.apache.sis.map.service.Scene2D;
 import org.apache.sis.map.service.RenderingException;
+import org.apache.sis.map.service.common.ContrastStretch;
+import org.apache.sis.map.service.common.DrawingComposite;
+import org.apache.sis.map.service.common.CoverageSampler;
+import org.apache.sis.map.service.common.CoverageSlices;
 import org.apache.sis.map.service.common.HillShader;
+import org.apache.sis.map.service.common.Drawing;
+import org.apache.sis.map.service.common.DrawingImage;
+import org.apache.sis.map.service.common.SampleTable;
 import org.apache.sis.measure.Units;
 import org.apache.sis.storage.Aggregate;
 import org.apache.sis.storage.DataStoreException;
@@ -73,7 +71,6 @@ import org.apache.sis.storage.Resource;
 import org.apache.sis.style.se1.ChannelSelection;
 import org.apache.sis.style.se1.ColorMap;
 import org.apache.sis.style.se1.ContrastEnhancement;
-import org.apache.sis.style.se1.ContrastMethod;
 import org.apache.sis.style.se1.LineSymbolizer;
 import org.apache.sis.style.se1.OverlapBehavior;
 import org.apache.sis.style.se1.PolygonSymbolizer;
@@ -94,7 +91,7 @@ import org.apache.sis.style.se1.Symbolizer;
  *   <li>ChannelSelection: red, green and blue channels, or a gray channel. Channels are identified by
  *       sample dimension name, or otherwise by band number starting at 1. Each channel may have its own
  *       contrast enhancement, which replaces the symbolizer one for that channel.</li>
- *   <li>ContrastEnhancement: normalize, histogram equalization and gamma, see {@link ChannelStretch}.
+ *   <li>ContrastEnhancement: normalize, histogram equalization and gamma, see {@link ContrastStretch}.
  *       Statistics are computed on the visible pixels. For a color image without channel selection,
  *       statistics are computed on the brightness of pixels and the same stretch is applied on all bands.</li>
  *   <li>ColorMap: {@link org.apache.sis.style.se1.function.Categorize} and {@link org.apache.sis.style.se1.function.Interpolate}
@@ -131,16 +128,51 @@ public final class RasterToScene2D extends SymbolizerToScene2D<RasterSymbolizer<
      */
     private static final String RASTER_DATA = "rasterdata";
 
-    private RasterToScene2D(Scene2D state, RasterSymbolizer<?> symbolizer) {
+    RasterToScene2D(Scene2D state, RasterSymbolizer<?> symbolizer) {
         super(state, symbolizer);
     }
 
+    /**
+     * The rendering of the coverages of a presentation.
+     *
+     * @param drawing  the image of the colorized coverages, or {@code null} if nothing is visible.
+     * @param rasters  the coverages resampled on the display grid, for drawing their outlines.
+     */
+    private record Rendering(Drawing drawing, List<DisplayRaster> rasters) {
+    }
+
+    /**
+     * Returns the image of the colorized coverages followed by their outlines, used for painting and for hit tests.
+     * Hit tests consider only the pixels of the image which are not fully transparent, and the outlines.
+     *
+     * @param  presentation  the presentation to draw.
+     * @return the drawing of the coverages, or {@code null} if nothing is visible.
+     * @throws RenderingException if the coverages cannot be read.
+     */
     @Override
-    public void paint(SEPresentation presentation, Consumer<Stream<Presentation>> callback) throws RenderingException {
+    protected Drawing drawing(SEPresentation presentation) throws RenderingException {
+        final Rendering rendering = render(presentation);
+        if (rendering == null) {
+            return null;
+        }
+        final List<Drawing> drawings = new ArrayList<>();
+        if (rendering.drawing() != null) {
+            drawings.add(rendering.drawing());
+        }
+        addOutlines(presentation, rendering.rasters(), drawings);
+        return drawings.isEmpty() ? null : new DrawingComposite(drawings);
+    }
+
+    /**
+     * Resamples, colorizes and shades the coverages of the given presentation.
+     *
+     * @return the rendering, or {@code null} if the presentation has no coverage.
+     */
+    private Rendering render(SEPresentation presentation) throws RenderingException {
         final Feature feature = presentation.getCandidate();
         final List<GridCoverage> coverages = coverages(presentation);
         if (coverages.isEmpty()) {
-            return;
+            return null;
         }
         final double reliefFactor = reliefFactor(feature);
         final List<DisplayRaster> rasters = new ArrayList<>(coverages.size());
@@ -153,34 +185,16 @@ public final class RasterToScene2D extends SymbolizerToScene2D<RasterSymbolizer<
         if (reliefFactor > 0) {
             image = shade(image, rasters, feature, reliefFactor);
         }
+        Drawing drawing = null;
         if (image != null) {
             final double opacity = StrokeStyle.clamp(evaluateNumber(feature, symbolizer.getOpacity(), 1.0));
             if (opacity > 0) {
                 final GridExtent extent = state.grid.getExtent();
-                final Graphics2D g2d = state.getGraphics();
-                synchronized (g2d) {
-                    final Composite old = g2d.getComposite();
-                    try {
-                        g2d.setComposite(AlphaComposite.getInstance(AlphaComposite.SRC_OVER, (float) opacity));
-                        g2d.drawImage(image, (int) extent.getLow(0), (int) extent.getLow(1), null);
-                    } finally {
-                        g2d.setComposite(old);
-                    }
-                }
+                drawing = new DrawingImage(image, (float) opacity)
+                        .add(AffineTransform.getTranslateInstance(extent.getLow(0), extent.getLow(1)));
             }
         }
-        paintOutlines(presentation, rasters, callback);
-    }
-
-    @Override
-    public boolean intersects(SEPresentation presentation, Shape mask, Consumer<Stream<Presentation>> callback) throws RenderingException {
-        for (GridCoverage coverage : coverages(presentation)) {
-            final Shape footprint = displayFootprint(footprint(to2D(coverage)));
-            if (footprint != null && RenderedVisual.intersects(footprint, mask)) {
-                return true;
-            }
-        }
-        return false;
+        return new Rendering(drawing, rasters);
     }
 
     // ////////////////////////////////////////////////////////////////////////
@@ -223,17 +237,6 @@ public final class RasterToScene2D extends SymbolizerToScene2D<RasterSymbolizer<
     }
 
     /**
-     * Returns a two-dimensional slice of the given coverage, taken in the middle of other dimensions.
-     */
-    private static GridCoverage to2D(GridCoverage coverage) {
-        final GridGeometry gg = coverage.getGridGeometry();
-        if (gg.getDimension() <= 2) {
-            return coverage;
-        }
-        return DimensionalityReduction.select2D(gg).withSliceByRatio(0.5).apply(coverage);
-    }
-
-    /**
      * A coverage resampled on the display grid, with either its original colors
      * or the sample values of the bands to style.
      */
@@ -244,10 +247,8 @@ public final class RasterToScene2D extends SymbolizerToScene2D<RasterSymbolizer<
         final Instant time;
         /** Image with the coverage colors, or {@code null} if the coverage needs to be styled. */
         RenderedImage colored;
-        /** Sample values of the bands to style, as {@code [channel][y*width + x]}, NaN outside the footprint. */
-        double[][] values;
-        /** Non-zero for display pixels inside the footprint, or {@code null} if unknown. */
-        byte[] inside;
+        /** Sample values of the bands to style, one band per channel, or {@code null} if the coverage colors are used. */
+        SampleTable samples;
         /** Elevations in metres, or {@code null} if no relief shading. */
         double[] elevations;
         /** The colorized image of the display size, computed by {@code colorize(…)}. */
@@ -289,13 +290,11 @@ public final class RasterToScene2D extends SymbolizerToScene2D<RasterSymbolizer<
         final GridCoverage coverage2D;
         final DisplayRaster raster;
         try {
-            coverage2D = to2D(coverage);
+            coverage2D = new CoverageSlices(coverage).middle();
             raster = new DisplayRaster(footprint(coverage2D), coverage);
-            final GridCoverageProcessor processor = new GridCoverageProcessor();
-            processor.setInterpolation(Interpolation.NEAREST);
-            processor.setOptimizations(EnumSet.noneOf(GridCoverageProcessor.Optimization.class));
+            final CoverageSampler sampler = new CoverageSampler(state.grid);
             if (!isStyled()) {
-                final RenderedImage image = processor.resample(coverage2D.forConvertedValues(false), state.grid).render(null);
+                final RenderedImage image = sampler.resample(coverage2D.forConvertedValues(false), Interpolation.NEAREST);
                 if (isDisplayable(image.getColorModel())) {
                     raster.colored = image;
                 }
@@ -305,16 +304,12 @@ public final class RasterToScene2D extends SymbolizerToScene2D<RasterSymbolizer<
             }
             final List<SampleDimension> sampleDimensions = coverage2D.getSampleDimensions();
             final int[] bands = bands(sampleDimensions, feature);
-            final GridCoverage converted = coverage2D.forConvertedValues(true);
-            raster.inside = footprintMask(raster.footprint);
             if (raster.colored == null) {
-                raster.values = samples(processor.resample(converted, state.grid).render(null), bands, raster.inside);
+                raster.samples = sampler.sample(coverage2D, Interpolation.NEAREST, bands);
             }
             if (reliefFactor > 0) {
                 // Elevations are interpolated for avoiding terraces in the shading.
-                processor.setInterpolation(Interpolation.BILINEAR);
-                final RenderedImage image = processor.resample(converted, state.grid).render(null);
-                final double[] z = samples(image, new int[] {bands[0]}, raster.inside)[0];
+                final double[] z = sampler.sample(coverage2D, Interpolation.BILINEAR, new int[] {bands[0]}).band(0);
                 final double scale = toMetres(sampleDimensions.get(bands[0]));
                 for (int i = 0; i < z.length; i++) z[i] *= scale;
                 raster.elevations = z;
@@ -424,32 +419,6 @@ public final class RasterToScene2D extends SymbolizerToScene2D<RasterSymbolizer<
         throw new RenderingException("No band named \"" + name + "\" in the coverage.");
     }
 
-    /**
-     * Copies the sample values of the given bands, with one array per band in row-major order.
-     * Pixels outside the footprint are NaN, because the resampling fills them with 0 for integer data,
-     * which should not be included in the statistics of contrast enhancements.
-     */
-    private double[][] samples(RenderedImage image, int[] bands, byte[] inside) {
-        final GridExtent extent = state.grid.getExtent();
-        final int width  = (int) extent.getSize(0);
-        final int height = (int) extent.getSize(1);
-        final double[][] values = new double[bands.length][width * height];
-        for (double[] v : values) Arrays.fill(v, Double.NaN);
-        final PixelIterator it = PixelIterator.create(image);
-        while (it.next()) {
-            final var p = it.getPosition();
-            final int x = p.x - image.getMinX();
-            final int y = p.y - image.getMinY();
-            if (x < 0 || y < 0 || x >= width || y >= height) continue;
-            final int index = y * width + x;
-            if (inside != null && inside[index] == 0) continue;
-            for (int b = 0; b < bands.length; b++) {
-                values[b][index] = it.getSampleDouble(bands[b]);
-            }
-        }
-        return values;
-    }
-
     // ////////////////////////////////////////////////////////////////////////
     // Colorization ///////////////////////////////////////////////////////////
     // ////////////////////////////////////////////////////////////////////////
@@ -467,14 +436,14 @@ public final class RasterToScene2D extends SymbolizerToScene2D<RasterSymbolizer<
          */
         int numChannels = 0;
         for (DisplayRaster r : rasters) {
-            if (r.values != null) numChannels = Math.max(numChannels, r.values.length);
+            if (r.samples != null) numChannels = Math.max(numChannels, r.samples.getNumBands());
         }
         Style style = style();
         if (style == null) {
             style = (numChannels >= 3) ? Style.RGB : Style.GRAY;
         }
         ColorMapFunction colorMap = null;
-        final ChannelStretch[] stretches = new ChannelStretch[numChannels];
+        final ContrastStretch[] stretches = new ContrastStretch[numChannels];
         if (style == Style.COLOR_MAP) {
             colorMap = ColorMapFunction.create(symbolizer.getColorMap().get(), feature);
         } else {
@@ -483,18 +452,18 @@ public final class RasterToScene2D extends SymbolizerToScene2D<RasterSymbolizer<
             final boolean implicit = !isStyled();
             if (!implicit && channels == null && style == Style.RGB && global != null) {
                 // SE: in the case of a color image, the relative grayscale brightness of a pixel color is used.
-                Arrays.fill(stretches, new ChannelStretch(global, feature, brightness(rasters)));
+                Arrays.fill(stretches, stretch(global, feature, brightness(rasters)));
             } else for (int c = 0; c < numChannels; c++) {
                 if (implicit) {
                     // No color settings: values are stretched for making them visible.
-                    stretches[c] = new ChannelStretch(ContrastMethod.NORMALIZE, 1, concatenate(rasters, c));
+                    stretches[c] = new ContrastStretch(ContrastStretch.Method.NORMALIZE).fit(concatenate(rasters, c));
                     continue;
                 }
                 ContrastEnhancement<?> ce = global;
                 if (channels != null && c < channels.length && channels[c].getContrastEnhancement().isPresent()) {
                     ce = channels[c].getContrastEnhancement().get();
                 }
-                stretches[c] = new ChannelStretch(ce, feature, concatenate(rasters, c));
+                stretches[c] = stretch(ce, feature, concatenate(rasters, c));
             }
         }
         /*
@@ -506,21 +475,21 @@ public final class RasterToScene2D extends SymbolizerToScene2D<RasterSymbolizer<
                 drawColored(raster, image);
             } else {
                 final int[] argb = new int[width * height];
-                final double[][] v = raster.values;
+                final SampleTable v = raster.samples;
                 for (int i = 0; i < argb.length; i++) {
-                    if (raster.inside != null && raster.inside[i] == 0) {
+                    if (!v.isInside(i)) {
                         continue;       // Transparent, otherwise color maps would use their fallback color.
                     }
                     if (colorMap != null) {
-                        argb[i] = colorMap.argb(v[0][i]);
-                    } else if (style == Style.RGB && v.length >= 3) {
-                        final int r = stretches[0].intensity(v[0][i]);
-                        final int g = stretches[1].intensity(v[1][i]);
-                        final int b = stretches[2].intensity(v[2][i]);
+                        argb[i] = colorMap.argb(v.value(0, i));
+                    } else if (style == Style.RGB && v.getNumBands() >= 3) {
+                        final int r = intensity(stretches[0], v.value(0, i));
+                        final int g = intensity(stretches[1], v.value(1, i));
+                        final int b = intensity(stretches[2], v.value(2, i));
                         argb[i] = (r < 0 || g < 0 || b < 0) ? ColorMapFunction.TRANSPARENT
                                 : 0xFF000000 | (r << 16) | (g << 8) | b;
                     } else {
-                        final int k = stretches[0].intensity(v[0][i]);
+                        final int k = intensity(stretches[0], v.value(0, i));
                         argb[i] = (k < 0) ? ColorMapFunction.TRANSPARENT : 0xFF000000 | (k << 16) | (k << 8) | k;
                     }
                 }
@@ -528,6 +497,41 @@ public final class RasterToScene2D extends SymbolizerToScene2D<RasterSymbolizer<
             }
             raster.image = image;
         }
+    }
+
+    /**
+     * Creates the contrast stretch of a channel for a Symbology Encoding contrast enhancement.
+     * Values are used as-is in the [0 … 255] range when there is no enhancement method.
+     *
+     * @param  enhancement  the contrast enhancement, or {@code null} if none.
+     * @param  feature      feature for evaluating expressions, may be null.
+     * @param  values       the sample values of the channel, NaN values are ignored.
+     * @return the stretch fitted on the given values.
+     */
+    private ContrastStretch stretch(ContrastEnhancement<?> enhancement, Feature feature, double[] values) {
+        ContrastStretch.Method method = ContrastStretch.Method.NONE;
+        double gamma = 1;
+        if (enhancement != null) {
+            switch (enhancement.getMethod()) {
+                case NORMALIZE: method = ContrastStretch.Method.NORMALIZE; break;
+                case HISTOGRAM: method = ContrastStretch.Method.HISTOGRAM; break;
+                default: break;
+            }
+            gamma = evaluateNumber(feature, enhancement.getGammaValue(), 1.0);
+        }
+        final ContrastStretch stretch = new ContrastStretch(method).setNativeRange(0, 255);
+        if (gamma > 0 && gamma < Double.POSITIVE_INFINITY) {
+            stretch.setGamma(gamma);
+        }
+        return stretch.fit(values);
+    }
+
+    /**
+     * Returns the intensity in [0 … 255] of the given value, or -1 if the value is NaN.
+     */
+    private int intensity(ContrastStretch stretch, double value) {
+        final double n = stretch.apply(value);
+        return Double.isNaN(n) ? -1 : (int) Math.round(n * 255);
     }
 
     /**
@@ -548,40 +552,18 @@ public final class RasterToScene2D extends SymbolizerToScene2D<RasterSymbolizer<
     private static double[] concatenate(List<DisplayRaster> rasters, int channel) {
         int length = 0;
         for (DisplayRaster r : rasters) {
-            if (r.values != null && channel < r.values.length) length += r.values[channel].length;
+            if (r.samples != null && channel < r.samples.getNumBands()) length += r.samples.size();
         }
         final double[] all = new double[length];
         int offset = 0;
         for (DisplayRaster r : rasters) {
-            if (r.values != null && channel < r.values.length) {
-                System.arraycopy(r.values[channel], 0, all, offset, r.values[channel].length);
-                offset += r.values[channel].length;
+            if (r.samples != null && channel < r.samples.getNumBands()) {
+                for (int i = 0, n = r.samples.size(); i < n; i++) {
+                    all[offset++] = r.samples.value(channel, i);
+                }
             }
         }
         return all;
-    }
-
-    /**
-     * Rasterizes the footprint of a raster on the display grid.
-     *
-     * @return non-zero values for pixels inside the footprint, or {@code null} if the footprint is unknown.
-     */
-    private byte[] footprintMask(Polygon footprint) {
-        final Shape shape = displayFootprint(footprint);
-        if (shape == null) {
-            return null;
-        }
-        final GridExtent extent = state.grid.getExtent();
-        final BufferedImage mask = new BufferedImage((int) extent.getSize(0), (int) extent.getSize(1), BufferedImage.TYPE_BYTE_GRAY);
-        final Graphics2D g = mask.createGraphics();
-        try {
-            g.translate(-extent.getLow(0), -extent.getLow(1));
-            g.setColor(java.awt.Color.WHITE);
-            g.fill(shape);
-        } finally {
-            g.dispose();
-        }
-        return ((DataBufferByte) mask.getRaster().getDataBuffer()).getData();
     }
 
     /**
@@ -799,10 +781,10 @@ public final class RasterToScene2D extends SymbolizerToScene2D<RasterSymbolizer<
     }
 
     /**
-     * Paints the image outline of each raster, if an outline symbolizer is defined.
+     * Adds the drawing of the image outline of each raster, if an outline symbolizer is defined.
      */
-    private void paintOutlines(SEPresentation presentation, List<DisplayRaster> rasters,
-            Consumer<Stream<Presentation>> callback) throws RenderingException
+    private void addOutlines(SEPresentation presentation, List<DisplayRaster> rasters, List<Drawing> target)
+            throws RenderingException
     {
         final Symbolizer<?> outline = symbolizer.getImageOutline().orElse(null);
         if (outline == null) {
@@ -817,7 +799,10 @@ public final class RasterToScene2D extends SymbolizerToScene2D<RasterSymbolizer<
             }
             final SymbolizerToScene2D<?> renderer = create(state, copy);
             if (renderer != null) {
-                renderer.paint(new SEPresentation(presentation.getLayer(), presentation.getResource(), null, copy), callback);
+                final Drawing drawing = renderer.drawing(new SEPresentation(presentation.getLayer(), presentation.getResource(), null, copy));
+                if (drawing != null) {
+                    target.add(drawing);
+                }
             }
         }
     }
@@ -839,18 +824,5 @@ public final class RasterToScene2D extends SymbolizerToScene2D<RasterSymbolizer<
             return copy;
         }
         return null;
-    }
-
-    public static final class Spi implements SymbolizerToScene2D.Spi<RasterSymbolizer> {
-
-        @Override
-        public Class<RasterSymbolizer> getSymbolizerType() {
-            return RasterSymbolizer.class;
-        }
-
-        @Override
-        public SymbolizerToScene2D create(Scene2D state, RasterSymbolizer symbolizer) throws RenderingException {
-            return new RasterToScene2D(state, symbolizer);
-        }
     }
 }

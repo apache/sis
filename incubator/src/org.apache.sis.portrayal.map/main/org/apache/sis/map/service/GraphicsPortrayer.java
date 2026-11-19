@@ -23,6 +23,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 import java.util.ServiceLoader;
+import java.util.function.BiFunction;
 import java.util.stream.Stream;
 import org.apache.sis.coverage.grid.GridCoverage2D;
 import org.apache.sis.coverage.grid.GridGeometry;
@@ -30,7 +31,6 @@ import org.apache.sis.map.MapItem;
 import org.apache.sis.map.MapLayer;
 import org.apache.sis.map.MapLayers;
 import org.apache.sis.map.Presentation;
-import org.apache.sis.style.Style;
 
 
 /**
@@ -187,31 +187,8 @@ public final class GraphicsPortrayer {
      * @throws RenderingException if a rendering procedure fails.
      */
     public synchronized Stream<Presentation> present(MapItem map) throws RenderingException {
-        return present(init(), map);
-    }
-
-    private Stream<Presentation> present(Scene2D scene, MapItem map) throws RenderingException {
-        if (map == null || !map.isVisible()) return Stream.empty();
-        if (map instanceof MapLayer) {
-            return present(scene, (MapLayer) map);
-        } else if (map instanceof MapLayers) {
-            final MapLayers layers = (MapLayers) map;
-            Stream<Presentation> stream = Stream.empty();
-            for (MapItem item : layers.getComponents()) {
-                stream = Stream.concat(stream, present(scene, item));
-            }
-            return stream;
-        } else {
-            return Stream.empty();
-        }
-    }
-
-    private Stream<Presentation> present(Scene2D scene, MapLayer layer) throws RenderingException {
-        final Style style = layer.getStyle();
-        if (style == null) return Stream.empty();
-        final StylePainter painter = PAINTERS.get(style.getClass());
-        if (painter == null) return Stream.empty();
-        return painter.present(scene, layer);
+        final Scene2D scene = init();
+        return query(map, (painter, layer) -> painter.present(scene, layer));
     }
 
     /**
@@ -224,29 +201,30 @@ public final class GraphicsPortrayer {
      * @throws RenderingException if a rendering procedure fails.
      */
     public Stream<Presentation> intersects(MapItem mapItem, Shape mask) throws RenderingException {
-        return intersects(init(), mapItem, mask);
+        final Scene2D scene = init();
+        return query(mapItem, (painter, layer) -> painter.intersects(scene, layer, mask));
     }
 
-    private Stream<Presentation> intersects(Scene2D scene, MapItem map, Shape mask) throws RenderingException{
+    /**
+     * Queries the painter of each visible layer having a style, and concatenates the results in drawing order.
+     * Layers whose style has no painter are ignored.
+     *
+     * @param  map    the map item to traverse.
+     * @param  query  the query to apply on the painter of a layer.
+     * @return the results of the queries on all layers.
+     */
+    private Stream<Presentation> query(final MapItem map,
+            final BiFunction<StylePainter, MapLayer, Stream<Presentation>> query)
+    {
+        final List<MapLayer> layers = new ArrayList<>();
+        collectVisibleLayers(map, layers);
         Stream<Presentation> results = Stream.empty();
-        if (map == null || !map.isVisible()) return results;
-        if (map instanceof MapLayer) {
-            results = Stream.concat(results, intersects(scene, (MapLayer) map, mask));
-        } else if (map instanceof MapLayers) {
-            final MapLayers layers = (MapLayers) map;
-            for (MapItem item : layers.getComponents()) {
-                results = Stream.concat(results, intersects(scene, item, mask));
+        for (final MapLayer layer : layers) {
+            final StylePainter painter = PAINTERS.get(layer.getStyle().getClass());
+            if (painter != null) {
+                results = Stream.concat(results, query.apply(painter, layer));
             }
         }
         return results;
     }
-
-    private Stream<Presentation> intersects(Scene2D scene, MapLayer layer, Shape mask) throws RenderingException {
-        final Style style = layer.getStyle();
-        if (style == null) return Stream.empty();
-        final StylePainter painter = PAINTERS.get(style.getClass());
-        if (painter == null) return Stream.empty();
-        return painter.intersects(scene, layer, mask);
-    }
-
 }

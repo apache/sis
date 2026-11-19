@@ -239,6 +239,22 @@ public class TextToScene2DTest {
     // ////////////////////////////////////////////////////////////////////////
 
     /**
+     * Tests the omission of a label overlapping a label already drawn.
+     */
+    @Test
+    public void testOverlappingLabels() throws RenderingException {
+        final TextSymbolizer<Feature> symbolizer = text("HHH", 20);
+        final Geometry near = withCRS(GF.createPoint(new Coordinate(5, 0)), CRS84);
+        final Geometry far  = withCRS(GF.createPoint(new Coordinate(-70, 0)), CRS84);
+        final BufferedImage alone = render(symbolizer, origin());
+        final BufferedImage overlapping = render(symbolizer, origin(), near);
+        assertEquals(count(alone, null), count(overlapping, null), "Second label expected omitted.");
+        assertEquals(assertPaintedBounds(alone).width, assertPaintedBounds(overlapping).width);
+        final Rectangle both = assertPaintedBounds(render(symbolizer, origin(), far));
+        assertTrue(both.x < 50 && both.x + both.width > 100, "Labels expected at both points: " + both);
+    }
+
+    /**
      * Tests the label expression: literal, from an attribute, null or blank.
      */
     @Test
@@ -689,7 +705,7 @@ public class TextToScene2DTest {
 
         final BufferedImage image = new BufferedImage(200, 100, BufferedImage.TYPE_INT_ARGB);
         final Scene2D scene = new Scene2D(grid, image.createGraphics());
-        SymbolizerToScene2D.create(scene, symbolizer).paint(new SEPresentation(null, null, feature, symbolizer), (s) -> {});
+        SymbolizerToScene2D.create(scene, symbolizer).drawing(new SEPresentation(null, null, feature, symbolizer)).paint(scene.graphics);
         final Rectangle b = assertPaintedBounds(image);
         assertTrue(b.contains(150, 30), b.toString());
     }

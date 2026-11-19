@@ -16,19 +16,17 @@
  */
 package org.apache.sis.map.service.se1;
 
-import java.awt.AlphaComposite;
-import java.awt.Shape;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.function.Consumer;
-import java.util.stream.Stream;
 import org.opengis.feature.Feature;
 import org.apache.sis.geometries.Geometry;
 import org.apache.sis.geometries.Point;
-import org.apache.sis.map.Presentation;
 import org.apache.sis.map.SEPresentation;
 import org.apache.sis.map.service.Scene2D;
 import org.apache.sis.map.service.RenderingException;
+import org.apache.sis.map.service.common.DrawingComposite;
+import org.apache.sis.map.service.common.Drawing;
+import org.apache.sis.map.service.common.DrawingImage;
 import org.apache.sis.style.se1.Graphic;
 import org.apache.sis.style.se1.PointSymbolizer;
 
@@ -53,18 +51,20 @@ import org.apache.sis.style.se1.PointSymbolizer;
  */
 public final class PointToScene2D extends SymbolizerToScene2D<PointSymbolizer<?>> {
 
-    private PointToScene2D(Scene2D state, PointSymbolizer<?> symbolizer) {
+    PointToScene2D(Scene2D state, PointSymbolizer<?> symbolizer) {
         super(state, symbolizer);
     }
 
+    /**
+     * Returns the drawing of the given presentation.
+     *
+     * @param  presentation  the presentation to draw.
+     * @return the drawing, possibly empty.
+     * @throws RenderingException if the drawing cannot be computed.
+     */
     @Override
-    public void paint(SEPresentation presentation, Consumer<Stream<Presentation>> callback) throws RenderingException {
-        RenderedVisual.paint(createVisuals(presentation), state.getGraphics());
-    }
-
-    @Override
-    public boolean intersects(SEPresentation presentation, Shape mask, Consumer<Stream<Presentation>> callback) throws RenderingException {
-        return RenderedVisual.intersects(createVisuals(presentation), mask);
+    protected Drawing drawing(SEPresentation presentation) throws RenderingException {
+        return new DrawingComposite(createDrawings(presentation));
     }
 
     /**
@@ -72,7 +72,7 @@ public final class PointToScene2D extends SymbolizerToScene2D<PointSymbolizer<?>
      *
      * @return the graphics placed on all anchor points, or an empty list if nothing is visible.
      */
-    private List<RenderedGraphics> createVisuals(SEPresentation presentation) throws RenderingException {
+    private List<DrawingImage> createDrawings(SEPresentation presentation) throws RenderingException {
         final Feature feature = presentation.getCandidate();
         final Geometry geometry = GeometryResolver.resolve(evaluate(feature, symbolizer.getGeometry()));
         final Graphic<?> graphic = symbolizer.getGraphic();
@@ -86,27 +86,13 @@ public final class PointToScene2D extends SymbolizerToScene2D<PointSymbolizer<?>
         if (symbol == null) {
             return List.of();
         }
-        final RenderedGraphics graphics = new RenderedGraphics(symbol.image,
-                AlphaComposite.getInstance(AlphaComposite.SRC_OVER, symbol.opacity));
+        final DrawingImage graphics = new DrawingImage(symbol.image, symbol.opacity);
         for (Point point : points) {
             final double[] xy = GeometryResolver.toDisplay(point, state.getDataToDisplay(point.getCoordinateReferenceSystem()));
             if (xy != null) {
-                graphics.placements.add(symbol.placement(xy[0], xy[1]));
+                graphics.add(symbol.placement(xy[0], xy[1]));
             }
         }
         return List.of(graphics);
-    }
-
-    public static final class Spi implements SymbolizerToScene2D.Spi<PointSymbolizer> {
-
-        @Override
-        public Class<PointSymbolizer> getSymbolizerType() {
-            return PointSymbolizer.class;
-        }
-
-        @Override
-        public SymbolizerToScene2D create(Scene2D state, PointSymbolizer symbolizer) throws RenderingException {
-            return new PointToScene2D(state, symbolizer);
-        }
     }
 }

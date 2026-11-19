@@ -317,7 +317,7 @@ public class RasterToScene2DTest {
 
         final BufferedImage image = new BufferedImage(100, 100, BufferedImage.TYPE_INT_ARGB);
         final Scene2D scene = new Scene2D(grid, image.createGraphics());
-        SymbolizerToScene2D.create(scene, symbolizer).paint(new SEPresentation(null, null, feature, symbolizer), (s) -> {});
+        SymbolizerToScene2D.create(scene, symbolizer).drawing(new SEPresentation(null, null, feature, symbolizer)).paint(scene.graphics);
         assertEquals(255, gray(image, cell(3), cell(3)));
         assertTransparent(image, 25, 50);
     }
@@ -425,22 +425,25 @@ public class RasterToScene2DTest {
     }
 
     /**
-     * Tests the histogram equalization: most cells have the value 0 and one cell has the value 100,
-     * so value 0 becomes bright after equalization while it is black after normalization.
+     * Tests the histogram equalization: 8 cells have the value 0, 4 cells the value 10 and 4 cells the value 100.
+     * The value 10 is dark after normalization, while it is the middle gray after equalization because half
+     * of the cells above the minimum have a value up to 10. The minimum is black and the maximum is white.
      */
     @Test
     public void testContrastEnhancementHistogram() throws RenderingException {
         final double[] values = constant(0);
-        values[15] = 100;
+        java.util.Arrays.fill(values,  8, 12, 10);
+        java.util.Arrays.fill(values, 12, 16, 100);
         final GridCoverage coverage = coverage(new String[] {"v"}, values);
         final RasterSymbolizer<Feature> symbolizer = symbolizer();
         symbolizer.setContrastEnhancement(contrast(ContrastMethod.NORMALIZE));
-        assertEquals(0, gray(render(symbolizer, coverage), cell(0), cell(0)));
+        assertEquals(Math.round(0.1 * 255), gray(render(symbolizer, coverage), cell(0), cell(2)));
 
         symbolizer.setContrastEnhancement(contrast(ContrastMethod.HISTOGRAM));
         final BufferedImage image = render(symbolizer, coverage);
-        assertEquals(Math.round(15 / 16.0 * 255), gray(image, cell(0), cell(0)));
-        assertEquals(255, gray(image, cell(3), cell(3)));
+        assertEquals(0,   gray(image, cell(0), cell(0)));
+        assertEquals(128, gray(image, cell(0), cell(2)));
+        assertEquals(255, gray(image, cell(0), cell(3)));
     }
 
     /**

@@ -536,7 +536,7 @@ public class PointToScene2DTest {
 
         final BufferedImage image = new BufferedImage(100, 100, BufferedImage.TYPE_INT_ARGB);
         final Scene2D scene = new Scene2D(grid, image.createGraphics());
-        SymbolizerToScene2D.create(scene, symbolizer).paint(new SEPresentation(null, null, feature, symbolizer), (s) -> {});
+        SymbolizerToScene2D.create(scene, symbolizer).drawing(new SEPresentation(null, null, feature, symbolizer)).paint(scene.graphics);
         assertColor(Color.RED, image, 70, 30);
         assertEmpty(image, 50, 50);
     }

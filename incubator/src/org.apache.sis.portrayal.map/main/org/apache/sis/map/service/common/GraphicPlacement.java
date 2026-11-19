@@ -14,17 +14,17 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.sis.map.service.se1;
+package org.apache.sis.map.service.common;
 
 
 /**
- * Subclassed by symbolizer who have resource caches.
- * This could contain images or models.
- * The cache instance may be shared by multiple {@link SymbolizerToScene2D} instances
- * using method {@link SymbolizerToScene2D#sharedCache(org.apache.sis.internal.renderer.SymbolizerCache) }.
+ * Where to draw a graphic: the anchor position in display coordinates and the rotation.
+ *
+ * @param x         horizontal display coordinate of the anchor.
+ * @param y         vertical display coordinate of the anchor, increasing downward.
+ * @param rotation  rotation in radians, clockwise on screen.
  *
  * @author Johann Sorel (Geomatys)
  */
-public abstract class SymbolizerCache {
-
+public record GraphicPlacement(double x, double y, double rotation) {
 }

@@ -21,7 +21,6 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.logging.Logger;
-import javax.measure.IncommensurableException;
 import javax.measure.Unit;
 import javax.measure.quantity.Length;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
@@ -30,11 +29,10 @@ import org.opengis.referencing.operation.TransformException;
 import org.opengis.util.FactoryException;
 import org.apache.sis.coverage.grid.GridGeometry;
 import org.apache.sis.coverage.grid.PixelInCell;
-import org.apache.sis.geometry.GeneralDirectPosition;
 import org.apache.sis.measure.Units;
 import org.apache.sis.referencing.CRS;
-import org.apache.sis.referencing.GeodeticCalculator;
 import org.apache.sis.referencing.operation.transform.MathTransforms;
+import org.apache.sis.map.service.common.MapScale;
 
 
 /**
@@ -47,16 +45,6 @@ public final class Scene2D {
     public static final Logger LOGGER = Logger.getLogger("org.apache.sis.internal.renderer");
 
     /**
-     * The rendering grid geometry.
-     */
-    public final GridGeometry grid;
-    /**
-     * Graphics to render into.
-     * When modified by renderers, it must be reset accordingly.
-     */
-    public final Graphics2D graphics;
-
-    /**
      * Definition from OGC SLD/SE :
      * The portrayal unit “pixel” is the default unit of measure.
      * If available, the pixel size depends on the viewer client resolution, otherwise it is equal to 0.28mm * 0.28mm (~ 90 DPI).
@@ -66,7 +54,17 @@ public final class Scene2D {
      *
      * TODO : should we use a transform as in GraphicsConfiguration.getNormalizingTransform() ?
      */
-    private double dpi = 96;
+    private static final double DPI = 96;
+
+    /**
+     * The rendering grid geometry.
+     */
+    public final GridGeometry grid;
+    /**
+     * Graphics to render into.
+     * When modified by renderers, it must be reset accordingly.
+     */
+    public final Graphics2D graphics;
 
     /**
      * Cache of transforms from data CRS to display, computed when first needed.
@@ -80,39 +78,18 @@ public final class Scene2D {
     private volatile double metresPerPixel = Double.NaN;
 
     /**
+     * The scale of the grid.
+     */
+    private final MapScale scale;
+
+    /**
      * @param grid scene domain
      * @param graphics to paint with
      */
     public Scene2D(GridGeometry grid, Graphics2D graphics) {
         this.grid = Objects.requireNonNull(grid);
         this.graphics = Objects.requireNonNull(graphics);
-    }
-
-    /**
-     * Graphics2D to use for painting data.
-     * This instance should be left untouched.
-     *
-     * @return Graphics2D
-     */
-    public Graphics2D getGraphics() {
-        return graphics;
-    }
-
-    /**
-     * Set current rendering DPI.
-     * Default is 96.
-     *
-     * @param dpi new DPI
-     */
-    public void setDpi(double dpi) {
-        this.dpi = dpi;
-    }
-
-    /**
-     * @return current DPI.
-     */
-    public double getDpi() {
-        return dpi;
+        scale = new MapScale(grid);
     }
 
     /**
@@ -123,7 +100,7 @@ public final class Scene2D {
      * @return distance in pixels
      */
     public double toPixels(double distance, Unit<Length> unit) {
-        return unit.getConverterTo(Units.INCH).convert(distance) * dpi;
+        return unit.getConverterTo(Units.INCH).convert(distance) * DPI;
     }
 
     /**
@@ -170,42 +147,44 @@ public final class Scene2D {
         if (!Units.isLinear(uom)) {
             throw new RenderingException("Unsupported symbology unit of measure : " + uom);
         }
-        double mpp = metresPerPixel;
-        if (Double.isNaN(mpp)) {
-            metresPerPixel = mpp = computeMetresPerPixel();
-        }
-        return uom.asType(Length.class).getConverterTo(Units.METRE).convert(1.0) / mpp;
+        return uom.asType(Length.class).getConverterTo(Units.METRE).convert(1.0) / metresPerPixel();
     }
 
     /**
-     * Computes the ground size of a pixel in metres, at the center of the grid.
-     * If the CRS axes are linear, the distance is measured in map units.
-     * Otherwise (geographic CRS), the geodesic distance is used.
+     * Returns the ground size of a pixel in metres, computed when first needed.
      */
-    private double computeMetresPerPixel() throws RenderingException {
-        final CoordinateReferenceSystem crs = grid.getCoordinateReferenceSystem();
-        try {
-            final MathTransform gridToCRS = grid.getGridToCRS(PixelInCell.CELL_CENTER);
-            final double[] p0 = grid.getExtent().getPointOfInterest(PixelInCell.CELL_CENTER);
-            final double[] p1 = p0.clone();
-            p1[0] += 1;
-            final GeneralDirectPosition c0 = new GeneralDirectPosition(crs);
-            final GeneralDirectPosition c1 = new GeneralDirectPosition(crs);
-            gridToCRS.transform(p0, 0, c0.coordinates, 0, 1);
-            gridToCRS.transform(p1, 0, c1.coordinates, 0, 1);
-            final Unit<?> axisUnit = crs.getCoordinateSystem().getAxis(0).getUnit();
-            if (Units.isLinear(axisUnit)) {
-                final double dx = c1.coordinates[0] - c0.coordinates[0];
-                final double dy = c1.coordinates[1] - c0.coordinates[1];
-                return axisUnit.getConverterToAny(Units.METRE).convert(Math.hypot(dx, dy));
-            }
-            final GeodeticCalculator calculator = GeodeticCalculator.create(crs);
-            calculator.setStartPoint(c0);
-            calculator.setEndPoint(c1);
-            return calculator.getDistanceUnit().getConverterToAny(Units.METRE).convert(calculator.getGeodesicDistance());
-        } catch (TransformException | IncommensurableException | IllegalArgumentException ex) {
-            throw new RenderingException(ex);
+    private double metresPerPixel() throws RenderingException {
+        double mpp = metresPerPixel;
+        if (Double.isNaN(mpp)) {
+            metresPerPixel = mpp = scale.metresPerPixel();
         }
+        return mpp;
     }
 
+    /**
+     * Returns the scale denominator from the ground size of the pixel at the center of the grid,
+     * with the OGC standardized rendering pixel size of 0.28 mm.
+     * In a geographic CRS, the value depends on the latitude.
+     *
+     * @return the ground scale denominator.
+     * @throws RenderingException if the ground resolution cannot be computed.
+     *
+     * @see MapScale#metresPerPixel()
+     */
+    public double getScaleDenominator() throws RenderingException {
+        return metresPerPixel() / MapScale.STANDARD_PIXEL_SIZE;
+    }
+
+    /**
+     * Returns the scale denominator by the nominal formula of Symbology Encoding renderers,
+     * with 6378137×2π/360 metres per degree at all latitudes and 90 pixels per inch.
+     *
+     * @return the nominal scale denominator.
+     * @throws RenderingException if the grid to CRS transform is not affine or not invertible.
+     *
+     * @see MapScale#nominalDenominator()
+     */
+    public double getNominalScaleDenominator() throws RenderingException {
+        return scale.nominalDenominator();
+    }
 }

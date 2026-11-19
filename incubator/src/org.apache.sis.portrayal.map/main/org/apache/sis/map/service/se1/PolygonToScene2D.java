@@ -22,8 +22,6 @@ import java.awt.geom.Area;
 import java.awt.geom.Path2D;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.function.Consumer;
-import java.util.stream.Stream;
 import org.opengis.feature.Feature;
 import org.opengis.referencing.operation.MathTransform;
 import org.apache.sis.geometries.Geometries;
@@ -32,10 +30,12 @@ import org.apache.sis.geometries.GeometryFactory;
 import org.apache.sis.geometries.Point;
 import org.apache.sis.geometries.curve.LineString;
 import org.apache.sis.geometries.operation.OperationException;
-import org.apache.sis.map.Presentation;
 import org.apache.sis.map.SEPresentation;
 import org.apache.sis.map.service.Scene2D;
 import org.apache.sis.map.service.RenderingException;
+import org.apache.sis.map.service.common.DrawingComposite;
+import org.apache.sis.map.service.common.Drawing;
+import org.apache.sis.map.service.common.DrawingShape;
 import org.apache.sis.referencing.operation.transform.MathTransforms;
 import org.apache.sis.style.se1.Displacement;
 import org.apache.sis.style.se1.Fill;
@@ -71,18 +71,20 @@ public final class PolygonToScene2D extends SymbolizerToScene2D<PolygonSymbolize
      */
     private static final double FLATNESS = 0.25;
 
-    private PolygonToScene2D(Scene2D state, PolygonSymbolizer<?> symbolizer) {
+    PolygonToScene2D(Scene2D state, PolygonSymbolizer<?> symbolizer) {
         super(state, symbolizer);
     }
 
+    /**
+     * Returns the drawing of the given presentation.
+     *
+     * @param  presentation  the presentation to draw.
+     * @return the drawing, possibly empty.
+     * @throws RenderingException if the drawing cannot be computed.
+     */
     @Override
-    public void paint(SEPresentation presentation, Consumer<Stream<Presentation>> callback) throws RenderingException {
-        RenderedVisual.paint(createVisuals(presentation), state.getGraphics());
-    }
-
-    @Override
-    public boolean intersects(SEPresentation presentation, Shape mask, Consumer<Stream<Presentation>> callback) throws RenderingException {
-        return RenderedVisual.intersects(createVisuals(presentation), mask);
+    protected Drawing drawing(SEPresentation presentation) throws RenderingException {
+        return new DrawingComposite(createDrawings(presentation));
     }
 
     /**
@@ -90,7 +92,7 @@ public final class PolygonToScene2D extends SymbolizerToScene2D<PolygonSymbolize
      *
      * @return visual elements, may be empty but never null.
      */
-    private List<RenderedVisual> createVisuals(SEPresentation presentation) throws RenderingException {
+    private List<Drawing> createDrawings(SEPresentation presentation) throws RenderingException {
         final Feature feature = presentation.getCandidate();
         final Geometry geometry = GeometryResolver.resolve(evaluate(feature, symbolizer.getGeometry()));
         if (geometry == null) {
@@ -111,7 +113,7 @@ public final class PolygonToScene2D extends SymbolizerToScene2D<PolygonSymbolize
          * the offset, then adding (positive offset) or removing (negative offset) that stroked outline.
          * This handles collapsing rings, holes and concave corners. The new outline is used for the stroke.
          */
-        Shape shape = StrokeVisuals.toPath(rings, Path2D.WIND_EVEN_ODD, true);
+        Shape shape = GeometryResolver.toPath(rings, Path2D.WIND_EVEN_ODD, true);
         List<LineString> outline = rings;
         final double offset = evaluateNumber(feature, symbolizer.getPerpendicularOffset(), 0.0) * pixelsPerUnit;
         if (offset != 0 && Double.isFinite(offset)) {
@@ -131,15 +133,15 @@ public final class PolygonToScene2D extends SymbolizerToScene2D<PolygonSymbolize
             GeometryResolver.linearComponents(Geometries.fromAWT(area, FLATNESS), outline);
         }
 
-        final List<RenderedVisual> visuals = new ArrayList<>(2);
+        final List<Drawing> visuals = new ArrayList<>(2);
         if (fill != null) {
-            final RenderedShape rs = FillStyle.create(shape, fill, feature, pixelsPerUnit);
-            if (rs != null) {
-                visuals.add(rs);
+            final StrokeStyle style = StrokeStyle.create(fill, feature, pixelsPerUnit);
+            if (style != null) {
+                visuals.add(style.applyTo(new DrawingShape(shape)));
             }
         }
         if (stroke != null) {
-            visuals.addAll(StrokeVisuals.create(outline, stroke, feature, pixelsPerUnit));
+            visuals.addAll(StrokeStyle.drawings(outline, stroke, feature, pixelsPerUnit));
         }
         return visuals;
     }
@@ -200,18 +202,5 @@ public final class PolygonToScene2D extends SymbolizerToScene2D<PolygonSymbolize
             }
         }
         return display;
-    }
-
-    public static final class Spi implements SymbolizerToScene2D.Spi<PolygonSymbolizer> {
-
-        @Override
-        public Class<PolygonSymbolizer> getSymbolizerType() {
-            return PolygonSymbolizer.class;
-        }
-
-        @Override
-        public SymbolizerToScene2D create(Scene2D state, PolygonSymbolizer symbolizer) throws RenderingException {
-            return new PolygonToScene2D(state, symbolizer);
-        }
     }
 }

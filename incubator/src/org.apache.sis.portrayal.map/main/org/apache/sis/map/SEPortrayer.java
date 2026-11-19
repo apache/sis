@@ -17,7 +17,6 @@
 package org.apache.sis.map;
 
 import java.awt.geom.AffineTransform;
-import java.awt.geom.NoninvertibleTransformException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashSet;
@@ -40,8 +39,6 @@ import org.locationtech.jts.geom.Point;
 import org.locationtech.jts.geom.Polygon;
 import org.opengis.util.GenericName;
 import org.opengis.geometry.Envelope;
-import org.opengis.referencing.crs.CoordinateReferenceSystem;
-import org.opengis.referencing.crs.GeographicCRS;
 import org.opengis.referencing.operation.MathTransform;
 import org.opengis.referencing.operation.TransformException;
 import org.opengis.feature.AttributeType;
@@ -61,6 +58,8 @@ import org.apache.sis.geometry.Envelopes;
 import org.apache.sis.geometry.GeneralEnvelope;
 import org.apache.sis.feature.internal.shared.AttributeConvention;
 import org.apache.sis.filter.base.XPath;
+import org.apache.sis.map.service.RenderingException;
+import org.apache.sis.map.service.common.MapScale;
 import org.apache.sis.storage.FeatureQuery;
 import org.apache.sis.storage.Aggregate;
 import org.apache.sis.storage.DataStoreException;
@@ -100,13 +99,6 @@ public final class SEPortrayer {
      * Rule scale tolerance.
      */
     private static final double SE_EPSILON = 1e-6;
-
-    /**
-     * Used in SLD/SE to calculate scale for degree CRSs.
-     */
-    private static final double SE_DEGREE_TO_METERS = 6378137.0 * 2.0 * Math.PI / 360.0;
-    private static final double DEFAULT_DPI = 90.0; // ~ 0.28 * 0.28mm
-    private static final double PIXEL_SIZE = 0.0254;
 
     /**
      * A test to know if a given property is an SIS convention or not. Return true if
@@ -232,15 +224,18 @@ public final class SEPortrayer {
         }
         final MathTransform   gridToCRS = canvas.getGridToCRS(PixelInCell.CELL_CENTER);
         final AffineTransform dispToObj;
-        final AffineTransform objToDisp;
         try {
             dispToObj = AffineTransforms2D.castOrCopy(gridToCRS);
-            objToDisp = dispToObj.createInverse();
-        } catch (IllegalArgumentException | NoninvertibleTransformException ex) {
+        } catch (IllegalArgumentException ex) {
             stream = Stream.concat(stream, Stream.of(new ExceptionPresentation(ex)));
             return stream;
         }
-        final double seScale = getSEScale(canvas, objToDisp);
+        final double seScale;
+        try {
+            seScale = new MapScale(canvas).nominalDenominator();
+        } catch (RenderingException ex) {
+            return Stream.concat(stream, Stream.of(new ExceptionPresentation(ex)));
+        }
         final Symbology style = (Symbology) layer.getStyle();     // TODO: we do not yet support other implementations.
         for (FeatureTypeStyle fts : style.featureTypeStyles()) {
             final List<Rule<Feature>> rules = getValidRules(fts, seScale, type);
@@ -535,33 +530,6 @@ public final class SEPortrayer {
         //TODO optimize filter
         //TODO add linear resolution
         return query;
-    }
-
-    /**
-     * Geographic scale calculated using OGC Symbology Encoding specification.
-     * This is not the scale Objective to Display.
-     * This is not an accurate geographic scale.
-     * This is a fake average scale unproper for correct rendering.
-     * It is used only to filter SE rules.
-     */
-    private static double getSEScale(final GridGeometry canvas, final AffineTransform objToDisp) {
-        final Envelope envelope = canvas.getEnvelope();
-        final CoordinateReferenceSystem objCRS = envelope.getCoordinateReferenceSystem();
-        final long width = canvas.getExtent().getSize(0);
-        if (AffineTransforms2D.getRotation(objToDisp) != 0.0) {
-            final double scale = AffineTransforms2D.getScale(objToDisp);
-            if (objCRS instanceof GeographicCRS) {
-                return (SE_DEGREE_TO_METERS * DEFAULT_DPI) / (scale*PIXEL_SIZE);
-            } else {
-                return DEFAULT_DPI / (scale *PIXEL_SIZE);
-            }
-        } else {
-            if (objCRS instanceof GeographicCRS) {
-                return (envelope.getSpan(0) * SE_DEGREE_TO_METERS) / (width / DEFAULT_DPI * PIXEL_SIZE);
-            } else {
-                return envelope.getSpan(0) / (width / DEFAULT_DPI * PIXEL_SIZE);
-            }
-        }
     }
 
     /**

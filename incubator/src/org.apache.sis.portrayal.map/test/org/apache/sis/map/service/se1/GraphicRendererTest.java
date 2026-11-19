@@ -44,6 +44,7 @@ import org.apache.sis.geometry.GeneralEnvelope;
 import org.apache.sis.map.MapLayer;
 import org.apache.sis.map.service.GraphicsPortrayer;
 import org.apache.sis.map.service.RenderingException;
+import org.apache.sis.map.service.common.ResourceLoader;
 import org.apache.sis.metadata.iso.citation.DefaultOnlineResource;
 import org.apache.sis.referencing.CommonCRS;
 import org.apache.sis.storage.MemoryFeatureSet;
@@ -233,7 +234,7 @@ public class GraphicRendererTest {
      */
     @Test
     public void testSVG() throws IOException {
-        assumeTrue(SVGGraphics.isAvailable(), "Apache Batik is not available.");
+        assumeTrue(new ResourceLoader().isSVGSupported(), "Apache Batik is not available.");
         final URI uri = svg("graphic.svg", 20, 10);
         var symbol = GraphicRenderer.render(graphic(null, external(uri, "image/svg+xml")), null, 1);
         assertNotNull(symbol);
@@ -253,7 +254,7 @@ public class GraphicRendererTest {
      */
     @Test
     public void testSVGWithoutSize() throws IOException {
-        assumeTrue(SVGGraphics.isAvailable(), "Apache Batik is not available.");
+        assumeTrue(new ResourceLoader().isSVGSupported(), "Apache Batik is not available.");
         final Path file = directory.resolve("unsized.svg");
         Files.writeString(file, "<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 20 10'>"
                 + "<rect width='20' height='10' fill='#00FF00'/></svg>", StandardCharsets.UTF_8);

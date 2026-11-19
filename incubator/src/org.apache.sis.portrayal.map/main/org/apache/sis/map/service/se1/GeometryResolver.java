@@ -16,6 +16,7 @@
  */
 package org.apache.sis.map.service.se1;
 
+import java.awt.geom.Path2D;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.function.BiConsumer;
@@ -29,37 +30,23 @@ import org.apache.sis.geometries.Geometry;
 import org.apache.sis.geometries.GeometryCollection;
 import org.apache.sis.geometries.GeometryFactory;
 import org.apache.sis.geometries.Point;
-import org.apache.sis.geometries.adapter.JTSAdapter;
 import org.apache.sis.geometries.curve.LineString;
 import org.apache.sis.geometries.operation.GeometryProcessor;
+import org.apache.sis.geometries.operation.OperationException;
 import org.apache.sis.geometries.surface.CurvePolygon;
 import org.apache.sis.geometries.surface.Polygon;
+import org.apache.sis.map.service.common.FeatureGeometry;
+import org.apache.sis.measure.Quantities;
+import org.apache.sis.measure.Units;
 
 
 /**
  * Utility methods for preparing SIS geometries for rendering.
- * Geometries from other libraries are converted to SIS geometries.
- * Only JTS is supported in this version.
+ * Geometries from other libraries are converted to SIS geometries by {@link FeatureGeometry}.
  *
  * @author Johann Sorel (Geomatys)
  */
 final class GeometryResolver {
-
-    /**
-     * Whether the JTS library is available.
-     * JTS is an optional dependency of this module.
-     */
-    private static final boolean JTS_PRESENT;
-    static {
-        boolean present;
-        try {
-            Class.forName("org.locationtech.jts.geom.Geometry", false, GeometryResolver.class.getClassLoader());
-            present = true;
-        } catch (ClassNotFoundException | LinkageError e) {
-            present = false;
-        }
-        JTS_PRESENT = present;
-    }
 
     /**
      * Logs the curves which cannot be linearized.
@@ -72,31 +59,12 @@ final class GeometryResolver {
 
     /**
      * Returns the given value as a SIS geometry.
-     * JTS geometries are wrapped in a SIS view, without copying the coordinates.
      *
      * @param  value  the value of the symbolizer geometry expression, may be null.
      * @return the SIS geometry, or {@code null} if the value is not a supported geometry.
      */
     static Geometry resolve(Object value) {
-        if (value instanceof Geometry geometry) {
-            return geometry;
-        }
-        if (JTS_PRESENT) {
-            return JTS.fromJTS(value);
-        }
-        return null;
-    }
-
-    /**
-     * Isolates the JTS dependency, so that this class can be loaded when JTS is absent.
-     */
-    private static final class JTS {
-        static Geometry fromJTS(Object value) {
-            if (value instanceof org.locationtech.jts.geom.Geometry jts) {
-                return JTSAdapter.fromJTS(jts, false);
-            }
-            return null;
-        }
+        return new FeatureGeometry(value).toGeometry();
     }
 
     /**
@@ -309,5 +277,49 @@ final class GeometryResolver {
      */
     static LineString toDisplay(LineString line, MathTransform dataToDisplay) {
         return (LineString) new GeometryProcessor().transform(line, Geometries.getUndefinedCRS(2), dataToDisplay);
+    }
+
+    /**
+     * Appends all given lines in a single Java2D path.
+     * Closed lines (polygon rings) are always closed in the path,
+     * so that their first vertex gets a line join instead of two line caps.
+     *
+     * @param  lines        lines in display space.
+     * @param  windingRule  {@link Path2D#WIND_EVEN_ODD} or {@link Path2D#WIND_NON_ZERO}.
+     * @param  close        whether to close all lines, for filling them as polygon rings.
+     * @return the path.
+     */
+    static Path2D toPath(List<LineString> lines, int windingRule, boolean close) {
+        final Path2D path = new Path2D.Double(windingRule);
+        for (LineString line : lines) {
+            path.append(Geometries.asShape(line), false);
+            if (close || line.isClosed()) path.closePath();
+        }
+        return path;
+    }
+
+    /**
+     * Offsets the given line in display space.
+     * Positive offsets are on the left side of the line direction as seen on screen,
+     * as specified by Symbology Encoding.
+     *
+     * @param  line    line in display space.
+     * @param  offset  offset in pixels, positive on the left side.
+     * @return the offset line, or {@code null} if it cannot be computed.
+     */
+    static LineString offset(LineString line, double offset) {
+        if (offset == 0 || !Double.isFinite(offset)) {
+            return line;
+        }
+        /*
+         * SIS offset curves put positive distances on the left side, but for a coordinate system
+         * with y axis oriented up while the display has y axis oriented down. Hence the negation.
+         */
+        try {
+            return GeometryFactory.DEFAULT.createOffsetCurve(line, Quantities.create(-offset, Units.UNITY), null).asLine(null, null);
+        } catch (OperationException | UnsupportedOperationException ex) {
+            SymbolizerToScene2D.LOGGER.log(Level.FINE, "Cannot compute the perpendicular offset.", ex);
+            return null;
+        }
     }
 }

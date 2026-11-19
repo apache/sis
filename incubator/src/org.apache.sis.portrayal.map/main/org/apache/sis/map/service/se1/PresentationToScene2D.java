@@ -16,27 +16,19 @@
  */
 package org.apache.sis.map.service.se1;
 
-import java.awt.Graphics2D;
 import java.awt.Shape;
-import java.io.IOException;
-import java.net.URISyntaxException;
-import java.util.HashMap;
-import java.util.Map;
+import java.util.List;
 import java.util.Objects;
-import java.util.function.Consumer;
-import java.util.function.Predicate;
 import java.util.logging.Level;
 import java.util.stream.Stream;
-import org.opengis.coordinate.MismatchedDimensionException;
-import org.opengis.referencing.operation.NoninvertibleTransformException;
-import org.opengis.referencing.operation.TransformException;
-import org.opengis.util.FactoryException;
 import org.apache.sis.map.Presentation;
 import org.apache.sis.map.SEPresentation;
 import org.apache.sis.map.service.Scene2D;
 import org.apache.sis.map.service.RenderingException;
-import org.apache.sis.coverage.grid.GridGeometry;
-import org.apache.sis.storage.DataStoreException;
+import org.apache.sis.map.service.common.Drawing;
+import org.apache.sis.map.service.common.HitCollector;
+import org.apache.sis.map.service.common.LabelCandidate;
+import org.apache.sis.map.service.common.LabelPlacer;
 import org.apache.sis.style.se1.Symbolizer;
 
 
@@ -47,32 +39,12 @@ import org.apache.sis.style.se1.Symbolizer;
  */
 final class PresentationToScene2D {
 
-    /**
-     * Flag instance for missing symbolizers converters.
-     */
-    private static final SymbolizerToScene2D<?> NONE = new SymbolizerToScene2D<Symbolizer<?>>(null, null){
-        @Override
-        public void paint(SEPresentation presentation, Consumer<Stream<Presentation>> callback) throws RenderingException {
-            throw new UnsupportedOperationException("Should not called.");
-        }
-    };
-    private static final SymbolizerCache NO_CACHE = new SymbolizerCache(){};
-
     private final Scene2D state;
 
-    private final Map<Symbolizer<?>,SymbolizerToScene2D<?>> cache = new HashMap<>();
-    private Map<Symbolizer<?>,SymbolizerCache> symbolizerCaches;
-
     /**
-     * Prepare parameters for scene creation.The grid geometry will provide the base coordinate system and scale informations.
-     * All further presentations must have been build with given grid as base.
-     *
-     * @param grid, not null
+     * Where to collect the labels for drawing them after all presentations, or {@code null} for drawing them immediately.
      */
-    public PresentationToScene2D(GridGeometry grid, Graphics2D graphics) throws FactoryException, MismatchedDimensionException, TransformException {
-        // Null values are verified by the Scene2D constuctor.
-        state = new Scene2D(grid, graphics);
-    }
+    private final LabelPlacer labels;
 
     /**
      * Create converter from an existing scene state.
@@ -80,132 +52,121 @@ final class PresentationToScene2D {
      * @param state, not null
      */
     public PresentationToScene2D(Scene2D state) {
-        this.state = Objects.requireNonNull(state);
+        this(state, null);
     }
 
     /**
-     * Define global shared cache map instance.
+     * Create converter from an existing scene state, collecting the labels instead of drawing them.
+     * The caller shall {@linkplain LabelPlacer#paint paint} the labels after all presentations.
      *
-     * @param symbolizerCaches
+     * @param state, not null
+     * @param labels where to collect the labels, or {@code null} for drawing them immediately.
      */
-    public void setSymbolizerCaches(Map<Symbolizer<?>, SymbolizerCache> symbolizerCaches) {
-        this.symbolizerCaches = symbolizerCaches;
+    public PresentationToScene2D(Scene2D state, LabelPlacer labels) {
+        this.state  = Objects.requireNonNull(state);
+        this.labels = labels;
     }
 
     /**
      * Convert and add given presentation to the scene.
+     * Labels are collected in the order of the presentations, if a label placer was specified.
      * Exceptions will be logged.
      *
      * @param presentations, not null, will be closed.
      */
     public void render(Stream<Presentation> presentations) {
         try {
-            presentations.parallel().forEach(new Consumer<Presentation>() {
-                @Override
-                public void accept(Presentation t) {
-                    try {
-                        render(t);
-                    } catch (Exception ex) {
-                        Scene2D.LOGGER.log(Level.INFO, ex.getMessage(), ex);
-                    }
+            final List<List<LabelCandidate>> found = presentations.parallel().map((presentation) -> {
+                try {
+                    return render(presentation);
+                } catch (Exception ex) {
+                    Scene2D.LOGGER.log(Level.INFO, ex.getMessage(), ex);
+                    return null;
                 }
-                });
+            }).filter((group) -> group != null && !group.isEmpty()).toList();
+            // The list is empty if the labels are not collected.
+            for (List<LabelCandidate> group : found) {
+                labels.add(group);
+            }
         } finally {
             presentations.close();
         }
     }
 
-    private void render(Presentation presentation) throws RenderingException, IOException, NoninvertibleTransformException, TransformException, URISyntaxException, FactoryException, DataStoreException {
+    /**
+     * Paints the given presentation, or returns its labels if they are collected.
+     *
+     * @return the labels to place, or {@code null} if the presentation has been painted.
+     */
+    private List<LabelCandidate> render(Presentation presentation) throws RenderingException {
         //standard presentation types
         if (presentation instanceof SEPresentation) {
-            render((SEPresentation) presentation);
+            return render((SEPresentation) presentation);
         } else {
             //unknown type
+            return null;
         }
     }
 
-    private void render(SEPresentation presentation) throws MismatchedDimensionException, TransformException, FactoryException, DataStoreException, IOException, RenderingException {
+    private List<LabelCandidate> render(SEPresentation presentation) throws RenderingException {
         final SymbolizerToScene2D<?> sts = getRenderer(presentation.getSymbolizer());
-
         if (sts != null) {
-            sts.paint(presentation, this::render);
-        } else {
-            Scene2D.LOGGER.log(Level.INFO, "Unnowned symbolizer {0}", presentation.getSymbolizer().getClass().getName());
+            if (labels != null) {
+                final List<LabelCandidate> found = sts.labels(presentation);
+                if (found != null) {
+                    return found;
+                }
+            }
+            final Drawing drawing = sts.drawing(presentation);
+            if (drawing != null) {
+                drawing.paint(state.graphics);
+            }
         }
+        return null;
     }
 
     /**
-     * Process given presentations and retain only thos who intersects the requested shape.
+     * Process given presentations and retain only those whose drawings intersect the requested shape.
+     * Each presentation is retained at most once.
      *
-     * @param presentations, not null.
+     * @param presentations the presentations to test, not null.
+     * @param mask the area to test, in display coordinates.
+     * @return the presentations intersecting the area.
      */
     public Stream<Presentation> intersects(Stream<Presentation> presentations, Shape mask) {
-
-        final Consumer<Stream<Presentation>> callback = (Stream<Presentation> t) -> {intersects(t, mask);};
-
-        return presentations.parallel().filter(new Predicate<Presentation>() {
-            @Override
-            public boolean test(Presentation t) {
-                try {
-                    return intersects(t, mask, callback);
-                } catch (RenderingException ex) {
-                    Scene2D.LOGGER.log(Level.WARNING, ex.getMessage(), ex);
-                }
+        final HitCollector collector = new HitCollector(mask);
+        return presentations.parallel().filter((presentation) -> {
+            try {
+                return collector.add(presentation, drawing(presentation));
+            } catch (RenderingException ex) {
+                Scene2D.LOGGER.log(Level.WARNING, ex.getMessage(), ex);
                 return false;
             }
         });
     }
 
-    private boolean intersects(Presentation presentation, Shape mask,  Consumer<Stream<Presentation>> callback) throws RenderingException {
-        //standard presentation types
-        if (presentation instanceof SEPresentation) {
-            return intersects((SEPresentation) presentation, mask, callback);
-        } else {
-            //unknown type
-            return false;
-        }
-    }
-
-    private boolean intersects(SEPresentation presentation, Shape mask,  Consumer<Stream<Presentation>> callback) throws RenderingException {
-        final SymbolizerToScene2D<?> sts = getRenderer(presentation.getSymbolizer());
-
-        if (sts != null) {
-            return sts.intersects(presentation, mask, callback);
-        } else {
-            Scene2D.LOGGER.log(Level.INFO, "Unnowned symbolizer {0}", presentation.getSymbolizer().getClass().getName());
-            return false;
-        }
-    }
-
-    private SymbolizerToScene2D<?> getRenderer(Symbolizer<?> symbolizer) throws RenderingException {
-        SymbolizerToScene2D<?> sts;
-        synchronized (cache) {
-            sts = cache.get(symbolizer);
-            if (sts == NONE) {
-                sts = null;
-            } else if (sts == null) {
-                sts = SymbolizerToScene2D.create(state, symbolizer);
-                if (sts == null) sts = NONE;
-                cache.put(symbolizer, sts);
-                if (sts == NONE) {
-                    sts = null;
-                } else if (symbolizerCaches != null) {
-                    // get or create shared cache
-                    SymbolizerCache cache = symbolizerCaches.get(symbolizer);
-                    if (cache == null) {
-                        cache = SymbolizerToScene2D.createCache(symbolizer);
-                        if (cache == null) {
-                            cache = NO_CACHE;
-                        }
-                        symbolizerCaches.put(symbolizer, cache);
-                    }
-                    if (cache != NO_CACHE) {
-                        sts.sharedCache(cache);
-                    }
-                }
+    /**
+     * Returns the drawing of the given presentation, or {@code null} if none.
+     */
+    private Drawing drawing(Presentation presentation) throws RenderingException {
+        if (presentation instanceof SEPresentation se) {
+            final SymbolizerToScene2D<?> sts = getRenderer(se.getSymbolizer());
+            if (sts != null) {
+                return sts.drawing(se);
             }
+        }
+        return null;
+    }
+
+    /**
+     * Returns the renderer of the given symbolizer, or logs a message and returns {@code null} if not supported.
+     * Renderers are lightweight objects, so a new one is created for each presentation.
+     */
+    private SymbolizerToScene2D<?> getRenderer(Symbolizer<?> symbolizer) {
+        final SymbolizerToScene2D<?> sts = SymbolizerToScene2D.create(state, symbolizer);
+        if (sts == null) {
+            Scene2D.LOGGER.log(Level.INFO, "Unknown symbolizer {0}", symbolizer.getClass().getName());
         }
         return sts;
     }
-
 }

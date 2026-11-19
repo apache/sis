@@ -18,7 +18,6 @@ package org.apache.sis.map.service.se1;
 
 import java.awt.Color;
 import java.awt.Font;
-import java.awt.FontFormatException;
 import java.awt.Graphics2D;
 import java.awt.RenderingHints;
 import java.awt.Shape;
@@ -31,16 +30,10 @@ import java.awt.geom.Ellipse2D;
 import java.awt.geom.Path2D;
 import java.awt.geom.Rectangle2D;
 import java.awt.image.BufferedImage;
-import java.io.IOException;
-import java.io.InputStream;
-import java.lang.ref.SoftReference;
 import java.net.URI;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
-import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.Function;
 import java.util.logging.Level;
 import javax.imageio.ImageIO;
@@ -48,6 +41,10 @@ import javax.swing.Icon;
 import org.opengis.feature.Feature;
 import org.opengis.filter.Expression;
 import org.opengis.metadata.citation.OnlineResource;
+import org.apache.sis.map.service.common.ColorSubstitution;
+import org.apache.sis.map.service.common.ExternalImage;
+import org.apache.sis.map.service.common.ResourceLoader;
+import org.apache.sis.map.service.common.DrawingShape;
 import org.apache.sis.style.se1.ColorReplacement;
 import org.apache.sis.style.se1.ExternalGraphic;
 import org.apache.sis.style.se1.FeatureTypeStyle;
@@ -112,15 +109,9 @@ final class GraphicRenderer {
     private static final FontRenderContext FRC = new FontRenderContext(null, true, true);
 
     /**
-     * Value stored in the resource cache for resources which cannot be loaded.
+     * Loader and cache of the external resources (images, SVG documents and fonts), shared by all renderers.
      */
-    private static final Object FAILED = new Object();
-
-    /**
-     * Cache of loaded external resources (images, SVG documents and fonts) by URI.
-     * Values are softly referenced for allowing the garbage collector to release them.
-     */
-    private static final Map<URI, SoftReference<Object>> RESOURCES = new ConcurrentHashMap<>();
+    private static final ResourceLoader RESOURCES = new ResourceLoader();
 
     /**
      * Well-known marks, centered on (0,0) in a 1×1 box, in display orientation (y down).
@@ -342,18 +333,19 @@ final class GraphicRenderer {
         }
         final Fill<?> fill = mark.getFill().orElse(null);
         final Stroke<?> stroke = mark.getStroke().orElse(null);
-        final RenderedShape filled = (fill != null) ? FillStyle.create(null, fill, feature, pixelsPerUnit) : null;
+        final StrokeStyle filled  = (fill   != null) ? StrokeStyle.create(fill,   feature, pixelsPerUnit) : null;
         final StrokeStyle outline = (stroke != null) ? StrokeStyle.create(stroke, feature, pixelsPerUnit) : null;
         if (filled == null && outline == null) {
             return null;
         }
-        final RenderedShape rs = (filled != null) ? filled : new RenderedShape();
+        final DrawingShape rs = new DrawingShape();
+        if (filled  != null) filled.applyTo(rs);
         if (outline != null) outline.applyTo(rs);
         final double strokeWidth = (outline != null) ? outline.stroke.getLineWidth() : 0;
         final int side = Math.max(1, (int) Math.ceil(size + strokeWidth)) + 2 * PADDING;
         final AffineTransform toImage = AffineTransform.getTranslateInstance(side / 2.0, side / 2.0);
         toImage.scale(size, size);
-        rs.shape = toImage.createTransformedShape(unitShape);
+        rs.setShape(toImage.createTransformedShape(unitShape));
         final BufferedImage image = new BufferedImage(side, side, BufferedImage.TYPE_INT_ARGB);
         final Graphics2D g = image.createGraphics();
         try {
@@ -375,17 +367,16 @@ final class GraphicRenderer {
         final OnlineResource resource = mark.getOnlineResource().orElse(null);
         if (resource != null) {
             final URI uri = resource.getLinkage();
-            final String format = mark.getFormat().orElse(null);
-            if (uri == null || !isFont(uri, format)) {
+            final Font font = (uri != null) ? RESOURCES.font(uri, mark.getFormat().orElse(null)) : null;
+            if (font == null) {
                 SymbolizerToScene2D.LOGGER.log(Level.FINE, "Unsupported mark resource: {0}", uri);
                 return null;
             }
-            final Object font = load(uri, format);
             final double index = mark.getMarkIndex().map((e) -> SymbolizerToScene2D.evaluateNumber(feature, e, Double.NaN)).orElse(Double.NaN);
-            if (!(font instanceof Font f) || Double.isNaN(index)) {
+            if (Double.isNaN(index)) {
                 return null;
             }
-            return glyph(f.deriveFont(100f).createGlyphVector(FRC, new int[] {(int) index}));
+            return glyph(font.deriveFont(100f).createGlyphVector(FRC, new int[] {(int) index}));
         }
         final String name = SymbolizerToScene2D.evaluateString(feature, mark.getWellKnownName(), "square").trim();
         if (name.regionMatches(true, 0, FONT_PREFIX, 0, FONT_PREFIX.length())) {
@@ -473,30 +464,25 @@ final class GraphicRenderer {
      * @return the graphic image, or {@code null} if the graphic cannot be loaded.
      */
     private static Drawn renderExternal(ExternalGraphic<?> external, Feature feature, double size) {
-        BufferedImage source = null;
-        SVGGraphics svg = null;
+        ExternalImage graphic = null;
         final Icon icon = external.getInlineContent().orElse(null);
         if (icon != null) {
-            source = toImage(icon);
+            final BufferedImage image = toImage(icon);
+            if (image != null) {
+                graphic = new ExternalImage.Raster(image);
+            }
         } else {
             final OnlineResource resource = external.getOnlineResource().orElse(null);
             final URI uri = (resource != null) ? resource.getLinkage() : null;
             if (uri != null) {
-                final Object loaded = load(uri, external.getFormat().orElse(null));
-                if (loaded instanceof BufferedImage image) source = image;
-                else if (loaded instanceof SVGGraphics s) svg = s;
+                graphic = RESOURCES.image(uri, external.getFormat().orElse(null));
             }
         }
-        final double nativeWidth, nativeHeight;
-        if (source != null) {
-            nativeWidth  = source.getWidth();
-            nativeHeight = source.getHeight();
-        } else if (svg != null) {
-            nativeWidth  = svg.width;
-            nativeHeight = svg.height;
-        } else {
+        if (graphic == null) {
             return null;
         }
+        final double nativeWidth  = graphic.getWidth();
+        final double nativeHeight = graphic.getHeight();
         final double height = Double.isNaN(size) ? nativeHeight : size;
         final double width  = nativeWidth * height / nativeHeight;
         if (!(width > 0 && height > 0) || width > MAX_SIZE || height > MAX_SIZE) {
@@ -504,10 +490,7 @@ final class GraphicRenderer {
         }
         final int w = (int) Math.ceil(width);
         final int h = (int) Math.ceil(height);
-        if (svg != null) {
-            source = svg.render(w, h);
-        }
-        source = replaceColors(source, external.colorReplacements(), feature);
+        final BufferedImage source = replaceColors(graphic.image(w, h), external.colorReplacements(), feature);
         final BufferedImage image = new BufferedImage(w + 2 * PADDING, h + 2 * PADDING, BufferedImage.TYPE_INT_ARGB);
         final Graphics2D g = image.createGraphics();
         try {
@@ -543,7 +526,7 @@ final class GraphicRenderer {
     /**
      * Applies the color replacements on a copy of the given image.
      * Each replacement shall be a {@link Recode} function using the pixel color as its lookup value.
-     * The alpha of each pixel is multiplied by the alpha of its replacement color.
+     * The first function giving a color for a pixel color is used.
      *
      * @return the image with replaced colors, or the given image if there is no replacement.
      */
@@ -563,93 +546,12 @@ final class GraphicRenderer {
         if (recoders.isEmpty()) {
             return source;
         }
-        final int w = source.getWidth(), h = source.getHeight();
-        final int[] pixels = source.getRGB(0, 0, w, h, null, 0, w);
-        final Map<Integer,Integer> cache = new HashMap<>();
-        for (int i = 0; i < pixels.length; i++) {
-            final int argb = pixels[i];
-            final int alpha = argb >>> 24;
-            if (alpha == 0) continue;
-            final int replacement = cache.computeIfAbsent(argb & 0xFFFFFF, (rgb) -> {
-                final Color color = new Color(rgb);
-                for (Function<Object,Object> recoder : recoders) {
-                    final Color c = SymbolizerToScene2D.toColor(recoder.apply(color), null);
-                    if (c != null) return c.getRGB();
-                }
-                return 0xFF000000 | rgb;        // No replacement.
-            });
-            final int a = alpha * (replacement >>> 24) / 255;
-            pixels[i] = (a << 24) | (replacement & 0xFFFFFF);
-        }
-        final BufferedImage image = new BufferedImage(w, h, BufferedImage.TYPE_INT_ARGB);
-        image.setRGB(0, 0, w, h, pixels, 0, w);
-        return image;
-    }
-
-    // ////////////////////////////////////////////////////////////////////////
-    // Resources //////////////////////////////////////////////////////////////
-    // ////////////////////////////////////////////////////////////////////////
-
-    /**
-     * Returns whether the given resource is a font, according its format or its file extension.
-     */
-    private static boolean isFont(final URI uri, final String format) {
-        final String f = (format != null) ? format.toLowerCase(Locale.ROOT) : "";
-        if (f.contains("ttf") || f.contains("otf") || f.contains("truetype") || f.contains("opentype") || f.startsWith("font/")) {
-            return true;
-        }
-        final String path = String.valueOf(uri.getPath()).toLowerCase(Locale.ROOT);
-        return path.endsWith(".ttf") || path.endsWith(".otf");
-    }
-
-    /**
-     * Returns whether the given resource is an SVG document, according its format or its file extension.
-     */
-    private static boolean isSVG(final URI uri, final String format) {
-        if (format != null && format.toLowerCase(Locale.ROOT).contains("svg")) {
-            return true;
-        }
-        final String path = String.valueOf(uri.getPath()).toLowerCase(Locale.ROOT);
-        return path.endsWith(".svg");
-    }
-
-    /**
-     * Loads the resource at the given URI: a {@link Font}, an {@link SVGGraphics} or a {@link BufferedImage}.
-     * Resources are cached. Failures are logged once and cached too.
-     *
-     * @return the loaded resource, or {@code null} if it cannot be loaded.
-     */
-    private static Object load(final URI uri, final String format) {
-        final SoftReference<Object> ref = RESOURCES.get(uri);
-        Object value = (ref != null) ? ref.get() : null;
-        if (value == null) {
-            try {
-                if (!uri.isAbsolute()) {
-                    throw new IOException("Relative URI cannot be resolved: " + uri);
-                }
-                final boolean font = isFont(uri, format);
-                final boolean svg = !font && isSVG(uri, format);
-                if (svg && !SVGGraphics.isAvailable()) {
-                    throw new IOException("Apache Batik is required for rendering SVG graphics: " + uri);
-                }
-                try (InputStream in = uri.toURL().openStream()) {
-                    if (font) {
-                        value = Font.createFont(Font.TRUETYPE_FONT, in);
-                    } else if (svg) {
-                        value = SVGGraphics.load(uri, in);
-                    } else {
-                        value = ImageIO.read(in);
-                        if (value == null) {
-                            throw new IOException("Unsupported image format: " + uri);
-                        }
-                    }
-                }
-            } catch (IOException | FontFormatException | RuntimeException e) {
-                SymbolizerToScene2D.LOGGER.log(Level.WARNING, "Cannot load graphic resource: " + uri, e);
-                value = FAILED;
+        return new ColorSubstitution((color) -> {
+            for (Function<Object,Object> recoder : recoders) {
+                final Color c = SymbolizerToScene2D.toColor(recoder.apply(color), null);
+                if (c != null) return c;
             }
-            RESOURCES.put(uri, new SoftReference<>(value));
-        }
-        return (value != FAILED) ? value : null;
+            return null;
+        }).apply(source);
     }
 }

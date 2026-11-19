@@ -19,7 +19,6 @@ package org.apache.sis.map.service.se1;
 import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.Font;
-import java.awt.FontMetrics;
 import java.awt.Graphics2D;
 import java.awt.RenderingHints;
 import java.awt.image.BufferedImage;
@@ -30,9 +29,7 @@ import java.net.URI;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
-import java.util.LinkedHashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.Objects;
 import java.util.function.DoubleUnaryOperator;
 import javax.imageio.ImageIO;
@@ -63,6 +60,10 @@ import org.apache.sis.map.SEPresentation;
 import org.apache.sis.metadata.iso.citation.DefaultOnlineResource;
 import org.apache.sis.map.service.RenderingException;
 import org.apache.sis.map.service.Scene2D;
+import org.apache.sis.map.service.common.Drawing;
+import org.apache.sis.map.service.common.ValidationCase;
+import org.apache.sis.map.service.common.ValidationData;
+import org.apache.sis.map.service.common.ValidationSheet;
 import org.apache.sis.maths.DataType;
 import org.apache.sis.maths.NDArrays;
 import org.apache.sis.maths.Vector;
@@ -141,43 +142,48 @@ public final class SEPainterValidation {
      * @param symbolizer   the symbolizer to validate, not null.
      * @param description  short description of what is validated, not null.
      */
-    public record Case(Feature feature, Symbolizer<Feature> symbolizer, String description) {
+    public record Case(Feature feature, Symbolizer<Feature> symbolizer, String description) implements ValidationCase {
         public Case {
             Objects.requireNonNull(feature, "feature");
             Objects.requireNonNull(symbolizer, "symbolizer");
             Objects.requireNonNull(description, "description");
         }
+
+        /**
+         * Paints the feature with the symbolizer, then the source geometry and the anchor points in magenta.
+         * The curves which cannot be linearized are reported as problems.
+         *
+         * @param  graphics  where to paint, in the display coordinates of the grid.
+         * @param  grid      the rendering grid of the tile.
+         * @param  problems  where to add the curves which are not rendered.
+         * @throws RenderingException if the rendering failed.
+         */
+        @Override
+        public void paint(final Graphics2D graphics, final GridGeometry grid, final List<String> problems) throws RenderingException {
+            final Scene2D scene = new Scene2D(grid, graphics);
+            SEPainterValidation.paint(scene, feature, symbolizer);
+
+            final LineSymbolizer<Feature> reference = new LineSymbolizer<>(FeatureTypeStyle.FACTORY);
+            reference.setGeometry(symbolizer.getGeometry());
+            reference.getStroke().setColor(FF.literal(REFERENCE_COLOR));
+            reference.getStroke().setWidth(FF.literal(1.0));
+            SEPainterValidation.paint(scene, feature, reference);
+            if (symbolizer instanceof PointSymbolizer<?> || (symbolizer instanceof TextSymbolizer<?> ts
+                    && !(ts.getLabelPlacement() instanceof LinePlacement<?>)))
+            {
+                // Show where the graphics are anchored.
+                final PointSymbolizer<Feature> anchor = new PointSymbolizer<>(FeatureTypeStyle.FACTORY);
+                anchor.setGeometry(symbolizer.getGeometry());
+                anchor.getGraphic().graphicalSymbols().add(mark("cross", REFERENCE_COLOR, null));
+                anchor.getGraphic().setSize(FF.literal(7.0));
+                SEPainterValidation.paint(scene, feature, anchor);
+            }
+            final String error = linearizationProblems(this);
+            if (error != null) {
+                problems.add(error);
+            }
+        }
     }
-
-    /**
-     * Size in pixels of the rendered area of each tile.
-     */
-    private static final int TILE_SIZE = 140;
-
-    /**
-     * Space in pixels around each tile.
-     */
-    private static final int MARGIN = 8;
-
-    /**
-     * Height in pixels of the description area below each tile.
-     */
-    private static final int TEXT_HEIGHT = 58;
-
-    /**
-     * Height in pixels of the title area.
-     */
-    private static final int HEADER_HEIGHT = 48;
-
-    /**
-     * Height in pixels of a section title.
-     */
-    private static final int SECTION_HEIGHT = 34;
-
-    /**
-     * Number of tiles per row.
-     */
-    private static final int COLUMNS = 6;
 
     /**
      * Color of the source geometry drawn over each rendering.
@@ -191,20 +197,15 @@ public final class SEPainterValidation {
     private static final GeometryFactory GF = GeometryFactory.DEFAULT;
 
     /**
-     * Rendering grid of each tile.
+     * Factory of the geometries and coverages shared with the other validation sheets.
      */
-    private static final GridGeometry GRID;
+    private static final ValidationData DATA = new ValidationData();
 
     /**
      * Type of all features.
      */
     private static final FeatureType TYPE;
     static {
-        final GeneralEnvelope env = new GeneralEnvelope(CRS84);
-        env.setRange(0, -70, 70);
-        env.setRange(1, -70, 70);
-        GRID = new GridGeometry(new GridExtent(TILE_SIZE, TILE_SIZE), env, GridOrientation.REFLECTION_Y);
-
         /*
          * SIS geometries cannot be declared as the default geometry of a feature type
          * (they are not yet known to the generic geometry wrappers). Symbolizers must
@@ -232,19 +233,16 @@ public final class SEPainterValidation {
      */
     public static void main(String[] args) throws IOException {
         final Path output = Path.of(args.length > 0 ? args[0] : "SEPainterValidation.png");
-        final Map<String, List<Case>> sections = new LinkedHashMap<>();
-        sections.put("LineSymbolizer", lineCases());
-        sections.put("LineSymbolizer on curve types", curveCases());
-        sections.put("PolygonSymbolizer", polygonCases());
-        sections.put("PointSymbolizer", pointCases());
-        sections.put("External graphics and font marks", externalCases());
-        sections.put("TextSymbolizer", textCases());
-        sections.put("RasterSymbolizer", rasterCases());
-        final BufferedImage image = render("Symbology Encoding validation", sections);
-        if (!ImageIO.write(image, "png", output.toFile())) {
-            throw new IOException("No PNG writer available.");
-        }
-        System.out.println("Validation image written to " + output.toAbsolutePath());
+        final ValidationSheet sheet = new ValidationSheet("Symbology Encoding validation");
+        sheet.add("LineSymbolizer", lineCases());
+        sheet.add("LineSymbolizer on curve types", curveCases());
+        sheet.add("PolygonSymbolizer", polygonCases());
+        sheet.add("PointSymbolizer", pointCases());
+        sheet.add("External graphics and font marks", externalCases());
+        sheet.add("TextSymbolizer", textCases());
+        sheet.add("RasterSymbolizer", rasterCases());
+        sheet.write(output);
+        System.out.println(sheet.size() + " cases written to " + output.toAbsolutePath());
     }
 
     // ////////////////////////////////////////////////////////////////////////
@@ -260,153 +258,153 @@ public final class SEPainterValidation {
         final List<Case> cases = new ArrayList<>();
 
         // ---- Stroke color, opacity and width ----
-        cases.add(new Case(feature(straight()), symbolizer(), "Default stroke: black, 1px"));
+        cases.add(new Case(feature(DATA.straight()), symbolizer(), "Default stroke: black, 1px"));
         {
             final var s = symbolizer(); s.getStroke().setColor(FF.literal(Color.RED)); s.getStroke().setWidth(FF.literal(4.0));
-            cases.add(new Case(feature(straight()), s, "Color: red, width 4"));
+            cases.add(new Case(feature(DATA.straight()), s, "Color: red, width 4"));
         }
         {
-            final var f = feature(curve()); f.setPropertyValue("color", Color.BLUE); f.setPropertyValue("width", 6.0);
+            final var f = feature(DATA.curve()); f.setPropertyValue("color", Color.BLUE); f.setPropertyValue("width", 6.0);
             final var s = symbolizer(); s.getStroke().setColor(FF.property("color", Color.class)); s.getStroke().setWidth(FF.property("width", Double.class));
             cases.add(new Case(f, s, "Color and width from attributes: blue, 6"));
         }
         for (double opacity : new double[] {1, 0.5, 0.2}) {
             final var s = symbolizer(); s.getStroke().setWidth(FF.literal(12.0)); s.getStroke().setOpacity(FF.literal(opacity));
-            cases.add(new Case(feature(zigzag()), s, "Opacity " + opacity + ", width 12"));
+            cases.add(new Case(feature(DATA.zigzag()), s, "Opacity " + opacity + ", width 12"));
         }
         for (double width : new double[] {2, 8, 20}) {
             final var s = symbolizer(); s.getStroke().setWidth(FF.literal(width));
-            cases.add(new Case(feature(straight()), s, "Width " + width));
+            cases.add(new Case(feature(DATA.straight()), s, "Width " + width));
         }
 
         // ---- Line join and cap ----
         for (String join : new String[] {"mitre", "round", "bevel"}) {
             final var s = symbolizer(); s.getStroke().setWidth(FF.literal(14.0)); s.getStroke().setLineJoin(FF.literal(join));
             s.getStroke().setColor(FF.literal(Color.DARK_GRAY));
-            cases.add(new Case(feature(zigzag()), s, "Line join: " + join + ", width 14"));
+            cases.add(new Case(feature(DATA.zigzag()), s, "Line join: " + join + ", width 14"));
         }
         for (String cap : new String[] {"butt", "round", "square"}) {
             final var s = symbolizer(); s.getStroke().setWidth(FF.literal(20.0)); s.getStroke().setLineCap(FF.literal(cap));
             s.getStroke().setColor(FF.literal(Color.DARK_GRAY));
-            cases.add(new Case(feature(line(-40, 0, 40, 0)), s, "Line cap: " + cap + ", width 20"));
+            cases.add(new Case(feature(DATA.line(-40, 0, 40, 0)), s, "Line cap: " + cap + ", width 20"));
         }
 
         // ---- Dashes ----
         {
             final var s = symbolizer(); s.getStroke().setWidth(FF.literal(4.0)); s.getStroke().setDashArray(FF.literal(new float[] {10, 5}));
-            cases.add(new Case(feature(curve()), s, "Dash array [10 5], width 4"));
+            cases.add(new Case(feature(DATA.curve()), s, "Dash array [10 5], width 4"));
         }
         {
             final var s = symbolizer(); s.getStroke().setWidth(FF.literal(4.0)); s.getStroke().setDashArray(FF.literal(new float[] {20, 5, 2, 5}));
-            cases.add(new Case(feature(curve()), s, "Dash array [20 5 2 5], width 4"));
+            cases.add(new Case(feature(DATA.curve()), s, "Dash array [20 5 2 5], width 4"));
         }
         for (int offset : new int[] {0, 10}) {
             final var s = symbolizer(); s.getStroke().setWidth(FF.literal(6.0)); s.getStroke().setLineCap(FF.literal("butt"));
             s.getStroke().setDashArray(FF.literal(new float[] {20, 10}));
             s.getStroke().setDashOffset(FF.literal(offset));
-            cases.add(new Case(feature(straight()), s, "Dash [20 10], dash offset " + offset + ", butt cap"));
+            cases.add(new Case(feature(DATA.straight()), s, "Dash [20 10], dash offset " + offset + ", butt cap"));
         }
 
         // ---- Graphic fill ----
         {
             final var s = symbolizer(); s.getStroke().setWidth(FF.literal(20.0));
             s.getStroke().setGraphicFill(graphicFill(mark("cross", Color.RED, null), 8));
-            cases.add(new Case(feature(zigzag()), s, "Graphic fill: red cross 8px, width 20"));
+            cases.add(new Case(feature(DATA.zigzag()), s, "Graphic fill: red cross 8px, width 20"));
         }
         {
             final var s = symbolizer(); s.getStroke().setWidth(FF.literal(24.0));
             s.getStroke().setGraphicFill(graphicFill(mark("circle", Color.ORANGE, Color.BLACK), 10));
-            cases.add(new Case(feature(curve()), s, "Graphic fill: outlined orange circle 10px, width 24"));
+            cases.add(new Case(feature(DATA.curve()), s, "Graphic fill: outlined orange circle 10px, width 24"));
         }
 
         // ---- Graphic stroke ----
         {
             final var s = symbolizer(); s.getStroke().setGraphicStroke(new GraphicStroke<>(FeatureTypeStyle.FACTORY));
-            cases.add(new Case(feature(curve()), s, "Graphic stroke: default graphic (gray square 6px)"));
+            cases.add(new Case(feature(DATA.curve()), s, "Graphic stroke: default graphic (gray square 6px)"));
         }
         for (String wkn : new String[] {"square", "circle", "triangle", "star", "cross", "x"}) {
             final var s = symbolizer(); s.getStroke().setGraphicStroke(graphicStroke(mark(wkn, Color.GREEN.darker(), Color.BLACK), 12));
-            cases.add(new Case(feature(curve()), s, "Graphic stroke: " + wkn + " 12px, follows line direction"));
+            cases.add(new Case(feature(DATA.curve()), s, "Graphic stroke: " + wkn + " 12px, follows line direction"));
         }
         {
             final var gs = graphicStroke(mark("triangle", Color.RED, Color.BLACK), 10); gs.setGap(FF.literal(10.0));
             final var s = symbolizer(); s.getStroke().setGraphicStroke(gs);
-            cases.add(new Case(feature(zigzag()), s, "Graphic stroke gap 10, triangle 10px"));
+            cases.add(new Case(feature(DATA.zigzag()), s, "Graphic stroke gap 10, triangle 10px"));
         }
         {
             final var gs = graphicStroke(mark("square", Color.RED, Color.BLACK), 10); gs.setGap(FF.literal(10.0)); gs.setInitialGap(FF.literal(40.0));
             final var s = symbolizer(); s.getStroke().setGraphicStroke(gs);
-            cases.add(new Case(feature(straight()), s, "Graphic stroke initial gap 40, gap 10"));
+            cases.add(new Case(feature(DATA.straight()), s, "Graphic stroke initial gap 40, gap 10"));
         }
         {
             final var gs = graphicStroke(mark("square", Color.CYAN, Color.BLACK), 10); gs.setGap(FF.literal(6.0));
             gs.getGraphic().setRotation(FF.literal(45.0));
             final var s = symbolizer(); s.getStroke().setGraphicStroke(gs);
-            cases.add(new Case(feature(straight()), s, "Graphic stroke, graphic rotation 45°"));
+            cases.add(new Case(feature(DATA.straight()), s, "Graphic stroke, graphic rotation 45°"));
         }
         {
             final var gs = graphicStroke(mark("circle", Color.BLUE, null), 14);
             gs.getGraphic().setOpacity(FF.literal(0.4));
             final var s = symbolizer(); s.getStroke().setGraphicStroke(gs);
-            cases.add(new Case(feature(curve()), s, "Graphic stroke, graphic opacity 0.4 (overlaps darker)"));
+            cases.add(new Case(feature(DATA.curve()), s, "Graphic stroke, graphic opacity 0.4 (overlaps darker)"));
         }
         {
             final var gs = graphicStroke(mark("triangle", Color.RED, Color.BLACK), 12); gs.setGap(FF.literal(8.0));
             gs.getGraphic().getAnchorPoint().setAnchorPointY(FF.literal(0.0));
             final var s = symbolizer(); s.getStroke().setGraphicStroke(gs);
-            cases.add(new Case(feature(straight()), s, "Graphic stroke, anchor point Y 0 (graphics above line)"));
+            cases.add(new Case(feature(DATA.straight()), s, "Graphic stroke, anchor point Y 0 (graphics above line)"));
         }
         {
             final var gs = graphicStroke(mark("circle", Color.RED, Color.BLACK), 8); gs.setGap(FF.literal(8.0));
             gs.getGraphic().getDisplacement().setDisplacementY(FF.literal(-10.0));
             final var s = symbolizer(); s.getStroke().setGraphicStroke(gs);
-            cases.add(new Case(feature(straight()), s, "Graphic stroke, displacement Y -10 (graphics below line)"));
+            cases.add(new Case(feature(DATA.straight()), s, "Graphic stroke, displacement Y -10 (graphics below line)"));
         }
 
         // ---- Perpendicular offset ----
         for (double offset : new double[] {10, -10}) {
             final var s = symbolizer(); s.getStroke().setWidth(FF.literal(3.0)); s.getStroke().setColor(FF.literal(Color.BLUE));
             s.setPerpendicularOffset(FF.literal(offset));
-            cases.add(new Case(feature(zigzag()), s, "Perpendicular offset " + offset + " (positive = left)"));
+            cases.add(new Case(feature(DATA.zigzag()), s, "Perpendicular offset " + offset + " (positive = left)"));
         }
         {
             final var s = symbolizer(); s.getStroke().setWidth(FF.literal(3.0)); s.getStroke().setColor(FF.literal(Color.BLUE));
             s.setPerpendicularOffset(FF.literal(8.0));
-            cases.add(new Case(feature(polygon()), s, "Perpendicular offset 8 on polygon rings"));
+            cases.add(new Case(feature(DATA.donut()), s, "Perpendicular offset 8 on polygon rings"));
         }
 
         // ---- Unit of measure ----
         {
             final var s = symbolizer(); s.setUnitOfMeasure(Units.METRE);
             s.getStroke().setWidth(FF.literal(1000_000.0)); s.getStroke().setColor(FF.literal(Color.DARK_GRAY));
-            cases.add(new Case(feature(straight()), s, "UOM metre: width 1000 km (~9px at equator)"));
+            cases.add(new Case(feature(DATA.straight()), s, "UOM metre: width 1000 km (~9px at equator)"));
         }
         {
             final var s = symbolizer(); s.setUnitOfMeasure(Units.METRE);
             s.getStroke().setWidth(FF.literal(200_000.0)); s.getStroke().setColor(FF.literal(Color.BLUE));
             s.setPerpendicularOffset(FF.literal(2000_000.0));
-            cases.add(new Case(feature(straight()), s, "UOM metre: width 200 km, offset 2000 km (~18px)"));
+            cases.add(new Case(feature(DATA.straight()), s, "UOM metre: width 200 km, offset 2000 km (~18px)"));
         }
         {
             final var s = symbolizer(); s.setUnitOfMeasure(Units.METRE);
             s.getStroke().setWidth(FF.literal(300_000.0)); s.getStroke().setLineCap(FF.literal("butt"));
             s.getStroke().setDashArray(FF.literal(new float[] {2000_000, 1000_000}));
-            cases.add(new Case(feature(straight()), s, "UOM metre: dashes [2000 km 1000 km]"));
+            cases.add(new Case(feature(DATA.straight()), s, "UOM metre: dashes [2000 km 1000 km]"));
         }
 
         // ---- Geometry ----
         {
-            final var f = feature(straight()); f.setPropertyValue("geom2", zigzag());
+            final var f = feature(DATA.straight()); f.setPropertyValue("geom2", DATA.zigzag());
             final var s = symbolizer(); s.setGeometry(FF.property("geom2")); s.getStroke().setWidth(FF.literal(3.0));
             cases.add(new Case(f, s, "Geometry expression: \"geom2\" (zigzag, not the straight line)"));
         }
         {
             final var s = symbolizer(); s.getStroke().setWidth(FF.literal(3.0)); s.getStroke().setColor(FF.literal(Color.RED));
-            cases.add(new Case(feature(polygon()), s, "Polygon with hole: both rings stroked"));
+            cases.add(new Case(feature(DATA.donut()), s, "Polygon with hole: both rings stroked"));
         }
         {
             final var s = symbolizer(); s.getStroke().setWidth(FF.literal(3.0));
-            cases.add(new Case(feature(GF.createMultiLineString(CRS84, line(-50, 30, 50, 30), line(-50, -30, 50, -30))), s,
+            cases.add(new Case(feature(GF.createMultiLineString(CRS84, DATA.line(-50, 30, 50, 30), DATA.line(-50, -30, 50, -30))), s,
                     "Multi line string: two lines"));
         }
         return cases;
@@ -420,7 +418,7 @@ public final class SEPainterValidation {
      */
     public static List<Case> curveCases() {
         final List<Case> cases = new ArrayList<>();
-        cases.add(new Case(feature(line(-50, -30,  -10, 30,  50, -30)), curveStyle(), "LineString"));
+        cases.add(new Case(feature(DATA.line(-50, -30,  -10, 30,  50, -30)), curveStyle(), "LineString"));
         cases.add(new Case(feature(GF.createLinearRing(points(-40, -40,  40, -40,  0, 40,  -40, -40))), curveStyle(), "LinearRing"));
         cases.add(new Case(feature(GF.createCircularString(points(-50, 0,  -25, 30,  0, 0,  25, -30,  50, 0))),
                 curveStyle(), "CircularString, two arcs"));
@@ -461,9 +459,9 @@ public final class SEPainterValidation {
                 curveStyle(), "Clothoid: curvature 0.001 × arc length"));
         cases.add(new Case(feature(GF.createRay(CRS84, vector(-40, -20), vector(1, 0.5))),
                 curveStyle(), "Ray from (-40,-20) toward (1,0.5)"));
-        cases.add(new Case(feature(GF.createProductCurve(null, null, line(-50, 0, 50, 0))),
+        cases.add(new Case(feature(GF.createProductCurve(null, null, DATA.line(-50, 0, 50, 0))),
                 curveStyle(), "ProductCurve of a single segment"));
-        cases.add(new Case(feature(GF.createOffsetCurve(zigzag(), Quantities.create(10, Units.UNITY), null)),
+        cases.add(new Case(feature(GF.createOffsetCurve(DATA.zigzag(), Quantities.create(10, Units.UNITY), null)),
                 curveStyle(), "OffsetCurve of zigzag, distance 10 (left)"));
         cases.add(new Case(feature(GF.createOffsetCurve(GF.createCircularString(points(-45, -20,  0, 25,  45, -20)),
                 Quantities.create(10, Units.UNITY), null)),
@@ -489,75 +487,75 @@ public final class SEPainterValidation {
         final List<Case> cases = new ArrayList<>();
 
         // ---- Fill ----
-        cases.add(new Case(feature(square(40)), polygonSymbolizer(), "Default: gray fill, black 1px stroke"));
-        cases.add(new Case(feature(square(40)), fillOnly(Color.RED), "Fill color red, no stroke"));
+        cases.add(new Case(feature(DATA.square(0, 0, 40)), polygonSymbolizer(), "Default: gray fill, black 1px stroke"));
+        cases.add(new Case(feature(DATA.square(0, 0, 40)), fillOnly(Color.RED), "Fill color red, no stroke"));
         {
-            final var f = feature(square(40)); f.setPropertyValue("color", Color.BLUE);
+            final var f = feature(DATA.square(0, 0, 40)); f.setPropertyValue("color", Color.BLUE);
             final var s = fillOnly(Color.RED); s.getFill().get().setColor(FF.property("color", Color.class));
             cases.add(new Case(f, s, "Fill color from attribute: blue"));
         }
         for (double opacity : new double[] {1, 0.5, 0.2}) {
             final var s = fillOnly(Color.RED); s.getFill().get().setOpacity(FF.literal(opacity));
-            cases.add(new Case(feature(polygon()), s, "Fill opacity " + opacity));
+            cases.add(new Case(feature(DATA.donut()), s, "Fill opacity " + opacity));
         }
         {
             final var s = fillOnly(Color.RED); s.getFill().get().setGraphicFill(graphicFill(mark("cross", Color.RED, null), 8));
-            cases.add(new Case(feature(polygon()), s, "Fill graphic fill: red cross 8px"));
+            cases.add(new Case(feature(DATA.donut()), s, "Fill graphic fill: red cross 8px"));
         }
         {
             final var s = fillOnly(Color.RED); s.getFill().get().setGraphicFill(graphicFill(mark("circle", Color.ORANGE, Color.BLACK), 12));
-            cases.add(new Case(feature(star()), s, "Fill graphic fill: outlined orange circle 12px"));
+            cases.add(new Case(feature(DATA.star()), s, "Fill graphic fill: outlined orange circle 12px"));
         }
         {
             final var s = fillOnly(Color.RED); s.getFill().get().setGraphicFill(graphicFill(mark("star", Color.YELLOW, Color.DARK_GRAY), 14));
             s.getFill().get().setOpacity(FF.literal(0.5));
-            cases.add(new Case(feature(square(40)), s, "Fill graphic fill: star 14px, fill opacity 0.5"));
+            cases.add(new Case(feature(DATA.square(0, 0, 40)), s, "Fill graphic fill: star 14px, fill opacity 0.5"));
         }
 
         // ---- Stroke ----
         {
             final var s = polygonSymbolizer(); s.setFill(null); s.getStroke().get().setColor(FF.literal(Color.BLUE));
             s.getStroke().get().setWidth(FF.literal(3.0));
-            cases.add(new Case(feature(polygon()), s, "No fill, blue stroke 3px on both rings"));
+            cases.add(new Case(feature(DATA.donut()), s, "No fill, blue stroke 3px on both rings"));
         }
         {
             final var s = fillOnly(Color.LIGHT_GRAY); s.setStroke(stroke(Color.DARK_GRAY, 10));
             s.getStroke().get().setLineJoin(FF.literal("round"));
-            cases.add(new Case(feature(star()), s, "Stroke 10px, round join, over fill"));
+            cases.add(new Case(feature(DATA.star()), s, "Stroke 10px, round join, over fill"));
         }
         {
             final var s = fillOnly(Color.LIGHT_GRAY); s.setStroke(stroke(Color.RED, 10));
             s.getStroke().get().setOpacity(FF.literal(0.5));
-            cases.add(new Case(feature(square(40)), s, "Stroke 10px, opacity 0.5 over fill"));
+            cases.add(new Case(feature(DATA.square(0, 0, 40)), s, "Stroke 10px, opacity 0.5 over fill"));
         }
         {
             final var s = fillOnly(Color.LIGHT_GRAY); s.setStroke(stroke(Color.BLUE, 3));
             s.getStroke().get().setDashArray(FF.literal(new float[] {10, 5}));
-            cases.add(new Case(feature(polygon()), s, "Stroke dash array [10 5]"));
+            cases.add(new Case(feature(DATA.donut()), s, "Stroke dash array [10 5]"));
         }
         {
             final var s = fillOnly(Color.LIGHT_GRAY); s.setStroke(stroke(Color.BLACK, 1));
             final var gs = graphicStroke(mark("triangle", Color.RED, Color.BLACK), 10); gs.setGap(FF.literal(6.0));
             gs.getGraphic().setRotation(FF.literal(90.0));
             s.getStroke().get().setGraphicStroke(gs);
-            cases.add(new Case(feature(polygon()), s, "Stroke graphic stroke: arrows show ring direction"));
+            cases.add(new Case(feature(DATA.donut()), s, "Stroke graphic stroke: arrows show ring direction"));
         }
         {
             final var s = fillOnly(Color.LIGHT_GRAY); s.setStroke(stroke(Color.BLACK, 12));
             s.getStroke().get().setGraphicFill(graphicFill(mark("x", Color.BLUE, null), 6));
-            cases.add(new Case(feature(square(40)), s, "Stroke graphic fill: blue x 6px, width 12"));
+            cases.add(new Case(feature(DATA.square(0, 0, 40)), s, "Stroke graphic fill: blue x 6px, width 12"));
         }
 
         // ---- Symbology functions on features ----
         for (double width : new double[] {2, 8}) {
-            final var f = feature(square(40)); f.setPropertyValue("width", width);
+            final var f = feature(DATA.square(0, 0, 40)); f.setPropertyValue("width", width);
             final var s = fillOnly(Color.RED);
             s.getFill().get().setColor(new Categorize<Feature,Color>(FF.property("width"),
                     List.of(FF.literal(Color.GREEN), FF.literal(Color.ORANGE)), List.of(FF.literal(5)), null, null));
             cases.add(new Case(f, s, "Fill = Categorize(width, green, 5, orange), width " + width));
         }
         {
-            final var f = feature(square(40)); f.setPropertyValue("width", 7.5);
+            final var f = feature(DATA.square(0, 0, 40)); f.setPropertyValue("width", 7.5);
             final var s = fillOnly(Color.RED);
             s.getFill().get().setColor(new Interpolate<Feature>(FF.property("width"),
                     List.of(point(0, Color.BLUE), point(10, Color.RED)), null, null, null).toValueType(Color.class));
@@ -568,19 +566,19 @@ public final class SEPainterValidation {
         {
             final var s = fillOnly(Color.RED);
             s.getDisplacement().setDisplacementX(FF.literal(15.0)); s.getDisplacement().setDisplacementY(FF.literal(15.0));
-            cases.add(new Case(feature(square(30)), s, "Displacement (15, 15): right and up"));
+            cases.add(new Case(feature(DATA.square(0, 0, 30)), s, "Displacement (15, 15): right and up"));
         }
         {
             final var s = fillOnly(Color.RED);
             s.getDisplacement().setDisplacementX(FF.literal(-20.0));
-            cases.add(new Case(feature(square(30)), s, "Displacement (-20, 0): left"));
+            cases.add(new Case(feature(DATA.square(0, 0, 30)), s, "Displacement (-20, 0): left"));
         }
 
         // ---- Perpendicular offset ----
         for (double offset : new double[] {10, -10}) {
             final var s = fillOnly(Color.RED); s.setStroke(stroke(Color.BLACK, 1));
             s.setPerpendicularOffset(FF.literal(offset));
-            cases.add(new Case(feature(polygon()), s, "Perpendicular offset " + offset + " (positive = larger)"));
+            cases.add(new Case(feature(DATA.donut()), s, "Perpendicular offset " + offset + " (positive = larger)"));
         }
         {
             final var s = fillOnly(Color.RED); s.setStroke(stroke(Color.BLACK, 1));
@@ -595,34 +593,34 @@ public final class SEPainterValidation {
         {
             final var s = fillOnly(Color.RED);
             s.setPerpendicularOffset(FF.literal(-45.0));
-            cases.add(new Case(feature(square(40)), s, "Perpendicular offset -45: polygon collapses, nothing drawn"));
+            cases.add(new Case(feature(DATA.square(0, 0, 40)), s, "Perpendicular offset -45: polygon collapses, nothing drawn"));
         }
 
         // ---- Unit of measure ----
         {
             final var s = fillOnly(Color.RED); s.setUnitOfMeasure(Units.METRE);
             s.getDisplacement().setDisplacementX(FF.literal(2000_000.0));
-            cases.add(new Case(feature(square(30)), s, "UOM metre: displacement 2000 km (~18px right)"));
+            cases.add(new Case(feature(DATA.square(0, 0, 30)), s, "UOM metre: displacement 2000 km (~18px right)"));
         }
         {
             final var s = fillOnly(Color.RED); s.setUnitOfMeasure(Units.METRE); s.setStroke(stroke(Color.BLACK, 200_000));
             s.setPerpendicularOffset(FF.literal(1000_000.0));
-            cases.add(new Case(feature(square(30)), s, "UOM metre: offset 1000 km, stroke 200 km"));
+            cases.add(new Case(feature(DATA.square(0, 0, 30)), s, "UOM metre: offset 1000 km, stroke 200 km"));
         }
 
         // ---- Geometry ----
         {
-            final var f = feature(square(40)); f.setPropertyValue("geom2", star());
+            final var f = feature(DATA.square(0, 0, 40)); f.setPropertyValue("geom2", DATA.star());
             final var s = fillOnly(Color.RED); s.setGeometry(FF.property("geom2"));
             cases.add(new Case(f, s, "Geometry expression: \"geom2\" (star, not the square)"));
         }
         cases.add(new Case(feature(GF.createMultiPolygon(CRS84,
-                squareAt(-30, 30, 20), squareAt(30, -30, 20))),
+                DATA.square(-30, 30, 20), DATA.square(30, -30, 20))),
                 polygonSymbolizer(), "MultiPolygon: two squares"));
         cases.add(new Case(feature(GF.createCurvePolygon(GF.createCircularString(points(-45, 0,  45, 0,  -45, 0)),
                 List.of(GF.createCircularString(points(-20, 0,  20, 0,  -20, 0))))),
                 polygonSymbolizer(), "CurvePolygon: circle with circular hole"));
-        cases.add(new Case(feature(line(-40, -30,  40, -30,  0, 40)), polygonSymbolizer(), "LineString: closed implicitly"));
+        cases.add(new Case(feature(DATA.line(-40, -30,  40, -30,  0, 40)), polygonSymbolizer(), "LineString: closed implicitly"));
         cases.add(new Case(feature(GF.createCircularString(points(-45, -20,  0, 40,  45, -20))), polygonSymbolizer(),
                 "CircularString: closed implicitly"));
         cases.add(new Case(feature(GF.createPoint(CRS84, 0, 0)), polygonSymbolizer(), "Point: small square (6 px)"));
@@ -724,7 +722,7 @@ public final class SEPainterValidation {
         cases.add(new Case(feature(GF.createMultiPoint(CRS84, GF.createPoint(CRS84, -40, -30), GF.createPoint(CRS84, 0, 30),
                 GF.createPoint(CRS84, 40, -10))), point(mark("circle", Color.RED, Color.BLACK), 14), "MultiPoint: one graphic per point"));
         cases.add(new Case(feature(lShape()), point(mark("star", Color.RED, Color.BLACK), 20), "Polygon: graphic on a point inside (concave)"));
-        cases.add(new Case(feature(zigzag()), point(mark("star", Color.RED, Color.BLACK), 20), "LineString: graphic at middle of length"));
+        cases.add(new Case(feature(DATA.zigzag()), point(mark("star", Color.RED, Color.BLACK), 20), "LineString: graphic at middle of length"));
         cases.add(new Case(feature(GF.createCircularString(points(-45, -20,  0, 40,  45, -20))),
                 point(mark("star", Color.RED, Color.BLACK), 20), "CircularString: graphic at middle of length"));
         {
@@ -842,25 +840,25 @@ public final class SEPainterValidation {
         // ---- Line placement ----
         {
             final var s = text("Along the curve", 14); linePlacement(s);
-            cases.add(new Case(feature(curve()), s, "Line placement: aligned, centered"));
+            cases.add(new Case(feature(DATA.curve()), s, "Line placement: aligned, centered"));
         }
         for (double offset : new double[] {12, -12}) {
             final var s = text("Offset", 14); linePlacement(s).setPerpendicularOffset(FF.literal(offset));
-            cases.add(new Case(feature(curve()), s, "Line placement offset " + offset + " (positive = left)"));
+            cases.add(new Case(feature(DATA.curve()), s, "Line placement offset " + offset + " (positive = left)"));
         }
         {
             final var s = text("Horizontal", 14); linePlacement(s).setAligned(FF.literal(false));
-            cases.add(new Case(feature(curve()), s, "Line placement not aligned"));
+            cases.add(new Case(feature(DATA.curve()), s, "Line placement not aligned"));
         }
         {
             final var s = text("Rep", 12); final var lp = linePlacement(s);
             lp.setRepeated(FF.literal(true)); lp.setGap(FF.literal(10.0));
-            cases.add(new Case(feature(curve()), s, "Repeated, gap 10"));
+            cases.add(new Case(feature(DATA.curve()), s, "Repeated, gap 10"));
         }
         {
             final var s = text("Rep", 12); final var lp = linePlacement(s);
             lp.setRepeated(FF.literal(true)); lp.setGap(FF.literal(10.0)); lp.setInitialGap(FF.literal(50.0));
-            cases.add(new Case(feature(curve()), s, "Repeated, gap 10, initial gap 50"));
+            cases.add(new Case(feature(DATA.curve()), s, "Repeated, gap 10, initial gap 50"));
         }
         {
             final var s = text("Noisy line label", 13); linePlacement(s);
@@ -872,20 +870,20 @@ public final class SEPainterValidation {
         }
         {
             final var s = text("Upright", 16); linePlacement(s);
-            cases.add(new Case(feature(line(50, 30,  -50, -30)), s, "Line from east to west: text kept upright"));
+            cases.add(new Case(feature(DATA.line(50, 30,  -50, -30)), s, "Line from east to west: text kept upright"));
         }
         {
             final var s = text("Much too long label", 16); linePlacement(s);
-            cases.add(new Case(feature(line(-15, 0,  15, 0)), s, "Label longer than line: not rendered"));
+            cases.add(new Case(feature(DATA.line(-15, 0,  15, 0)), s, "Label longer than line: not rendered"));
         }
         {
             final var s = text("Rings", 12); final var lp = linePlacement(s);
             lp.setRepeated(FF.literal(true)); lp.setGap(FF.literal(15.0));
-            cases.add(new Case(feature(polygon()), s, "Line placement on polygon rings, repeated"));
+            cases.add(new Case(feature(DATA.donut()), s, "Line placement on polygon rings, repeated"));
         }
         {
             final var s = text("Halo", 16); linePlacement(s); s.setHalo(halo(Color.WHITE, 2));
-            cases.add(new Case(feature(zigzag()), s, "Line placement with halo on zigzag"));
+            cases.add(new Case(feature(DATA.zigzag()), s, "Line placement with halo on zigzag"));
         }
 
         // ---- Unit of measure ----
@@ -898,7 +896,7 @@ public final class SEPainterValidation {
             final var s = text("UOM", 10); s.setUnitOfMeasure(Units.METRE);
             s.getFont().setSize(FF.literal(1500_000.0));
             linePlacement(s).setPerpendicularOffset(FF.literal(2000_000.0));
-            cases.add(new Case(feature(straight()), s, "UOM metre: size 1500 km, offset 2000 km"));
+            cases.add(new Case(feature(DATA.straight()), s, "UOM metre: size 1500 km, offset 2000 km"));
         }
 
         // ---- Geometry ----
@@ -910,7 +908,7 @@ public final class SEPainterValidation {
         cases.add(new Case(feature(GF.createMultiPoint(CRS84, GF.createPoint(CRS84, -35, -30), GF.createPoint(CRS84, 0, 30),
                 GF.createPoint(CRS84, 35, -10))), text("Pt", 14), "MultiPoint: one label per point"));
         cases.add(new Case(feature(lShape()), text("Inside", 14), "Polygon, point placement: label inside (concave)"));
-        cases.add(new Case(feature(zigzag()), text("Middle", 14), "LineString, point placement: label at middle"));
+        cases.add(new Case(feature(DATA.zigzag()), text("Middle", 14), "LineString, point placement: label at middle"));
         {
             final var s = text("Point", 16); linePlacement(s);
             cases.add(new Case(feature(origin), s, "Point with line placement: fallback on point"));
@@ -950,15 +948,15 @@ public final class SEPainterValidation {
      */
     public static List<Case> rasterCases() {
         final List<Case> cases = new ArrayList<>();
-        final GridCoverage field = field(new String[] {"elevation"}, (x, y) -> wave(x, y));
-        final GridCoverage rgbField = field(new String[] {"red", "green", "blue"},
+        final GridCoverage field = DATA.field(new String[] {"elevation"}, (x, y) -> wave(x, y));
+        final GridCoverage rgbField = DATA.field(new String[] {"red", "green", "blue"},
                 (x, y) -> 128 + 127 * Math.sin(x / 15), (x, y) -> 128 + 127 * Math.cos(y / 12), (x, y) -> 128 + 127 * Math.sin((x + y) / 20));
 
         // ---- Default rendering ----
         cases.add(new Case(raster(field), rasterSymbolizer(), "Default, 1 band: gray, min/max normalized"));
         cases.add(new Case(raster(rgbField), rasterSymbolizer(), "Default, 3 bands: RGB, normalized"));
         cases.add(new Case(raster(imageCoverage()), rasterSymbolizer(), "Default, RGB image: own colors"));
-        cases.add(new Case(raster(field(new String[] {"v"}, (x, y) -> (Math.hypot(x, y) < 20) ? Double.NaN : wave(x, y))),
+        cases.add(new Case(raster(DATA.field(new String[] {"v"}, (x, y) -> (Math.hypot(x, y) < 20) ? Double.NaN : wave(x, y))),
                 rasterSymbolizer(), "NaN values: transparent hole"));
         cases.add(new Case(raster(latLonCoverage()), rasterSymbolizer(), "Coverage in (lat, lon) CRS: reprojected"));
 
@@ -1008,7 +1006,7 @@ public final class SEPainterValidation {
         {
             final var c = new Categorize<Feature,Color>(null, List.of(FF.literal(Color.YELLOW), FF.literal(Color.RED)),
                     List.of(FF.literal(0.0)), null, FF.literal(Color.MAGENTA));
-            cases.add(new Case(raster(field(new String[] {"v"}, (x, y) -> (Math.hypot(x, y) < 20) ? Double.NaN : wave(x, y))),
+            cases.add(new Case(raster(DATA.field(new String[] {"v"}, (x, y) -> (Math.hypot(x, y) < 20) ? Double.NaN : wave(x, y))),
                     colorMapSymbolizer(c), "Categorize with fallback (magenta) for NaN"));
         }
         {
@@ -1063,7 +1061,7 @@ public final class SEPainterValidation {
         }
 
         // ---- Shaded relief ----
-        final GridCoverage dem = field(new String[] {"elevation"}, (x, y) -> 4000 * (1 + Math.sin(x / 4) * Math.cos(y / 5)));
+        final GridCoverage dem = DATA.field(new String[] {"elevation"}, (x, y) -> 4000 * (1 + Math.sin(x / 4) * Math.cos(y / 5)));
         final var terrain = new Interpolate<Feature>(null, List.of(point(0, new Color(60, 140, 60)),
                 point(4000, new Color(210, 190, 120)), point(8000, Color.WHITE)), null, null, null);
         cases.add(new Case(raster(dem), shadedRelief(null, 55, false), "Shaded relief on default gray, factor 55"));
@@ -1152,7 +1150,7 @@ public final class SEPainterValidation {
             gs.getGraphic().setRotation(FF.literal(90.0));
             gs.setGap(FF.literal(4.0));
             s.getStroke().setGraphicStroke(gs);
-            cases.add(new Case(feature(curve()), s, "Graphic stroke with PNG image, size 18"));
+            cases.add(new Case(feature(DATA.curve()), s, "Graphic stroke with PNG image, size 18"));
         }
         {
             final var s = fillOnly(Color.RED);
@@ -1160,7 +1158,7 @@ public final class SEPainterValidation {
             gf.getGraphic().graphicalSymbols().add(external(svg, "image/svg+xml"));
             gf.getGraphic().setSize(FF.literal(20.0));
             s.getFill().get().setGraphicFill(gf);
-            cases.add(new Case(feature(polygon()), s, "Polygon graphic fill with SVG, size 20"));
+            cases.add(new Case(feature(DATA.donut()), s, "Polygon graphic fill with SVG, size 20"));
         }
 
         // ---- Font marks ----
@@ -1273,152 +1271,6 @@ public final class SEPainterValidation {
     // ////////////////////////////////////////////////////////////////////////
 
     /**
-     * Renders all given cases in a single image, with their descriptions.
-     *
-     * @param  title  title written at the top of the image.
-     * @param  cases  the cases to render.
-     * @return the aggregated image.
-     */
-    public static BufferedImage render(String title, List<Case> cases) {
-        final Map<String, List<Case>> sections = new LinkedHashMap<>();
-        sections.put(null, cases);
-        return render(title, sections);
-    }
-
-    /**
-     * Renders all given cases in a single image, grouped in sections.
-     * Each section starts on a new row with its title.
-     *
-     * @param  title     title written at the top of the image.
-     * @param  sections  the cases to render, by section title. A null section title is not written.
-     * @return the aggregated image.
-     */
-    public static BufferedImage render(String title, Map<String, List<Case>> sections) {
-        final int cellWidth  = TILE_SIZE + 2 * MARGIN;
-        final int cellHeight = TILE_SIZE + TEXT_HEIGHT + 2 * MARGIN;
-        int columns = 1;
-        for (List<Case> cases : sections.values()) {
-            columns = Math.max(columns, Math.min(COLUMNS, cases.size()));
-        }
-        int height = HEADER_HEIGHT;
-        for (Map.Entry<String, List<Case>> section : sections.entrySet()) {
-            if (section.getKey() != null) height += SECTION_HEIGHT;
-            height += ((section.getValue().size() + columns - 1) / columns) * cellHeight;
-        }
-        final BufferedImage image = new BufferedImage(columns * cellWidth, height, BufferedImage.TYPE_INT_RGB);
-        final Graphics2D g = image.createGraphics();
-        try {
-            g.setRenderingHint(RenderingHints.KEY_TEXT_ANTIALIASING, RenderingHints.VALUE_TEXT_ANTIALIAS_ON);
-            g.setColor(Color.WHITE);
-            g.fillRect(0, 0, image.getWidth(), image.getHeight());
-
-            g.setColor(Color.BLACK);
-            g.setFont(new Font(Font.SANS_SERIF, Font.BOLD, 16));
-            g.drawString(title, MARGIN, 22);
-            g.setFont(new Font(Font.SANS_SERIF, Font.PLAIN, 11));
-            g.setColor(Color.DARK_GRAY);
-            g.drawString("Magenta line: source geometry. Magenta cross: point position. Tile grid: 1 pixel = 1° in CRS:84, origin at tile center.", MARGIN, 40);
-
-            final Font font = new Font(Font.SANS_SERIF, Font.PLAIN, 11);
-            final Font sectionFont = new Font(Font.SANS_SERIF, Font.BOLD, 14);
-            int top = HEADER_HEIGHT;
-            for (Map.Entry<String, List<Case>> section : sections.entrySet()) {
-                if (section.getKey() != null) {
-                    g.setColor(new Color(60, 60, 60));
-                    g.fillRect(0, top + 4, image.getWidth(), SECTION_HEIGHT - 8);
-                    g.setColor(Color.WHITE);
-                    g.setFont(sectionFont);
-                    g.drawString(section.getKey(), MARGIN, top + SECTION_HEIGHT / 2 + 5);
-                    top += SECTION_HEIGHT;
-                }
-                final List<Case> cases = section.getValue();
-                for (int i = 0; i < cases.size(); i++) {
-                    final Case c = cases.get(i);
-                    final int x = (i % columns) * cellWidth + MARGIN;
-                    final int y = top + (i / columns) * cellHeight + MARGIN;
-
-                    // Tile background and frame.
-                    g.setColor(new Color(240, 240, 240));
-                    g.fillRect(x, y, TILE_SIZE, TILE_SIZE);
-                    g.setColor(new Color(225, 225, 225));
-                    g.drawLine(x + TILE_SIZE / 2, y, x + TILE_SIZE / 2, y + TILE_SIZE - 1);
-                    g.drawLine(x, y + TILE_SIZE / 2, x + TILE_SIZE - 1, y + TILE_SIZE / 2);
-
-                    String error = null;
-                    try {
-                        g.drawImage(renderTile(c), x, y, null);
-                        error = linearizationProblems(c);
-                    } catch (RenderingException | RuntimeException ex) {
-                        error = ex.getClass().getSimpleName() + ": " + ex.getMessage();
-                    }
-                    g.setColor(Color.GRAY);
-                    g.drawRect(x - 1, y - 1, TILE_SIZE + 1, TILE_SIZE + 1);
-
-                    // Description.
-                    g.setFont(font);
-                    final FontMetrics fm = g.getFontMetrics();
-                    int ty = y + TILE_SIZE + fm.getAscent() + 3;
-                    g.setColor(Color.BLACK);
-                    for (String line : wrap(c.description(), fm, cellWidth - 4, 2)) {
-                        g.drawString(line, x - MARGIN + 2, ty);
-                        ty += fm.getHeight();
-                    }
-                    if (error != null) {
-                        g.setColor(Color.RED);
-                        for (String line : wrap(error, fm, cellWidth - 4, 2)) {
-                            g.drawString(line, x - MARGIN + 2, ty);
-                            ty += fm.getHeight();
-                        }
-                    }
-                }
-                top += ((cases.size() + columns - 1) / columns) * cellHeight;
-            }
-        } finally {
-            g.dispose();
-        }
-        return image;
-    }
-
-    /**
-     * Renders a single case in a transparent tile, with the source geometry drawn on top.
-     *
-     * @param  c  the case to render.
-     * @return the rendered tile.
-     * @throws RenderingException if the rendering failed.
-     */
-    public static BufferedImage renderTile(Case c) throws RenderingException {
-        final BufferedImage tile = new BufferedImage(TILE_SIZE, TILE_SIZE, BufferedImage.TYPE_INT_ARGB);
-        final Graphics2D g = tile.createGraphics();
-        try {
-            g.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
-            g.setRenderingHint(RenderingHints.KEY_STROKE_CONTROL, RenderingHints.VALUE_STROKE_PURE);
-            g.setRenderingHint(RenderingHints.KEY_RENDERING, RenderingHints.VALUE_RENDER_QUALITY);
-            g.setRenderingHint(RenderingHints.KEY_INTERPOLATION, RenderingHints.VALUE_INTERPOLATION_BILINEAR);
-            final Scene2D scene = new Scene2D(GRID, g);
-            paint(scene, c.feature(), c.symbolizer());
-
-            final LineSymbolizer<Feature> reference = new LineSymbolizer<>(FeatureTypeStyle.FACTORY);
-            reference.setGeometry(c.symbolizer().getGeometry());
-            reference.getStroke().setColor(FF.literal(REFERENCE_COLOR));
-            reference.getStroke().setWidth(FF.literal(1.0));
-            paint(scene, c.feature(), reference);
-            if (c.symbolizer() instanceof PointSymbolizer<?> || (c.symbolizer() instanceof TextSymbolizer<?> ts
-                    && !(ts.getLabelPlacement() instanceof LinePlacement<?>)))
-            {
-                // Show where the graphics are anchored.
-                final PointSymbolizer<Feature> anchor = new PointSymbolizer<>(FeatureTypeStyle.FACTORY);
-                anchor.setGeometry(c.symbolizer().getGeometry());
-                anchor.getGraphic().graphicalSymbols().add(mark("cross", REFERENCE_COLOR, null));
-                anchor.getGraphic().setSize(FF.literal(7.0));
-                paint(scene, c.feature(), anchor);
-            }
-        } finally {
-            g.dispose();
-        }
-        return tile;
-    }
-
-    /**
      * Returns a description of the curves of the case geometry which cannot be linearized,
      * and therefore are not rendered.
      *
@@ -1442,32 +1294,10 @@ public final class SEPainterValidation {
         if (renderer == null) {
             throw new RenderingException("No renderer for " + symbolizer.getClass().getSimpleName());
         }
-        renderer.paint(new SEPresentation(null, null, feature, symbolizer), (presentations) -> presentations.close());
-    }
-
-    /**
-     * Splits the given text in lines fitting in the given width.
-     */
-    private static List<String> wrap(String text, FontMetrics fm, int width, int maxLines) {
-        final List<String> lines = new ArrayList<>();
-        final StringBuilder line = new StringBuilder();
-        boolean truncated = false;
-        for (String word : text.split("\\s+")) {
-            if (line.length() != 0 && fm.stringWidth(line + " " + word) > width) {
-                if (lines.size() == maxLines - 1) {
-                    truncated = true;
-                    break;
-                }
-                lines.add(line.toString());
-                line.setLength(0);
-            }
-            if (line.length() != 0) line.append(' ');
-            line.append(word);
+        final Drawing drawing = renderer.drawing(new SEPresentation(null, null, feature, symbolizer));
+        if (drawing != null) {
+            drawing.paint(scene.graphics);
         }
-        if (line.length() != 0) {
-            lines.add(truncated ? line + "…" : line.toString());
-        }
-        return lines;
     }
 
     // ////////////////////////////////////////////////////////////////////////
@@ -1481,40 +1311,6 @@ public final class SEPainterValidation {
         final Feature feature = TYPE.newInstance();
         feature.setPropertyValue("geom", geom);
         return feature;
-    }
-
-    /**
-     * Creates a line string in CRS:84 from (x,y) tuples.
-     */
-    private static LineString line(double... xy) {
-        return GF.createLineString(GF.createDataPoints(CRS84, xy));
-    }
-
-    /**
-     * Horizontal line from west to east.
-     */
-    private static LineString straight() {
-        return line(-50, 0, 50, 0);
-    }
-
-    /**
-     * Line with sharp angles, for joins and offsets.
-     */
-    private static LineString zigzag() {
-        return line(-50, -20,  -20, 30,  10, -25,  50, 25);
-    }
-
-    /**
-     * Smooth line made of many points, for dashes and graphic strokes.
-     */
-    private static LineString curve() {
-        final double[] xy = new double[2 * 41];
-        for (int i = 0; i <= 40; i++) {
-            final double x = -50 + i * 2.5;
-            xy[i * 2]     = x;
-            xy[i * 2 + 1] = 30 * Math.sin(x / 50 * Math.PI);
-        }
-        return line(xy);
     }
 
     /**
@@ -1561,9 +1357,9 @@ public final class SEPainterValidation {
      */
     private static CompoundCurve compoundCurve() {
         return GF.createCompoundCurve(CRS84,
-                line(-50, -30,  -20, -30),
+                DATA.line(-50, -30,  -20, -30),
                 GF.createCircularString(points(-20, -30,  0, 10,  20, -30)),
-                line(20, -30,  50, 30));
+                DATA.line(20, -30,  50, 30));
     }
 
     /**
@@ -1588,51 +1384,11 @@ public final class SEPainterValidation {
     }
 
     /**
-     * Square polygon with a square hole.
-     */
-    private static Geometry polygon() {
-        final LinearRing exterior = GF.createLinearRing(GF.createDataPoints(CRS84,
-                -45.0, -45.0,  45.0, -45.0,  45.0, 45.0,  -45.0, 45.0,  -45.0, -45.0));
-        final LinearRing hole = GF.createLinearRing(GF.createDataPoints(CRS84,
-                -20.0, -20.0,  -20.0, 20.0,  20.0, 20.0,  20.0, -20.0,  -20.0, -20.0));
-        return GF.createPolygon(exterior, List.of(hole));
-    }
-
-    /**
-     * Square polygon centered on (0,0) with the given half size.
-     */
-    private static Geometry square(double half) {
-        return squareAt(0, 0, half);
-    }
-
-    /**
-     * Square polygon centered on (cx,cy) with the given half size.
-     */
-    private static Polygon squareAt(double cx, double cy, double half) {
-        return GF.createPolygon(GF.createLinearRing(points(
-                cx - half, cy - half,  cx + half, cy - half,  cx + half, cy + half,  cx - half, cy + half,  cx - half, cy - half)), List.of());
-    }
-
-    /**
      * Concave L-shaped polygon.
      */
     private static Geometry lShape() {
         return GF.createPolygon(GF.createLinearRing(points(
                 -45, -45,  45, -45,  45, -10,  -10, -10,  -10, 45,  -45, 45,  -45, -45)), List.of());
-    }
-
-    /**
-     * Five branches star polygon, concave.
-     */
-    private static Geometry star() {
-        final double[] xy = new double[2 * 11];
-        for (int i = 0; i <= 10; i++) {
-            final double angle = Math.PI / 2 + i * Math.PI / 5;
-            final double radius = (i % 2 == 0) ? 50 : 22;
-            xy[2*i]     = radius * Math.cos(angle);
-            xy[2*i + 1] = radius * Math.sin(angle) - 5;
-        }
-        return GF.createPolygon(GF.createLinearRing(points(xy)), List.of());
     }
 
     /**
@@ -1741,7 +1497,7 @@ public final class SEPainterValidation {
             xy[2*i]     = -60 + i * 4;
             xy[2*i + 1] = (i % 2 == 0) ? -2 : 2;
         }
-        return line(xy);
+        return DATA.line(xy);
     }
 
     /**
@@ -1766,30 +1522,6 @@ public final class SEPainterValidation {
     }
 
     /**
-     * Creates a coverage of 40×40 cells over [-50 … 50]° with one band per function of (λ,φ).
-     */
-    private static GridCoverage field(String[] names, java.util.function.DoubleBinaryOperator... functions) {
-        final int n = 40;
-        final double[][] bands = new double[functions.length][n * n];
-        for (int j = 0; j < n; j++) {
-            final double y = 50 - (j + 0.5) * 100.0 / n;
-            for (int i = 0; i < n; i++) {
-                final double x = -50 + (i + 0.5) * 100.0 / n;
-                for (int b = 0; b < functions.length; b++) {
-                    bands[b][j * n + i] = functions[b].applyAsDouble(x, y);
-                }
-            }
-        }
-        final SampleDimension[] sds = new SampleDimension[bands.length];
-        for (int b = 0; b < sds.length; b++) {
-            sds[b] = new SampleDimension.Builder().setName(names[b]).build();
-        }
-        final GridGeometry gg = new GridGeometry(new GridExtent(n, n), envelope(-50, -50, 50, 50), GridOrientation.REFLECTION_Y);
-        return new GridCoverageBuilder().setDomain(gg).setRanges(sds)
-                .setValues(new DataBufferDouble(bands, n * n), new Dimension(n, n)).build();
-    }
-
-    /**
      * A field with low contrast values between 100 and 140, mostly near 100, in the given number of bands.
      */
     private static GridCoverage lowContrast(int numBands) {
@@ -1799,7 +1531,7 @@ public final class SEPainterValidation {
             final int shift = b * 15;
             f[b] = (x, y) -> 100 + 40 * Math.pow((Math.sin((x + shift) / 12) * Math.cos(y / 15) + 1) / 2, 3);
         }
-        return field(java.util.Arrays.copyOf(names, numBands), f);
+        return DATA.field(java.util.Arrays.copyOf(names, numBands), f);
     }
 
     /**

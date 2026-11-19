@@ -16,20 +16,18 @@
  */
 package org.apache.sis.map.service.se1;
 
-import java.awt.Shape;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.function.Consumer;
-import java.util.stream.Stream;
 import org.opengis.feature.Feature;
 import org.opengis.referencing.operation.MathTransform;
 import org.apache.sis.geometries.Geometry;
 import org.apache.sis.geometries.curve.LineString;
 import org.apache.sis.geometries.operation.OperationException;
-import org.apache.sis.map.Presentation;
 import org.apache.sis.map.SEPresentation;
 import org.apache.sis.map.service.Scene2D;
 import org.apache.sis.map.service.RenderingException;
+import org.apache.sis.map.service.common.DrawingComposite;
+import org.apache.sis.map.service.common.Drawing;
 import org.apache.sis.style.se1.LineSymbolizer;
 import org.apache.sis.style.se1.Stroke;
 
@@ -53,18 +51,20 @@ import org.apache.sis.style.se1.Stroke;
  */
 public final class LineToScene2D extends SymbolizerToScene2D<LineSymbolizer<?>> {
 
-    private LineToScene2D(Scene2D state, LineSymbolizer<?> symbolizer) {
+    LineToScene2D(Scene2D state, LineSymbolizer<?> symbolizer) {
         super(state, symbolizer);
     }
 
+    /**
+     * Returns the drawing of the given presentation.
+     *
+     * @param  presentation  the presentation to draw.
+     * @return the drawing, possibly empty.
+     * @throws RenderingException if the drawing cannot be computed.
+     */
     @Override
-    public void paint(SEPresentation presentation, Consumer<Stream<Presentation>> callback) throws RenderingException {
-        RenderedVisual.paint(createVisuals(presentation), state.getGraphics());
-    }
-
-    @Override
-    public boolean intersects(SEPresentation presentation, Shape mask, Consumer<Stream<Presentation>> callback) throws RenderingException {
-        return RenderedVisual.intersects(createVisuals(presentation), mask);
+    protected Drawing drawing(SEPresentation presentation) throws RenderingException {
+        return new DrawingComposite(createDrawings(presentation));
     }
 
     /**
@@ -72,7 +72,7 @@ public final class LineToScene2D extends SymbolizerToScene2D<LineSymbolizer<?>> 
      *
      * @return visual elements, may be empty but never null.
      */
-    private List<RenderedVisual> createVisuals(SEPresentation presentation) throws RenderingException {
+    private List<Drawing> createDrawings(SEPresentation presentation) throws RenderingException {
         final Feature feature = presentation.getCandidate();
         final Geometry geometry = GeometryResolver.resolve(evaluate(feature, symbolizer.getGeometry()));
         if (geometry == null) {
@@ -83,7 +83,7 @@ public final class LineToScene2D extends SymbolizerToScene2D<LineSymbolizer<?>> 
             return List.of();
         }
         final double pixelsPerUnit = state.getPixelsPerUnit(symbolizer.getUnitOfMeasure());
-        return StrokeVisuals.create(toDisplay(geometry, feature, pixelsPerUnit), stroke, feature, pixelsPerUnit);
+        return StrokeStyle.drawings(toDisplay(geometry, feature, pixelsPerUnit), stroke, feature, pixelsPerUnit);
     }
 
     /**
@@ -104,22 +104,9 @@ public final class LineToScene2D extends SymbolizerToScene2D<LineSymbolizer<?>> 
             } catch (OperationException ex) {
                 throw new RenderingException(ex);
             }
-            final LineString shifted = StrokeVisuals.offset(display, offset);
+            final LineString shifted = GeometryResolver.offset(display, offset);
             lines.add(shifted != null ? shifted : display);     // Rendered without offset if it cannot be computed.
         }
         return lines;
-    }
-
-    public static final class Spi implements SymbolizerToScene2D.Spi<LineSymbolizer> {
-
-        @Override
-        public Class<LineSymbolizer> getSymbolizerType() {
-            return LineSymbolizer.class;
-        }
-
-        @Override
-        public SymbolizerToScene2D create(Scene2D state, LineSymbolizer symbolizer) throws RenderingException {
-            return new LineToScene2D(state, symbolizer);
-        }
     }
 }
