@@ -96,6 +96,14 @@ public final class Plane extends AbstractGeometry{
         return getDimension();
     }
 
+    /**
+     * @return an Plane is ANALYTIC
+     */
+    @Override
+    public Representation getRepresentation() {
+        return Representation.ANALYTIC;
+    }
+
     public DataPoints getDataPoints() {
         return points;
     }

@@ -37,6 +37,14 @@ public sealed interface Prism extends Geometry
         return GeometryType.PRISM;
     }
 
+    /**
+     * @return a Prism is ANALYTIC
+     */
+    @Override
+    default Representation getRepresentation() {
+        return Representation.ANALYTIC;
+    }
+
     @Override
     default DataPointsType getDataPointsType() {
         return getBase().getDataPointsType();

@@ -29,6 +29,7 @@ import org.apache.sis.geometries.GeometryType;
 import org.apache.sis.geometries.Point;
 import org.apache.sis.geometries.DataPointsType;
 import org.apache.sis.geometries.Geometries;
+import org.apache.sis.geometries.Representation;
 import org.apache.sis.geometries.internal.shared.CurveLinearizer;
 import org.apache.sis.geometries.internal.shared.Curves;
 import org.apache.sis.geometries.internal.shared.DefaultLine;
@@ -75,6 +76,14 @@ public sealed interface Line extends Curve
     @Override
     default GeometryType getGeometryType() {
         return GeometryType.LINE;
+    }
+
+    /**
+     * @return a Line is DISCRETE
+     */
+    @Override
+    default Representation getRepresentation() {
+        return Representation.DISCRETE;
     }
 
     /**

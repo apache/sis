@@ -21,6 +21,7 @@ import static org.opengis.annotation.Specification.ISO_19107;
 import org.opengis.annotation.UML;
 import org.apache.sis.geometries.Curve;
 import org.apache.sis.geometries.GeometryType;
+import org.apache.sis.geometries.Representation;
 import org.apache.sis.geometries.cs.Bearing;
 import org.apache.sis.geometries.internal.shared.DefaultOffsetCurve;
 
@@ -58,6 +59,14 @@ public sealed interface OffsetCurve extends Curve
     @Override
     default GeometryType getGeometryType() {
         return GeometryType.OFFSETCURVE;
+    }
+
+    /**
+     * @return the representation of the offset curve
+     */
+    @Override
+    default Representation getRepresentation() {
+        return getBaseCurve().getRepresentation();
     }
 
     /**

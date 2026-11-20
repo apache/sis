@@ -25,6 +25,7 @@ import org.apache.sis.geometries.DataPointsType;
 import org.apache.sis.geometries.Geometries;
 import org.apache.sis.geometries.GeometryType;
 import org.apache.sis.geometries.Point;
+import org.apache.sis.geometries.Representation;
 import org.apache.sis.geometries.internal.shared.DefaultRay;
 import org.apache.sis.maths.Array;
 import org.apache.sis.maths.NDRange;
@@ -55,6 +56,14 @@ public sealed interface Ray extends Curve
     @Override
     default GeometryType getGeometryType() {
         return GeometryType.RAY;
+    }
+
+    /**
+     * @return a Ray is ANALYTIC
+     */
+    @Override
+    default Representation getRepresentation() {
+        return Representation.ANALYTIC;
     }
 
     /**

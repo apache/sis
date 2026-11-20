@@ -22,6 +22,7 @@ import org.apache.sis.geometries.Curve;
 import org.apache.sis.geometries.CurveInterpolation;
 import org.apache.sis.geometries.DataPoints;
 import org.apache.sis.geometries.GeometryType;
+import org.apache.sis.geometries.Representation;
 import org.apache.sis.geometries.internal.shared.DefaultConic;
 import org.apache.sis.maths.Array;
 
@@ -63,6 +64,14 @@ public sealed interface Conic extends Curve
     @Override
     default GeometryType getGeometryType() {
         return GeometryType.CONIC;
+    }
+
+    /**
+     * @return a Conic curve is PARAMETRIC
+     */
+    @Override
+    default Representation getRepresentation() {
+        return Representation.PARAMETRIC;
     }
 
     /**

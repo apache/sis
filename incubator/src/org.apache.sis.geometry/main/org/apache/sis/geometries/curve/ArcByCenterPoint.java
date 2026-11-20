@@ -22,6 +22,7 @@ import org.apache.sis.geometries.Curve;
 import org.apache.sis.geometries.CurveInterpolation;
 import org.apache.sis.geometries.DataPoints;
 import org.apache.sis.geometries.GeometryType;
+import org.apache.sis.geometries.Representation;
 import org.apache.sis.geometries.Point;
 import org.apache.sis.geometries.DataPointsType;
 import org.apache.sis.geometries.internal.shared.DefaultArcByCenterPoint;
@@ -61,6 +62,14 @@ public sealed interface ArcByCenterPoint extends Curve
     @Override
     default GeometryType getGeometryType() {
         return GeometryType.ARCBYCENTERPOINT;
+    }
+
+    /**
+     * @return an ArcByCenter curve is PARAMETRIC
+     */
+    @Override
+    default Representation getRepresentation() {
+        return Representation.PARAMETRIC;
     }
 
     /**

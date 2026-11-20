@@ -27,6 +27,7 @@ import org.apache.sis.geometries.Geometries;
 import org.apache.sis.geometries.Geometry;
 import org.apache.sis.geometries.GeometryType;
 import org.apache.sis.geometries.Point;
+import org.apache.sis.geometries.Representation;
 import org.apache.sis.geometries.internal.shared.ConcatenatedDataPoints;
 import org.apache.sis.geometries.internal.shared.Curves;
 import org.apache.sis.geometries.internal.shared.DefaultCompoundCurve;
@@ -51,6 +52,18 @@ public sealed interface CompoundCurve extends Curve
     @Override
     default GeometryType getGeometryType() {
         return GeometryType.COMPOUNDCURVE;
+    }
+
+    /**
+     * @return the most abstract representation of all it's elements
+     */
+    @Override
+    default Representation getRepresentation() {
+        Representation r = Representation.TESSELATED;
+        for (int i = 0, n = getNumCurves(); i < n; i++) {
+            r = Representation.mostAbstract(r, getCurveN(i).getRepresentation());
+        }
+        return r;
     }
 
     /**

@@ -84,6 +84,14 @@ public final class HyperPlane extends AbstractGeometry{
         return getDimension();
     }
 
+    /**
+     * @return an Hyperplane is ANALYTIC
+     */
+    @Override
+    public Representation getRepresentation() {
+        return Representation.ANALYTIC;
+    }
+
     public DataPoints getDataPoints() {
         return points;
     }

@@ -28,6 +28,7 @@ import org.apache.sis.geometries.GeometryType;
 import org.apache.sis.geometries.Surface;
 import org.apache.sis.geometries.SurfaceInterpolation;
 import org.apache.sis.geometries.Point;
+import org.apache.sis.geometries.Representation;
 import org.apache.sis.geometries.internal.shared.Centroids;
 import org.apache.sis.geometries.internal.shared.ConcatenatedDataPoints;
 import org.apache.sis.geometries.internal.shared.DefaultPolyhedralSurface;
@@ -87,6 +88,14 @@ public sealed interface PolyhedralSurface<T extends Polygon> extends /*GeometryC
     @Override
     default GeometryType getGeometryType() {
         return GeometryType.POLYHEDRALSURFACE;
+    }
+
+    /**
+     * @return a PolyhedralSurface is DISCRETE
+     */
+    @Override
+    default Representation getRepresentation() {
+        return Representation.DISCRETE;
     }
 
 //    @UML(identifier="segment", specification=ISO_19107)

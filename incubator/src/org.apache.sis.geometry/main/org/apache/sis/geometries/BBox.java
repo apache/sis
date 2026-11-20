@@ -163,6 +163,14 @@ public final class BBox extends GeneralEnvelope implements Geometry {
     }
 
     /**
+     * @return a BBOX is ANALYTIC
+     */
+    @Override
+    public Representation getRepresentation() {
+        return Representation.ANALYTIC;
+    }
+
+    /**
      * {@inheritDoc }
      */
     @Override

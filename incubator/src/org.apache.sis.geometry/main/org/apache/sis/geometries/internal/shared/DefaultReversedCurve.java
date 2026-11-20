@@ -28,6 +28,7 @@ import org.apache.sis.geometries.Orientable;
 import org.apache.sis.geometries.Point;
 import org.apache.sis.geometries.Primitive;
 import org.apache.sis.geometries.DataPointsType;
+import org.apache.sis.geometries.Representation;
 import org.apache.sis.geometries.curve.LineString;
 import org.apache.sis.maths.Array;
 import org.apache.sis.measure.Quantities;
@@ -74,6 +75,11 @@ public non-sealed class DefaultReversedCurve extends AbstractGeometry implements
     @Override
     public GeometryType getGeometryType() {
         return base.getGeometryType();
+    }
+
+    @Override
+    public Representation getRepresentation() {
+        return base.getRepresentation();
     }
 
     /**

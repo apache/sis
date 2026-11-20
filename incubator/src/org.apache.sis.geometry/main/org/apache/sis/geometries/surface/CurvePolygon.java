@@ -17,6 +17,7 @@
 package org.apache.sis.geometries.surface;
 
 import java.util.List;
+import java.util.stream.Stream;
 import static org.opengis.annotation.Specification.ISO_19107;
 import org.opengis.annotation.UML;
 import org.opengis.geometry.coordinate.GriddedSurface;
@@ -25,7 +26,9 @@ import org.apache.sis.geometries.DataPoints;
 import org.apache.sis.geometries.GeometryType;
 import org.apache.sis.geometries.Surface;
 import org.apache.sis.geometries.DataPointsType;
+import org.apache.sis.geometries.Geometry;
 import org.apache.sis.geometries.Point;
+import org.apache.sis.geometries.Representation;
 import org.apache.sis.geometries.internal.shared.Centroids;
 import org.apache.sis.geometries.internal.shared.ConcatenatedDataPoints;
 import org.apache.sis.geometries.internal.shared.DefaultCurvePolygon;
@@ -73,6 +76,18 @@ public sealed interface CurvePolygon extends Surface
     @Override
     default GeometryType getGeometryType() {
         return GeometryType.CURVEPOLYGON;
+    }
+
+    /**
+     * @return the most abstract representation of all it's elements
+     */
+    @Override
+    default Representation getRepresentation() {
+        final Curve exteriorRing = getExteriorRing();
+        if (exteriorRing == null) return Representation.EMPTY;
+        return Representation.mostAbstract(
+                Stream.concat(Stream.of(exteriorRing), getInteriorRings().parallelStream())
+                .map(Geometry::getRepresentation));
     }
 
     /**

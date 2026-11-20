@@ -21,6 +21,7 @@ import org.opengis.annotation.UML;
 import org.apache.sis.geometries.Curve;
 import org.apache.sis.geometries.DataPoints;
 import org.apache.sis.geometries.GeometryType;
+import org.apache.sis.geometries.Representation;
 import org.apache.sis.geometries.Solid;
 import org.apache.sis.geometries.SolidInterpolation;
 import org.apache.sis.maths.Array;
@@ -48,6 +49,14 @@ import org.apache.sis.maths.Vector;
 public sealed interface ParametricCurveSolid extends Solid
         permits BSplineSolid
 {
+
+    /**
+     * @return a ParametricCurveSolid is PARAMETRIC
+     */
+    @Override
+    default Representation getRepresentation() {
+        return Representation.PARAMETRIC;
+    }
 
     /**
      * Returns {@link SolidInterpolation#PARAMETRIC_CURVE}: this solid is defined by families of

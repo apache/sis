@@ -20,6 +20,7 @@ import static org.opengis.annotation.Specification.ISO_19107;
 import org.opengis.annotation.UML;
 import org.apache.sis.geometries.CurveInterpolation;
 import org.apache.sis.geometries.GeometryType;
+import org.apache.sis.geometries.Representation;
 import org.apache.sis.geometries.internal.shared.DefaultClothoid;
 
 
@@ -59,6 +60,14 @@ public sealed interface Clothoid extends Spiral
     @Override
     default GeometryType getGeometryType() {
         return GeometryType.CLOTHOID;
+    }
+
+    /**
+     * @return a Clothoid is PARAMETRIC
+     */
+    @Override
+    default Representation getRepresentation() {
+        return Representation.PARAMETRIC;
     }
 
     /**

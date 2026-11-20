@@ -19,6 +19,7 @@ package org.apache.sis.geometries.curve;
 import static org.opengis.annotation.Specification.ISO_19107;
 import org.opengis.annotation.UML;
 import org.apache.sis.geometries.Curve;
+import org.apache.sis.geometries.Representation;
 
 
 /**
@@ -46,6 +47,14 @@ import org.apache.sis.geometries.Curve;
 public sealed interface FunctionCurve<T extends FunctionArc> extends Curve
         permits PolynomialCurve
 {
+
+    /**
+     * @return a true Function curve is ANALYTIC
+     */
+    @Override
+    default Representation getRepresentation() {
+        return Representation.ANALYTIC;
+    }
 
     /**
      * Number of arcs of this curve, therefore the number of real functions needed.

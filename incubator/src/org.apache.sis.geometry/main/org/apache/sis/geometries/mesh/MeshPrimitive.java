@@ -45,6 +45,7 @@ import static org.apache.sis.geometries.DataPointsType.ATT_POSITION;
 import static org.apache.sis.geometries.DataPointsType.ATT_TANGENT;
 import static org.apache.sis.geometries.DataPointsType.ATT_TEXCOORD;
 import static org.apache.sis.geometries.DataPointsType.ATT_WEIGHTS;
+import org.apache.sis.geometries.Representation;
 import org.apache.sis.geometries.curve.LineString;
 import org.apache.sis.geometries.internal.shared.ArrayDataPoints;
 import org.apache.sis.geometries.internal.shared.Vertex;
@@ -123,6 +124,14 @@ public sealed interface MeshPrimitive extends Geometry
 
     public static MeshPrimitive createEmpty(Type type, DataPointsType attDef) {
         return create(type, new ArrayDataPoints(attDef));
+    }
+
+    /**
+     * @return a Mesh is TESSELATED
+     */
+    @Override
+    default Representation getRepresentation() {
+        return Representation.TESSELATED;
     }
 
     /**
@@ -1069,6 +1078,14 @@ public sealed interface MeshPrimitive extends Geometry
             super(Type.POINTS, dp);
         }
 
+        /**
+         * @return a Mesh is TESSELATED
+         */
+        @Override
+        public Representation getRepresentation() {
+            return Representation.TESSELATED;
+        }
+
         @Override
         public GeometryType getGeometryType() {
             return GeometryType.COLLECTION;
@@ -1102,6 +1119,14 @@ public sealed interface MeshPrimitive extends Geometry
             super(Type.LINES, dp);
         }
 
+        /**
+         * @return a Mesh is TESSELATED
+         */
+        @Override
+        public Representation getRepresentation() {
+            return Representation.TESSELATED;
+        }
+
         @Override
         public GeometryType getElementType() {
             return GeometryType.LINESTRING;
@@ -1130,6 +1155,14 @@ public sealed interface MeshPrimitive extends Geometry
         }
 
         /**
+         * @return a Mesh is TESSELATED
+         */
+        @Override
+        public Representation getRepresentation() {
+            return Representation.TESSELATED;
+        }
+
+        /**
          * Returns the points of this line, in index order, the first point repeated at the end.
          */
         @Override
@@ -1148,6 +1181,14 @@ public sealed interface MeshPrimitive extends Geometry
         }
 
         /**
+         * @return a Mesh is TESSELATED
+         */
+        @Override
+        public Representation getRepresentation() {
+            return Representation.TESSELATED;
+        }
+
+        /**
          * Returns the points of this line, in index order.
          */
         @Override
@@ -1163,6 +1204,14 @@ public sealed interface MeshPrimitive extends Geometry
 
         public Triangles(ArrayDataPoints dp) {
             super(Type.TRIANGLES, dp);
+        }
+
+        /**
+         * @return a Mesh is TESSELATED
+         */
+        @Override
+        public Representation getRepresentation() {
+            return Representation.TESSELATED;
         }
 
         @Override
@@ -1195,6 +1244,14 @@ public sealed interface MeshPrimitive extends Geometry
             super(Type.TRIANGLE_FAN, dp);
         }
 
+        /**
+         * @return a Mesh is TESSELATED
+         */
+        @Override
+        public Representation getRepresentation() {
+            return Representation.TESSELATED;
+        }
+
         @Override
         public int getNumPatches() {
             long nb = (index == null) ? getPositions().getLength() : this.index.getLength();
@@ -1225,6 +1282,14 @@ public sealed interface MeshPrimitive extends Geometry
 
         public TriangleStrip(ArrayDataPoints dp) {
             super(Type.TRIANGLE_STRIP, dp);
+        }
+
+        /**
+         * @return a Mesh is TESSELATED
+         */
+        @Override
+        public Representation getRepresentation() {
+            return Representation.TESSELATED;
         }
 
         @Override

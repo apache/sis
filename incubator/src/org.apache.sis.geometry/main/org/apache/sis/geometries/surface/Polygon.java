@@ -24,6 +24,7 @@ import org.apache.sis.geometries.GeometryType;
 import org.apache.sis.geometries.Surface;
 import org.apache.sis.geometries.SurfaceInterpolation;
 import org.apache.sis.geometries.DataPointsType;
+import org.apache.sis.geometries.Representation;
 import org.apache.sis.geometries.curve.LinearRing;
 import org.apache.sis.geometries.internal.shared.ConcatenatedDataPoints;
 import org.apache.sis.geometries.internal.shared.DefaultPolygon;
@@ -80,6 +81,14 @@ public sealed interface Polygon extends Surface
     @Override
     default GeometryType getGeometryType() {
         return GeometryType.POLYGON;
+    }
+
+    /**
+     * @return a Polygon is DISCRETE
+     */
+    @Override
+    default Representation getRepresentation() {
+        return Representation.DISCRETE;
     }
 
     /**

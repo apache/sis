@@ -17,6 +17,7 @@
 package org.apache.sis.geometries.surface;
 
 import java.util.List;
+import org.apache.sis.geometries.Representation;
 import static org.opengis.annotation.Specification.ISO_19107;
 import org.opengis.annotation.UML;
 import org.apache.sis.geometries.SurfaceInterpolation;
@@ -54,5 +55,13 @@ public sealed interface TriangulatedSurface<T extends Polygon> extends Polyhedra
     @Override
     default List<SurfaceInterpolation> getInterpolation() {
         return List.of(SurfaceInterpolation.TRIANGULAR);
+    }
+
+    /**
+     * @return a Tryangulated surface is DISCRETE
+     */
+    @Override
+    default Representation getRepresentation() {
+        return Representation.DISCRETE;
     }
 }

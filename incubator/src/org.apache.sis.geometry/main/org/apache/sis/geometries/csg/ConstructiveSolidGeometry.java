@@ -22,6 +22,7 @@ import org.apache.sis.geometries.DataPoints;
 import org.apache.sis.geometries.Geometry;
 import org.apache.sis.geometries.GeometryType;
 import org.apache.sis.geometries.DataPointsType;
+import org.apache.sis.geometries.Representation;
 import org.apache.sis.geometries.internal.shared.AbstractGeometry;
 import org.apache.sis.geometries.internal.shared.EmptyDataPoints;
 
@@ -53,6 +54,14 @@ public final class ConstructiveSolidGeometry extends AbstractGeometry {
     @Override
     public GeometryType getGeometryType() {
         throw new UnsupportedOperationException("Not supported yet.");
+    }
+
+    /**
+     * @return a CSG is ANALYTIC
+     */
+    @Override
+    public Representation getRepresentation() {
+        return Representation.ANALYTIC;
     }
 
     @Override

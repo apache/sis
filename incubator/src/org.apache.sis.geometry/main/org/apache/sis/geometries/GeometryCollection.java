@@ -143,6 +143,14 @@ public sealed interface GeometryCollection<T extends Geometry> extends Geometry,
     GeometryType getElementType();
 
     /**
+     * @return the most abstract representation of all it's elements
+     */
+    @Override
+    default Representation getRepresentation() {
+        return Representation.mostAbstract(StreamSupport.stream(spliterator(), false).map(Geometry::getRepresentation));
+    }
+
+    /**
      * Returns whether this collection has no element.
      *
      * @see ISO 19107:2019 - 6.4.4.2

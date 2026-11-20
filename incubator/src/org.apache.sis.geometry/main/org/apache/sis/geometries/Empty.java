@@ -79,6 +79,14 @@ public sealed interface Empty extends Geometry
     }
 
     /**
+     * @return an Empty geometry is EMPTY
+     */
+    @Override
+    default Representation getRepresentation() {
+        return Representation.EMPTY;
+    }
+
+    /**
      * Returns −1: the empty set has no dimension.
      *
      * @see ISO 19107:2019 - 6.4.4.22

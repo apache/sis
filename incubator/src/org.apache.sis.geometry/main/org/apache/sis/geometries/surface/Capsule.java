@@ -25,6 +25,7 @@ import org.apache.sis.geometries.DataPointsType;
 import org.apache.sis.geometries.Geometry;
 import org.apache.sis.geometries.GeometryFactory;
 import org.apache.sis.geometries.GeometryType;
+import org.apache.sis.geometries.Representation;
 import org.apache.sis.geometries.Surface;
 import org.apache.sis.geometries.SurfaceInterpolation;
 import org.apache.sis.geometries.internal.shared.DefaultCapsule;
@@ -57,6 +58,14 @@ public sealed interface Capsule extends Surface
     @Override
     default GeometryType getGeometryType() {
         return GeometryType.CAPSULE;
+    }
+
+    /**
+     * @return a Capsule is ANALYTIC
+     */
+    @Override
+    default Representation getRepresentation() {
+        return Representation.ANALYTIC;
     }
 
     /**

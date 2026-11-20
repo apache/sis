@@ -25,6 +25,7 @@ import org.apache.sis.referencing.NamedIdentifier;
 import org.apache.sis.geometries.Curve;
 import org.apache.sis.geometries.DataPoints;
 import org.apache.sis.geometries.GeometryType;
+import org.apache.sis.geometries.Representation;
 import org.apache.sis.geometries.Surface;
 import org.apache.sis.geometries.SurfaceInterpolation;
 import org.apache.sis.maths.Array;
@@ -72,6 +73,14 @@ public sealed interface ParametricCurveSurface extends Surface, ReferenceSystem
                 Ellipsoid,
                 Sphere
 {
+
+    /**
+     * @return a ParametricCurveSurface is PARAMETRIC
+     */
+    @Override
+    default Representation getRepresentation() {
+        return Representation.PARAMETRIC;
+    }
 
     /**
      * Returns {@link SurfaceInterpolation#PARAMETRIC_CURVE}: this surface is defined by families

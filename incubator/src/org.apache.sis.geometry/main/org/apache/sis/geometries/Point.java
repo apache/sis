@@ -179,6 +179,14 @@ public sealed interface Point extends Primitive
     }
 
     /**
+     * @return a Point is DISCRETE
+     */
+    @Override
+    default Representation getRepresentation() {
+        return Representation.DISCRETE;
+    }
+
+    /**
      * Returns an empty list: a point cannot be decomposed.
      *
      * @see ISO 19107:2019 - 6.4.11.2

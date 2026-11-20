@@ -31,6 +31,7 @@ import org.apache.sis.geometries.Primitive;
 import org.apache.sis.geometries.Surface;
 import org.apache.sis.geometries.SurfaceInterpolation;
 import org.apache.sis.geometries.DataPointsType;
+import org.apache.sis.geometries.Representation;
 
 
 /**
@@ -81,6 +82,11 @@ public non-sealed class DefaultReversedSurface extends AbstractGeometry implemen
     @Override
     public GeometryType getGeometryType() {
         return base.getGeometryType();
+    }
+
+    @Override
+    public Representation getRepresentation() {
+        return base.getRepresentation();
     }
 
     /**

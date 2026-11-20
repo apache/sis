@@ -71,6 +71,14 @@ public final class OBBox extends AbstractGeometry {
         return isEmpty() ? -1 : getDimension();
     }
 
+    /**
+     * @return an OBBOX is ANALYTIC
+     */
+    @Override
+    public Representation getRepresentation() {
+        return Representation.ANALYTIC;
+    }
+
     @Override
     public boolean isEmpty() {
         return false;

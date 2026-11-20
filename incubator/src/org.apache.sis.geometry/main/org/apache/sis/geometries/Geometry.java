@@ -269,6 +269,20 @@ public sealed interface Geometry
     int getTopologicDimension();
 
     /**
+     * Get the geometric representation.
+     * for collections it is the element with the most abstract representation.
+     *
+     * <p>
+     * Relation to ISO-19107 :<br>
+     * ISO-19107 does not have this concept for a simple reason, it does not handle the case of geometries
+     * holding attributes.
+     * </ul>
+     *
+     * @return geometric representation
+     */
+    Representation getRepresentation();
+
+    /**
      * Rule used to compute the {@linkplain #getBoundary() boundary} of this geometry
      * in the ambiguous cases raised by aggregates.
      *

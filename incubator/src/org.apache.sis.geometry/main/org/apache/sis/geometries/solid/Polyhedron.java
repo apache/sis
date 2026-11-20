@@ -23,6 +23,7 @@ import org.apache.sis.geometries.DataPointsType;
 import org.apache.sis.geometries.Geometries;
 import org.apache.sis.geometries.GeometryCollection;
 import org.apache.sis.geometries.GeometryType;
+import org.apache.sis.geometries.Representation;
 import org.apache.sis.geometries.Solid;
 import org.apache.sis.geometries.SolidInterpolation;
 import org.apache.sis.geometries.curve.LinearRing;
@@ -58,6 +59,14 @@ public sealed interface Polyhedron extends Solid
     @Override
     default GeometryType getGeometryType() {
         return GeometryType.POLYHEDRON;
+    }
+
+    /**
+     * @return a polyhedron is DISCRETE
+     */
+    @Override
+    default Representation getRepresentation() {
+        return Representation.DISCRETE;
     }
 
     @Override

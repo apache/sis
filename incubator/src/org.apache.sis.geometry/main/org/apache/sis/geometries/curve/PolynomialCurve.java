@@ -16,6 +16,7 @@
  */
 package org.apache.sis.geometries.curve;
 
+import org.apache.sis.geometries.Representation;
 import static org.opengis.annotation.Specification.ISO_19107;
 import org.opengis.annotation.UML;
 
@@ -56,4 +57,12 @@ public sealed interface PolynomialCurve<PolynomialArc> extends FunctionCurve
      */
     @UML(identifier="degree", specification=ISO_19107)
     int getDegree();
+
+    /**
+     * @return a Polynomial curve is PARAMETRIC
+     */
+    @Override
+    default Representation getRepresentation() {
+        return Representation.PARAMETRIC;
+    }
 }

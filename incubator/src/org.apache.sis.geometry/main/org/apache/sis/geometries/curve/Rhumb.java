@@ -24,6 +24,7 @@ import org.apache.sis.geometries.CurveInterpolation;
 import org.apache.sis.geometries.GeometryType;
 import org.apache.sis.geometries.Point;
 import org.apache.sis.geometries.DataPointsType;
+import org.apache.sis.geometries.Representation;
 import org.apache.sis.geometries.cs.Bearing;
 import org.apache.sis.geometries.internal.shared.DefaultRhumb;
 import org.apache.sis.maths.Array;
@@ -68,6 +69,14 @@ public sealed interface Rhumb extends Curve
     @Override
     default GeometryType getGeometryType() {
         return GeometryType.RHUMB;
+    }
+
+    /**
+     * @return a Rhumb is PARAMETRIC
+     */
+    @Override
+    default Representation getRepresentation() {
+        return Representation.PARAMETRIC;
     }
 
     /**

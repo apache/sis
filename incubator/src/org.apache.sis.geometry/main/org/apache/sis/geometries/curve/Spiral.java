@@ -22,6 +22,7 @@ import org.opengis.annotation.UML;
 import org.apache.sis.geometries.Curve;
 import org.apache.sis.geometries.CurveInterpolation;
 import org.apache.sis.geometries.GeometryType;
+import org.apache.sis.geometries.Representation;
 import org.apache.sis.geometries.internal.shared.DefaultSpiral;
 import org.apache.sis.maths.Vector;
 
@@ -61,6 +62,14 @@ public sealed interface Spiral extends Curve
     @Override
     default GeometryType getGeometryType() {
         return GeometryType.SPIRAL;
+    }
+
+    /**
+     * @return a Spiral is PARAMETRIC
+     */
+    @Override
+    default Representation getRepresentation() {
+        return Representation.PARAMETRIC;
     }
 
     /**

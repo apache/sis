@@ -17,6 +17,7 @@
 package org.apache.sis.geometries.internal.shared;
 
 import java.util.List;
+import java.util.stream.StreamSupport;
 import javax.measure.Quantity;
 import org.opengis.geometry.Envelope;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
@@ -29,6 +30,7 @@ import org.apache.sis.geometries.GeometryType;
 import org.apache.sis.geometries.Solid;
 import org.apache.sis.geometries.Surface;
 import org.apache.sis.geometries.Geometries;
+import org.apache.sis.geometries.Representation;
 import org.apache.sis.geometry.GeneralEnvelope;
 
 
@@ -48,6 +50,14 @@ public non-sealed class DefaultSolid extends AbstractGeometry implements Solid {
     @Override
     public GeometryType getGeometryType() {
         return GeometryType.SOLID;
+    }
+
+    /**
+     * @return the most abstract representation of all it's elements
+     */
+    @Override
+    public Representation getRepresentation() {
+        return Representation.mostAbstract(boundaries.stream().map(Geometry::getRepresentation));
     }
 
     @Override
