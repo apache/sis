@@ -171,7 +171,7 @@ public final class CompoundRS implements ReferenceSystem {
         for (int i = 0, n = components.size(); i < n; i++) {
             if (i > 0)sb.append(',');
             final ReferenceSystem rs = components.get(i);
-            sb.append(rs.toString().replaceAll("\n", "    \n"));
+            sb.append(rs.toString().replace("\n", "\n    "));
         }
         sb.append(']');
         return sb.toString();

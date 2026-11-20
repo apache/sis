@@ -16,7 +16,6 @@
  */
 package org.apache.sis.referencing.rs;
 
-import java.time.Instant;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Objects;
@@ -28,6 +27,7 @@ import org.opengis.referencing.crs.TemporalCRS;
 import org.opengis.referencing.operation.TransformException;
 import org.opengis.util.FactoryException;
 import org.apache.sis.geometry.GeneralDirectPosition;
+import org.apache.sis.referencing.IdentifiedObjects;
 import org.apache.sis.referencing.dggs.Zone;
 import org.apache.sis.referencing.dggs.DiscreteGlobalGridReferenceSystem;
 import org.apache.sis.referencing.crs.DefaultTemporalCRS;
@@ -147,26 +147,49 @@ public final class Code {
         return dp;
     }
 
+    /**
+     * Returns one line per single component of the reference system, with its ordinates and its name.
+     * Incomplete codes (unset ordinates, no or unknown reference system) are formatted too.
+     */
     @Override
     public String toString() {
         final StringBuilder sb = new StringBuilder("Code");
-
-        final ReferenceSystem rs = getReferenceSystem();
-        final List<ReferenceSystem> singleComponents = ReferenceSystems.getSingleComponents(rs, true);
-        for (int i = 0; i < singleComponents.size(); i++) {
-            final ReferenceSystem srs = singleComponents.get(i);
-            if (srs instanceof TemporalCRS tcrs) {
-                Instant instant = DefaultTemporalCRS.castOrCopy(tcrs).toInstant(((Number)ordinates[i]).doubleValue());
-                sb.append("\n  " + instant + " " + tcrs.getName().toString());
-            } else if (srs instanceof CoordinateReferenceSystem crs) {
-                sb.append("\n  " + ordinates[i] + " " + crs.getName().toString());
-            } else if (srs instanceof ReferencingByIdentifiers rbi) {
-                sb.append("\n  " + ordinates[i] + " " + rbi.getName().toString());
+        final List<ReferenceSystem> components = (rs != null) ? ReferenceSystems.getSingleComponents(rs, true) : List.of();
+        int offset = 0;
+        for (final ReferenceSystem component : components) {
+            if (offset >= ordinates.length) break;
+            final int end;
+            if (component instanceof CoordinateReferenceSystem crs) {
+                end = Math.min(offset + crs.getCoordinateSystem().getDimension(), ordinates.length);
+            } else if (component instanceof ReferencingByIdentifiers) {
+                end = offset + 1;
             } else {
-                throw new UnsupportedOperationException("todo");
+                end = ordinates.length;     // Unknown number of dimensions, take all remaining ordinates.
+            }
+            sb.append("\n ");
+            for (int i = offset; i < end; i++) {
+                sb.append(' ').append(format(component, ordinates[i]));
+            }
+            sb.append(' ').append(IdentifiedObjects.getName(component, null));
+            offset = end;
+        }
+        if (offset < ordinates.length) {
+            sb.append("\n ");
+            for (int i = offset; i < ordinates.length; i++) {
+                sb.append(' ').append(ordinates[i]);
             }
         }
         return sb.toString();
+    }
+
+    /**
+     * Returns the ordinate as an instant if the component is temporal, or the ordinate unchanged otherwise.
+     */
+    private static Object format(final ReferenceSystem component, final Object ordinate) {
+        if (component instanceof TemporalCRS tcrs && ordinate instanceof Number n) {
+            return DefaultTemporalCRS.castOrCopy(tcrs).toInstant(n.doubleValue());
+        }
+        return ordinate;
     }
 
     @Override

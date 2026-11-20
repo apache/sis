@@ -131,10 +131,11 @@ public final class AddDimCodedCoverage extends CodedCoverage {
 
         @Override
         public void moveTo(int[] zid) {
-            if (zid[zid.length] != 0) {
-                throw new IllegalArgumentException("Zone " + zid[0] +" is not part of this coverage");
+            final int last = zid.length - 1;
+            if (zid[last] != 0) {
+                throw new IllegalArgumentException("Position " + Arrays.toString(zid) + " is not part of this coverage");
             }
-            base.moveTo(zid);
+            base.moveTo(Arrays.copyOf(zid, last));
         }
 
         @Override
