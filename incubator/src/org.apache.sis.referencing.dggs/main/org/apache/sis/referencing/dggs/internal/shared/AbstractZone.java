@@ -86,7 +86,7 @@ public abstract class AbstractZone<T extends DiscreteGlobalGridReferenceSystem> 
         final int cdtz = cdt.getLocationType().getRefinementLevel();
         final int relativeDepth = cdtz - getLocationType().getRefinementLevel();
         if (relativeDepth <= 0 || relativeDepth > maxRelativeDepth) return false;
-        return searchInParents(cdt, this, maxRelativeDepth);
+        return searchInParents(cdt, this, relativeDepth);
     }
 
     private boolean searchInParents(Zone base, Zone searched, int toDepth) {

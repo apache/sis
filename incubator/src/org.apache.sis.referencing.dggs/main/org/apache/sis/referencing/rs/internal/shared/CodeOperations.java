@@ -86,7 +86,7 @@ public final class CodeOperations {
         if (ops.length == 1) return ops[0];
         CodeOperation cop = compound(ops[0], ops[1]);
         for (int i = 2; i < ops.length; i++) {
-            cop = compound(cop, ops[i], null, null);
+            cop = new Compound(cop, ops[i], null, null);
         }
         return cop;
     }
@@ -202,7 +202,7 @@ public final class CodeOperations {
 
         @Override
         public CodeOperation inverse() throws NoninvertibleTransformException {
-            if (targetMapping.length != ReferenceSystems.getDimension(sourceRs)) {
+            if (targetMapping.length != componentOffsets.length) {
                 throw new NoninvertibleTransformException();
             }
             final int[] inv = new int[targetMapping.length];

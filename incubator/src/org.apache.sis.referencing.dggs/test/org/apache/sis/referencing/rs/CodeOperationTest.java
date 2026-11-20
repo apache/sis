@@ -275,4 +275,31 @@ public class CodeOperationTest {
             assertEquals("87z9y8fhdbff", code.getOrdinate(0));
         }
     }
+
+    /**
+     * Tests an operation found by {@link ReferenceSystems#findOperation} between reference systems
+     * of three components, which requires a compound of three operations.
+     */
+    @Test
+    public void compoundOfThreeComponents() throws FactoryException, TransformException {
+        final ReferenceSystem vertical = CommonCRS.Vertical.MEAN_SEA_LEVEL.crs();
+        final ReferenceSystem source = ReferenceSystems.createCompound(MGRS, TIME_JAVA, vertical);
+        final ReferenceSystem target = ReferenceSystems.createCompound(TIME_JAVA, vertical, MGRS);
+        final CodeOperation operation = ReferenceSystems.findOperation(source, target, null);
+        final Code code = operation.transform(new Code(source, "4Q FJ 12 67", 1000.0, 50.0), null);
+        assertArrayEquals(new Object[]{1000.0, 50.0, "4Q FJ 12 67"}, code.getOrdinates());
+    }
+
+    /**
+     * Tests the inverse of {@link CodeOperations.Reorder} swapping a two-dimensional component with a one-dimensional one.
+     */
+    @Test
+    public void reorderInverseMultiDimensionalComponent() throws TransformException {
+        final ReferenceSystem geographic = CommonCRS.WGS84.normalizedGeographic();
+        final ReferenceSystem source = ReferenceSystems.createCompound(geographic, TIME_JAVA);
+        final ReferenceSystem target = ReferenceSystems.createCompound(TIME_JAVA, geographic);
+        final CodeOperation inverse = CodeOperations.reorder(source, target, new int[]{1, 0}).inverse();
+        final Code code = inverse.transform(new Code(target, 1000.0, 10.0, 20.0), null);
+        assertArrayEquals(new Object[]{10.0, 20.0, 1000.0}, code.getOrdinates());
+    }
 }

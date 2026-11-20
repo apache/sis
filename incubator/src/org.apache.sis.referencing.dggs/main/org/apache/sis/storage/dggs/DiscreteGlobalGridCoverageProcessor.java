@@ -506,7 +506,7 @@ public final class DiscreteGlobalGridCoverageProcessor {
                 if (counters[i][k] != null) {
                     Entry<Object,AtomicLong> mostNumerous = null;
                     for (Entry<Object,AtomicLong> entry : counters[i][k].entrySet()) {
-                        if (mostNumerous == null || mostNumerous.getValue().get() > entry.getValue().get()) {
+                        if (mostNumerous == null || mostNumerous.getValue().get() < entry.getValue().get()) {
                             mostNumerous = entry;
                         }
                     }

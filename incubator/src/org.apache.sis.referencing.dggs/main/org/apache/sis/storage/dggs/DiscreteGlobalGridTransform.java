@@ -377,16 +377,16 @@ public abstract class DiscreteGlobalGridTransform extends SubTransform {
             if (idx == offsets.length) {
                 throw new TransformException("Position is outside grid : " + gp);
             }
-            tiles[idx].toAddress(new int[]{gp - (int)offsets[idx]}, location, offset);
+            location[offset] = tiles[idx].getZids()[gp - (int) offsets[idx]];
         }
 
         @Override
         public void toGrid(Object[] location, int[] gridPosition, int offset) throws TransformException {
             final Object zid = location[offset];
-            for (SubZoneTransform trs : tiles) {
-                Integer g = trs.toGridInternal(zid);
+            for (int i = 0; i < tiles.length; i++) {
+                final Integer g = tiles[i].toGridInternal(zid);
                 if (g != null) {
-                    gridPosition[offset] = g;
+                    gridPosition[offset] = Math.toIntExact(offsets[i] + g);
                     return;
                 }
             }
