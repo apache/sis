@@ -1121,6 +1121,8 @@ public sealed interface Geometry
      *   <li>The {@linkplain #getRepresentation() representation} of the returned geometry is
      *       {@code PARAMETRIC}, {@code DISCRETE} or {@code TESSELLATED}.</li>
      *   <li>A geometry which is already at one of those levels, or empty, is returned unchanged.</li>
+     *   <li>Round shapes, such as spheres, ellipsoids, cylinders and capsules, become rational NURBS surfaces.
+     *       Boxes become polyhedra.</li>
      * </ul>
      *
      * <p>Difference with ISO 19107: this operation has no equivalent in the standard.</p>
@@ -1152,8 +1154,9 @@ public sealed interface Geometry
      *       of this geometry.</li>
      *   <li>Curves are converted with {@link Curve#asLine(Quantity, Quantity)}, so a line string
      *       is densified when a spacing is given.</li>
+     *   <li>B-spline surfaces become TINs. Analytic geometries are {@linkplain #parametrize() parametrized} first.</li>
      *   <li>Other geometries which are already discrete or tessellated, or empty, are returned unchanged.</li>
-     *   <li>Limitation: the spacing and the offset are applied to curves only.
+     *   <li>Limitation: the spacing and the offset are applied to curves and to B-spline surfaces only.
      *       Polygons and polyhedral patches are not subdivided.</li>
      * </ul>
      *

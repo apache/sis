@@ -31,6 +31,7 @@ import org.opengis.annotation.UML;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import org.opengis.referencing.operation.MathTransform;
 import org.opengis.util.FactoryException;
+import org.apache.sis.geometries.BBox;
 import org.apache.sis.geometries.Curve;
 import org.apache.sis.geometries.DE9IM;
 import org.apache.sis.geometries.DataPointsType;
@@ -39,6 +40,7 @@ import org.apache.sis.geometries.Geometry;
 import org.apache.sis.geometries.GeometryCollection;
 import org.apache.sis.geometries.GeometryFactory;
 import org.apache.sis.geometries.GeometryType;
+import org.apache.sis.geometries.OBBox;
 import org.apache.sis.geometries.Point;
 import org.apache.sis.geometries.Prism;
 import org.apache.sis.geometries.Representation;
@@ -51,9 +53,14 @@ import org.apache.sis.geometries.internal.shared.Vertex;
 import org.apache.sis.geometries.mesh.MeshPrimitive;
 import org.apache.sis.geometries.mesh.MeshPrimitiveVisitor;
 import org.apache.sis.geometries.solid.Polyhedron;
+import org.apache.sis.geometries.surface.BSplineSurface;
+import org.apache.sis.geometries.surface.Capsule;
 import org.apache.sis.geometries.surface.CurvePolygon;
+import org.apache.sis.geometries.surface.Cylinder;
+import org.apache.sis.geometries.surface.Ellipsoid;
 import org.apache.sis.geometries.surface.Polygon;
 import org.apache.sis.geometries.surface.PolyhedralSurface;
+import org.apache.sis.geometries.surface.Sphere;
 import org.apache.sis.geometries.surface.Triangle;
 import org.apache.sis.maths.Array;
 import org.apache.sis.maths.Cursor;
@@ -539,7 +546,14 @@ public final class GeometryProcessor {
      *
      * <p>Constraints:</p>
      * <ul>
-     *   <li>Geometries which are not {@linkplain Representation#ANALYTIC analytic} are returned unchanged.</li>
+     *   <li>Empty geometries and geometries which are not {@linkplain Representation#ANALYTIC analytic}
+     *       are returned unchanged.</li>
+     *   <li>Spheres and ellipsoids become rational NURBS surfaces of 9 × 5 control points.</li>
+     *   <li>A cylinder becomes its lateral NURBS surface, with the NURBS disks closing its ends if it is
+     *       {@linkplain Cylinder#isClosed() closed}.</li>
+     *   <li>A capsule becomes a NURBS surface made of an arc of each capping sphere and of the cone
+     *       tangent to both.</li>
+     *   <li>A box becomes a polygon in 2 dimensions, or a polyhedron in 3 dimensions.</li>
      *   <li>A prism is replaced by its {@linkplain Prism#toExtrusion() extrusion}.</li>
      *   <li>The elements of a collection are converted one by one.</li>
      * </ul>
@@ -551,10 +565,16 @@ public final class GeometryProcessor {
      * @see Geometry#parametrize()
      */
     public Geometry parametrize(Geometry geom) throws OperationException {
-        if (geom.getRepresentation() != Representation.ANALYTIC) {
+        if (geom.isEmpty() || geom.getRepresentation() != Representation.ANALYTIC) {
             return geom;
         }
         return switch (geom) {
+            case Sphere                cdt -> Parametrize.sphere(cdt);
+            case Ellipsoid             cdt -> Parametrize.ellipsoid(cdt);
+            case Cylinder              cdt -> Parametrize.cylinder(cdt);
+            case Capsule               cdt -> Parametrize.capsule(cdt);
+            case BBox                  cdt -> Parametrize.box(cdt);
+            case OBBox                 cdt -> Parametrize.box(cdt);
             case Prism                 cdt -> cdt.toExtrusion();
             case GeometryCollection<?> cdt -> convertElements(cdt, this::parametrize);
             default -> throw new UnsupportedOperationException(
@@ -569,8 +589,11 @@ public final class GeometryProcessor {
      * <ul>
      *   <li>Curves are replaced by their {@linkplain Curve#asLine(Quantity, Quantity) linear approximation}.</li>
      *   <li>Curve polygons are replaced by polygons whose rings are linear approximations of the curves.</li>
+     *   <li>B-spline surfaces are replaced by TINs whose vertices are sampled on the surface.</li>
      *   <li>A prism is replaced by the {@linkplain Prism#toExtrusion() extrusion} of its discretized base.</li>
      *   <li>The elements of a collection are converted one by one.</li>
+     *   <li>Other {@linkplain Representation#ANALYTIC analytic} geometries are
+     *       {@linkplain #parametrize(Geometry) parametrized} first.</li>
      *   <li>Other geometries already at the discrete level or below are returned unchanged.</li>
      * </ul>
      *
@@ -595,10 +618,13 @@ public final class GeometryProcessor {
             case MeshPrimitive         cdt -> cdt;
             case Curve                 cdt -> cdt.asLine(spacing, offset);
             case CurvePolygon          cdt -> discretize(cdt, spacing, offset);
+            case BSplineSurface        cdt -> new BSplineSampler(cdt).sample(spacing, offset);
             case Prism                 cdt -> discretize(cdt, spacing, offset);
             case GeometryCollection<?> cdt -> convertElements(cdt, (element) -> discretize(element, spacing, offset));
             default -> switch (geom.getRepresentation()) {
                 case EMPTY, DISCRETE, TESSELLATED -> geom;
+                // The parametric form is never analytic, otherwise `parametrize` throws an exception.
+                case ANALYTIC -> discretize(parametrize(geom), spacing, offset);
                 default -> throw new UnsupportedOperationException(
                         "Discretization of " + geom.getGeometryType() + " geometries is not supported yet.");
             };

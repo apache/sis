@@ -25,6 +25,7 @@ import org.apache.sis.geometries.DataPointsType;
 import org.apache.sis.geometries.Geometry;
 import org.apache.sis.geometries.GeometryFactory;
 import org.apache.sis.geometries.GeometryType;
+import org.apache.sis.geometries.Representation;
 import org.apache.sis.geometries.SurfaceInterpolation;
 import org.apache.sis.geometries.internal.shared.DefaultEllipsoid;
 import org.apache.sis.maths.NDRange;
@@ -63,6 +64,17 @@ public sealed interface Ellipsoid extends ParametricCurveSurface
     @Override
     default GeometryType getGeometryType() {
         return GeometryType.ELLIPSOID;
+    }
+
+    /**
+     * Returns {@link Representation#ANALYTIC}: an ellipsoid is defined by its center and its semi-axes,
+     * even though it can be traversed as a parametric curve surface.
+     *
+     * @see Geometry#parametrize()
+     */
+    @Override
+    default Representation getRepresentation() {
+        return Representation.ANALYTIC;
     }
 
     /**

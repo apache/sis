@@ -27,13 +27,18 @@ import org.apache.sis.geometries.DataPoints;
 import org.apache.sis.geometries.DataPointsType;
 import org.apache.sis.geometries.GeometryCollection;
 import org.apache.sis.geometries.Empty;
+import org.apache.sis.geometries.Geometries;
+import org.apache.sis.geometries.OBBox;
 import org.apache.sis.geometries.Prism;
 import org.apache.sis.geometries.Representation;
 import org.apache.sis.geometries.curve.CircularString;
 import org.apache.sis.geometries.curve.LineString;
 import org.apache.sis.geometries.curve.LinearRing;
+import org.apache.sis.geometries.surface.Capsule;
 import org.apache.sis.geometries.surface.CurvePolygon;
 import org.apache.sis.geometries.surface.Polygon;
+import org.apache.sis.geometries.surface.Sphere;
+import org.apache.sis.maths.Vector;
 import org.apache.sis.geometries.solid.Polyhedron;
 import org.apache.sis.geometries.solid.polyhedron.Hexahedron;
 import org.apache.sis.geometries.solid.polyhedron.Icosahedron;
@@ -443,6 +448,52 @@ public class TessellateTest {
         assertTrue(result instanceof MeshPrimitive.Triangles);
         assertEquals(Representation.TESSELLATED, result.getRepresentation());
         assertEquals(Math.PI * 25, trianglesArea((MeshPrimitive) result), 0.1);
+    }
+
+    /**
+     * A sphere goes through its parametric and discrete forms before becoming triangles on the sphere.
+     */
+    @Test
+    public void testSphere() {
+        final CoordinateReferenceSystem crs = Geometries.getUndefinedCRS(3);
+        final Sphere sphere = GeometryFactory.DEFAULT.createSphere(GeometryFactory.DEFAULT.createDataPoints(crs, 0, 0, 0), 3);
+        final MeshPrimitive mesh = assertInstanceOf(MeshPrimitive.Triangles.class, sphere.tessellate(null, null));
+        final double[] c = mesh.getPositions().toArrayDouble();
+        assertTrue(c.length > 0);
+        for (int i = 0; i < c.length; i += 3) {
+            assertEquals(3, Math.sqrt(c[i]*c[i] + c[i+1]*c[i+1] + c[i+2]*c[i+2]), 1E-12);
+        }
+    }
+
+    /**
+     * A capsule goes through its parametric and discrete forms before becoming triangles
+     * at the radius distance from its axis segment.
+     */
+    @Test
+    public void testCapsule() {
+        final GeometryFactory f = GeometryFactory.DEFAULT;
+        final Capsule capsule = f.createCapsule(f.createDataPoints(Geometries.getUndefinedCRS(3), 0,0,0, 0,0,3));
+        final MeshPrimitive mesh = assertInstanceOf(MeshPrimitive.Triangles.class, capsule.tessellate(null, null));
+        final double[] c = mesh.getPositions().toArrayDouble();
+        assertTrue(c.length > 0);
+        for (int i = 0; i < c.length; i += 3) {
+            final double z = Math.clamp(c[i+2], 0, 3);
+            assertEquals(1, Math.sqrt(c[i]*c[i] + c[i+1]*c[i+1] + (c[i+2] - z)*(c[i+2] - z)), 1E-12);
+        }
+    }
+
+    /**
+     * An oriented box becomes a polyhedron, then two triangles per face.
+     */
+    @Test
+    public void testOrientedBox() {
+        final OBBox box = new OBBox(Geometries.getUndefinedCRS(3));
+        box.setCenter(Vector.of(1, 2, 3));
+        box.setXAxis(Vector.of(1, 1, 0));
+        box.setYAxis(Vector.of(-1, 1, 0));
+        box.setZAxis(Vector.of(0, 0, 2));
+        final MeshPrimitive mesh = assertInstanceOf(MeshPrimitive.Triangles.class, box.tessellate(null, null));
+        assertEquals(36, mesh.getIndex().getLength(), "Expected 2 triangles per face.");
     }
 
     /**

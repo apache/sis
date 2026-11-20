@@ -398,6 +398,15 @@ public non-sealed class DefaultNurbSurface extends AbstractGeometry implements N
         return NDArrays.of(positions, SampleSystem.of(getCoordinateReferenceSystem()), controlPoints[0][0].getDataType());
     }
 
+    /**
+     * Returns whether this surface has no control point. Overridden because the default
+     * implementation uses the {@linkplain #getDataPoints() data points}, which are not supported yet.
+     */
+    @Override
+    public boolean isEmpty() {
+        return controlPoints.length == 0 || controlPoints[0].length == 0;
+    }
+
     @Override
     public DataPoints getDataPoints() {
         throw new UnsupportedOperationException("Not supported yet.");

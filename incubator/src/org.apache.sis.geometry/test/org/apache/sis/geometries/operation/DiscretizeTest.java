@@ -16,9 +16,13 @@
  */
 package org.apache.sis.geometries.operation;
 
+import java.util.ArrayList;
+import java.util.List;
 import javax.measure.Quantity;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
+import org.apache.sis.geometries.BBox;
 import org.apache.sis.geometries.DataPoints;
+import org.apache.sis.geometries.Geometries;
 import org.apache.sis.geometries.Geometry;
 import org.apache.sis.geometries.GeometryCollection;
 import org.apache.sis.geometries.GeometryFactory;
@@ -30,7 +34,11 @@ import org.apache.sis.geometries.curve.CircularString;
 import org.apache.sis.geometries.curve.LineString;
 import org.apache.sis.geometries.solid.Polyhedron;
 import org.apache.sis.geometries.surface.CurvePolygon;
+import org.apache.sis.geometries.surface.Cylinder;
 import org.apache.sis.geometries.surface.Polygon;
+import org.apache.sis.geometries.surface.Sphere;
+import org.apache.sis.geometries.surface.TIN;
+import org.apache.sis.geometries.surface.Triangle;
 import org.apache.sis.maths.DataType;
 import org.apache.sis.maths.Vector;
 import org.apache.sis.maths.Vectors;
@@ -52,6 +60,8 @@ import org.junit.jupiter.api.Test;
 public class DiscretizeTest {
 
     private static final CoordinateReferenceSystem CRS2D = CommonCRS.WGS84.normalizedGeographic();
+
+    private static final CoordinateReferenceSystem CRS3D = Geometries.getUndefinedCRS(3);
 
     private static final GeometryFactory F = GeometryFactory.DEFAULT;
 
@@ -141,6 +151,89 @@ public class DiscretizeTest {
         final GeometryCollection<CircularString> curves = F.createMultiCurve(CRS2D, arc(), arc());
         final GeometryCollection<?> lines = assertInstanceOf(GeometryCollection.class, curves.discretize(null, OFFSET));
         assertEquals(GeometryType.CURVE, lines.getElementType());
+    }
+
+    /**
+     * A sphere is parametrized, then sampled as a TIN whose vertices are on the sphere.
+     * Without limits, the 4 × 2 knot spans are divided 8 times, less the triangles collapsed at the poles.
+     */
+    @Test
+    public void testSphere() {
+        final Sphere sphere = F.createSphere(F.createDataPoints(CRS3D, 1, 2, 3), 2);
+        final TIN tin = assertInstanceOf(TIN.class, sphere.discretize(null, null));
+        assertEquals(Representation.DISCRETE, tin.getRepresentation());
+        assertEquals(32 * 16 * 2 - 2 * 32, tin.getNumPatches());
+        for (final double[] p : vertices(tin)) {
+            assertEquals(2, Math.sqrt(square(p[0] - 1) + square(p[1] - 2) + square(p[2] - 3)), 1E-12);
+        }
+    }
+
+    /**
+     * The offset limits the distance between the sphere and the middles of the triangle edges,
+     * and the spacing limits the length of the edges.
+     */
+    @Test
+    public void testSurfaceLimits() {
+        final Sphere sphere = F.createSphere(F.createDataPoints(CRS3D, 0, 0, 0), 1);
+        final double offset = 0.001;
+        final TIN fine = assertInstanceOf(TIN.class, sphere.discretize(null, Quantities.create(offset, Units.UNITY)));
+        for (final Triangle triangle : triangles(fine)) {
+            final DataPoints points = triangle.getExteriorRing().getDataPoints();
+            for (int i = 0; i < 3; i++) {
+                final double[] a = points.getPosition(i).toArrayDouble();
+                final double[] b = points.getPosition(i + 1).toArrayDouble();
+                final double[] middle = {(a[0] + b[0]) / 2, (a[1] + b[1]) / 2, (a[2] + b[2]) / 2};
+                assertTrue(1 - Math.sqrt(square(middle[0]) + square(middle[1]) + square(middle[2])) <= offset * 1.01,
+                           "Edge farther than the offset from the sphere.");
+            }
+        }
+        final TIN spaced = assertInstanceOf(TIN.class, sphere.discretize(Quantities.create(0.2, Units.UNITY), null));
+        for (final Triangle triangle : triangles(spaced)) {
+            final DataPoints points = triangle.getExteriorRing().getDataPoints();
+            for (int i = 0; i < 3; i++) {
+                final double[] a = points.getPosition(i).toArrayDouble();
+                final double[] b = points.getPosition(i + 1).toArrayDouble();
+                assertTrue(Math.sqrt(square(a[0] - b[0]) + square(a[1] - b[1]) + square(a[2] - b[2])) <= 0.2,
+                           "Edge longer than the spacing.");
+            }
+        }
+    }
+
+    /**
+     * A closed cylinder becomes one TIN for each of its three surfaces, and a box becomes a polyhedron.
+     */
+    @Test
+    public void testCylinderAndBox() {
+        final Cylinder cylinder = F.createCylinder(F.createDataPoints(CRS3D, 0,0,0, 0,0,3));
+        final GeometryCollection<?> patches = assertInstanceOf(GeometryCollection.class, cylinder.discretize(null, null));
+        assertEquals(3, patches.getNumGeometries());
+        for (final Geometry patch : patches) {
+            assertInstanceOf(TIN.class, patch);
+        }
+        assertInstanceOf(Polyhedron.class, new BBox(CRS3D, 0,0,0, 1,2,3).discretize(null, null));
+    }
+
+    private static double square(final double x) {
+        return x * x;
+    }
+
+    private static List<Triangle> triangles(final TIN tin) {
+        final List<Triangle> triangles = new ArrayList<>();
+        for (int i = 0; i < tin.getNumPatches(); i++) {
+            triangles.add(tin.getPatchN(i));
+        }
+        return triangles;
+    }
+
+    private static List<double[]> vertices(final TIN tin) {
+        final List<double[]> positions = new ArrayList<>();
+        for (final Triangle triangle : triangles(tin)) {
+            final DataPoints points = triangle.getExteriorRing().getDataPoints();
+            for (int i = 0; i < points.size(); i++) {
+                positions.add(points.getPosition(i).toArrayDouble());
+            }
+        }
+        return positions;
     }
 
     /**
