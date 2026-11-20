@@ -1,5 +1,0 @@
-<?xml version="1.0" encoding="UTF-8"?>
-<ogc:Function xmlns:ogc="http://www.opengis.net/ogc" name="SIN">
-   <ogc:PropertyName>feature_property_name</ogc:PropertyName>
-</ogc:Function>
-

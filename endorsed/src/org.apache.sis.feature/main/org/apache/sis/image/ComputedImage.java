@@ -33,7 +33,6 @@ import java.awt.image.SampleModel;
 import java.awt.image.TileObserver;
 import java.awt.image.ImagingOpException;
 import org.apache.sis.util.ArgumentChecks;
-import org.apache.sis.util.ArraysExt;
 import org.apache.sis.util.Disposable;
 import org.apache.sis.util.Exceptions;
 import org.apache.sis.util.internal.shared.Numerics;
@@ -42,6 +41,7 @@ import org.apache.sis.util.resources.Errors;
 import org.apache.sis.coverage.grid.GridExtent;     // For javadoc
 import org.apache.sis.feature.internal.Resources;
 import org.apache.sis.image.internal.shared.ImageUtilities;
+import org.apache.sis.system.Modules;
 
 
 /**
@@ -53,9 +53,9 @@ import org.apache.sis.image.internal.shared.ImageUtilities;
  *
  * <p>{@code ComputedImage} may have an arbitrary number of source images, including zero.
  * A {@link TileObserver} is automatically registered to all sources that are instances of
- * {@link WritableRenderedImage}. If one of those sources sends a change event, then all
- * {@code ComputedImage} tiles that may be impacted by that change are marked as <dfn>dirty</dfn>
- * and will be computed again when needed.</p>
+ * {@link WritableRenderedImage} or {@link PlanarImage}.
+ * If one of those sources sends a change event, then all {@code ComputedImage} tiles that may be
+ * impacted by that change are marked as <dfn>dirty</dfn> and will be computed again when needed.</p>
  *
  * <p>When this {@code ComputedImage} is garbage collected, all cached tiles are discarded
  * and the above-cited {@link TileObserver} is automatically removed from all sources.
@@ -117,7 +117,8 @@ import org.apache.sis.image.internal.shared.ImageUtilities;
  * if the change to dirty state happened after the call to {@link #getTile(int, int) getTile(…)}.</p>
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.7
+ * @version 1.8
+ *
  * @since SIS 1.1
  */
 public abstract class ComputedImage extends PlanarImage implements Disposable {
@@ -202,10 +203,9 @@ public abstract class ComputedImage extends PlanarImage implements Disposable {
      * and the {@linkplain SampleModel#getHeight() sample model height}
      * determines this {@linkplain #getTileHeight() image tile height}.
      *
-     * <h4>Design note</h4>
-     * {@code ComputedImage} requires the sample model to have exactly the desired tile size
-     * otherwise tiles created by {@link #createTile(int, int)} will consume more memory
-     * than needed.
+     * <p><b>Implementation note:</b>
+     * {@code ComputedImage} requires the sample model to have exactly the desired tile size,
+     * otherwise tiles created by {@link #createTile(int, int)} will consume more memory than needed.</p>
      *
      * @see #getSampleModel()
      */
@@ -215,8 +215,8 @@ public abstract class ComputedImage extends PlanarImage implements Disposable {
      * Creates an initially empty image with the given sample model.
      * The default tile size will be the width and height of the given sample model
      * (this default setting minimizes the amount of memory consumed by {@link #createTile(int, int)}).
-     * This constructor automatically registers a {@link TileObserver}
-     * for all sources that are {@link WritableRenderedImage} instances.
+     * This constructor automatically registers a {@link TileObserver} for all sources that are
+     * instances of {@link WritableRenderedImage} or {@link PlanarImage}.
      *
      * @param  sampleModel  the sample model shared by all tiles in this image.
      * @param  sources      sources of this image (may be an empty array), or a null array if unknown.
@@ -224,40 +224,14 @@ public abstract class ComputedImage extends PlanarImage implements Disposable {
     @SuppressWarnings("this-escape")        // `this` escaped as weak reference only.
     protected ComputedImage(final SampleModel sampleModel, RenderedImage... sources) {
         this.sampleModel = Objects.requireNonNull(sampleModel);
-        /*
-         * Verify the `sources` argument validity and opportunistically collect all writable sources
-         * in a separated array. If at the end it appears that the two arrays have the same content,
-         * the same array will be shared by this `ComputedImage` and its `TileObserver`.
-         */
-        WritableRenderedImage[] ws = null;
         if (sources != null) {
             sources = sources.clone();
-            int count = 0;
             for (int i=0; i<sources.length; i++) {
-                final RenderedImage source = sources[i];
-                ArgumentChecks.ensureNonNullElement("sources", i, source);
-                if (source instanceof WritableRenderedImage) {
-                    if (ws == null) {
-                        ws = new WritableRenderedImage[sources.length - i];
-                    }
-                    ws[count++] = (WritableRenderedImage) source;
-                }
-            }
-            /*
-             * If `count` is 0, then `ws` is null while `sources` is non-null. This is intentional:
-             * a null `sources` array does not have the same meaning as an empty `sources` array.
-             * In the case of `ws` however, the difference does not matter so we keep it to null.
-             */
-            if (count != 0) {
-                if (count == sources.length) {
-                    sources = ws;                   // The two arrays have the same content; share the same array.
-                } else {
-                    ws = ArraysExt.resize(ws, count);
-                }
+                ArgumentChecks.ensureNonNullElement("sources", i, sources[i]);
             }
         }
-        this.sources = sources;                     // Note: null value does not have same meaning as empty array.
-        reference = new ComputedTiles(this, ws);    // Create cleaner last after all arguments have been validated.
+        this.sources = sources;                         // Note: null value does not have same meaning as empty array.
+        reference = new ComputedTiles(this, sources);   // Create cleaner last after all arguments have been validated.
     }
 
     /**
@@ -267,6 +241,23 @@ public abstract class ComputedImage extends PlanarImage implements Disposable {
      */
     final Reference<ComputedImage> reference() {
         return reference;
+    }
+
+    /**
+     * Returns whether this image may notify its observers about tile updates.
+     * A value of {@code false} means that this image will not be notified about changes in its source,
+     * therefore this image will not forward tile update events, therefore observers registered on this
+     * class can be ignored in order to reduce the risk of memory leaks (listeners can be other images).
+     * In case of doubt (implementations that we do not control), conservatively returns {@code true}.
+     *
+     * <p>This method is ignored if this image implements the {@link WritableRenderedImage} interface.
+     * In such case, this method may return {@code false} even if tile update events are expected.</p>
+     *
+     * @return whether tile update events may occur.
+     */
+    @Override
+    final boolean mayFireTileUpdates() {
+        return reference.mayFireTileUpdates() || !getClass().getName().startsWith(Modules.CLASSNAME_PREFIX);
     }
 
     /**
@@ -412,13 +403,13 @@ public abstract class ComputedImage extends PlanarImage implements Disposable {
      * Returns the width of tiles in this image.
      * In {@code ComputedImage} implementation, this is fixed to {@link SampleModel#getWidth()}.
      *
-     * <h4>Design note</h4>
+     * <p><b>Design note:</b>
      * In theory it is legal to have a tile width smaller than the sample model width,
      * for example when a raster is a view over a subregion of another raster.
      * But this is not allowed in {@code ComputedImage} class, because it would
-     * cause {@link #createTile(int, int)} to consume more memory than necessary.
+     * cause {@link #createTile(int, int)} to consume more memory than necessary.</p>
      *
-     * @return the width of this image in pixels.
+     * @return the width (in pixels) of all tiles in this image.
      */
     @Override
     public final int getTileWidth() {
@@ -429,13 +420,13 @@ public abstract class ComputedImage extends PlanarImage implements Disposable {
      * Returns the height of tiles in this image.
      * In {@code ComputedImage} implementation, this is fixed to {@link SampleModel#getHeight()}.
      *
-     * <h4>Design note</h4>
+     * <p><b>Design note:</b>
      * In theory it is legal to have a tile height smaller than the sample model height,
      * for example when a raster is a view over a subregion of another raster.
      * But this is not allowed in {@code ComputedImage} class, because it would
-     * cause {@link #createTile(int, int)} to consume more memory than necessary.
+     * cause {@link #createTile(int, int)} to consume more memory than necessary.</p>
      *
-     * @return the height of this image in pixels.
+     * @return the height (in pixels) of all tiles in this image.
      */
     @Override
     public final int getTileHeight() {
@@ -512,6 +503,7 @@ public abstract class ComputedImage extends PlanarImage implements Disposable {
                     /*
                      * Actual computation.
                      */
+                    fireTileUpdate(tileX, tileY, true);
                     try {
                         tile = computeTile(tileX, tileY, previous);
                     } catch (Exception e) {
@@ -522,6 +514,7 @@ public abstract class ComputedImage extends PlanarImage implements Disposable {
                             destination.releaseWritableTile(tileX, tileY);
                         }
                     }
+                    fireTileUpdate(tileX, tileY, false);
                     if (marked) {
                         reference.endWrite(key, error == null);
                     }
@@ -681,7 +674,7 @@ public abstract class ComputedImage extends PlanarImage implements Disposable {
     }
 
     /**
-     * Sets or clears whether a tile is checked out for writing.
+     * Sets or clears whether a tile is checked out for writing and notifies the listeners if needed.
      * This method is provided for subclasses that implement the {@link WritableRenderedImage} interface.
      * This method can be used as below:
      *
@@ -715,12 +708,17 @@ public abstract class ComputedImage extends PlanarImage implements Disposable {
      * @see WritableRenderedImage#releaseWritableTile(int, int)
      */
     protected boolean markTileWritable(final int tileX, final int tileY, final boolean writing) {
-        final TileCache.Key key = new TileCache.Key(reference, tileX, tileY);
+        final var key = new TileCache.Key(reference, tileX, tileY);
+        final boolean notify;
         if (writing) {
-            return reference.startWrite(key);
+            notify = reference.startWrite(key);
         } else {
-            return reference.endWrite(key, true);
+            notify = reference.endWrite(key, true);
         }
+        if (notify) {
+            fireTileUpdate(tileX, tileY, writing);
+        }
+        return notify;
     }
 
     /**
@@ -732,8 +730,8 @@ public abstract class ComputedImage extends PlanarImage implements Disposable {
      * <p>Subclasses can invoke this method when the tiles in the given range depend on source data
      * that changed, typically (but not necessarily) {@linkplain #getSources() source images}.
      * Note that there is no need to invoke this method if the source images are instances of
-     * {@link WritableRenderedImage}, because {@code ComputedImage} already has {@link TileObserver}
-     * for them.</p>
+     * {@link WritableRenderedImage} or {@link PlanarImage},
+     * because {@code ComputedImage} already has {@link TileObserver} for them.</p>
      *
      * @param  tiles  indices of tiles to mark as dirty.
      * @return {@code true} if at least one tile has been marked dirty.

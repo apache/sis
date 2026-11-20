@@ -25,7 +25,6 @@
  */
 module org.apache.sis.portrayal {
     requires transitive org.apache.sis.storage;
-    requires jakarta.xml.bind;
 
     exports org.apache.sis.style;
     exports org.apache.sis.portrayal;
@@ -33,9 +32,6 @@ module org.apache.sis.portrayal {
     exports org.apache.sis.map.coverage to
             org.apache.sis.gui;                         // In the "optional" sub-project.
 
-    /*
-     * Allow JAXB to use reflection for marshalling and
-     * unmarshalling Apache SIS objects in XML documents.
-     */
-    opens org.apache.sis.style.se1 to jakarta.xml.bind;
+    provides org.apache.sis.filter.FunctionRegister
+        with org.apache.sis.style.se1.function.SymbologyFunctions;
 }

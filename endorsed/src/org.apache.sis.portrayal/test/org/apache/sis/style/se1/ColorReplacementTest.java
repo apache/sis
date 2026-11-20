@@ -16,6 +16,11 @@
  */
 package org.apache.sis.style.se1;
 
+import java.awt.Color;
+import java.util.List;
+import org.apache.sis.style.se1.function.Recode;
+import org.apache.sis.style.se1.function.Recode.MapItem;
+
 // Test dependencies
 import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.*;
@@ -42,6 +47,11 @@ public final class ColorReplacementTest extends StyleTestCase {
 
         // Check default
         assertEmpty(cdt.getFunction());
+
+        // Check get/set
+        final var function = new Recode<>(null, List.of(new MapItem<>(literal(Color.RED), literal(Color.BLUE))), null);
+        cdt.setFunction(function);
+        assertSame(function, cdt.getFunction().orElseThrow());
 
         // Equality and copy.
         assertEquals(cdt, new ColorReplacement<>(cdt));

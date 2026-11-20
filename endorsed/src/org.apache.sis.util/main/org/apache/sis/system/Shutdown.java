@@ -206,6 +206,8 @@ public final class Shutdown extends Thread {
                 log(caller, e);
             }
         }
+        // Shutdown shared executor last in case the above sent some last cleanup background tasks.
+        CommonExecutor.instance().shutdown();
         if (exception != null) {
             throw exception;
         }

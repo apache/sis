@@ -214,11 +214,13 @@ public final class TimeMethods<T> implements Serializable {
 
     /**
      * Whether the temporal object have a time zone, explicitly or implicitly.
+     * Used only for {@link Temporal} objects.
      */
     private final transient boolean hasZone;
 
     /**
-     * Whether the end point will be determined dynamically every time that a method is invoked.
+     * Whether the end point may be determined dynamically every time that a method is invoked.
+     * Used for avoiding infinite recursive call.
      */
     public final transient boolean isDynamic;
 
@@ -347,9 +349,9 @@ public final class TimeMethods<T> implements Serializable {
         if (self == null || other == null) {
             return Boolean.FALSE;
         }
-        boolean isTemporal = false;
-        if (self  instanceof TemporalDate) {self  = ((TemporalDate)  self).temporal; isTemporal = true;}
-        if (other instanceof TemporalDate) {other = ((TemporalDate) other).temporal; isTemporal = true;}
+        boolean isTemporal;     // For skipping unecessary `if (x instanceof Temporal)` checks later.
+        isTemporal  = (self  != (self  = unwrapTemporal(self )));
+        isTemporal |= (other != (other = unwrapTemporal(other)));
         /*
          * For legacy java.util.Date, the compareTo(…) method is consistent only for dates of the same class.
          * Otherwise A.compareTo(B) and B.compareTo(A) are inconsistent if one object is a java.util.Date and
@@ -363,11 +365,27 @@ public final class TimeMethods<T> implements Serializable {
             other = fromLegacy((Date) other);
             isTemporal = true;          // For skipping unecessary `if (x instanceof Temporal)` checks.
         }
-        // Use `||` because an operand by still be a `java.utl.Date`.
-        if (isTemporal || self instanceof Temporal || other instanceof Temporal) {
-            return compareTemporalOrDate(test, self, other);
+        if (self != null && other != null) {
+            // Use `||` because an operand by still be a `java.utl.Date`.
+            if (isTemporal || self instanceof Temporal || other instanceof Temporal) {
+                return compareTemporalOrDate(test, self, other);
+            }
         }
         return null;
+    }
+
+    /**
+     * Unwraps the {@link Temporal} component, or returns the object itself if it is not a wrapper.
+     * If the returned value is different, then it is an instance of {@link Temporal}.
+     */
+    private static Object unwrapTemporal(final Object value) {
+        if (value instanceof TemporalDate) {
+            return ((TemporalDate) value).temporal;
+        } else if (value instanceof org.apache.sis.pending.geoapi.temporal.Instant) {
+            return ((org.apache.sis.pending.geoapi.temporal.Instant) value).getPosition();
+        } else {
+            return value;
+        }
     }
 
     /**
@@ -375,7 +393,10 @@ public final class TimeMethods<T> implements Serializable {
      * comparable objects such as {@link String} are wrongly handled by {@code TimeMethods}.
      */
     private static boolean isTemporal(final Class<?> type) {
-        return (type != null) && (Temporal.class.isAssignableFrom(type) || Date.class.isAssignableFrom(type));
+        return (type != null) &&
+                (Temporal.class.isAssignableFrom(type)
+                  || Date.class.isAssignableFrom(type)
+                  || org.apache.sis.pending.geoapi.temporal.Instant.class.isAssignableFrom(type));
     }
 
     /**
@@ -695,12 +716,14 @@ adapt:  if (type != other.getClass()) {
      * @param  type  the type of temporal object for which to get the last-resource fallback methods.
      * @return set of last-resort comparison methods for the given object type.
      */
+    @SuppressWarnings("unchecked")
     private static <T> TimeMethods<? super T> fallback(final Class<T> type) {
         return new TimeMethods<>(type, null,
                 (self, other) -> compareIfTemporalElseFalse(Test.BEFORE, self, other),
                 (self, other) -> compareIfTemporalElseFalse(Test.AFTER,  self, other),
                 (self, other) -> compareIfTemporalElseFalse(Test.EQUAL,  self, other),
-                null, null, false, true);
+                type.isAssignableFrom(Instant.class) ? (Supplier) Instant::now : null,
+                null, false, true);
     }
 
     /**
@@ -720,7 +743,9 @@ adapt:  if (type != other.getClass()) {
      */
     public static <T> TimeMethods<? super T> forType(final Class<T> type) {
         final TimeMethods<? super T> methods = forType(type, true);
-        if (methods != null) return methods;
+        if (methods != null) {
+            return methods;
+        }
         throw new DateTimeException(Errors.format(Errors.Keys.CannotCompareInstanceOf_2, type, type));
     }
 
@@ -797,7 +822,16 @@ adapt:  if (type != other.getClass()) {
         new TimeMethods<>(ChronoZonedDateTime.class,                         null, ChronoZonedDateTime::isBefore, ChronoZonedDateTime::isAfter, ChronoZonedDateTime::isEqual, ZonedDateTime::now, ChronoZonedDateTime::withZoneSameInstant, true, false),
         new TimeMethods<>(ChronoLocalDateTime.class, TimeMethods::toLocalDateTime, ChronoLocalDateTime::isBefore, ChronoLocalDateTime::isAfter, ChronoLocalDateTime::isEqual, LocalDateTime::now, ChronoLocalDateTime::atZone, false, false),
         new TimeMethods<>(    ChronoLocalDate.class,     TimeMethods::toLocalDate,     ChronoLocalDate::isBefore,     ChronoLocalDate::isAfter,     ChronoLocalDate::isEqual,     LocalDate::now, null, false, false),
-        new TimeMethods<>(               Date.class,                         null,                Date::  before,                Date::  after,                Date::equals,           Date::new, TimeMethods::atZone, true, false)
+        new TimeMethods<>(               Date.class,                         null,                Date::  before,                Date::  after,                Date::equals,           Date::new, TimeMethods::atZone, true, false),
+        new TimeMethods<>(org.apache.sis.pending.geoapi.temporal.Instant.class,
+                (object) -> (object instanceof Temporal) ? TemporalObjects.createInstant((Temporal) object) : null,
+                (self, other) -> compareLenient(Test.BEFORE, self.getPosition(), other.getPosition()),
+                (self, other) -> compareLenient(Test.AFTER,  self.getPosition(), other.getPosition()),
+                (self, other) -> compareLenient(Test.EQUAL,  self.getPosition(), other.getPosition()),
+                () -> DefaultInstant.NOW,
+                null,     // withZone
+                false,    // hasZone (not applicable)
+                true)     // isDynamic (conservative value)
     };
 
     /*
@@ -811,11 +845,11 @@ adapt:  if (type != other.getClass()) {
      * The two last entries are not final, but we really want to ignore all their subtypes.
      * All those types should be tested before {@link #FOR_PARENT_TYPES} because this check is quick.
      *
-     * <h4>Implementation note</h4>
+     * <p><b>Implementation note:</b>
      * {@link Year}, {@link YearMonth}, {@link MonthDay}, {@link LocalTime} and {@link Instant}
      * could be replaced by {@link Comparable}. We nevertheless keep the specialized classes in
      * case the implementations change in the future, and also for performance reason, because
-     * the code working on generic {@link Comparable} needs to check for special cases again.
+     * the code working on generic {@link Comparable} needs to check for special cases again.</p>
      */
     private static final Map<Class<?>, TimeMethods<?>> FOR_EXACT_TYPES = Map.ofEntries(
         entry(new TimeMethods<>(OffsetDateTime.class, TimeMethods::toOffsetDateTime, OffsetDateTime::isBefore, OffsetDateTime::isAfter, OffsetDateTime::isEqual, OffsetDateTime::now, TimeMethods::withZoneSameInstant, true, false)),
@@ -1010,8 +1044,8 @@ adapt:  if (type != other.getClass()) {
     }
 
     /**
-     * Invoked when a conversion cause a field to be ignored. For example if a "date+time" object is compared
-     * with a "date" object, the "time" field is ignored. Expected values are:
+     * Invoked when a conversion causes a field to be ignored. For example, if a "date+time" object
+     * is compared with a "date" object, the "time" field is ignored. Expected values are:
      *
      * <ul>
      *   <li>{@link ChronoField#OFFSET_SECONDS}: time zone is ignored.</li>

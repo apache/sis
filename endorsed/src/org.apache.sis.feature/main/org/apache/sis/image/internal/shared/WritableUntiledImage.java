@@ -247,25 +247,12 @@ public final class WritableUntiledImage extends BufferedImage {
      */
     private void fireTileUpdate(final int count, final boolean willBeWritable) {
         if (count == 0) {
-            fireTileUpdate(observers, this, 0, 0, willBeWritable);
-        }
-    }
-
-    /**
-     * Notifies all listeners that the specified tile has been checked out for writing or has been released.
-     *
-     * @param observers       the observers to notify, or {@code null} if none.
-     * @param image           the image that owns the tile.
-     * @param tileX           the <var>x</var> index of the tile that is being updated.
-     * @param tileY           the <var>y</var> index of the tile that is being updated.
-     * @param willBeWritable  if {@code true}, the tile will be grabbed for writing; otherwise it is being released.
-     */
-    public static void fireTileUpdate(final TileObserver[] observers, final WritableRenderedImage image,
-                                      final int tileX, final int tileY, final boolean willBeWritable)
-    {
-        if (observers != null) {
-            for (final TileObserver observer : observers) {
-                observer.tileUpdate(image, tileX, tileY, willBeWritable);
+            @SuppressWarnings("LocalVariableHidesMemberVariable")
+            final TileObserver[] observers = this.observers;
+            if (observers != null) {
+                for (final TileObserver observer : observers) {
+                    observer.tileUpdate(this, 0, 0, willBeWritable);
+                }
             }
         }
     }

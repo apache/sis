@@ -142,9 +142,9 @@ final class ConvertedGridCoverage extends DerivedGridCoverage {
                                         final boolean converted)
             throws NoninvertibleTransformException
     {
-        final int               numBands   = sources.size();
-        final MathTransform1D   identity   = (MathTransform1D) MathTransforms.identity(1);
-        final MathTransform1D[] converters = new MathTransform1D[numBands];
+        final int numBands   = sources.size();
+        final var identity   = (MathTransform1D) MathTransforms.identity(1);
+        final var converters = new MathTransform1D[numBands];
         Arrays.fill(converters, identity);
         for (int i = 0; i < numBands; i++) {
             final SampleDimension src = sources.get(i);

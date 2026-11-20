@@ -16,10 +16,14 @@
  */
 package org.apache.sis.style.se1;
 
+import java.util.List;
 import java.awt.Color;
+import org.apache.sis.style.se1.function.Categorize;
+import org.apache.sis.style.se1.function.Interpolate;
 
 // Test dependencies
 import org.junit.jupiter.api.Test;
+import static org.junit.jupiter.api.Assertions.*;
 
 
 /**
@@ -44,6 +48,11 @@ public final class ColorMapTest extends StyleTestCase {
         // Check default
         assertEmpty(cdt.getFunction());
 
+        // Check get/set
+        final var function = new Categorize<>(null, List.of(literal(Color.RED)), List.of(), null, null);
+        cdt.setFunction(function);
+        assertSame(function, cdt.getFunction().orElseThrow());
+
         // Any expression is accepted.
         cdt.setFunction(literal(Color.BLUE));
         assertLiteralEquals(Color.BLUE, cdt.getFunction().orElseThrow());
@@ -58,6 +67,9 @@ public final class ColorMapTest extends StyleTestCase {
     @Test
     public void testClone() {
         final var cdt = factory.createColorMap();
-        // TODO: actuel test in other SIS branches.
+        cdt.setFunction(new Interpolate<>(null, List.of(), null, null, null));
+        final var clone = cdt.clone();
+        assertEquals(cdt, clone);
+        assertSame(cdt.getFunction().orElseThrow(), clone.getFunction().orElseThrow());
     }
 }

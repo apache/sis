@@ -18,7 +18,11 @@ package org.apache.sis.style.se1;
 
 import java.util.Set;
 import java.util.List;
+import org.apache.sis.feature.AbstractFeature;
 import org.apache.sis.util.iso.Names;
+
+// Specific to the main branch:
+import org.apache.sis.pending.geoapi.filter.ResourceId;
 
 // Test dependencies
 import org.junit.jupiter.api.Test;
@@ -80,7 +84,7 @@ public final class FeatureTypeStyleTest extends StyleTestCase {
         assertEmpty(cdt.getFeatureInstanceIDs());
 
         // Check get/set
-        final var rid = factory.filterFactory.resourceId("A random identifier");
+        final var rid = (ResourceId<AbstractFeature>) factory.filterFactory.resourceId("A random identifier");
         cdt.setFeatureInstanceIDs(rid);
         assertOptionalEquals(rid, cdt.getFeatureInstanceIDs());
     }

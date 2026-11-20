@@ -36,7 +36,6 @@ import java.awt.image.PixelInterleavedSampleModel;
 import java.awt.image.Raster;
 import java.awt.image.RasterFormatException;
 import java.awt.image.SampleModel;
-import java.awt.image.TileObserver;
 import java.awt.image.WritableRaster;
 import java.awt.image.WritableRenderedImage;
 import org.apache.sis.image.internal.shared.ImageUtilities;
@@ -168,7 +167,7 @@ public final class TiledImageMock extends PlanarImage implements WritableRendere
     }
 
     /**
-     * Creates a new tiled image. Testers should invoke {@link #validate()} after construction.
+     * Creates a new tiled image. Testers should invoke {@link #validate(boolean)} after construction.
      *
      * @param dataType     sample data type as one of the {@link java.awt.image.DataBuffer} constants.
      * @param numBands     number of bands in the sample model to create.
@@ -294,10 +293,19 @@ public final class TiledImageMock extends PlanarImage implements WritableRendere
      * Verifies that image and tile layouts are consistent.
      * This method should be invoked after construction.
      *
+     * @param  lenient  whether to be tolerant to differences in "width" and "height" attributes.
+     *         The validation should be lenient if the image size is not a multiple of tile size.
+     *
      * @see #verify()
      */
-    public synchronized void validate() {
-        assertNull(verify());
+    public synchronized void validate(final boolean lenient) {
+        String inconsistency = verify();
+        if (lenient) {
+            if (inconsistency.equals("width") || inconsistency.equals("height")) {
+                inconsistency = null;
+            }
+        }
+        assertNull(inconsistency);
     }
 
     /**
@@ -553,20 +561,6 @@ public final class TiledImageMock extends PlanarImage implements WritableRendere
     }
 
     /**
-     * Ignored since we do not need tile observers for the tests.
-     */
-    @Override
-    public void addTileObserver(TileObserver to) {
-    }
-
-    /**
-     * Ignored since no listener can have been registered.
-     */
-    @Override
-    public void removeTileObserver(TileObserver to) {
-    }
-
-    /**
      * Sets a rectangle of this image to the contents of given raster.
      * The raster is assumed to be in the same coordinate space as this image.
      * Current implementation can set raster covering only one tile.
@@ -591,6 +585,9 @@ public final class TiledImageMock extends PlanarImage implements WritableRendere
      */
     @SuppressWarnings("exports")
     public synchronized WritableTiledImage toWritableTiledImage() {
-        return new WritableTiledImage(null, null, width, height, minTileX, minTileY, tiles);
+        final var minTile = new Point(minTileX, minTileY);
+        final var image = new WritableTiledImage(null, colorModel, sampleModel, getBounds(), minTile, tiles);
+        assertNull(image.verify());
+        return image;
     }
 }

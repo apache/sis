@@ -67,7 +67,6 @@ import org.apache.sis.referencing.operation.transform.PassThroughTransform;
 import org.apache.sis.referencing.operation.transform.TransformFactoryException;
 import org.apache.sis.referencing.factory.InvalidGeodeticParameterException;
 import org.apache.sis.referencing.internal.shared.ExtendedPrecisionMatrix;
-import org.apache.sis.referencing.internal.shared.DirectPositionView;
 import org.apache.sis.referencing.internal.shared.TemporalAccessor;
 import org.apache.sis.referencing.internal.shared.AxisDirections;
 import org.apache.sis.metadata.iso.extent.DefaultGeographicBoundingBox;
@@ -459,10 +458,10 @@ public class GridGeometry implements LenientComparable, Serializable {
      *       smallest values (closest to negative infinity).</li>
      * </ul>
      *
-     * <h4>API note</h4>
+     * <p><b><abbr>API</abbr> note:</b>
      * There is no default value for {@code anchor} because experience shows that images shifted by ½ pixel
      * (with pixels that may be tens of kilometres large) is a recurrent problem. We want to encourage developers
-     * to always think about wether their <i>grid to CRS</i> transform is mapping pixel corner or center.
+     * to always think about wether their <i>grid to CRS</i> transform is mapping pixel corner or center.</p>
      *
      * <div class="warning"><b>Upcoming API generalization:</b>
      * the {@code extent} type of this method may be changed to {@code GridEnvelope} interface in a future Apache SIS version.
@@ -644,10 +643,10 @@ public class GridGeometry implements LenientComparable, Serializable {
      * For grid geometries describing preexisting data, it is safer and more flexible to use one of
      * the constructors expecting a {@link MathTransform} argument.</p>
      *
-     * <h4>Dimension order</h4>
+     * <p><b>Dimension order:</b>
      * The given envelope shall always declare dimensions in same order as the given extent.
      * This constructor may reorder axes if {@code orientation} is {@link GridOrientation#DISPLAY},
-     * but in such case this constructor will derive a new envelope and a new CRS from the given envelope.
+     * but in such case this constructor will derive a new envelope and a new CRS from the given envelope.</p>
      *
      * @param  extent       the valid extent of grid coordinates, or {@code null} if unknown.
      * @param  envelope     the envelope together with CRS of the "real world" coordinates, or {@code null} if unknown.
@@ -960,10 +959,10 @@ public class GridGeometry implements LenientComparable, Serializable {
      *       with inclusive lower coordinates and <strong>exclusive</strong> upper coordinates.</li>
      * </ul>
      *
-     * <h4>API note</h4>
+     * <p><b><abbr>API</abbr> note:</b>
      * There is no default value for {@code anchor} because experience shows that images shifted by ½ pixel
      * (with pixels that may be tens of kilometres large) is a recurrent problem. We want to encourage developers
-     * to always think about wether the desired <i>grid to CRS</i> transform shall map pixel corner or center.
+     * to always think about wether the desired <i>grid to CRS</i> transform shall map pixel corner or center.</p>
      *
      * @param  anchor  the cell part to map (center or corner).
      * @return the conversion from grid coordinates to "real world" coordinates (never {@code null}).
@@ -1004,8 +1003,7 @@ public class GridGeometry implements LenientComparable, Serializable {
         if (tr instanceof LinearTransform) {
             return (LinearTransform) tr;
         }
-        return MathTransforms.linear(MathTransforms.getMatrix(tr,
-                new DirectPositionView.Double(getExtent().getPointOfInterest(anchor))));
+        return getExtent().tangentAtPOI(tr, anchor);
     }
 
     /*
@@ -1145,10 +1143,10 @@ public class GridGeometry implements LenientComparable, Serializable {
      * This is computed from the {@linkplain #getEnvelope() envelope} if the coordinate reference system
      * contains an horizontal component such as a geographic or projected CRS.
      *
-     * <h4>API note</h4>
+     * <p><b><abbr>API</abbr> note:</b>
      * This method does not throw {@link IncompleteGridGeometryException} because the geographic extent
      * may be absent even with a complete grid geometry. Grid geometries are not required to have a
-     * spatial component on Earth surface, since a raster could be a vertical profile for example.
+     * spatial component on Earth surface, since a raster could be a vertical profile for example.</p>
      *
      * @return the geographic bounding box in "real world" coordinates.
      */
@@ -1622,8 +1620,8 @@ public class GridGeometry implements LenientComparable, Serializable {
      * sets the {@linkplain GridExtent#getSize(int) grid size} to 1 in all dimensions specified by a <i>slice point</i>,
      * but does not remove those dimensions from the grid geometry. For dimensionality reduction, see {@link #selectDimensions(int[])}.</p>
      *
-     * <h4>Example</h4>
-     * For clipping this grid geometry to a sub-area, one can use:
+     * <p><b>Example:</b>
+     * For clipping this grid geometry to a sub-area, one can use:</p>
      *
      * {@snippet lang="java" :
      *     GridGeometry gg = ...;
@@ -1645,10 +1643,10 @@ public class GridGeometry implements LenientComparable, Serializable {
      * for compensating the grid change.
      * The grid geometry {@link #getEnvelope() envelope} is preserved after upsampling.
      *
-     * <h4>Number of arguments</h4>
+     * <p><b>Number of arguments:</b>
      * The {@code periods} array length should be equal to the {@linkplain #getDimension() number of grid dimensions}.
      * If the array is shorter, missing values default to 1 (i.e. samplings in unspecified dimensions are unchanged).
-     * If the array is longer, extraneous values are ignored.
+     * If the array is longer, extraneous values are ignored.</p>
      *
      * @param  periods  the upsampling factors for each dimension of this grid geometry.
      * @return the upsampled grid geometry, or {@code this} is upsampling results in the same extent.
@@ -1708,10 +1706,10 @@ public class GridGeometry implements LenientComparable, Serializable {
      * The "grid to CRS" transforms are adjusted accordingly in order to map to the same
      * "real world" coordinates.
      *
-     * <h4>Number of arguments</h4>
+     * <p><b>Number of arguments:</b>
      * The {@code translation} array length should be equal to the {@linkplain #getDimension() number of dimensions}.
      * If the array is shorter, missing values default to 0 (i.e. no translation in unspecified dimensions).
-     * If the array is longer, extraneous values are ignored.
+     * If the array is longer, extraneous values are ignored.</p>
      *
      * @param  translation  translation to apply on each grid axis in order.
      * @return a grid geometry whose coordinates (both low and high ones) and
@@ -1865,7 +1863,7 @@ public class GridGeometry implements LenientComparable, Serializable {
      *       of the name given by the {@code datum} argument.</li>
      * </ul>
      *
-     * <h4>Usage in context of image pyramids</h4>
+     * <h4>Default grid <abbr>CRS</abbr> of image pyramids</h4>
      * The "grid to <abbr>CRS</abbr>" information is sometime missing, for example because a file
      * is an ordinary <abbr>TIFF</abbr> file instead of GeoTIFF, or because of encoding error.
      * Missing "grid to <abbr>CRS</abbr>" information usually causes missing grid resolution,
@@ -1915,13 +1913,13 @@ public class GridGeometry implements LenientComparable, Serializable {
      * then this method creates an {@link org.opengis.referencing.crs.EngineeringCRS} instance
      * associated with an engineering datum identified by the given {@code name}.
      *
-     * <h4>Recommendation about the name</h4>
+     * <p><b>Recommendation about the name:</b>
      * The {@code name} argument is not very important when this method creates {@link DerivedCRS} instances,
      * because the datum is inherited from the real world <abbr>CRS</abbr>. However, if this method fallbacks
      * on {@link EngineeringCRS}, then the {@code name} argument become the only way to determine whether
      * a coordinate operation is possible between two such engineering <abbr>CRS</abbr>s.
      * It is recommended to use an identifier which is unique for the grid. It may be, for example, derived
-     * from the {@linkplain org.apache.sis.storage.GridCoverageResource#getIdentifier() resource identifier}.
+     * from the {@linkplain org.apache.sis.storage.GridCoverageResource#getIdentifier() resource identifier}.</p>
      *
      * <p><b>Alternative:</b> if the target grid geometry is known in advance,
      * {@link #createTransformTo(GridGeometry, PixelInCell)} can provide a
@@ -2204,11 +2202,11 @@ public class GridGeometry implements LenientComparable, Serializable {
      * This method may conservatively return {@code false} if an accurate answer would be too expensive
      * (because of the last point in above list), or if the coordinates cannot be transformed.
      *
-     * <h4>Usage</h4>
+     * <p><b>Usage:</b>
      * This method behavior is well defined when the two grids are members of the same image mosaic or pyramid:
      * same <abbr>CRS</abbr> together with "grid to <abbr>CRS</abbr>" transforms that differ only by scale and
      * translation factors with integer values.
-     * For other cases, this method should be considered as merely a hint because of above approximations.
+     * For other cases, this method should be considered as merely a hint because of above approximations.</p>
      *
      * @param  other  the other grid geometry to test for inclusion.
      * @return whether the other grid geometry is contained in this grid geometry.

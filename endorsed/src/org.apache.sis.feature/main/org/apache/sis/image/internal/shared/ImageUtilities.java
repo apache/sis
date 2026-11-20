@@ -396,11 +396,11 @@ public final class ImageUtilities {
     /**
      * Converts a <var>x</var> pixel coordinates to a tile index.
      *
-     * <h4>Implementation note</h4>
+     * <p><b>Implementation note</b>
      * This method performs its calculation using <em>tile grid offset</em> instead of minimum coordinate
      * values because the former does not assume that image coordinates start at the beginning of first tile.
      * In practice it would be risky to have image {@code minX} different than first tile {@code minX},
-     * but Apache SIS tries to handle the most general cases when possible.
+     * but Apache <abbr>SIS</abbr> tries to handle the most general cases when possible.</p>
      *
      * @param  image  the image containing tiles.
      * @param  x      the pixel coordinate for which to get tile index.
@@ -428,11 +428,11 @@ public final class ImageUtilities {
      * Converts a tile column index to smallest <var>x</var> pixel coordinate inside the tile.
      * The returned value is a coordinate of the pixel in upper-left corner.
      *
-     * <h4>Implementation note</h4>
+     * <p><b>Implementation note</b>
      * This method performs its calculation using <em>tile grid offset</em> instead of minimum coordinate
      * values because the former does not assume that image coordinates start at the beginning of first tile.
      * In practice it would be risky to have image {@code minX} different than first tile {@code minX},
-     * but Apache SIS tries to handle the most general cases when possible.
+     * but Apache <abbr>SIS</abbr> tries to handle the most general cases when possible.</p>
      *
      * @param  image  the image containing tiles.
      * @param  tileX  the tile index for which to get pixel coordinate.
@@ -462,10 +462,10 @@ public final class ImageUtilities {
      * Converts pixel coordinates to pixel indices.
      * This method does <strong>not</strong> clip the rectangle to image bounds.
      *
-     * <h4>Implementation note</h4>
+     * <p><b>Implementation note</b>
      * This method performs its calculation using <em>tile grid offset</em> instead of minimum coordinate
      * values because the former does not assume that image coordinates start at the beginning of first tile.
-     * The intent is to be consistent with {@link #pixelToTileX(RenderedImage, int)}.
+     * The intent is to be consistent with {@link #pixelToTileX(RenderedImage, int)}.</p>
      *
      * @param  image   the image containing tiles.
      * @param  pixels  the pixel coordinates for which to get tile indices.
@@ -496,10 +496,10 @@ public final class ImageUtilities {
      * Tiles will be fully included in the returned range of pixel indices.
      * This method does <strong>not</strong> clip the rectangle to image bounds.
      *
-     * <h4>Implementation note</h4>
+     * <p><b>Implementation note</b>
      * This method performs its calculation using <em>tile grid offset</em> instead of minimum coordinate
      * values because the former does not assume that image coordinates start at the beginning of first tile.
-     * The intent is to be consistent with {@link #tileToPixelX(RenderedImage, int)}.
+     * The intent is to be consistent with {@link #tileToPixelX(RenderedImage, int)}.</p>
      *
      * @param  image  the image containing tiles.
      * @param  tiles  the tile indices for which to get pixel coordinates.

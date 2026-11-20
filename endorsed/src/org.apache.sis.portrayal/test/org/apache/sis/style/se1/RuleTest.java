@@ -119,6 +119,23 @@ public final class RuleTest extends StyleTestCase {
     }
 
     /**
+     * Verifies that the {@code ElseFilter} property is preserved by the copy constructor
+     * and taken in account by {@code equals}.
+     */
+    @Test
+    public void testElseFilterCopyAndEquals() {
+        final var cdt = factory.createRule();
+        cdt.setElseFilter(true);
+
+        final var copy = new Rule<>(cdt);
+        assertTrue(copy.isElseFilter());
+        assertEquals(cdt, copy);
+
+        copy.setElseFilter(false);
+        assertNotEquals(cdt, copy);
+    }
+
+    /**
      * Test of {@code MinScaleDenominator} property.
      */
     @Test

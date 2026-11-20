@@ -56,6 +56,7 @@ import org.apache.sis.feature.internal.Resources;
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.7
+ *
  * @since SIS 1.5
  */
 public class ImageLayout {

@@ -1,0 +1,245 @@
+{
+    "$comments": [
+        "Test document using the constructs of the ISO/TR 19115-4 reference example with synthetic values."
+    ],
+    "conformsTo": [
+        "https://standards.iso.org/iso/19115/-4/0.1/core",
+        "https://standards.iso.org/iso/19115/-4/0.1/data-quality-core",
+        "https://standards.iso.org/iso/19115/-4/0.1/no-ref"
+    ],
+    "type": "FeatureCollection",
+    "features": [
+        {
+            "type": "Feature",
+            "id": "6f0c4b1e-3a6d-4f5e-9d2b-000000000042",
+            "geometry": {
+                "type": "Polygon",
+                "coordinates": [[[-5, 41], [10, 41], [10, 52], [-5, 52], [-5, 41]]]
+            },
+            "bbox": [-5, 41, 10, 52],
+            "properties": {
+                "metadataIdentifier": {
+                    "authority": {"title": "Test catalogue"},
+                    "code": "6f0c4b1e-3a6d-4f5e-9d2b-000000000042",
+                    "codeSpace": "urn:uuid:"
+                },
+                "defaultLocale": {"language": "fra", "country": "FR", "characterEncoding": "utf8"},
+                "contact": [
+                    {
+                        "role": "pointOfContact",
+                        "party": [
+                            {
+                                "type": "CI_Organisation",
+                                "name": "Example Mapping Agency",
+                                "contactInfo": [
+                                    {
+                                        "phone": {"voice": "+33 1 00 00 00 00", "facsimile": "+33 1 00 00 00 01"},
+                                        "address": [
+                                            {
+                                                "deliveryPoint": ["1 rue de l'Exemple"],
+                                                "city": "Montpellier",
+                                                "postalCode": "34000",
+                                                "country": "France",
+                                                "electronicMailAddress": ["contact@example.org"]
+                                            }
+                                        ]
+                                    }
+                                ],
+                                "individual": [
+                                    {"name": "Doe, J.", "positionName": "Data manager"}
+                                ]
+                            }
+                        ]
+                    }
+                ],
+                "dateInfo": {
+                    "revision": "2024-04-20T06:19:51Z",
+                    "creation": "2020-02-04"
+                },
+                "metadataStandard": [
+                    {"title": "ISO 19115-1:2014"}
+                ],
+                "referenceSystemInfo": [
+                    {
+                        "referenceSystemIdentifier": {"code": "EPSG::2154", "codeSpace": "EPSG"}
+                    }
+                ],
+                "identificationInfo": {
+                    "citation": {
+                        "title": "Synthetic land cover dataset",
+                        "date": {"publication": "2021-03-31T00:00:00+11:00"},
+                        "editionDate": "2021",
+                        "series": {"issueIdentification": "2021"},
+                        "ISBN": "9780000000002"
+                    },
+                    "abstract": "Synthetic dataset used for testing the JSON encoding.",
+                    "pointOfContact": [
+                        {
+                            "role": "custodian",
+                            "party": [{"type": "CI_Individual", "name": "Doe, J."}]
+                        }
+                    ],
+                    "spatialRepresentationType": ["vector"],
+                    "spatialResolution": {
+                        "distance": {"uom": "m", "value": [250]}
+                    },
+                    "temporalResolution": ["P1D"],
+                    "topicCategory": ["imageryBaseMapsEarthCover", "unknownCategory"],
+                    "extent": [
+                        {
+                            "description": "Metropolitan France",
+                            "geographicElement": [
+                                {
+                                    "type": "EX_GeographicDescription",
+                                    "geographicIdentifier": {"code": "FR"}
+                                },
+                                {
+                                    "type": "EX_GeographicBoundingBox",
+                                    "westBoundLongitude": -5,
+                                    "eastBoundLongitude": 10,
+                                    "southBoundLatitude": 41,
+                                    "northBoundLatitude": 52
+                                }
+                            ],
+                            "temporalElement": [
+                                {"extent": ["2020-01-01", ".."]}
+                            ]
+                        }
+                    ],
+                    "resourceMaintenance": [
+                        {"maintenanceAndUpdateFrequency": "asNeeded", "userDefinedMaintenanceFrequency": "P1Y2M"}
+                    ],
+                    "resourceFormat": [
+                        {
+                            "formatSpecificationCitation": {"title": "GeoPackage", "edition": "1.3"},
+                            "fileDecompressionTechnique": "UNZIP"
+                        }
+                    ],
+                    "descriptiveKeywords": [
+                        {"keyword": ["land cover"], "type": "theme"},
+                        {"keyword": ["France"], "type": "place", "thesaurusName": {"title": "Countries"}}
+                    ],
+                    "resourceConstraints": [
+                        {
+                            "type": "MD_LegalConstraints",
+                            "uuid": "urn:example:licence:1",
+                            "reference": [{"title": "Creative Commons Attribution 4.0", "alternateTitle": ["CC-BY"]}],
+                            "accessConstraints": ["license"],
+                            "useConstraints": ["license"]
+                        },
+                        {
+                            "type": "MD_SecurityConstraints",
+                            "classification": "unclassified"
+                        },
+                        {
+                            "useLimitation": ["Not for navigation"]
+                        }
+                    ]
+                },
+                "distributionInfo": [
+                    {
+                        "distributor": [
+                            {
+                                "distributorContact": {
+                                    "role": "distributor",
+                                    "party": [{"type": "CI_Organisation", "name": "Example Mapping Agency"}]
+                                }
+                            }
+                        ],
+                        "transferOptions": [
+                            {
+                                "onLine": [
+                                    {
+                                        "linkage": "https://example.org/data/landcover.zip",
+                                        "protocol": "WWW:LINK-1.0-http--link",
+                                        "function": "download"
+                                    }
+                                ],
+                                "transferSize": 12.5
+                            }
+                        ]
+                    }
+                ],
+                "dataQualityInfo": [
+                    {
+                        "scope": {"level": "dataset"},
+                        "report": [
+                            {
+                                "type": "Commission",
+                                "measure": {
+                                    "measureIdentification": {"code": "2"},
+                                    "nameOfMeasure": ["number of excess items"]
+                                },
+                                "evaluationMethod": [
+                                    {
+                                        "type": "FullInspection",
+                                        "evaluationMethodDescription": "Count of all items.",
+                                        "evaluationMethodType": "directExternal"
+                                    }
+                                ],
+                                "result": [
+                                    {
+                                        "type": "QuantitativeResult",
+                                        "resultScope": {
+                                            "level": "featureType",
+                                            "levelDescription": [{"features": ["road"]}]
+                                        },
+                                        "value": [2],
+                                        "valueUnit": "m"
+                                    }
+                                ]
+                            },
+                            {
+                                "type": "Confidence",
+                                "measure": {"$comment": "required, but no values were provided"},
+                                "evaluationMethod": [
+                                    {
+                                        "type": "AggregationDerivation",
+                                        "evaluationMethodType": "indirect",
+                                        "evaluationProcedure": {"title": "Aggregation", "date": {"creation": "2010-07-05"}}
+                                    }
+                                ],
+                                "result": [
+                                    {
+                                        "type": "ConformanceResult",
+                                        "specification": {"title": "Product specification"},
+                                        "explanation": "3 requirements out of 11 are not fulfilled",
+                                        "pass": false
+                                    },
+                                    {
+                                        "type": "DescriptiveResult",
+                                        "statement": "Evaluated on the whole dataset."
+                                    }
+                                ],
+                                "derivedElement": [
+                                    {
+                                        "type": "ThematicClassificationCorrectness",
+                                        "measure": {"measureIdentification": {"code": "60"}},
+                                        "result": []
+                                    }
+                                ]
+                            }
+                        ],
+                        "qualityEvaluationReport": {
+                            "reportReference": {"title": "Quality evaluation report"},
+                            "abstract": "Details of the evaluation."
+                        }
+                    }
+                ],
+                "resourceLineage": [
+                    {
+                        "statement": "Derived from satellite imagery.",
+                        "scope": {"level": "dataset"},
+                        "source": [{"description": "Synthetic source."}]
+                    }
+                ],
+                "metadataConstraints": [
+                    {"type": "MD_SecurityConstraints", "classification": "unclassified"}
+                ],
+                "metadataScope": [
+                    {"resourceScope": "dataset", "name": "dataset"}
+                ]
+            }
+        }
+    ]
+}

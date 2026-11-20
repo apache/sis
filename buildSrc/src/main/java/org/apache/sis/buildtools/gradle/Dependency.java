@@ -71,12 +71,16 @@ public final class Dependency {
         Map.entry("database",                 "non-free:sis-embedded-data"),        // Optional.
         Map.entry("gui",                      "application:sis-javafx"),            // Optional.
         Map.entry("cql",                      "core:sis-cql"),                      // Incubator.
+        Map.entry("process",                  "core:sis-process"),                  // Incubator.
         Map.entry("storage.shapefile",        "storage:sis-shapefile"),
         Map.entry("storage.geoheif",          "storage:sis-geoheif"),
         Map.entry("storage.gsf",              "storage:sis-gsf"),
         Map.entry("storage.gdal",             "storage:sis-gdal"),
         Map.entry("storage.geopackage",       "storage:sis-geopackage"),
         Map.entry("storage.json",             "storage:sis-json"),
+        Map.entry("storage.hdf",              "storage:sis-hdf"),
+        Map.entry("storage.ogcwxs",           "storage:sis-ogcwxs"),
+        Map.entry("storage.ogcapi",           "storage:sis-ogcapi"),
         Map.entry("web",                      "application:sis-web")
     );
 

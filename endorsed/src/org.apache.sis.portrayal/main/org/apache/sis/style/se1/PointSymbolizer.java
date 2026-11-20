@@ -16,11 +16,6 @@
  */
 package org.apache.sis.style.se1;
 
-import jakarta.xml.bind.Marshaller;
-import jakarta.xml.bind.annotation.XmlType;
-import jakarta.xml.bind.annotation.XmlElement;
-import jakarta.xml.bind.annotation.XmlRootElement;
-
 
 /**
  * Instructions about how to draw a graphic at a point.
@@ -34,8 +29,6 @@ import jakarta.xml.bind.annotation.XmlRootElement;
  *
  * @param <R>  the type of data to style, such as {@code Feature} or {@code Coverage}.
  */
-@XmlType(name = "PointSymbolizerType")
-@XmlRootElement(name = "PointSymbolizer")
 public class PointSymbolizer<R> extends Symbolizer<R> implements GraphicalElement<R> {
     /**
      * Information about how to draw graphics, or {@code null} for no graphic.
@@ -45,7 +38,6 @@ public class PointSymbolizer<R> extends Symbolizer<R> implements GraphicalElemen
      * @see #getGraphic()
      * @see #setGraphic(Graphic)
      */
-    @XmlElement(name = "Graphic")
     protected Graphic<R> graphic;
 
     /**
@@ -53,25 +45,6 @@ public class PointSymbolizer<R> extends Symbolizer<R> implements GraphicalElemen
      * If {@code false}, then a default graphic will be created when first needed.
      */
     private boolean isGraphicSet;
-
-    /**
-     * Invoked by JAXB before marshalling this point symbolizer.
-     * Creates the default graphic if needed.
-     */
-    private void beforeMarshal(Marshaller caller) {
-        if (graphic == null && !isGraphicSet) {
-            graphic = factory.createGraphic();
-        }
-    }
-
-    /**
-     * For JAXB unmarshalling only. This constructor disables the lazy creation of default values.
-     * This is because OGC 05-077r4 said that if the graphic is not specified, then none should be used.
-     */
-    private PointSymbolizer() {
-        // Thread-local factory will be used.
-        isGraphicSet = true;
-    }
 
     /**
      * Creates a symbolizer initialized to a default graphic.
@@ -90,21 +63,25 @@ public class PointSymbolizer<R> extends Symbolizer<R> implements GraphicalElemen
      */
     public PointSymbolizer(final PointSymbolizer<R> source) {
         super(source);
-        graphic = source.graphic;
+        graphic      = source.graphic;
+        isGraphicSet = source.isGraphicSet;
     }
 
     /**
      * Returns the graphic that will be drawn at each point of the geometry.
+     * If {@code setGraphic(null)} has been explicitly invoked with a null argument value,
+     * then this method returns {@code null} for meaning that nothing will be plotted.
      * The returned object is <em>live</em>:
-     * changes in the returned instance will be reflected in this fill, and conversely.
+     * changes in the returned instance will be reflected in this symbolizer, and conversely.
      *
-     * @return information about how to draw graphics.
+     * @return information about how to draw graphics, or {@code null} if none.
      *
      * @see #isVisible()
      */
     @Override
     public Graphic<R> getGraphic() {
-        if (graphic == null) {
+        if (!isGraphicSet) {
+            isGraphicSet = true;
             graphic = factory.createGraphic();
         }
         return graphic;
@@ -113,7 +90,7 @@ public class PointSymbolizer<R> extends Symbolizer<R> implements GraphicalElemen
     /**
      * Specifies the graphic that will be drawn at each point of the geometry.
      * The given instance is stored by reference, it is not cloned.
-     * If this method is never invoked, then the default value is a {@linkplain Graphic#Graphic() default instance}.
+     * If this method is never invoked, then the default value is a {@linkplain Graphic#Graphic(StyleFactory) default instance}.
      * If this method is invoked with an explicit {@code null}, then nothing will be plotted.
      *
      * @param  value  new information about how to draw graphics, or {@code null} for none.

@@ -20,6 +20,7 @@ import java.awt.Rectangle;
 import java.awt.image.RenderedImage;
 import java.util.concurrent.Future;
 import java.util.concurrent.Callable;
+import java.util.concurrent.ExecutorService;
 import java.util.concurrent.locks.ReentrantLock;
 import java.util.concurrent.atomic.AtomicInteger;
 import org.apache.sis.system.CommonExecutor;
@@ -192,9 +193,10 @@ public abstract class TiledProcess<R> {
     public final Future<R> execute() {
         @SuppressWarnings({"rawtypes", "unchecked"})
         final Future<R>[] components = new Future[tasks.length];
+        final ExecutorService executor = CommonExecutor.instance();
         while (taskIndex < components.length) {
-            final Task task = createSubTask();
-            components[taskIndex++] = CommonExecutor.instance().submit(task);
+            final Task task = createSubTask();  // Need to be before `taskIndex++`.
+            components[taskIndex++] = executor.submit(task);
         }
         iterators = null;       // Clear only after all tasks have been created.
         return CompoundFuture.create(components);

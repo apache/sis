@@ -39,6 +39,7 @@ import static org.apache.sis.referencing.Assertions.assertWktEquals;
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
  */
+@SuppressWarnings("exports")
 public final class DefaultCoordinateSystemAxisTest extends TestCase {
     /**
      * Creates a new test case.

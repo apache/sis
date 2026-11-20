@@ -84,7 +84,7 @@ public final class StatisticsCalculatorTest extends TestCaseWithLogs.Isolated {
                 false);
         image.initializeAllTiles(0);
         image.setRandomValues(1, new Random(), 1000);
-        image.validate();
+        image.validate(false);
         return image;
     }
 

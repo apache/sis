@@ -38,5 +38,15 @@ public interface Literal<R,V> extends Expression<R,V> {
         return Collections.emptyList();
     }
 
+    @Override
+    default Class<? super R> getResourceClass() {
+        return Object.class;
+    }
+
     V getValue();
+
+    @Override
+    default V apply(R input) {
+        return getValue();
+    }
 }

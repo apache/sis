@@ -506,7 +506,7 @@ public class SampleDimension implements LenientComparable, Serializable {
             return true;
         }
         if (object instanceof SampleDimension) {
-            final SampleDimension that = (SampleDimension) object;
+            final var that = (SampleDimension) object;
             /*
              * `transferFunction` does not need to be compared because it is derived from the categories.
              * It is also difficult to keep `transferFunction` comparison consistent with `categories`
@@ -833,17 +833,17 @@ public class SampleDimension implements LenientComparable, Serializable {
          * Adds a qualitative category for samples of the given boolean value.
          * The {@code true} value is represented by 1 and the {@code false} value is represented by 0.
          *
-         * <h4>Usage note</h4>
+         * <p><b>Usage note:</b>
          * The {@link #setBackground(CharSequence, Number)} method should be used instead of this method
          * when the aim is to define a default "no data" category to use when the missing value cannot
-         * be categorized more precisely (cloud, instrument error, <i>etc</i>).
+         * be categorized more precisely (cloud, instrument error, <i>etc</i>).</p>
          *
-         * <h4>Default implementation</h4>
-         * This convenience method delegates to {@link #addQualitative(CharSequence, NumberRange)}.
+         * <p><b>Default implementation:</b> this convenience method delegates to
+         * This convenience method delegates to {@link #addQualitative(CharSequence, NumberRange)}.</p>
          *
          * @param  name    the category name as a {@link String} or {@link InternationalString} object,
          *                 or {@code null} for a default "no data" name.
-         * @param  sample  the sample value as a boolean.
+         * @param  sample  the sample value as a Boolean.
          * @return {@code this}, for method call chaining.
          */
         public Builder addQualitative(final CharSequence name, final boolean sample) {
@@ -855,13 +855,13 @@ public class SampleDimension implements LenientComparable, Serializable {
          * Adds a qualitative category for samples of the given tiny (8 bits) integer value.
          * The argument is treated as a signed integer ({@value Byte#MIN_VALUE} to {@value Byte#MAX_VALUE}).
          *
-         * <h4>Usage note</h4>
+         * <p><b>Usage note:</b>
          * The {@link #setBackground(CharSequence, Number)} method should be used instead of this method
          * when the aim is to define a default "no data" category to use when the missing value cannot
-         * be categorized more precisely (cloud, instrument error, <i>etc</i>).
+         * be categorized more precisely (cloud, instrument error, <i>etc</i>).</p>
          *
-         * <h4>Default implementation</h4>
-         * This convenience method delegates to {@link #addQualitative(CharSequence, NumberRange)}.
+         * <p><b>Default implementation:</b> this convenience method delegates to
+         * {@link #addQualitative(CharSequence, NumberRange)}.</p>
          *
          * @param  name    the category name as a {@link String} or {@link InternationalString} object,
          *                 or {@code null} for a default "no data" name.
@@ -876,13 +876,13 @@ public class SampleDimension implements LenientComparable, Serializable {
          * Adds a qualitative category for samples of the given short (16 bits) integer value.
          * The argument is treated as a signed integer ({@value Short#MIN_VALUE} to {@value Short#MAX_VALUE}).
          *
-         * <h4>Usage note</h4>
+         * <p><b>Usage note:</b>
          * The {@link #setBackground(CharSequence, Number)} method should be used instead of this method
          * when the aim is to define a default "no data" category to use when the missing value cannot
-         * be categorized more precisely (cloud, instrument error, <i>etc</i>).
+         * be categorized more precisely (cloud, instrument error, <i>etc</i>).</p>
          *
-         * <h4>Default implementation</h4>
-         * This convenience method delegates to {@link #addQualitative(CharSequence, NumberRange)}.
+         * <p><b>Default implementation:</b> this convenience method delegates to
+         * {@link #addQualitative(CharSequence, NumberRange)}.</p>
          *
          * @param  name    the category name as a {@link String} or {@link InternationalString} object,
          *                 or {@code null} for a default "no data" name.
@@ -897,13 +897,13 @@ public class SampleDimension implements LenientComparable, Serializable {
          * Adds a qualitative category for samples of the given integer value.
          * The argument is treated as a signed integer ({@value Integer#MIN_VALUE} to {@value Integer#MAX_VALUE}).
          *
-         * <h4>Usage note</h4>
+         * <p><b>Usage note:</b>
          * The {@link #setBackground(CharSequence, Number)} method should be used instead of this method
          * when the aim is to define a default "no data" category to use when the missing value cannot
-         * be categorized more precisely (cloud, instrument error, <i>etc</i>).
+         * be categorized more precisely (cloud, instrument error, <i>etc</i>).</p>
          *
-         * <h4>Default implementation</h4>
-         * This convenience method delegates to {@link #addQualitative(CharSequence, NumberRange)}.
+         * <p><b>Default implementation:</b> this convenience method delegates to
+         * {@link #addQualitative(CharSequence, NumberRange)}.</p>
          *
          * @param  name    the category name as a {@link String} or {@link InternationalString} object,
          *                 or {@code null} for a default "no data" name.
@@ -917,13 +917,13 @@ public class SampleDimension implements LenientComparable, Serializable {
         /**
          * Adds a qualitative category for samples of the given floating-point value.
          *
-         * <h4>Usage note</h4>
+         * <p><b>Usage note:</b>
          * The {@link #setBackground(CharSequence, Number)} method should be used instead of this method
          * when the aim is to define a default "no data" category to use when the missing value cannot
-         * be categorized more precisely (cloud, instrument error, <i>etc</i>).
+         * be categorized more precisely (cloud, instrument error, <i>etc</i>).</p>
          *
-         * <h4>Default implementation</h4>
-         * This convenience method delegates to {@link #addQualitative(CharSequence, NumberRange)}.
+         * <p><b>Default implementation:</b> this convenience method delegates to
+         * {@link #addQualitative(CharSequence, NumberRange)}.</p>
          *
          * @param  name    the category name as a {@link String} or {@link InternationalString} object,
          *                 or {@code null} for a default "no data" name.
@@ -944,13 +944,13 @@ public class SampleDimension implements LenientComparable, Serializable {
         /**
          * Adds a qualitative category for samples of the given double precision floating-point value.
          *
-         * <h4>Usage note</h4>
+         * <p><b>Usage note:</b>
          * The {@link #setBackground(CharSequence, Number)} method should be used instead of this method
          * when the aim is to define a default "no data" category to use when the missing value cannot
-         * be categorized more precisely (cloud, instrument error, <i>etc</i>).
+         * be categorized more precisely (cloud, instrument error, <i>etc</i>).</p>
          *
-         * <h4>Default implementation</h4>
-         * This convenience method delegates to {@link #addQualitative(CharSequence, NumberRange)}.
+         * <p><b>Default implementation:</b> this convenience method delegates to
+         * {@link #addQualitative(CharSequence, NumberRange)}.</p>
          *
          * @param  name    the category name as a {@link String} or {@link InternationalString} object,
          *                 or {@code null} for a default "no data" name.
@@ -971,13 +971,13 @@ public class SampleDimension implements LenientComparable, Serializable {
         /**
          * Adds a qualitative category for samples in the given range of values.
          *
-         * <h4>Usage note</h4>
+         * <p><b>Usage note:</b>
          * The {@link #setBackground(CharSequence, Number)} method should be used instead of this method
          * when the aim is to define a default "no data" category to use when the missing value cannot
-         * be categorized more precisely (cloud, instrument error, <i>etc</i>).
+         * be categorized more precisely (cloud, instrument error, <i>etc</i>).</p>
          *
-         * <h4>Default implementation</h4>
-         * This convenience method delegates to {@link #addQualitative(CharSequence, NumberRange)}.
+         * <p><b>Default implementation:</b> this convenience method delegates to
+         * {@link #addQualitative(CharSequence, NumberRange)}.</p>
          *
          * @param  name     the category name as a {@link String} or {@link InternationalString} object,
          *                  or {@code null} for a default "no data" name.
@@ -997,10 +997,10 @@ public class SampleDimension implements LenientComparable, Serializable {
          * This is the most generic method for adding a qualitative category.
          * All other {@code addQualitative(name, …)} methods are convenience methods delegating their work to this method.
          *
-         * <h4>Usage note</h4>
+         * <p><b>Usage note:</b>
          * The {@link #setBackground(CharSequence, Number)} method should be used instead of this method
          * when the aim is to define a default "no data" category to use when the missing value cannot
-         * be categorized more precisely (cloud, instrument error, <i>etc</i>).
+         * be categorized more precisely (cloud, instrument error, <i>etc</i>).</p>
          *
          * @param  name     the category name as a {@link String} or {@link InternationalString} object,
          *                  or {@code null} for a default "no data" name.
@@ -1022,8 +1022,8 @@ public class SampleDimension implements LenientComparable, Serializable {
          * (not necessarily the {@link Float#NaN} canonical value)
          * and that value shall not have been used by another category.
          *
-         * <h4>Default implementation</h4>
-         * This convenience method delegates to {@link #mapQualitative(CharSequence, NumberRange, float)}.
+         * <p><b>Default implementation:</b> this convenience method delegates to
+         * {@link #mapQualitative(CharSequence, NumberRange, float)}.</p>
          *
          * @param  name       the category name as a {@link String} or {@link InternationalString} object,
          *                    or {@code null} for a default "no data" name.
@@ -1090,8 +1090,8 @@ public class SampleDimension implements LenientComparable, Serializable {
          * <p><b>Warning:</b> this method is provided for convenience when the scale and offset factors are not explicitly specified.
          * If those factor are available, then the other {@code addQuantitative(name, samples, …)} methods are more reliable.</p>
          *
-         * <h4>Default implementation</h4>
-         * This convenience method delegates to {@link #addQuantitative(CharSequence, NumberRange, MathTransform1D, Unit)}.
+         * <p><b>Default implementation:</b> this convenience method delegates to
+         * {@link #addQuantitative(CharSequence, NumberRange, MathTransform1D, Unit)}.</p>
          *
          * @param  name        the category name as a {@link String} or {@link InternationalString} object,
          *                     or {@code null} for a default "data" name.
@@ -1129,8 +1129,8 @@ public class SampleDimension implements LenientComparable, Serializable {
          * Adds a quantitative category for values ranging from {@code minimum} to {@code maximum} inclusive
          * in the given units of measurement. The transfer function is set to identity.
          *
-         * <h4>Default implementation</h4>
-         * This convenience method delegates to {@link #addQuantitative(CharSequence, NumberRange, MathTransform1D, Unit)}.
+         * <p><b>Default implementation:</b> this convenience method delegates to
+         * {@link #addQuantitative(CharSequence, NumberRange, MathTransform1D, Unit)}.</p>
          *
          * @param  name     the category name as a {@link String} or {@link InternationalString} object,
          *                  or {@code null} for a default "data" name.
@@ -1148,8 +1148,8 @@ public class SampleDimension implements LenientComparable, Serializable {
          * Adds a quantitative category for values ranging from {@code minimum} to {@code maximum} inclusive
          * in the given units of measurement. The transfer function is set to identity.
          *
-         * <h4>Default implementation</h4>
-         * This convenience method delegates to {@link #addQuantitative(CharSequence, NumberRange, MathTransform1D, Unit)}.
+         * <p><b>Default implementation:</b> this convenience method delegates to
+         * {@link #addQuantitative(CharSequence, NumberRange, MathTransform1D, Unit)}.</p>
          *
          * @param  name     the category name as a {@link String} or {@link InternationalString} object,
          *                  or {@code null} for a default "data" name.
@@ -1171,8 +1171,8 @@ public class SampleDimension implements LenientComparable, Serializable {
          *
          * Results of above conversion are measurements in the units specified by the {@code units} argument.
          *
-         * <h4>Default implementation</h4>
-         * This convenience method delegates to {@link #addQuantitative(CharSequence, NumberRange, MathTransform1D, Unit)}.
+         * <p><b>Default implementation:</b> this convenience method delegates to
+         * {@link #addQuantitative(CharSequence, NumberRange, MathTransform1D, Unit)}.</p>
          *
          * @param  name    the category name as a {@link String} or {@link InternationalString} object.
          *                 or {@code null} for a default "data" name.

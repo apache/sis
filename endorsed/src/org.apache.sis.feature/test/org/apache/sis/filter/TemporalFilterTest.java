@@ -18,6 +18,7 @@ package org.apache.sis.filter;
 
 import java.time.Instant;
 import org.apache.sis.geometry.WraparoundMethod;
+import org.apache.sis.temporal.TemporalObjects;
 import static org.apache.sis.util.internal.shared.Constants.MILLISECONDS_PER_DAY;
 
 // Test dependencies
@@ -30,6 +31,7 @@ import static org.apache.sis.test.Assertions.assertSerializedEquals;
 import org.apache.sis.feature.AbstractFeature;
 import org.apache.sis.pending.geoapi.temporal.Period;
 import org.apache.sis.pending.geoapi.temporal.TemporalOperatorName;
+import org.opengis.temporal.TemporalPrimitive;
 
 
 /**
@@ -38,11 +40,12 @@ import org.apache.sis.pending.geoapi.temporal.TemporalOperatorName;
  * @author  Johann Sorel (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
  */
+@SuppressWarnings("exports")
 public final class TemporalFilterTest extends TestCase {
     /**
      * The factory to use for creating the objects to test.
      */
-    private DefaultFilterFactory<AbstractFeature, Object, ? super Period> factory;
+    private DefaultFilterFactory<AbstractFeature, Object, ? super TemporalPrimitive> factory;
 
     /**
      * The filter to test. This field shall be assigned by each {@code testFoo()} method by invoking
@@ -86,6 +89,9 @@ public final class TemporalFilterTest extends TestCase {
     /**
      * Evaluates the filter with a null resource.
      * This is okay if all filter operands are literal.
+     *
+     * <p>We use this method as a placeholder for future tests where the operands would not be literals.
+     * We may also add more assertions here.</p>
      */
     private boolean evaluate() {
         return filter.test(null);
@@ -354,7 +360,97 @@ public final class TemporalFilterTest extends TestCase {
      */
     @Test
     public void testOnPeriods() {
-        factory = new DefaultFilterFactory.Features<>(Object.class, Period.class, WraparoundMethod.NONE);
+        factory = new DefaultFilterFactory.Features<>(Object.class, TemporalPrimitive.class, WraparoundMethod.NONE);
         testAfter();
+    }
+
+    /**
+     * Tests filters between two period literals.
+     * The period class used by the literals has no natural ordering.
+     * Comparisons should be applied on their {@link Instant} components.
+     */
+    @Test
+    public void testPeriodLiterals() {
+        expression2.begin = Instant.parse("2000-01-01T00:00:00Z").toEpochMilli();
+        expression2.end   = Instant.parse("2000-01-06T00:00:00Z").toEpochMilli();
+        final var outer = factory.literal(expression2);
+        final var inner = factory.literal(expression1);    // 2000-01-01T09:00:00Z to 2000-01-05T10:00:00Z
+
+        filter = factory.during(inner, outer);
+        assertTrue(evaluate());
+
+        filter = factory.during(outer, inner);
+        assertFalse(evaluate());
+
+        filter = factory.anyInteracts(inner, outer);
+        assertTrue(evaluate());
+    }
+
+    /**
+     * Tests "During" and "AnyInteracts" between an instant and a period.
+     */
+    @Test
+    public void testInstantAndPeriod() {
+        final var period  = factory.literal(expression1);   // 2000-01-01T09:00:00Z to 2000-01-05T10:00:00Z
+        final var inside  = factory.literal(TemporalObjects.createInstant(Instant.parse("2000-01-01T09:30:00Z")));
+        final var outside = factory.literal(TemporalObjects.createInstant(Instant.parse("2000-01-07T00:00:00Z")));
+        final var start   = factory.literal(TemporalObjects.createInstant(Instant.ofEpochMilli(expression1.begin)));
+
+        filter = factory.during(inside, period);
+        assertTrue(evaluate());
+
+        filter = factory.during(period, inside);
+        assertFalse(evaluate());
+
+        filter = factory.during(outside, period);
+        assertFalse(evaluate());
+
+        filter = factory.during(start, period);
+        assertFalse(evaluate(), "Boundaries shall be excluded.");
+
+        filter = factory.anyInteracts(inside, period);
+        assertTrue(evaluate());
+
+        filter = factory.anyInteracts(period, inside);
+        assertTrue(evaluate());
+
+        filter = factory.anyInteracts(outside, period);
+        assertFalse(evaluate());
+
+        filter = factory.anyInteracts(start, period);
+        assertFalse(evaluate(), "Meets is not an interaction.");
+    }
+
+    /**
+     * Subset of {@link #testInstantAndPeriod()} but with Java instants instead of ISO 19108.
+     * In principle the instants should be instances of {@code org.opengis.temporal.Instant},
+     * but Apache <abbr>SIS</abbr> should also accept instances of {@code java.time.Instant}.
+     */
+    @Test
+    public void testJavaInstantAndPeriod() {
+        final var period  = factory.literal(expression1);   // 2000-01-01T09:00:00Z to 2000-01-05T10:00:00Z
+        final var inside  = factory.literal(Instant.parse("2000-01-01T09:30:00Z"));
+        final var outside = factory.literal(Instant.parse("2000-01-07T00:00:00Z"));
+
+        // This test needs a factory accepting `Object` for the <T> parameterized type.
+        final var ff = DefaultFilterFactory.forFeatures();
+
+        filter = ff.during(inside, period);
+        assertTrue(evaluate());
+
+        filter = ff.during(period, inside);
+        assertFalse(evaluate());
+
+        filter = ff.during(outside, period);
+        assertFalse(evaluate());
+
+        filter = ff.anyInteracts(inside, period);
+        assertTrue(evaluate());
+
+        filter = ff.anyInteracts(period, inside);
+        assertTrue(evaluate());
+
+        filter = ff.anyInteracts(outside, period);
+        assertFalse(evaluate());
     }
 }

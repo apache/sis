@@ -23,9 +23,10 @@ import java.nio.DoubleBuffer;
 
 
 /**
- * Algorithm for image interpolation (resampling). Interpolations are performed by sampling on a regular grid
- * of pixels using a local neighborhood. The sampling is performed by the {@link ResampledImage} class, which
- * gives the sample values to the {@code interpolate(…)} method of this interpolation.
+ * Algorithm for image resampling based on interpolation methods.
+ * Interpolations are performed by sampling on a regular grid of pixels using a local neighborhood.
+ * The sampling is performed by the {@link ResampledImage} class, which gives the sample values to
+ * the {@code interpolate(…)} method of this interpolation.
  *
  * <p>All methods in this class shall be safe for concurrent use in multi-threading context.
  * For example, interpolations may be executed in a different thread for each tile in an image.</p>
@@ -36,11 +37,15 @@ import java.nio.DoubleBuffer;
  * @author  Martin Desruisseaux (Geomatys)
  * @author  Johann Sorel (Geomatys)
  * @version 1.2
+ *
+ * @see ResampledImage
+ * @see Aggregation
+ *
  * @since SIS 1.1
  */
 public abstract class Interpolation {
     /**
-     * Creates a new interpolation.
+     * Creates a new interpolation method.
      */
     protected Interpolation() {
     }

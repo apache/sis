@@ -18,9 +18,6 @@ package org.apache.sis.style.se1;
 
 import java.util.List;
 import java.util.ArrayList;
-import jakarta.xml.bind.annotation.XmlType;
-import jakarta.xml.bind.annotation.XmlElement;
-import jakarta.xml.bind.annotation.XmlRootElement;
 
 
 /**
@@ -34,33 +31,14 @@ import jakarta.xml.bind.annotation.XmlRootElement;
  *
  * @param <R>  the type of data to style, such as {@code Feature} or {@code Coverage}.
  */
-@XmlType(name = "ExternalGraphicType", propOrder = {
-//  "onlineResource",       // XML encoding not yet available.
-//  "inlineContent",        // Idem.
-    "format",
-    "colorReplacements"
-})
-@XmlRootElement(name = "ExternalGraphic")
 public class ExternalGraphic<R> extends GraphicalSymbol<R> {
     /**
      * A list of colors to replace, or {@code null} if none.
-     *
-     * <h4>XML marshalling</h4>
-     * A null value is not synonymous to an empty list.
-     * An empty list causes an empty {@code <ColorReplacement/>} element to be marshalled,
-     * while a {@code null} value results in no element being marshalled.
+     * This list is created when first needed.
      *
      * @see #colorReplacements()
      */
-    @XmlElement(name = "ColorReplacement")
     protected List<ColorReplacement<R>> colorReplacements;
-
-    /**
-     * For JAXB unmarshalling only.
-     */
-    private ExternalGraphic() {
-        // Thread-local factory will be used.
-    }
 
     /**
      * Creates an initially empty external graphic.

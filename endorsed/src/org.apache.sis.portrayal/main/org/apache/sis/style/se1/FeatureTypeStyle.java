@@ -16,8 +16,6 @@
  */
 package org.apache.sis.style.se1;
 
-import jakarta.xml.bind.annotation.XmlType;
-import jakarta.xml.bind.annotation.XmlRootElement;
 import org.apache.sis.filter.DefaultFilterFactory;
 
 // Specific to the main branch:
@@ -32,8 +30,6 @@ import org.apache.sis.feature.AbstractFeature;
  * @author  Chris Dillard (SYS Technologies)
  * @author  Martin Desruisseaux (Geomatys)
  */
-@XmlType(name = "FeatureTypeStyleType")
-@XmlRootElement(name = "FeatureTypeStyle")
 public class FeatureTypeStyle extends AbstractStyle<AbstractFeature> {
     /**
      * The default style factory for features.

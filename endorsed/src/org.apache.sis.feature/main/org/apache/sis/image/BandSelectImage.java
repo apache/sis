@@ -27,7 +27,6 @@ import java.awt.image.RenderedImage;
 import java.awt.image.WritableRaster;
 import java.awt.image.WritableRenderedImage;
 import java.awt.image.ColorModel;
-import java.awt.image.TileObserver;
 import org.apache.sis.util.ArraysExt;
 import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.image.internal.shared.ImageUtilities;
@@ -270,16 +269,6 @@ class BandSelectImage extends SourceAlignedImage {
         @Override public void releaseWritableTile(final int tileX, final int tileY) {
             target().releaseWritableTile(tileX, tileY);
             markTileWritable(tileX, tileY, false);
-        }
-
-        /** Adds an observer to be notified when a tile is checked out for writing. */
-        @Override public void addTileObserver(final TileObserver observer) {
-            target().addTileObserver(observer);
-        }
-
-        /** Removes an observer from the list of observers notified when a tile is checked out for writing. */
-        @Override public void removeTileObserver(final TileObserver observer) {
-            target().removeTileObserver(observer);
         }
 
         /** Sets a region of the image to the contents of the given raster. */

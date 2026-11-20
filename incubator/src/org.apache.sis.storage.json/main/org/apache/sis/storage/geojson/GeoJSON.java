@@ -17,6 +17,7 @@
 package org.apache.sis.storage.geojson;
 
 import java.util.List;
+import java.util.Map;
 import java.util.Map.Entry;
 import org.locationtech.jts.geom.Coordinate;
 import org.locationtech.jts.geom.CoordinateXY;
@@ -66,6 +67,9 @@ public final class GeoJSON {
             geom = fromGeoJSON(jsongeom);
         }
 
+        // RFC 7946 allows a null "properties" member.
+        final Map<String,Object> properties = json.getProperties();
+
         if (type == null) {
             final FeatureTypeBuilder ftb = new FeatureTypeBuilder();
             ftb.setName("geojson");
@@ -76,8 +80,13 @@ public final class GeoJSON {
             if (geom != null) {
                 ftb.addAttribute(geom.getClass()).setName(AttributeConvention.GEOMETRY_PROPERTY).addRole(AttributeRole.DEFAULT_GEOMETRY);
             }
-            for (Entry<String,Object> entry : json.getProperties().entrySet()) {
-                ftb.addAttribute(entry.getValue().getClass()).setName(entry.getKey());
+            if (properties != null) {
+                for (Entry<String,Object> entry : properties.entrySet()) {
+                    // A null value gives no information about the value type.
+                    final Object value = entry.getValue();
+                    final Class<?> valueClass = (value != null) ? value.getClass() : Object.class;
+                    ftb.addAttribute(valueClass).setName(entry.getKey());
+                }
             }
             type = ftb.build();
         }
@@ -92,8 +101,10 @@ public final class GeoJSON {
             feature.setPropertyValue(AttributeConvention.GEOMETRY, geom);
         }
 
-        for (Entry<String,Object> entry : json.getProperties().entrySet()) {
-            feature.setPropertyValue(entry.getKey(), entry.getValue());
+        if (properties != null) {
+            for (Entry<String,Object> entry : properties.entrySet()) {
+                feature.setPropertyValue(entry.getKey(), entry.getValue());
+            }
         }
         return feature;
     }

@@ -18,18 +18,13 @@ package org.apache.sis.style.se1;
 
 import java.util.Objects;
 import java.util.Optional;
-import jakarta.xml.bind.annotation.XmlType;
-import jakarta.xml.bind.annotation.XmlElement;
-import jakarta.xml.bind.annotation.XmlRootElement;
-import jakarta.xml.bind.annotation.XmlSchemaType;
-import jakarta.xml.bind.annotation.XmlAttribute;
-import jakarta.xml.bind.annotation.XmlSeeAlso;
 import javax.measure.Unit;
 import org.apache.sis.measure.Units;
 import org.apache.sis.util.resources.Errors;
 
 // Specific to the main branch:
 import org.apache.sis.filter.Expression;
+import org.apache.sis.pending.geoapi.filter.ValueReference;
 
 
 /**
@@ -52,19 +47,6 @@ import org.apache.sis.filter.Expression;
  *
  * @param <R>  the type of data to style, such as {@code Feature} or {@code Coverage}.
  */
-@XmlType(name = "SymbolizerType", propOrder = {
-    "name",
-    "description",
-    "geometry"
-})
-@XmlSeeAlso({
-    LineSymbolizer.class,
-    PointSymbolizer.class,
-    PolygonSymbolizer.class,
-    TextSymbolizer.class,
-    RasterSymbolizer.class
-})
-@XmlRootElement(name = "Symbolizer")
 public abstract class Symbolizer<R> extends StyleElement<R> {
     /**
      * Name for this style, or {@code null} if none.
@@ -72,7 +54,6 @@ public abstract class Symbolizer<R> extends StyleElement<R> {
      * @see #getName()
      * @see #setName(String)
      */
-    @XmlElement(name = "Name")
     protected String name;
 
     /**
@@ -81,7 +62,6 @@ public abstract class Symbolizer<R> extends StyleElement<R> {
      * @see #getDescription()
      * @see #setDescription(Description)
      */
-    @XmlElement(name = "Description")
     protected Description<R> description;
 
     /**
@@ -92,7 +72,6 @@ public abstract class Symbolizer<R> extends StyleElement<R> {
      * @see #getGeometry()
      * @see #setGeometry(Expression)
      */
-    @XmlElement(name = "Geometry")
     protected Expression<R,?> geometry;
 
     /**
@@ -105,21 +84,10 @@ public abstract class Symbolizer<R> extends StyleElement<R> {
      *   <li>uom="http://www.opengeospatial.org/se/units/pixel"</li>
      * </ul>
      *
-     * @todo Recommended XML representation is not yet implemented.
-     *
      * @see #getUnitOfMeasure()
      * @see #setUnitOfMeasure(Unit)
      */
-    @XmlAttribute(name = "uom")
-    @XmlSchemaType(name = "anyURI")
     protected Unit<?> unit;
-
-    /**
-     * For JAXB unmarshalling only.
-     */
-    Symbolizer() {
-        // Thread-local factory will be used.
-    }
 
     /**
      * Creates a symbolizer initialized to default geometries and pixel unit of measurement.
@@ -223,6 +191,7 @@ public abstract class Symbolizer<R> extends StyleElement<R> {
 
     /**
      * Returns the expression used for fetching the geometry to draw.
+     * This expression is often a {@link ValueReference}.
      * The value in the referenced feature property should be a geometry
      * from a {@linkplain org.apache.sis.setup.GeometryLibrary supported library},
      * expect in the particular case of {@link RasterSymbolizer} where the value
@@ -238,7 +207,7 @@ public abstract class Symbolizer<R> extends StyleElement<R> {
     /**
      * Sets the expression used for fetching the geometry to draw.
      * If this method is never invoked, then the default value is
-     * a {@code ValueReference} fetching {@code "sis:geometry"}.
+     * a {@link ValueReference} fetching {@code "sis:geometry"}.
      *
      * @todo The default expression may change in a future version.
      *       According SE specification, the default should fetch all geometries.

@@ -16,12 +16,9 @@
  */
 package org.apache.sis.image;
 
-import java.util.Vector;
 import java.util.Objects;
 import java.awt.Point;
 import java.awt.Rectangle;
-import java.awt.image.ColorModel;
-import java.awt.image.SampleModel;
 import java.awt.image.RenderedImage;
 import java.awt.image.Raster;
 import java.awt.image.RasterFormatException;
@@ -42,12 +39,7 @@ import org.apache.sis.util.resources.Errors;
  *
  * @see ImageProcessor#prefetch(RenderedImage, Rectangle)
  */
-final class PrefetchedImage extends PlanarImage implements TileErrorHandler.Executor {
-    /**
-     * The source image from which to prefetch tiles.
-     */
-    final RenderedImage source;
-
+final class PrefetchedImage extends ImageAdapter implements TileErrorHandler.Executor {
     /**
      * Index of the first prefetched tile. This index is determined from the area of interest (AOI)
      * specified at construction time; it is not necessarily the index of the first tile in the image.
@@ -95,7 +87,7 @@ final class PrefetchedImage extends PlanarImage implements TileErrorHandler.Exec
     PrefetchedImage(final RenderedImage source, Rectangle areaOfInterest,
                     final ErrorHandler errorHandler, final boolean parallel)
     {
-        this.source = source;
+        super(source);
         if (areaOfInterest != null) {
             areaOfInterest = new Rectangle(areaOfInterest);
             ImageUtilities.clipBounds(source, areaOfInterest);
@@ -189,43 +181,6 @@ final class PrefetchedImage extends PlanarImage implements TileErrorHandler.Exec
     }
 
     /**
-     * Returns the immediate source of image data for this image.
-     */
-    @Override
-    @SuppressWarnings("UseOfObsoleteCollectionType")
-    public Vector<RenderedImage> getSources() {
-        final Vector<RenderedImage> sources = new Vector<>(1);
-        sources.add(source);
-        return sources;
-    }
-
-    /**
-     * Gets a property from the source image.
-     * All properties are inherited from the source with no change.
-     */
-    @Override
-    public Object getProperty(final String name) {
-        return source.getProperty(name);
-    }
-
-    /** Delegate to the source image. */
-    @Override public String[]    getPropertyNames()   {return source.getPropertyNames();}
-    @Override public ColorModel  getColorModel()      {return source.getColorModel();}
-    @Override public SampleModel getSampleModel()     {return source.getSampleModel();}
-    @Override public int         getWidth()           {return source.getWidth();}
-    @Override public int         getHeight()          {return source.getHeight();}
-    @Override public int         getMinX()            {return source.getMinX();}
-    @Override public int         getMinY()            {return source.getMinY();}
-    @Override public int         getNumXTiles()       {return source.getNumXTiles();}
-    @Override public int         getNumYTiles()       {return source.getNumYTiles();}
-    @Override public int         getMinTileX()        {return source.getMinTileX();}
-    @Override public int         getMinTileY()        {return source.getMinTileY();}
-    @Override public int         getTileWidth()       {return source.getTileWidth();}
-    @Override public int         getTileHeight()      {return source.getTileHeight();}
-    @Override public int         getTileGridXOffset() {return source.getTileGridXOffset();}
-    @Override public int         getTileGridYOffset() {return source.getTileGridYOffset();}
-
-    /**
      * Returns the tile at the given location in tile coordinates. If the requested
      * tile is in the region of prefetched tiles, that tile is returned directly.
      * Otherwise this method delegates to the source image.
@@ -317,8 +272,8 @@ final class PrefetchedImage extends PlanarImage implements TileErrorHandler.Exec
      */
     @Override
     public boolean equals(final Object object) {
-        if (object instanceof PrefetchedImage) {
-            final PrefetchedImage other = (PrefetchedImage) object;
+        if (super.equals(object)) {
+            final var other = (PrefetchedImage) object;
             return source.equals(other.source)  &&
                    minTileX  == other.minTileX  &&
                    minTileY  == other.minTileY  &&
@@ -326,5 +281,15 @@ final class PrefetchedImage extends PlanarImage implements TileErrorHandler.Exec
                    numYTiles == other.numYTiles;
         }
         return false;
+    }
+
+    /**
+     * Appends a content to show in the {@link #toString()} representation,
+     * after the class name and before the string representation of the wrapped image.
+     */
+    @Override
+    final Class<PrefetchedImage> appendStringContent(final StringBuilder buffer) {
+        buffer.append(numXTiles).append(" × ").append(numYTiles);
+        return PrefetchedImage.class;
     }
 }

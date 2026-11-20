@@ -136,7 +136,7 @@ public final class RenderingDataTest extends TestCase {
         final var gg         = new GridGeometry(new GridExtent(IMAGE_WIDTH, IMAGE_HEIGHT), PixelInCell.CELL_CORNER, gridToCRS, crs);
         final var image      = new TiledImageMock(IMAGE_WIDTH, IMAGE_HEIGHT, TILE_WIDTH, TILE_HEIGHT, 1, true);
         image.addProperty(TiledImageMock.GRID_GEOMETRY_KEY, gg);
-        image.validate();
+        image.validate(false);
         image.initializeAllTiles(0);
         return new GridCoverage2D(gg, null, image);
     }

@@ -653,7 +653,7 @@ public class InfoStatements implements Localized, AutoCloseable {
             }
             database.cacheOfSRID.put(crs, result.srid);
         }
-        CommonExecutor.instance().submit((Runnable) result);
+        CommonExecutor.submit(result);
         return result.srid;
     }
 
@@ -701,7 +701,7 @@ public class InfoStatements implements Localized, AutoCloseable {
         /**
          * Invoked in a background thread for opportunistically caching the <abbr>SRID</abbr> → <abbr>CRS</abbr>
          * mapping. This is done in a background thread because this is not the information asked by the user,
-         * by the information for the reverse operation.
+         * but the information needed for the reverse operation.
          */
         @Override
         public void run() {
@@ -896,6 +896,7 @@ public class InfoStatements implements Localized, AutoCloseable {
      * @throws DataStoreReferencingException if the given CRS cannot be encoded in at least one supported format.
      * @throws SQLException if an error occurred while executing the SQL statement.
      */
+    @SuppressWarnings("UseSpecificCatch")
     private int addCRS(final SRID search, final Set<Integer> sridFounInUse) throws Exception {
         final SpatialSchema schema = database.getSpatialSchema().orElseThrow();
         final var sql = builder().append(SQLBuilder.INSERT);

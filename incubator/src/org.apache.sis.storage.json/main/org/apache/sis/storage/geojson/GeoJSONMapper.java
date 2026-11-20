@@ -371,7 +371,7 @@ public final class GeoJSONMapper {
      * of input data type.
      *
      * @implNote
-     * Primary geometry is determined using {@link #getDefaultGeometry(DefaultFeatureType)}.
+     * Primary geometry is determined using {@link #getDefaultGeometry}.
      *
      * @param type The data type to extract reference system from.
      * @return The CRS associated with the default geometry of this data type, or

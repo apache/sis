@@ -66,6 +66,24 @@ public abstract class GeoJSONObject extends DataTransferObject {
     public abstract String getType();
 
     /**
+     * Verifies the value of the {@code type} member read from JSON.
+     * The type is fixed by the class, so this method only checks that the given value is the type of this object.
+     *
+     * <p>This setter also prevents the {@code type} member from being collected as an unknown field,
+     * which would cause it to be written twice.</p>
+     *
+     * @param  type  value of the {@code type} member.
+     * @throws IllegalArgumentException if the given type is not the type of this object.
+     */
+    @JsonProperty(PROPERTY_TYPE)
+    public void setType(final String type) {
+        final String expected = getType();
+        if (!expected.equals(type)) {
+            throw new IllegalArgumentException("Expected a GeoJSON object of type \"" + expected + "\" but found \"" + type + "\".");
+        }
+    }
+
+    /**
      * Get bbox
      *
      * @return bbox [minx,miny,maxx,maxy]
