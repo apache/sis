@@ -16,7 +16,16 @@
  */
 package org.apache.sis.storage.netcdf;
 
+import java.util.Map;
+import java.net.URI;
 import java.net.URL;
+import java.io.IOException;
+import java.io.InputStream;
+import java.nio.file.Files;
+import java.nio.file.FileSystem;
+import java.nio.file.FileSystems;
+import java.nio.file.Path;
+import java.awt.image.Raster;
 import org.opengis.metadata.Metadata;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import org.opengis.referencing.crs.ProjectedCRS;
@@ -26,6 +35,7 @@ import org.apache.sis.referencing.operation.transform.LinearTransform;
 import org.apache.sis.coverage.grid.GridExtent;
 import org.apache.sis.coverage.grid.GridGeometry;
 import org.apache.sis.coverage.grid.PixelInCell;
+import org.apache.sis.storage.ProbeResult;
 import org.apache.sis.storage.StorageConnector;
 import org.apache.sis.storage.DataStoreException;
 import org.apache.sis.storage.GridCoverageResource;
@@ -39,6 +49,7 @@ import org.apache.sis.storage.DataStoreTestCase;
 // Specific to the geoapi-3.1 and geoapi-4.0 branches:
 import org.opengis.test.dataset.TestData;
 import static org.apache.sis.feature.Assertions.assertExtentEquals;
+import static org.apache.sis.test.Assertions.assertSingleton;
 
 
 /**
@@ -46,6 +57,7 @@ import static org.apache.sis.feature.Assertions.assertExtentEquals;
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @author  Alexis Manin (Geomatys)
+ * @author  Quentin Bialota (Geomatys)
  */
 @SuppressWarnings("exports")
 public final class NetcdfStoreTest extends DataStoreTestCase {
@@ -153,5 +165,58 @@ public final class NetcdfStoreTest extends DataStoreTestCase {
         // The reader should have emitted a warning about mismatched `GeoTransform` values.
         loggings.assertNextLogContains("GeoTransform", "evi", "transverse-mercator-wrong-geotransform.nc");
         loggings.assertNoUnexpectedLog();
+    }
+
+    /**
+     * Tests the reading of a netCDF 4 file on a file system other than the default one.
+     * The <abbr>UCAR</abbr> library cannot open such file from its path, so the bytes
+     * shall be read through a Java <abbr>NIO</abbr> channel. This test uses a ZIP file
+     * system as a substitute for a cloud storage such as S3.
+     *
+     * @throws IOException if an error occurred while creating the ZIP file.
+     * @throws DataStoreException if an error occurred while reading the netCDF file.
+     */
+    @Test
+    public void testNetcdf4FromOtherFileSystem() throws IOException, DataStoreException {
+        final String filename = "netcdf4-geographic.nc";
+        final Path zip = Files.createTempFile("sis-test-", ".zip");
+        try {
+            Files.delete(zip);          // The ZIP file system creates the file only if it does not exist.
+            try (FileSystem fs = FileSystems.newFileSystem(URI.create("jar:" + zip.toUri()), Map.of("create", "true"))) {
+                final Path file = fs.getPath(filename);
+                try (InputStream in = NetcdfStoreTest.class.getResourceAsStream(filename)) {
+                    assertNotNull(in, filename);
+                    Files.copy(in, file);
+                }
+                final var provider = new NetcdfStoreProvider();
+                final ProbeResult probe = provider.probeContent(new StorageConnector(file));
+                assertTrue  (probe.isSupported());
+                assertEquals(NetcdfStoreProvider.MIME_TYPE, probe.getMimeType());
+                try (NetcdfStore store = new NetcdfStore(provider, new StorageConnector(file))) {
+                    listenToWarnings(store);
+                    final var r = assertInstanceOf(GridCoverageResource.class, assertSingleton(store.components()));
+                    assertExtentEquals(new long[2], new long[] {3, 2}, r.getGridGeometry().getExtent());
+                    /*
+                     * Verify the sum of all values instead of individual values,
+                     * because the row order depends on the direction of latitude axis.
+                     */
+                    final Raster raster = r.read(null).render(null).getData();
+                    double sum = 0;
+                    for (int y=0; y<raster.getHeight(); y++) {
+                        for (int x=0; x<raster.getWidth(); x++) {
+                            sum += raster.getSampleDouble(x, y, 0);
+                        }
+                    }
+                    assertEquals(78, sum);
+                }
+            }
+        } finally {
+            Files.deleteIfExists(zip);
+        }
+        /*
+         * The UCAR library emits diagnostic messages about the detection of the feature type
+         * (e.g. "CoverageFactory for …"). Those messages are not the purpose of this test.
+         */
+        loggings.clear();
     }
 }

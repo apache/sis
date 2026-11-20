@@ -21,6 +21,8 @@ import java.util.logging.Logger;
 import java.util.logging.LogRecord;
 import java.io.IOException;
 import java.nio.ByteBuffer;
+import java.nio.file.FileSystems;
+import java.nio.file.Path;
 import java.lang.reflect.Method;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
@@ -133,6 +135,33 @@ public class NetcdfStoreProvider extends DataStoreProvider {
     private static volatile Constructor<? extends Decoder> createFromUCAR;
 
     /**
+     * If the {@value #FACTORY_CLASSNAME} class has been found, then the {@link DecoderWrapper} constructor
+     * receiving in argument a {@link Path} to the netCDF file. Otherwise {@code null}. This constructor is
+     * used for paths that the UCAR library cannot open by itself, such as paths on S3 storage.
+     */
+    private static volatile Constructor<? extends Decoder> createFromNioPath;
+
+    /**
+     * The 4 first bytes of the HDF5 signature, which is used by netCDF 4 files.
+     * The signature is {@code \211 H D F}.
+     */
+    private static final int HDF5_MAGIC = 0x89484446;
+
+    /**
+     * Returns the storage as a path on a file system other than the default one, or {@code null} if none.
+     * Such paths (for example on S3 storage) cannot be opened by the UCAR library from their string
+     * representation. They need to be read through a Java NIO channel instead.
+     *
+     * @param  connector  information about the storage.
+     * @return the path on a non-default file system, or {@code null} if none.
+     * @throws DataStoreException if an error occurred while converting the storage to a path.
+     */
+    private static Path remotePath(final StorageConnector connector) throws DataStoreException {
+        final Path path = connector.getStorageAs(Path.class);
+        return (path != null && path.getFileSystem() != FileSystems.getDefault()) ? path : null;
+    }
+
+    /**
      * Clears the cached constructors if the module path has changed,
      * because the UCAR library may no longer be on the module path.
      */
@@ -205,6 +234,7 @@ public class NetcdfStoreProvider extends DataStoreProvider {
         int     version     = 0;
         boolean hasVersion  = false;
         boolean isSupported = false;
+        boolean isHDF5      = false;
         ByteBuffer buffer = connector.getStorageAs(ByteBuffer.class);
         if (buffer != null) {
             if (buffer.remaining() < Integer.BYTES) {
@@ -212,6 +242,12 @@ public class NetcdfStoreProvider extends DataStoreProvider {
             }
             buffer = buffer.duplicate();                // Get a buffer with ByteOrder.BIG_ENDIAN.
             final int header = buffer.getInt();
+            /*
+             * Remember if the file may be a netCDF 4 file. Note that the HDF5 signature may also
+             * be located at offset 512, 1024, 2048, etc. if the file contains a user block.
+             * Those cases are not detected here.
+             */
+            isHDF5 = (header == HDF5_MAGIC);
             if ((header & 0xFFFFFF00) == ChannelDecoder.MAGIC_NUMBER) {
                 hasVersion  = true;
                 version     = header & 0xFF;
@@ -227,7 +263,15 @@ public class NetcdfStoreProvider extends DataStoreProvider {
          * Note that the UCAR library expects a String argument, not a File, because it
          * has special cases for "file:", "http:", "nodods:" and "slurp:" protocols.
          */
-        if (!isSupported) {
+        /*
+         * If the file is a HDF5 file on a file system that the UCAR library cannot access (e.g. S3),
+         * the `canOpen(String)` method would fail. In such case, we will read the file through the
+         * Java NIO channel, which can be done only if the UCAR library is present.
+         */
+        if (!isSupported && isHDF5 && remotePath(connector) != null) {
+            ensureInitialized(false);
+            isSupported = (createFromNioPath != null);
+        } else if (!isSupported) {
             final String path = connector.getStorageAs(String.class);
             if (path != null) {
                 ensureInitialized(false);
@@ -309,7 +353,10 @@ public class NetcdfStoreProvider extends DataStoreProvider {
             decoder = new ChannelDecoder(input, connector.getOption(OptionKey.ENCODING), geomlib, listeners);
             keepOpen = input;
         } catch (DataStoreException | ArithmeticException e) {
-            final String path = connector.getStorageAs(String.class);
+            Object path = remotePath(connector);
+            if (path == null) {
+                path = connector.getStorageAs(String.class);
+            }
             if (path != null) try {
                 decoder = createByReflection(path, false, geomlib, listeners);
                 keepOpen = path;
@@ -358,6 +405,9 @@ public class NetcdfStoreProvider extends DataStoreProvider {
         if (isUCAR) {
             constructor  = createFromUCAR;
             expectedType = netcdfFileClass;
+        } else if (input instanceof Path) {
+            constructor  = createFromNioPath;
+            expectedType = Path.class;
         } else {
             constructor  = createFromPath;
             expectedType = String.class;
@@ -411,6 +461,8 @@ public class NetcdfStoreProvider extends DataStoreProvider {
                         createFromUCAR = wrapper.getConstructor(parameterTypes);
                         parameterTypes[0] = String.class;
                         createFromPath = wrapper.getConstructor(parameterTypes);
+                        parameterTypes[0] = Path.class;
+                        createFromNioPath = wrapper.getConstructor(parameterTypes);
                         return;                                                                         // Success
                     }
                 } catch (ClassNotFoundException e) {
@@ -454,6 +506,7 @@ public class NetcdfStoreProvider extends DataStoreProvider {
         canOpenFromPath = null;
         createFromUCAR  = null;
         createFromPath  = null;
+        createFromNioPath = null;
     }
 
     /**
