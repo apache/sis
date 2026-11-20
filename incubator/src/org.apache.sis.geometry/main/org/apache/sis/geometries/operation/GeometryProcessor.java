@@ -24,6 +24,7 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.function.Consumer;
 import java.util.function.Function;
+import java.util.function.UnaryOperator;
 import javax.measure.Quantity;
 import static org.opengis.annotation.Specification.ISO_19107;
 import org.opengis.annotation.UML;
@@ -40,6 +41,7 @@ import org.apache.sis.geometries.GeometryFactory;
 import org.apache.sis.geometries.GeometryType;
 import org.apache.sis.geometries.Point;
 import org.apache.sis.geometries.Prism;
+import org.apache.sis.geometries.Representation;
 import org.apache.sis.geometries.curve.LineString;
 import org.apache.sis.geometries.curve.LinearRing;
 import org.apache.sis.geometries.curve.OffsetCurve;
@@ -49,6 +51,7 @@ import org.apache.sis.geometries.internal.shared.Vertex;
 import org.apache.sis.geometries.mesh.MeshPrimitive;
 import org.apache.sis.geometries.mesh.MeshPrimitiveVisitor;
 import org.apache.sis.geometries.solid.Polyhedron;
+import org.apache.sis.geometries.surface.CurvePolygon;
 import org.apache.sis.geometries.surface.Polygon;
 import org.apache.sis.geometries.surface.PolyhedralSurface;
 import org.apache.sis.geometries.surface.Triangle;
@@ -531,50 +534,196 @@ public final class GeometryProcessor {
     }
 
     /**
-     * Convert this geometry to a Primitive geometry type.
-     * This method is provided as a conversion to GPU geometric model.
+     * Returns an exact representation of the geometry at the {@linkplain Representation#PARAMETRIC parametric}
+     * level or below.
      *
-     * <p>Curves are converted to line strips with {@link Curve#asLine(Quantity, Quantity)},
-     * which receives the given spacing and offset.</p>
+     * <p>Constraints:</p>
+     * <ul>
+     *   <li>Geometries which are not {@linkplain Representation#ANALYTIC analytic} are returned unchanged.</li>
+     *   <li>A prism is replaced by its {@linkplain Prism#toExtrusion() extrusion}.</li>
+     *   <li>The elements of a collection are converted one by one.</li>
+     * </ul>
+     *
+     * @param  geom  the geometry to convert.
+     * @return the geometry at the parametric level or below.
+     * @throws UnsupportedOperationException if no exact parametric form is known for the geometry.
+     *
+     * @see Geometry#parametrize()
+     */
+    public Geometry parametrize(Geometry geom) throws OperationException {
+        if (geom.getRepresentation() != Representation.ANALYTIC) {
+            return geom;
+        }
+        return switch (geom) {
+            case Prism                 cdt -> cdt.toExtrusion();
+            case GeometryCollection<?> cdt -> convertElements(cdt, this::parametrize);
+            default -> throw new UnsupportedOperationException(
+                    "No exact parametric form is known for " + geom.getGeometryType() + " geometries.");
+        };
+    }
+
+    /**
+     * Returns an approximation of the geometry at the {@linkplain Representation#DISCRETE discrete} level or below.
+     *
+     * <p>Constraints:</p>
+     * <ul>
+     *   <li>Curves are replaced by their {@linkplain Curve#asLine(Quantity, Quantity) linear approximation}.</li>
+     *   <li>Curve polygons are replaced by polygons whose rings are linear approximations of the curves.</li>
+     *   <li>A prism is replaced by the {@linkplain Prism#toExtrusion() extrusion} of its discretized base.</li>
+     *   <li>The elements of a collection are converted one by one.</li>
+     *   <li>Other geometries already at the discrete level or below are returned unchanged.</li>
+     * </ul>
      *
      * @param  geom     the geometry to convert.
-     * @param  spacing  maximal distance along a curve between two points of its line strip,
-     *                  or zero or {@code null} for no limit.
-     * @param  offset   maximal distance between a curve and its line strip, or zero or {@code null} for no limit.
-     *                  If both the spacing and the offset are zero, a default precision is used.
-     * @return equivalent primitive, all attributes are copied.
-     *  can be a Primitive or MultiPrimitive
+     * @param  spacing  maximal distance along the geometry between two adjacent vertices, or zero or {@code null}.
+     * @param  offset   maximal distance between the geometry and the result, or zero or {@code null}.
+     * @return the geometry at the discrete level or below.
+     * @throws UnsupportedOperationException if the discretization of the geometry type is not supported.
+     *
+     * @see Geometry#discretize(Quantity, Quantity)
      */
-    public Geometry toPrimitive(Geometry geom, Quantity<?> spacing, Quantity<?> offset) {
-        if (geom instanceof MeshPrimitive) {
-            //Does nothing, geometry is already a Primitive.
-            //Collections of primitives are handled by the collection case below.
+    public Geometry discretize(Geometry geom, Quantity<?> spacing, Quantity<?> offset) throws OperationException {
+        if (geom.isEmpty()) {
             return geom;
-        } else if (geom instanceof Point cdt) {
-            return ToPrimitive.toPrimitive(cdt);
-        } else if (geom instanceof Curve cdt) {
-            //also handles line strings, which are densified if a spacing is given.
-            return ToPrimitive.toPrimitive(cdt.asLine(spacing, offset));
-        } else if (geom instanceof Polygon cdt) {
-            return ToPrimitive.toPrimitive(cdt);
-        } else if (geom instanceof PolyhedralSurface<?> cdt) {
-            //also handles TIN, which is a polyhedral surface of triangles.
-            return ToPrimitive.toPrimitive(cdt);
-        } else if (geom instanceof Polyhedron cdt) {
-            return ToPrimitive.toPrimitive(cdt);
-        } else if (geom instanceof Prism cdt) {
-            //a prism is converted to the line string, surface or solid covered by its extrusion.
-            return toPrimitive(cdt.toExtrusion(), spacing, offset);
-        } else if (geom instanceof GeometryCollection<?> cdt) {
-            final GeometryType elementType = cdt.getElementType();
-            switch (elementType) {
-                case LINESTRING : return ToPrimitive.toPrimitiveLine((GeometryCollection<LineString>) cdt, spacing, offset);
-                case POINT : return ToPrimitive.toPrimitivePoint((GeometryCollection<Point>) cdt);
-                default : return ToPrimitive.toPrimitive(cdt, spacing, offset);
-            }
         }
+        /*
+         * Case order matters: the first matching case is selected.
+         * Mesh primitives are checked before curves and collections
+         * because the points and lines primitives are also of those types.
+         */
+        return switch (geom) {
+            case MeshPrimitive         cdt -> cdt;
+            case Curve                 cdt -> cdt.asLine(spacing, offset);
+            case CurvePolygon          cdt -> discretize(cdt, spacing, offset);
+            case Prism                 cdt -> discretize(cdt, spacing, offset);
+            case GeometryCollection<?> cdt -> convertElements(cdt, (element) -> discretize(element, spacing, offset));
+            default -> switch (geom.getRepresentation()) {
+                case EMPTY, DISCRETE, TESSELLATED -> geom;
+                default -> throw new UnsupportedOperationException(
+                        "Discretization of " + geom.getGeometryType() + " geometries is not supported yet.");
+            };
+        };
+    }
 
-        throw new UnsupportedOperationException();
+    /**
+     * Returns a polygon whose rings are the linear approximations of the rings of the given curve polygon.
+     */
+    private static Polygon discretize(CurvePolygon geom, Quantity<?> spacing, Quantity<?> offset) {
+        final LinearRing exterior = discretizeRing(geom.getExteriorRing(), spacing, offset);
+        final List<LinearRing> interiors = new ArrayList<>();
+        for (final Curve ring : geom.getInteriorRings()) {
+            interiors.add(discretizeRing(ring, spacing, offset));
+        }
+        return GeometryFactory.DEFAULT.createPolygon(exterior, interiors);
+    }
+
+    /**
+     * Returns the linear approximation of the given closed curve as a linear ring.
+     */
+    private static LinearRing discretizeRing(Curve ring, Quantity<?> spacing, Quantity<?> offset) {
+        final LineString line = ring.asLine(spacing, offset);
+        if (line instanceof LinearRing cdt) {
+            return cdt;
+        }
+        return GeometryFactory.DEFAULT.createLinearRing(line.getDataPoints());
+    }
+
+    /**
+     * Returns the extrusion of the given prism after the discretization of its base.
+     */
+    private Geometry discretize(Prism geom, Quantity<?> spacing, Quantity<?> offset) {
+        final Geometry base = geom.getBase();
+        final Geometry discreteBase = discretize(base, spacing, offset);
+        final Prism prism = (discreteBase == base) ? geom
+                : GeometryFactory.DEFAULT.createPrism(discreteBase, geom.getExtrusionRange(), geom.getExtrusionCrs());
+        return prism.toExtrusion();
+    }
+
+    /**
+     * Converts the given geometry to mesh primitives, for use in GPU geometric models.
+     *
+     * <p>Constraints:</p>
+     * <ul>
+     *   <li>Mesh primitives and empty geometries are returned unchanged.</li>
+     *   <li>Curves are converted to line strips with {@link Curve#asLine(Quantity, Quantity)},
+     *       which receives the given spacing and offset.</li>
+     *   <li>Geometries above the {@linkplain Representation#DISCRETE discrete} level which are not curves
+     *       are {@linkplain #discretize(Geometry, Quantity, Quantity) discretized} first.</li>
+     *   <li>All attributes are copied.</li>
+     * </ul>
+     *
+     * @param  geom     the geometry to convert.
+     * @param  spacing  maximal distance along the geometry between two adjacent vertices, or zero or {@code null}.
+     * @param  offset   maximal distance between the geometry and the result, or zero or {@code null}.
+     * @return a mesh primitive or a collection of mesh primitives.
+     * @throws UnsupportedOperationException if the tessellation of the geometry type is not supported.
+     *
+     * @see Geometry#tessellate(Quantity, Quantity)
+     */
+    public Geometry tessellate(Geometry geom, Quantity<?> spacing, Quantity<?> offset) throws OperationException {
+        if (geom.isEmpty()) {
+            return geom;
+        }
+        /*
+         * Case order matters: the first matching case is selected.
+         * Mesh primitives are checked before curves and collections
+         * because the points and lines primitives are also of those types.
+         */
+        return switch (geom) {
+            case MeshPrimitive         cdt -> cdt;
+            case Point                 cdt -> Tessellate.tessellate(cdt);
+            case Curve                 cdt -> Tessellate.tessellate(cdt.asLine(spacing, offset));
+            case Polygon               cdt -> Tessellate.tessellate(cdt);
+            case PolyhedralSurface<?>  cdt -> Tessellate.tessellate(cdt);
+            case Polyhedron            cdt -> Tessellate.tessellate(cdt);
+            case GeometryCollection<?> cdt -> tessellate(cdt, spacing, offset);
+            default -> switch (geom.getRepresentation()) {
+                case ANALYTIC, PARAMETRIC -> tessellate(discretize(geom, spacing, offset), spacing, offset);
+                default -> throw new UnsupportedOperationException(
+                        "Tessellation of " + geom.getGeometryType() + " geometries is not supported yet.");
+            };
+        };
+    }
+
+    /**
+     * Converts the given collection to mesh primitives.
+     * Collections of points or line strings are merged in a single primitive when possible.
+     */
+    @SuppressWarnings("unchecked")
+    private static Geometry tessellate(GeometryCollection<?> geom, Quantity<?> spacing, Quantity<?> offset) {
+        return switch (geom.getElementType()) {
+            case LINESTRING -> Tessellate.tessellateLines((GeometryCollection<LineString>) geom, spacing, offset);
+            case POINT      -> Tessellate.tessellatePoints((GeometryCollection<Point>) geom);
+            default         -> Tessellate.tessellate(geom, spacing, offset);
+        };
+    }
+
+    /**
+     * Applies the given conversion on each element of the given collection.
+     * The element type of the collection is kept if all converted elements are still of that type.
+     *
+     * @param  geom       the collection to convert.
+     * @param  converter  the conversion to apply on each element.
+     * @return the collection of converted elements, or the given collection if no element changed.
+     */
+    private static Geometry convertElements(GeometryCollection<?> geom, UnaryOperator<Geometry> converter) {
+        final int count = geom.getNumGeometries();
+        final Geometry[] elements = new Geometry[count];
+        GeometryType elementType = geom.getElementType();
+        boolean changed = false;
+        for (int i = 0; i < count; i++) {
+            final Geometry element = geom.getGeometryN(i);
+            final Geometry converted = converter.apply(element);
+            changed |= (converted != element);
+            if (!elementType.isInstance(converted)) {
+                elementType = GeometryType.GEOMETRY;
+            }
+            elements[i] = converted;
+        }
+        if (!changed) {
+            return geom;
+        }
+        return GeometryFactory.DEFAULT.createGeometryCollection(elementType, geom.getCoordinateReferenceSystem(), elements);
     }
 
     /**

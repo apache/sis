@@ -1107,4 +1107,99 @@ public sealed interface Geometry
         return new GeometryProcessor().withinDistance(this, other, distance);
     }
 
+    // ////////////////////////////////////////////////////////////////////////
+    // Representation changes
+    // ////////////////////////////////////////////////////////////////////////
+
+    /**
+     * Returns an exact representation of this geometry at the {@linkplain Representation#PARAMETRIC parametric}
+     * level or below.
+     *
+     * <p>Constraints:</p>
+     * <ul>
+     *   <li>The returned geometry has the same positions as this geometry: no precision is lost.</li>
+     *   <li>The {@linkplain #getRepresentation() representation} of the returned geometry is
+     *       {@code PARAMETRIC}, {@code DISCRETE} or {@code TESSELLATED}.</li>
+     *   <li>A geometry which is already at one of those levels, or empty, is returned unchanged.</li>
+     * </ul>
+     *
+     * <p>Difference with ISO 19107: this operation has no equivalent in the standard.</p>
+     *
+     * @return this geometry at the parametric level or below.
+     * @throws UnsupportedOperationException if no exact parametric form is known for this geometry.
+     * @throws OperationException if the conversion cannot be computed.
+     *
+     * @see GeometryProcessor#parametrize(org.apache.sis.geometries.Geometry)
+     */
+    default Geometry parametrize() throws OperationException {
+        return new GeometryProcessor().parametrize(this);
+    }
+
+    /**
+     * Returns an approximation of this geometry at the {@linkplain Representation#DISCRETE discrete}
+     * level or below, whose vertices lie on this geometry.
+     *
+     * <p>Constraints:</p>
+     * <ul>
+     *   <li>All the vertices of the returned geometry lie on this geometry, within the accuracy of the
+     *       numerical representation of the positions.</li>
+     *   <li>If {@code spacing} is non-zero, the distance along this geometry between two adjacent vertices
+     *       is at most {@code spacing}.</li>
+     *   <li>If {@code offset} is non-zero, the distance between this geometry and the returned geometry
+     *       is at most {@code offset}.</li>
+     *   <li>If both arguments are zero or {@code null}, the implementation may apply its own precision limit,
+     *       and the returned geometry contains at least all the {@linkplain #getDataPoints() data points}
+     *       of this geometry.</li>
+     *   <li>Curves are converted with {@link Curve#asLine(Quantity, Quantity)}, so a line string
+     *       is densified when a spacing is given.</li>
+     *   <li>Other geometries which are already discrete or tessellated, or empty, are returned unchanged.</li>
+     *   <li>Limitation: the spacing and the offset are applied to curves only.
+     *       Polygons and polyhedral patches are not subdivided.</li>
+     * </ul>
+     *
+     * <p>Difference with ISO 19107: this operation generalizes {@link Curve#asLine(Quantity, Quantity)}
+     * to all geometries.</p>
+     *
+     * @param  spacing  maximal distance along this geometry between two adjacent vertices, or zero or {@code null} for no limit.
+     * @param  offset   maximal distance between this geometry and the result, or zero or {@code null} for no limit.
+     * @return this geometry at the discrete level or below.
+     * @throws UnsupportedOperationException if the discretization of this geometry type is not supported.
+     * @throws OperationException if the approximation cannot be computed.
+     *
+     * @see GeometryProcessor#discretize(org.apache.sis.geometries.Geometry, javax.measure.Quantity, javax.measure.Quantity)
+     * @see "ISO-19107:2019 section 6.4.18.17"
+     */
+    default Geometry discretize(Quantity<?> spacing, Quantity<?> offset) throws OperationException {
+        return new GeometryProcessor().discretize(this, spacing, offset);
+    }
+
+    /**
+     * Returns this geometry as mesh primitives, for use in GPU geometric models.
+     *
+     * <p>Constraints:</p>
+     * <ul>
+     *   <li>The result is a {@link MeshPrimitive} or a collection of them, whose
+     *       {@linkplain #getRepresentation() representation} is {@code TESSELLATED}.</li>
+     *   <li>Points become points primitives, curves become line strips or lines,
+     *       surfaces and solids become triangles. All attributes are copied.</li>
+     *   <li>Geometries above the discrete level are first {@linkplain #discretize(Quantity, Quantity) discretized}
+     *       with the given spacing and offset, which have the same meaning as in that method.</li>
+     *   <li>Mesh primitives and empty geometries are returned unchanged.</li>
+     * </ul>
+     *
+     * <p>Difference with ISO 19107: this operation has no equivalent in the standard.</p>
+     *
+     * @param  spacing  maximal distance along this geometry between two adjacent vertices, or zero or {@code null} for no limit.
+     * @param  offset   maximal distance between this geometry and the result, or zero or {@code null} for no limit.
+     * @return a mesh primitive or a collection of mesh primitives.
+     * @throws UnsupportedOperationException if the tessellation of this geometry type is not supported.
+     * @throws OperationException if the tessellation cannot be computed.
+     *
+     * @see GeometryProcessor#tessellate(org.apache.sis.geometries.Geometry, javax.measure.Quantity, javax.measure.Quantity)
+     * @see "ISO-19107:2019 section 6.4.18.17"
+     */
+    default Geometry tessellate(Quantity<?> spacing, Quantity<?> offset) throws OperationException {
+        return new GeometryProcessor().tessellate(this, spacing, offset);
+    }
+
 }

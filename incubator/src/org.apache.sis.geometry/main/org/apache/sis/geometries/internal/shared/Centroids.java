@@ -33,7 +33,7 @@ import org.apache.sis.geometries.Point;
 import org.apache.sis.geometries.Surface;
 import org.apache.sis.geometries.curve.LineString;
 import org.apache.sis.geometries.curve.LinearRing;
-import org.apache.sis.geometries.operation.ToPrimitive;
+import org.apache.sis.geometries.operation.Tessellate;
 import org.apache.sis.geometries.surface.CurvePolygon;
 import org.apache.sis.geometries.surface.Polygon;
 import org.apache.sis.geometries.surface.PolyhedralSurface;
@@ -141,7 +141,7 @@ public final class Centroids {
      * @return the centroid of the polygon.
      */
     public static Point polygon(final Polygon polygon) {
-        final Point centroid = ToPrimitive.toPrimitive(polygon).getCentroid();
+        final Point centroid = Tessellate.tessellate(polygon).getCentroid();
         return (centroid != null) ? centroid : polyline(polygon.getExteriorRing().getDataPoints());
     }
 
@@ -153,7 +153,7 @@ public final class Centroids {
      * @return a point inside the polygon.
      */
     public static Point pointOnPolygon(final Polygon polygon) {
-        final Point point = ToPrimitive.toPrimitive(polygon).getRepresentativePoint();
+        final Point point = Tessellate.tessellate(polygon).getRepresentativePoint();
         return (point != null) ? point : polyline(polygon.getExteriorRing().getDataPoints());
     }
 

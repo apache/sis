@@ -59,7 +59,7 @@ public sealed interface CompoundCurve extends Curve
      */
     @Override
     default Representation getRepresentation() {
-        Representation r = Representation.TESSELATED;
+        Representation r = Representation.TESSELLATED;
         for (int i = 0, n = getNumCurves(); i < n; i++) {
             r = Representation.mostAbstract(r, getCurveN(i).getRepresentation());
         }

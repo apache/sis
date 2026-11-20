@@ -207,7 +207,7 @@ public final class Intersection {
         }
 
         final GeometryCollection<LineString> mline = GeometryFactory.DEFAULT.createMultiLineString(segments.toArray(LineString[]::new));
-        final MeshPrimitive intersection = (MeshPrimitive) new GeometryProcessor().toPrimitive(mline, null, null);
+        final MeshPrimitive intersection = (MeshPrimitive) new GeometryProcessor().tessellate(mline, null, null);
         return intersection;
     }
 

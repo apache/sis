@@ -42,12 +42,13 @@ import org.apache.sis.maths.NDArrays;
 
 
 /**
+ * Conversions of discrete geometries to mesh primitives, used by {@link GeometryProcessor#tessellate}.
  *
  * @author Johann Sorel (Geomatys)
  */
-public final class ToPrimitive {
+public final class Tessellate {
 
-    private ToPrimitive(){}
+    private Tessellate(){}
 
     private static ArrayDataPoints toArraySequence(DataPoints points) {
         final Map<String,Array> attributes = new HashMap<>();
@@ -60,7 +61,7 @@ public final class ToPrimitive {
     /**
      * Transform Point to Primitive.
      */
-    public static MeshPrimitive.Points toPrimitive(Point geometry) throws OperationException {
+    public static MeshPrimitive.Points tessellate(Point geometry) throws OperationException {
         final MeshPrimitive.Points primitive = new MeshPrimitive.Points();
         final DataPointsType attributesType = geometry.getDataPointsType();
         for (String name : attributesType.getAttributeNames()) {
@@ -74,7 +75,7 @@ public final class ToPrimitive {
     /**
      * Transform LineString to Primitive.
      */
-    public static MeshPrimitive.LineStrip toPrimitive(LineString geometry) throws OperationException {
+    public static MeshPrimitive.LineStrip tessellate(LineString geometry) throws OperationException {
         final MeshPrimitive.LineStrip primitive = new MeshPrimitive.LineStrip();
         final ArrayDataPoints array = toArraySequence(geometry.getDataPoints());
         for (String name : array.getAttributeNames()) {
@@ -86,7 +87,7 @@ public final class ToPrimitive {
     /**
      * Transform Polygon to Primitive.
      */
-    public static MeshPrimitive.Triangles toPrimitive(Polygon geometry) throws OperationException {
+    public static MeshPrimitive.Triangles tessellate(Polygon geometry) throws OperationException {
         //we must triangulate it
         return new EarClipping().toMesh(geometry);
     }
@@ -95,7 +96,7 @@ public final class ToPrimitive {
      * Transform PolyhedralSurface, including TIN, to Primitive.
      * Each patch is triangulated and all triangles are merged in a single non-indexed mesh.
      */
-    public static MeshPrimitive.Triangles toPrimitive(PolyhedralSurface<?> geometry) throws OperationException {
+    public static MeshPrimitive.Triangles tessellate(PolyhedralSurface<?> geometry) throws OperationException {
         final List<Polygon> faces = new ArrayList<>();
         for (int i = 0, n = geometry.getNumPatches(); i < n; i++) {
             faces.add(geometry.getPatchN(i));
@@ -108,7 +109,7 @@ public final class ToPrimitive {
      * The faces of the exterior shell and of all the interior shells are triangulated together
      * in a single mesh, each face keeping its orientation.
      */
-    public static MeshPrimitive.Triangles toPrimitive(Polyhedron geometry) throws OperationException {
+    public static MeshPrimitive.Triangles tessellate(Polyhedron geometry) throws OperationException {
         final List<Polygon> faces = new ArrayList<>();
         final List<GeometryCollection<Polygon>> shells = new ArrayList<>();
         shells.add(geometry.getExteriorShell());
@@ -178,7 +179,7 @@ public final class ToPrimitive {
     /**
      * Transform MultiPoint to Primitive.
      */
-    public static MeshPrimitive.Points toPrimitivePoint(GeometryCollection<Point> geometry) throws OperationException {
+    public static MeshPrimitive.Points tessellatePoints(GeometryCollection<Point> geometry) throws OperationException {
         final ArrayDataPoints array = toArraySequence(geometry.getDataPoints());
         final MeshPrimitive.Points primitive = new MeshPrimitive.Points();
         for (String name : array.getAttributeNames()) {
@@ -195,7 +196,7 @@ public final class ToPrimitive {
      * @param spacing maximal distance between two points of a line strip, or zero or {@code null} for no limit.
      * @param offset  ignored for line strings, which are their own linear approximation.
      */
-    public static Geometry toPrimitiveLine(GeometryCollection<LineString> geometry, Quantity<?> spacing, Quantity<?> offset)
+    public static Geometry tessellateLines(GeometryCollection<LineString> geometry, Quantity<?> spacing, Quantity<?> offset)
             throws OperationException
     {
         boolean allLines = (spacing == null || spacing.getValue().doubleValue() == 0);
@@ -224,7 +225,7 @@ public final class ToPrimitive {
         } else {
             final List<MeshPrimitive> primitives = new ArrayList<>(numGeometries);
             for (int i = 0; i < numGeometries; i++) {
-                addPrimitives(primitives, toPrimitive(geometry.getGeometryN(i).asLine(spacing, offset)));
+                addPrimitives(primitives, tessellate(geometry.getGeometryN(i).asLine(spacing, offset)));
             }
             return GeometryFactory.DEFAULT.createGeometryCollection(geometry.getCoordinateReferenceSystem(), primitives.toArray(MeshPrimitive[]::new));
         }
@@ -236,13 +237,13 @@ public final class ToPrimitive {
      * @param spacing maximal distance along a curve between two points of its line strip, or zero or {@code null}.
      * @param offset  maximal distance between a curve and its line strip, or zero or {@code null}.
      */
-    public static GeometryCollection<MeshPrimitive> toPrimitive(GeometryCollection<?> geometry, Quantity<?> spacing, Quantity<?> offset)
+    public static GeometryCollection<MeshPrimitive> tessellate(GeometryCollection<?> geometry, Quantity<?> spacing, Quantity<?> offset)
             throws OperationException
     {
         final GeometryProcessor processor = new GeometryProcessor();
         final List<MeshPrimitive> primitives = new ArrayList<>();
         for (int i = 0, n = geometry.getNumGeometries(); i < n; i++) {
-            addPrimitives(primitives, processor.toPrimitive(geometry.getGeometryN(i), spacing, offset));
+            addPrimitives(primitives, processor.tessellate(geometry.getGeometryN(i), spacing, offset));
         }
         return GeometryFactory.DEFAULT.createGeometryCollection(geometry.getCoordinateReferenceSystem(), primitives.toArray(MeshPrimitive[]::new));
     }

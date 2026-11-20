@@ -127,11 +127,11 @@ public sealed interface MeshPrimitive extends Geometry
     }
 
     /**
-     * @return a Mesh is TESSELATED
+     * @return a Mesh is TESSELLATED
      */
     @Override
     default Representation getRepresentation() {
-        return Representation.TESSELATED;
+        return Representation.TESSELLATED;
     }
 
     /**
@@ -1079,11 +1079,11 @@ public sealed interface MeshPrimitive extends Geometry
         }
 
         /**
-         * @return a Mesh is TESSELATED
+         * @return a Mesh is TESSELLATED
          */
         @Override
         public Representation getRepresentation() {
-            return Representation.TESSELATED;
+            return Representation.TESSELLATED;
         }
 
         @Override
@@ -1120,11 +1120,11 @@ public sealed interface MeshPrimitive extends Geometry
         }
 
         /**
-         * @return a Mesh is TESSELATED
+         * @return a Mesh is TESSELLATED
          */
         @Override
         public Representation getRepresentation() {
-            return Representation.TESSELATED;
+            return Representation.TESSELLATED;
         }
 
         @Override
@@ -1155,11 +1155,11 @@ public sealed interface MeshPrimitive extends Geometry
         }
 
         /**
-         * @return a Mesh is TESSELATED
+         * @return a Mesh is TESSELLATED
          */
         @Override
         public Representation getRepresentation() {
-            return Representation.TESSELATED;
+            return Representation.TESSELLATED;
         }
 
         /**
@@ -1181,11 +1181,11 @@ public sealed interface MeshPrimitive extends Geometry
         }
 
         /**
-         * @return a Mesh is TESSELATED
+         * @return a Mesh is TESSELLATED
          */
         @Override
         public Representation getRepresentation() {
-            return Representation.TESSELATED;
+            return Representation.TESSELLATED;
         }
 
         /**
@@ -1207,11 +1207,11 @@ public sealed interface MeshPrimitive extends Geometry
         }
 
         /**
-         * @return a Mesh is TESSELATED
+         * @return a Mesh is TESSELLATED
          */
         @Override
         public Representation getRepresentation() {
-            return Representation.TESSELATED;
+            return Representation.TESSELLATED;
         }
 
         @Override
@@ -1245,11 +1245,11 @@ public sealed interface MeshPrimitive extends Geometry
         }
 
         /**
-         * @return a Mesh is TESSELATED
+         * @return a Mesh is TESSELLATED
          */
         @Override
         public Representation getRepresentation() {
-            return Representation.TESSELATED;
+            return Representation.TESSELLATED;
         }
 
         @Override
@@ -1285,11 +1285,11 @@ public sealed interface MeshPrimitive extends Geometry
         }
 
         /**
-         * @return a Mesh is TESSELATED
+         * @return a Mesh is TESSELLATED
          */
         @Override
         public Representation getRepresentation() {
-            return Representation.TESSELATED;
+            return Representation.TESSELLATED;
         }
 
         @Override

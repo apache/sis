@@ -17,6 +17,7 @@
 package org.apache.sis.geometries;
 
 import java.util.stream.Stream;
+import javax.measure.Quantity;
 
 /**
  * A geometry can be represented by several forms.
@@ -24,13 +25,14 @@ import java.util.stream.Stream;
  *
  * Each representation gain or loss some capabilities.
  * It is possible to downgrade a Geometry representation from one type to another using the methods :
- * parametrize, discretize and tesselate.
+ * {@link Geometry#parametrize()}, {@link Geometry#discretize(Quantity, Quantity)}
+ * and {@link Geometry#tessellate(Quantity, Quantity)}.
  *
  * For example : a Sphere.
  * A sphere is an analytic geometry with a center and a radius, it is an exact geometric definition but it can not hold attributes on it's surface.
  * The sphere can be parametrize in a number of Nurb surfaces without lossing exactness, but also gaining attributes on it's surface.
  * It can then be discretize to a polyhedron, lossing in surface precision but having attributes attached to exact vertices.
- * And it can be tesselated to triangles for GPU processing.
+ * And it can be tessellated to triangles for GPU processing.
  *
  * @author Johann Sorel (Geomatys)
  */
@@ -39,7 +41,7 @@ public enum Representation {
     ANALYTIC,
     PARAMETRIC,
     DISCRETE,
-    TESSELATED;
+    TESSELLATED;
 
     /**
      * @return the most abstract representation not empty
