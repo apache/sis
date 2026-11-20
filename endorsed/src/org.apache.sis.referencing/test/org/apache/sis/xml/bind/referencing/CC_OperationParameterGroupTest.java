@@ -94,7 +94,7 @@ public final class CC_OperationParameterGroupTest extends TestCase {
      * @param remarks Remarks to associate to the latitude parameter, or {@code null} if none.
      */
     private static ParameterDescriptor<?>[] create(final String remarks) {
-        final ParameterBuilder builder = new ParameterBuilder();
+        final var builder = new ParameterBuilder();
         builder.setCodeSpace(EPSG, "EPSG").setRequired(true);
         return new ParameterDescriptor<?>[] {
             builder.addIdentifier("8801").addName("Latitude of natural origin") .setRemarks(remarks).create(0, Units.DEGREE),
@@ -134,7 +134,7 @@ public final class CC_OperationParameterGroupTest extends TestCase {
     public void testMerge() throws JAXBException {
         final ParameterDescriptorGroup fromXML = unmarshal();
         final ParameterDescriptor<?>[] fromValues = create(null);
-        final Map<GeneralParameterDescriptor,GeneralParameterDescriptor> replacements = new IdentityHashMap<>(4);
+        final var replacements = new IdentityHashMap<GeneralParameterDescriptor, GeneralParameterDescriptor>(4);
         final GeneralParameterDescriptor[] merged = CC_OperationParameterGroup.merge(fromXML.descriptors(), fromValues.clone(), replacements);
         assertNotSame(fromValues, merged);
         /*

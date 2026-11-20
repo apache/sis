@@ -16,7 +16,7 @@
  */
 package org.apache.sis.referencing.operation;
 
-import java.util.HashMap;
+import java.util.Map;
 import java.util.Iterator;
 import java.io.InputStream;
 import jakarta.xml.bind.JAXBException;
@@ -36,7 +36,6 @@ import org.apache.sis.parameter.ParameterBuilder;
 import org.apache.sis.measure.Units;
 import org.apache.sis.system.Loggers;
 import org.apache.sis.xml.Namespaces;
-import org.apache.sis.xml.XML;
 import static org.apache.sis.metadata.iso.citation.Citations.EPSG;
 
 // Test dependencies
@@ -94,10 +93,10 @@ public final class SingleOperationMarshallingTest extends TestCase.WithLogs {
         };
         builder.addName(null, "Mercator (1SP)");
         final ParameterDescriptorGroup descriptor = builder.createGroup(parameters);
-        final var properties = new HashMap<String,Object>(4);
-        properties.put(DefaultOperationMethod.NAME_KEY, descriptor.getName());
-        properties.put(DefaultOperationMethod.FORMULA_KEY, new DefaultFormula("See EPSG guide."));
-        return new DefaultOperationMethod(properties, descriptor);
+        return new DefaultOperationMethod(
+                Map.of(DefaultOperationMethod.NAME_KEY, descriptor.getName(),
+                       DefaultOperationMethod.FORMULA_KEY, new DefaultFormula("See EPSG guide.")),
+                descriptor);
     }
 
     /**
@@ -107,7 +106,7 @@ public final class SingleOperationMarshallingTest extends TestCase.WithLogs {
      */
     @Test
     public void testOperationMethod() throws JAXBException {
-        final String xml = XML.marshal(createMercatorMethod());
+        final String xml = marshal(createMercatorMethod());
         assertXmlEquals("<gml:OperationMethod xmlns:gml=\"" + Namespaces.GML + "\">\n" +
                         "  <gml:name>Mercator (1SP)</gml:name>\n" +
                         "  <gml:formula>See EPSG guide.</gml:formula>\n" +
@@ -125,10 +124,11 @@ public final class SingleOperationMarshallingTest extends TestCase.WithLogs {
                         "  </gml:parameter>\n" +
                         "</gml:OperationMethod>", xml, "xmlns:*");
 
-        final var method = (OperationMethod) XML.unmarshal(xml);
+        final var method = unmarshal(OperationMethod.class, xml);
         verifyMethod(method);
         Validators.validate(method);
         loggings.assertNoUnexpectedLog();
+        assertNoWarning();
     }
 
     /**
@@ -189,6 +189,7 @@ public final class SingleOperationMarshallingTest extends TestCase.WithLogs {
         loggings.assertNextLogContains("EPSG::8801");
         loggings.assertNextLogContains("EPSG::8802");
         loggings.assertNoUnexpectedLog();
+        assertNoWarning();
     }
 
     /**
@@ -268,5 +269,6 @@ public final class SingleOperationMarshallingTest extends TestCase.WithLogs {
         Validators.validate(c);
         loggings.assertNextLogContains("EPSG::8602");
         loggings.assertNoUnexpectedLog();
+        assertNoWarning();
     }
 }

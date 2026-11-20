@@ -17,7 +17,6 @@
 package org.apache.sis.xml;
 
 import java.util.HashMap;
-import java.util.logging.Filter;
 import java.util.logging.LogRecord;
 import java.io.IOException;
 import java.nio.file.AccessDeniedException;
@@ -43,31 +42,12 @@ import static org.apache.sis.test.Assertions.assertSingleton;
  * @author  Martin Desruisseaux (Geomatys)
  */
 @SuppressWarnings("exports")
-public final class ReferenceResolverTest extends TestUsingFile implements Filter {
-    /**
-     * Number of times that an "access denied" warning is expected.
-     */
-    private int expectAccessDenied;
-
+public final class ReferenceResolverTest extends TestUsingFile {
     /**
      * Creates a new test case.
      */
     public ReferenceResolverTest() {
-    }
-
-    /**
-     * Invoked when a warning occurred during the XML unmarshalling.
-     *
-     * @param  record  the warning.
-     * @return always {@code false} for keeping the output console quieter.
-     */
-    @Override
-    public boolean isLoggable(final LogRecord record) {
-        String file = assertInstanceOf(AccessDeniedException.class, record.getThrown()).getFile();
-        assertTrue(file.endsWith("Citation.xml"), file);
-        assertNotEquals(0, expectAccessDenied, "Access should not be denied.");
-        expectAccessDenied--;
-        return false;
+        super(true);   // This test is expected to emit some warnings.
     }
 
     /**
@@ -103,11 +83,14 @@ public final class ReferenceResolverTest extends TestUsingFile implements Filter
      */
     @Test
     public void testAccessDenied() throws URISyntaxException, IOException, JAXBException {
-        expectAccessDenied = 2;
         final DataIdentification data = data(Format.EXTERN, false);
         final Citation citation = data.getCitation();
         assertNull(citation.getTitle());
-        assertEquals(0, expectAccessDenied, "Expected a warning.");
+        assertEquals(2, warnings.size());
+        for (final LogRecord record : warnings) {
+            String file = assertInstanceOf(AccessDeniedException.class, record.getThrown()).getFile();
+            assertTrue(file.endsWith("Citation.xml"), file);
+        }
     }
 
     /**
@@ -160,5 +143,7 @@ public final class ReferenceResolverTest extends TestUsingFile implements Filter
         assertEquals("Little John", reusing.getName().toString());
         assertSame(assertSingleton(parent .getContactInfo()),
                    assertSingleton(reusing.getContactInfo()));
+
+        assertNoWarning();
     }
 }

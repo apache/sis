@@ -17,9 +17,14 @@
 package org.apache.sis.xml.test;
 
 import java.util.Map;
-import java.util.HashMap;
+import java.util.Set;
+import java.util.LinkedHashSet;
+import java.util.Iterator;
 import java.util.Locale;
+import java.util.logging.Filter;
 import java.util.logging.Logger;
+import java.util.logging.LogRecord;
+import java.util.logging.SimpleFormatter;
 import java.time.ZoneId;
 import java.io.InputStream;
 import java.io.StringReader;
@@ -42,8 +47,6 @@ import org.apache.sis.util.Version;
 import org.junit.jupiter.api.AfterEach;
 import static org.junit.jupiter.api.Assertions.*;
 import org.junit.jupiter.api.extension.RegisterExtension;
-import org.junit.jupiter.api.parallel.Execution;
-import org.junit.jupiter.api.parallel.ExecutionMode;
 import org.junit.jupiter.api.parallel.ResourceAccessMode;
 import org.junit.jupiter.api.parallel.ResourceLock;
 import org.apache.sis.test.LoggingWatcher;
@@ -66,10 +69,11 @@ import org.apache.sis.test.LoggingWatcher;
  *
  * @see DocumentComparator
  */
-@Execution(ExecutionMode.SAME_THREAD)
-public abstract class TestCase extends org.apache.sis.test.TestCase {
+public abstract class TestCase extends org.apache.sis.test.TestCase implements Filter {
     /**
      * Base class of (un)marshalling tests that may emit logs.
+     * Used as an alternative to the {@link #warnings} field when the log records
+     * cannot be intercepted by the listener specified at unmarshalling time.
      */
     @ResourceLock(value=LoggingWatcher.LOCK, mode=ResourceAccessMode.READ)
     public static abstract class WithLogs extends TestCase {
@@ -85,6 +89,7 @@ public abstract class TestCase extends org.apache.sis.test.TestCase {
          * @param  logger  the logger to listen to.
          */
         protected WithLogs(final Logger logger) {
+            super(true);
             loggings = new LoggingWatcher(logger);
         }
 
@@ -94,6 +99,7 @@ public abstract class TestCase extends org.apache.sis.test.TestCase {
          * @param logger  name of the logger to listen.
          */
         protected WithLogs(final String logger) {
+            super(true);
             loggings = new LoggingWatcher(logger);
         }
     }
@@ -102,7 +108,7 @@ public abstract class TestCase extends org.apache.sis.test.TestCase {
      * A dummy URL to not try to load. This URL is handled in a special way by the unmarshallers created
      * by {@link #getMarshallerPool()}: they will not try to download the document at this address.
      */
-    protected static final String DUMMY_URL = "http://test.net";
+    protected static final String DUMMY_URL = "http://test.net/foo/bar.xml";
 
     /**
      * Miscellaneous version constants used for ISO standards.
@@ -144,9 +150,57 @@ public abstract class TestCase extends org.apache.sis.test.TestCase {
     private StringWriter buffer;
 
     /**
-     * Creates a new test case.
+     * The warnings that occurred during (un)marshalling process.
+     * This set contains the warnings intercepted by the listener registered with {@link XML#WARNING_FILTER}.
+     * It may not contain warnings emitted by codes other than <abbr>XML</abbr> reader/writer, in particular
+     * the warnings emitted by the referencing module. For the latter, {@link WithLogs} may be necessary.
+     *
+     * <p>This field is {@code null} if this test is not expected to emit any warning.
+     * This is a shortcut for freeing subclasses from invoking {@link #assertNoWarning()} in every methods.</p>
+     *
+     * @see #assertNoWarning()
+     * @see #assertOneWarning()
+     */
+    protected final Set<LogRecord> warnings;
+
+    /**
+     * Creates a new test case which is not expected to emit any warning.
      */
     protected TestCase() {
+        warnings = null;
+    }
+
+    /**
+     * Creates a new test case which may emit some warnings.
+     * The {@code mayEmitWarnings} argument can be set to {@code false} as a shortcut
+     * for avoiding to invoke {@link #assertNoWarning()} in every test method.
+     *
+     * @param  mayEmitWarnings  whether the tests may emit warnings intercepted by {@link XML#WARNING_FILTER}.
+     */
+    protected TestCase(final boolean mayEmitWarnings) {
+        warnings = mayEmitWarnings ? new LinkedHashSet<>() : null;
+    }
+
+    /**
+     * Invoked when a warning occurred while (un)marshalling a test <abbr>XML</abbr> fragment.
+     * This method verifies that the given warning has not been emitted twice, then adds it to
+     * the {@link #warnings} set. This method is not expected to be invoked directly.
+     *
+     * @param  warning  the warning.
+     */
+    @Override
+    public final boolean isLoggable(final LogRecord warning) {
+        assertNotNull(warning);
+        final String header;
+        if (warnings == null) {
+            header = "This test should not emit any warning, but got:";
+        } else if (warnings.add(warning)) {
+            return false;
+        } else {
+            header = "Warning added twice:";
+        }
+        fail(logMessages(Set.of(warning).iterator(), header));
+        return true;
     }
 
     /**
@@ -164,12 +218,11 @@ public abstract class TestCase extends org.apache.sis.test.TestCase {
     protected MarshallerPool getMarshallerPool() throws JAXBException {
         synchronized (TestCase.class) {
             if (defaultPool == null) {
-                final Map<String,Object> properties = new HashMap<>(4);
-                assertNull(properties.put(XML.LOCALE, Locale.UK));
-                assertNull(properties.put(XML.TIMEZONE, TIMEZONE));
-                assertNull(properties.put(XML.LENIENT_UNMARSHAL, Boolean.TRUE));
-                assertNull(properties.put(XML.RESOLVER, new TestReferenceResolver(DUMMY_URL)));
-                defaultPool = new MarshallerPool(properties);
+                defaultPool = new MarshallerPool(Map.of(
+                    XML.LOCALE,            Locale.UK,
+                    XML.TIMEZONE,          TIMEZONE,
+                    XML.LENIENT_UNMARSHAL, Boolean.TRUE,
+                    XML.RESOLVER,          new TestReferenceResolver(DUMMY_URL)));
             }
             return defaultPool;
         }
@@ -187,7 +240,7 @@ public abstract class TestCase extends org.apache.sis.test.TestCase {
      */
     protected final void createContext(final boolean marshal, final Locale locale, final String timezone) throws JAXBException {
         context = new Context(marshal ? Context.MARSHALLING : 0, getMarshallerPool(), locale,
-                (timezone != null) ? ZoneId.of(timezone) : null, null, null, null, null, null, null, null);
+                (timezone != null) ? ZoneId.of(timezone) : null, null, null, null, null, null, null, this);
     }
 
     /**
@@ -202,6 +255,53 @@ public abstract class TestCase extends org.apache.sis.test.TestCase {
             context.finish();
             context = null;
         }
+    }
+
+    /**
+     * Asserts the no warning has been emitted.
+     * This method verifies only the warnings intercepted by {@link XML#WARNING_FILTER}.
+     * It does not check the warning emitted by codes other then <abbr>XML</abbr> reader/writer.
+     *
+     * @see #warnings
+     */
+    protected final void assertNoWarning() {
+        assertNotNull(warnings, "This test is not collecting warnings because no warning is expected.");
+        assertTrue(warnings.isEmpty(), () -> logMessages(warnings.iterator(), "Unexpected warnings:"));
+    }
+
+    /**
+     * Asserts that exactly one warning has been emitted.
+     * This method verifies only the warnings intercepted by {@link XML#WARNING_FILTER}.
+     * It does not check the warning emitted by codes other then <abbr>XML</abbr> reader/writer.
+     *
+     * @see #warnings
+     *
+     * @return the warning which has been emitted.
+     */
+    protected final LogRecord assertOneWarning() {
+        assertNotNull(warnings, "This test is not collecting warnings because no warning is expected.");
+        final Iterator<LogRecord> records = warnings.iterator();
+        assertTrue(records.hasNext(), "Expected one warning but got none.");
+        final LogRecord record = records.next();
+        assertFalse(records.hasNext(), () -> logMessages(records, "Warnings after the first one:"));
+        return record;
+    }
+
+    /**
+     * Returns the following header message followed by a list of remaining log records.
+     *
+     * @param  records  remaining log records to format.
+     * @param  header   header of the assertion failure message.
+     * @return message for the assertion failure.
+     */
+    private static String logMessages(final Iterator<LogRecord> records, final String header) {
+        final var buffer = new StringBuilder(128).append(header);
+        final String lineSeparator = System.lineSeparator();
+        final var formatter = new SimpleFormatter();
+        do {    // We expect at lest one log record.
+            buffer.append(lineSeparator).append("  ‣ ").append(formatter.formatMessage(records.next()));
+        } while (records.hasNext());
+        return buffer.append(lineSeparator).toString();
     }
 
     /**
@@ -534,8 +634,8 @@ public abstract class TestCase extends org.apache.sis.test.TestCase {
      * @return an XML compliant with ISO 19139:2007.
      */
     protected static String toLegacyXML(final String xml) {
-        final StringBuilder buffer = new StringBuilder(xml);
-        for (int c=0; c < TO_LEGACY_XML.length;) {
+        final var buffer = new StringBuilder(xml);
+        for (int c = 0; c < TO_LEGACY_XML.length;) {
             final String toSearch  = TO_LEGACY_XML[c++];
             final String replaceBy = TO_LEGACY_XML[c++];
             final int length = toSearch.length();

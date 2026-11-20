@@ -17,13 +17,20 @@
 package org.apache.sis.xml;
 
 import java.util.Set;
+import java.util.Map;
+import java.util.logging.LogRecord;
+import java.io.StringReader;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.nio.file.AccessDeniedException;
+import javax.xml.transform.stream.StreamSource;
 import jakarta.xml.bind.JAXBException;
 import org.apache.sis.metadata.iso.DefaultMetadata;
 import org.apache.sis.metadata.iso.identification.DefaultDataIdentification;
+import org.apache.sis.xml.internal.shared.URISource;
 import org.apache.sis.util.SimpleInternationalString;
 import org.apache.sis.util.ComparisonMode;
+import org.apache.sis.util.ArraysExt;
 
 // Test dependencies
 import org.junit.jupiter.api.Test;
@@ -49,7 +56,7 @@ public final class XLinkMarshallingTest extends TestCase {
             "</mdb:MD_Metadata>";
 
     /**
-     * A XML with a {@code xlink:href} without element definition.
+     * A XML with a {@code xlink:href} with element definition.
      */
     private static final String LINK_WITH_ELEMENT_XML =
             "<mdb:MD_Metadata xmlns:mdb=\""   + Namespaces.MDB + '"' +
@@ -84,6 +91,7 @@ public final class XLinkMarshallingTest extends TestCase {
      * Creates a new test case.
      */
     public XLinkMarshallingTest() {
+        super(true);   // This test is expected to emit some warnings.
     }
 
     /**
@@ -101,15 +109,16 @@ public final class XLinkMarshallingTest extends TestCase {
      */
     @Test
     public void testLinkOnly() throws JAXBException, URISyntaxException {
-        final XLink xlink = new XLink();
+        final var xlink = new XLink();
         xlink.setHRef(new URI(DUMMY_URL));
-        final DefaultDataIdentification identification = new DefaultDataIdentification();
+        final var identification = new DefaultDataIdentification();
         identification.getIdentifierMap().putSpecialized(IdentifierSpace.XLINK, xlink);
-        final DefaultMetadata metadata = new DefaultMetadata();
+        final var metadata = new DefaultMetadata();
         metadata.setIdentificationInfo(Set.of(identification));
 
         assertXmlEquals(LINK_ONLY_XML, marshal(metadata), "xmlns:*");
         verify(true, unmarshal(DefaultMetadata.class, LINK_ONLY_XML));
+        assertNoWarning();
     }
 
     /**
@@ -133,17 +142,38 @@ public final class XLinkMarshallingTest extends TestCase {
      */
     @Test
     public void testWithElement() throws JAXBException, URISyntaxException {
-        final XLink xlink = new XLink();
+        final var xlink = new XLink();
         xlink.setHRef(new URI(DUMMY_URL));
-        final DefaultDataIdentification identification = new DefaultDataIdentification();
+        final var identification = new DefaultDataIdentification();
         identification.getIdentifierMap().putSpecialized(IdentifierSpace.XLINK, xlink);
         identification.setAbstract(new SimpleInternationalString("This is a test."));
-        final DefaultMetadata metadata = new DefaultMetadata();
+        final var metadata = new DefaultMetadata();
         metadata.setIdentificationInfo(Set.of(identification));
 
         assertXmlEquals(LINK_WITH_ELEMENT_XML, marshal(metadata), "xmlns:*");
         final DefaultMetadata unmarshal = unmarshal(DefaultMetadata.class, LINK_WITH_ELEMENT_XML);
         verify(false, unmarshal);
         assertTrue(metadata.equals(unmarshal, ComparisonMode.DEBUG));
+        assertNoWarning();
+    }
+
+    /**
+     * Tests the enforcement of control access.
+     *
+     * @throws JAXBException if an error occurred during (un)marshalling.
+     * @throws URISyntaxException if the URI used in this test is malformed.
+     */
+    @Test
+    public void testControlAccess() throws JAXBException, URISyntaxException {
+        StreamSource source = URISource.create(null, null, new URI("http://other.net/foo/parent.xml"));
+        source.setReader(new StringReader(LINK_ONLY_XML));
+
+        final var metadata = assertInstanceOf(DefaultMetadata.class, XML.unmarshal(source, Map.of(XML.WARNING_FILTER, this)));
+        assertTrue(metadata.isEmpty());
+
+        // Expect a warning like: Cannot read "http://test.net/foo/bar.xml".
+        final LogRecord warning = assertOneWarning();
+        assertTrue(ArraysExt.contains(warning.getParameters(), new URI(DUMMY_URL)));
+        assertEquals(DUMMY_URL, assertInstanceOf(AccessDeniedException.class, warning.getThrown()).getFile());
     }
 }

@@ -152,11 +152,11 @@ public abstract class TypeRegistration {
      * @return all input streams.
      */
     public static synchronized Supplier<InputStream> getRenameDefinitionsFiles(final boolean export, final String filename) {
-        final Iterator<TypeRegistration> services = services().iterator();
+        final Iterator<TypeRegistration> it = services().iterator();
         return () -> {
             synchronized (TypeRegistration.class) {
-                while (services.hasNext()) {
-                    final Optional<InputStream> next = services.next().getRenameDefinitionsFile(export, filename);
+                while (it.hasNext()) {
+                    final Optional<InputStream> next = it.next().getRenameDefinitionsFile(export, filename);
                     if (next.isPresent()) return next.get();
                 }
                 return null;
@@ -199,8 +199,8 @@ public abstract class TypeRegistration {
      */
     @SuppressWarnings({"unchecked", "rawtypes"})
     private static Class<?>[] load(final boolean getTypes) {
-        final ArrayList<Class<?>>              types  = new ArrayList<>();
-        final ArrayList<UnaryOperator<Object>> toImpl = new ArrayList<>();
+        final var types  = new ArrayList<Class<?>>();
+        final var toImpl = new ArrayList<UnaryOperator<Object>>();
         for (final TypeRegistration t : services()) {
             if (getTypes) t.getTypes(types);
             final UnaryOperator<Object> c = t.beforeMarshal();
@@ -259,7 +259,7 @@ public abstract class TypeRegistration {
         if (properties == null) {
             return Map.of(ROOT_ADAPTERS, c);
         }
-        final Map<String,Object> copy = new HashMap<>(properties);
+        final var copy = new HashMap<String, Object>(properties);
         copy.put(ROOT_ADAPTERS, c);
         return copy;
     }

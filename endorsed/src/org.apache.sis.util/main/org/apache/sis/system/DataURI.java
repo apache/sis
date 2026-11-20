@@ -107,7 +107,8 @@ public class DataURI {
             return false;
         }
         final URI result = base.resolve(parameter).normalize();
-        if (result != resolved) {
+        if (!result.equals(resolved)) {
+            // Host indirectly verified by `URI.resolve(…)` and the following equality check.
             isRelative = (result != parameter) && isPathInDirectory(base, result);
             resolved = result;
             try {

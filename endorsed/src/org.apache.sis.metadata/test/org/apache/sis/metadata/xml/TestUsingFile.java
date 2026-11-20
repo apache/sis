@@ -21,6 +21,7 @@ import java.net.URISyntaxException;
 import java.io.InputStream;
 import javax.xml.transform.Source;
 import org.apache.sis.util.Version;
+import org.apache.sis.xml.XML;
 import org.apache.sis.xml.internal.shared.URISource;
 
 // Test dependencies
@@ -95,8 +96,19 @@ public abstract class TestUsingFile extends TestCase {
     }
 
     /**
-     * For sub-class constructors only.
+     * Creates a new test case which is not expected to emit any warning.
      */
     protected TestUsingFile() {
+    }
+
+    /**
+     * Creates a new test case which may emit some warnings.
+     * The {@code mayEmitWarnings} argument can be set to {@code false} as a shortcut
+     * for avoiding to invoke {@link #assertNoWarning()} in every test method.
+     *
+     * @param  mayEmitWarnings  whether the tests may emit warnings intercepted by {@link XML#WARNING_FILTER}.
+     */
+    protected TestUsingFile(final boolean mayEmitWarnings) {
+        super(mayEmitWarnings);
     }
 }

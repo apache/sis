@@ -26,16 +26,19 @@ import org.apache.sis.system.DataURI;
 
 
 /**
- * A source of XML document which is read from an URL.
- * This class should be handled as a standard {@link StreamSource} by Java API,
- * but allows Apache SIS to keep a reference to the original {@link URI} object.
+ * A source of <abbr>XML</abbr> document which is read from an <abbr>URL</abbr>.
+ * This is handled as a standard {@link StreamSource} by Java <abbr>API</abbr>,
+ * but allows Apache <abbr>SIS</abbr> to remember the source {@link URI}.
  *
  * @author  Martin Desruisseaux (Geomatys)
  */
 public final class URISource extends StreamSource {
     /**
      * If the URI has been resolved relatively to some base directory or sibling file, that base.
-     * Otherwise {@code null}.
+     * Otherwise {@code null}. This is an argument given at construction time, but kept non-null
+     * only if it has been verified that this is the base of {@link #document}.
+     *
+     * @see #isChildOfBase()
      */
     private final URI base;
 
@@ -109,12 +112,18 @@ public final class URISource extends StreamSource {
     }
 
     /**
-     * Returns whether the document URL is in the same directory or in a sub-directory
-     * of the base given at construction time. This is used for access control.
+     * Returns whether the {@linkplain #document} <abbr>URL</abbr> is in the same
+     * directory or in a sub-directory of the base given at construction time.
+     * This method is used for access control.
      *
      * @return whether the document URL has been resolved relatively to the base.
      */
     public boolean isChildOfBase() {
+        /*
+         * The constructor verified that `document` was resolved against `base`.
+         * If it found that it wasn't the case, then `base` has been forced to null.
+         * Therefore, it has already been verified that the hosts are the same.
+         */
         return (base != null) && DataURI.isPathInDirectory(base, document);
     }
 

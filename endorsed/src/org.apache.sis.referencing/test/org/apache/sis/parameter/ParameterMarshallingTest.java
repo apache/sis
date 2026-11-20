@@ -34,7 +34,6 @@ import org.apache.sis.measure.Range;
 import org.apache.sis.measure.MeasurementRange;
 import org.apache.sis.system.Loggers;
 import org.apache.sis.xml.Namespaces;
-import org.apache.sis.xml.XML;
 
 // Test dependencies
 import org.junit.jupiter.api.Test;
@@ -50,6 +49,7 @@ import static org.apache.sis.referencing.Assertions.assertEpsgNameAndIdentifierE
  *
  * @author  Martin Desruisseaux (Geomatys)
  */
+@SuppressWarnings("exports")
 public final class ParameterMarshallingTest extends TestCase.WithLogs {
     /**
      * Creates a new test case.
@@ -101,12 +101,12 @@ public final class ParameterMarshallingTest extends TestCase.WithLogs {
      * @param  parameter  the parameter to marshal.
      * @param  expected   the expected XML (ignoring {@code xmlns}).
      */
-    private static void testMarshallAndUnmarshall(final DefaultParameterValue<?> parameter, final String expected)
+    private void testMarshallAndUnmarshall(final DefaultParameterValue<?> parameter, final String expected)
             throws JAXBException
     {
-        final String xml = XML.marshal(parameter);
+        final String xml = marshal(parameter);
         assertXmlEquals(expected, xml, "xmlns:*");
-        final DefaultParameterValue<?> r = (DefaultParameterValue<?>) XML.unmarshal(xml);
+        final DefaultParameterValue<?> r = unmarshal(DefaultParameterValue.class, xml);
         if (!Objects.deepEquals(parameter.getValue(), r.getValue())) {
             /*
              * If we enter in this block, then the line below should always fail.
@@ -137,18 +137,18 @@ public final class ParameterMarshallingTest extends TestCase.WithLogs {
      */
     @Test
     public void testDescriptor() throws JAXBException {
-        final DefaultParameterDescriptor<Double> descriptor = new DefaultParameterDescriptor<>(
+        final var descriptor = new DefaultParameterDescriptor<Double>(
                 Map.of(DefaultParameterDescriptor.NAME_KEY, "A descriptor"),
                 0, 1, Double.class, null, null, null);
 
-        final String xml = XML.marshal(descriptor);
+        final String xml = marshal(descriptor);
         assertXmlEquals(
                 "<gml:OperationParameter xmlns:gml=\"" + Namespaces.GML + "\">\n"
               + "  <gml:name>A descriptor</gml:name>\n"
               + "  <gml:minimumOccurs>0</gml:minimumOccurs>\n"
               + "</gml:OperationParameter>", xml, "xmlns:*");
 
-        final var r = (DefaultParameterDescriptor<?>) XML.unmarshal(xml);
+        final var r = unmarshal(DefaultParameterDescriptor.class, xml);
         assertEquals("A descriptor", r.getName().getCode(), "name");
         assertEquals(0, r.getMinimumOccurs(), "minimumOccurs");
         assertEquals(1, r.getMaximumOccurs(), "maximumOccurs");
@@ -161,6 +161,7 @@ public final class ParameterMarshallingTest extends TestCase.WithLogs {
         assertNull(r.getValueDomain(), "valueDomain");
         assertNull(r.getValueClass(),  "valueClass");               // May change in any future SIS release.
         loggings.assertNoUnexpectedLog();
+        assertNoWarning();
     }
 
     /**
@@ -182,6 +183,7 @@ public final class ParameterMarshallingTest extends TestCase.WithLogs {
               + "    </gml:operationParameter>"
               + "</gml:ParameterValue>");
         loggings.assertNoUnexpectedLog();
+        assertNoWarning();
     }
 
     /**
@@ -204,6 +206,7 @@ public final class ParameterMarshallingTest extends TestCase.WithLogs {
               + "    </gml:operationParameter>"
               + "</gml:ParameterValue>");
         loggings.assertNoUnexpectedLog();
+        assertNoWarning();
     }
 
     /**
@@ -225,6 +228,7 @@ public final class ParameterMarshallingTest extends TestCase.WithLogs {
               + "    </gml:operationParameter>"
               + "</gml:ParameterValue>");
         loggings.assertNoUnexpectedLog();
+        assertNoWarning();
     }
 
     /**
@@ -246,6 +250,7 @@ public final class ParameterMarshallingTest extends TestCase.WithLogs {
               + "    </gml:operationParameter>"
               + "</gml:ParameterValue>");
         loggings.assertNoUnexpectedLog();
+        assertNoWarning();
     }
 
     /**
@@ -267,6 +272,7 @@ public final class ParameterMarshallingTest extends TestCase.WithLogs {
               + "    </gml:operationParameter>"
               + "</gml:ParameterValue>");
         loggings.assertNoUnexpectedLog();
+        assertNoWarning();
     }
 
     /**
@@ -289,6 +295,7 @@ public final class ParameterMarshallingTest extends TestCase.WithLogs {
               + "    </gml:operationParameter>"
               + "</gml:ParameterValue>");
         loggings.assertNoUnexpectedLog();
+        assertNoWarning();
     }
 
     /**
@@ -311,6 +318,7 @@ public final class ParameterMarshallingTest extends TestCase.WithLogs {
               + "    </gml:operationParameter>"
               + "</gml:ParameterValue>");
         loggings.assertNoUnexpectedLog();
+        assertNoWarning();
     }
 
     /**
@@ -327,6 +335,7 @@ public final class ParameterMarshallingTest extends TestCase.WithLogs {
         // Test unmarshalling.
         verifyDescriptorGroup(unmarshalFile(DefaultParameterDescriptorGroup.class, TestFile.DESCRIPTOR.openTestFile()));
         loggings.assertNoUnexpectedLog();
+        assertNoWarning();
     }
 
     /**
@@ -403,6 +412,7 @@ public final class ParameterMarshallingTest extends TestCase.WithLogs {
                 ParameterFormatTest.createMercatorParameters().createValue(),
                 "xmlns:*", "xsi:schemaLocation");
         loggings.assertNoUnexpectedLog();
+        assertNoWarning();
     }
 
     /**
@@ -415,6 +425,7 @@ public final class ParameterMarshallingTest extends TestCase.WithLogs {
     public void testValueGroupUnmarshalling() throws JAXBException {
         testValueGroupUnmarshalling(TestFile.VALUE);
         loggings.assertNoUnexpectedLog();
+        assertNoWarning();
     }
 
     /**
@@ -431,6 +442,7 @@ public final class ParameterMarshallingTest extends TestCase.WithLogs {
         loggings.assertNextLogContains("EPSG::8802");
         loggings.assertNextLogContains("EPSG::8805");
         loggings.assertNoUnexpectedLog();
+        assertNoWarning();
     }
 
     /**

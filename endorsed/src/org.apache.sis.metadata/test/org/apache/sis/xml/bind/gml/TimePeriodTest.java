@@ -59,7 +59,7 @@ public final class TimePeriodTest extends TestCase {
      * @throws JAXBException if an error occurred while creating the pool.
      */
     public TimePeriodTest() throws JAXBException {
-        final var properties = new HashMap<String,Object>(4);
+        final var properties = new HashMap<String, Object>(4);
         assertNull(properties.put(XML.LOCALE, Locale.FRANCE));
         assertNull(properties.put(XML.TIMEZONE, "CET"));
         pool = new MarshallerPool(JAXBContext.newInstance(TimeInstant.class, TimePeriod.class), properties);

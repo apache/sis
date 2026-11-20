@@ -67,14 +67,14 @@ public final class DirectReferenceSystemTest extends TestCase {
      */
     @SuppressWarnings("deprecation")
     private static DefaultMetadata createMetadata(final boolean legacy) {
-        final DefaultMetadata metadata = new DefaultMetadata();
-        final DefaultCitation citation = new DefaultCitation("EPSG Geodetic Parameter Dataset");
+        final var metadata = new DefaultMetadata();
+        final var citation = new DefaultCitation("EPSG Geodetic Parameter Dataset");
         Collection<Responsibility> r = HardCodedCitations.EPSG.getCitedResponsibleParties();
         if (legacy) {
             r = Set.of(new DefaultResponsibleParty(assertSingleton(r)));
         }
         citation.setCitedResponsibleParties(r);
-        final DirectReferenceSystem refSys = new DirectReferenceSystem(new DefaultIdentifier(citation, "4326"));
+        final var refSys = new DirectReferenceSystem(new DefaultIdentifier(citation, "4326"));
         metadata.setReferenceSystemInfo(Set.of(refSys));
         return metadata;
     }

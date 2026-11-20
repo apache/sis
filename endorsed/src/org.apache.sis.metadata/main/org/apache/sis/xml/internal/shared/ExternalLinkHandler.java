@@ -129,6 +129,8 @@ public class ExternalLinkHandler {
     /**
      * Returns the base URI of the link handler. The returned object may be an instance of
      * {@link String}, {@link File}, {@link URL} or {@link URI}, or it may be {@code null}.
+     * If the base is a file rather than a directory, then it is considered as a sibling,
+     * i.e. the file's directory will be used as the base.
      *
      * @return the base <abbr>URI</abbr>, or {@code null}.
      */
@@ -153,8 +155,8 @@ public class ExternalLinkHandler {
     }
 
     /**
-     * Returns the base URI of the link handler. This is the same value as {@link #getBase()},
-     * but converted to an {@link URI} object when first invoked.
+     * Returns the base or sibling <abbr>URI</abbr> of the link handler.
+     * This is the same value as {@link #getBase()}, but converted to an {@link URI} object when first invoked.
      *
      * @return the base URI of the link handler, or {@code null} if none.
      */
@@ -189,7 +191,7 @@ public class ExternalLinkHandler {
     }
 
     /**
-     * Reports a warning about a URI that cannot be parsed.
+     * Reports a warning about an <abbr>URI</abbr> that cannot be parsed.
      * This method declares {@link ReferenceResolver} as the public source of the warning.
      * The latter assumption is valid if {@code ReferenceResolver.resolve(…)} is the only
      * code invoking, directly or indirectly, this {@code warning(…)} method.
@@ -202,7 +204,13 @@ public class ExternalLinkHandler {
     }
 
     /**
-     * Returns the source of the XML document at the given path.
+     * Returns the source of the <abbr>XML</abbr> document at the given path.
+     * The given path is resolved against the {@linkplain #getURI() base or sibling URI}
+     * specified at construction time. If the result is not an absolute <abbr>URI</abbr>
+     * (i.e. the given path could not be resolved), then this method returns {@code null}.
+     *
+     * <p>Callers should invoke {@link URISource#isChildOfBase()} on the returned object
+     * for checking if they have permission to read the file.</p>
      *
      * @param  path  relative or absolute path to the XML document to read.
      * @return source of the XML document, or {@code null} if the path cannot be resolved.

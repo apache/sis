@@ -541,7 +541,7 @@ public class DocumentComparator {
                  * If there is a namespace (which is the usual case), perform the concatenation
                  * with the name before to check in the collection of ignored attributes.
                  */
-                final StringBuilder buffer = new StringBuilder(ns);
+                final var buffer = new StringBuilder(ns);
                 int length = buffer.length();
                 if (length != 0 && buffer.charAt(length - 1) == '/') {
                     buffer.setLength(--length);
@@ -638,7 +638,7 @@ public class DocumentComparator {
                 return;
             }
             final String lineSeparator = System.lineSeparator();
-            final StringBuilder buffer = new StringBuilder(1024).append("Expected ")
+            final var buffer = new StringBuilder(1024).append("Expected ")
                     .append(propertyName).append(" \"")
                     .append(expected).append("\" but got \"")
                     .append(actual).append("\" for nodes:")
@@ -683,7 +683,7 @@ public class DocumentComparator {
      */
     protected String formatErrorMessage(final Node expected, final Node result) {
         final String lineSeparator = System.lineSeparator();
-        final StringBuilder buffer = new StringBuilder(256).append("Nodes are not equal:").append(lineSeparator);
+        final var buffer = new StringBuilder(256).append("Nodes are not equal:").append(lineSeparator);
         formatErrorMessage(buffer, expected, result, lineSeparator);
         return buffer.toString();
     }
@@ -719,7 +719,7 @@ public class DocumentComparator {
     private static List<String> formatHierarchy(final StringBuilder buffer, Node node,
             final List<String> expected, final String lineSeparator)
     {
-        final List<String> hierarchy = new ArrayList<>();
+        final var hierarchy = new ArrayList<String>();
         while (node != null) {
             hierarchy.add(node.getNodeName());
             if (node instanceof Attr t) {

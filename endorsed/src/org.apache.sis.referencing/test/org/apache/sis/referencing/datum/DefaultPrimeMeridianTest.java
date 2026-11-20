@@ -44,6 +44,7 @@ import static org.apache.sis.referencing.Assertions.assertRemarksEquals;
  *
  * @author  Martin Desruisseaux (Geomatys)
  */
+@SuppressWarnings("exports")
 public final class DefaultPrimeMeridianTest extends TestCase {
     /**
      * Creates a new test case.
@@ -67,7 +68,7 @@ public final class DefaultPrimeMeridianTest extends TestCase {
      */
     @Test
     public void testToWKT() {
-        final DefaultPrimeMeridian pm = new DefaultPrimeMeridian(PrimeMeridianMock.GREENWICH);
+        final var pm = new DefaultPrimeMeridian(PrimeMeridianMock.GREENWICH);
         assertIsGreenwich(pm);
         assertWktEquals(Convention.WKT2, "PRIMEM[“Greenwich”, 0.0, ANGLEUNIT[“degree”, 0.017453292519943295]]", pm);
         assertWktEquals(Convention.WKT2_SIMPLIFIED, "PrimeMeridian[“Greenwich”, 0.0]", pm);
@@ -91,7 +92,7 @@ public final class DefaultPrimeMeridianTest extends TestCase {
      */
     @Test
     public void testWKT_withUnformattableUnit() {
-        final DefaultPrimeMeridian pm = new DefaultPrimeMeridian(
+        final var pm = new DefaultPrimeMeridian(
                 Map.of(DefaultPrimeMeridian.NAME_KEY, "Test"),
                 10.3, Units.valueOfEPSG(9111).asType(Angle.class));
         /*
@@ -126,7 +127,7 @@ public final class DefaultPrimeMeridianTest extends TestCase {
      */
     @Test
     public void testMarshall() throws JAXBException {
-        final DefaultPrimeMeridian pm = new DefaultPrimeMeridian(PrimeMeridianMock.GREENWICH);
+        final var pm = new DefaultPrimeMeridian(PrimeMeridianMock.GREENWICH);
         assertXmlEquals(getGreenwichXml(Namespaces.GML), marshal(pm), "xmlns:*");
     }
 
@@ -137,7 +138,7 @@ public final class DefaultPrimeMeridianTest extends TestCase {
      */
     @Test
     public void testMarshallGML31() throws JAXBException {
-        final DefaultPrimeMeridian pm = new DefaultPrimeMeridian(PrimeMeridianMock.GREENWICH);
+        final var pm = new DefaultPrimeMeridian(PrimeMeridianMock.GREENWICH);
         final MarshallerPool pool = getMarshallerPool();
         final Marshaller marshaller = pool.acquireMarshaller();
         marshaller.setProperty(XML.GML_VERSION, LegacyNamespaces.VERSION_3_0);
@@ -167,8 +168,8 @@ public final class DefaultPrimeMeridianTest extends TestCase {
         final MarshallerPool pool = getMarshallerPool();
         final Unmarshaller unmarshaller = pool.acquireUnmarshaller();
         unmarshaller.setProperty(XML.GML_VERSION, LegacyNamespaces.VERSION_3_0);
-        final DefaultPrimeMeridian pm = (DefaultPrimeMeridian)
-                unmarshal(unmarshaller, getGreenwichXml(LegacyNamespaces.GML));
+        final DefaultPrimeMeridian pm = assertInstanceOf(DefaultPrimeMeridian.class,
+                unmarshal(unmarshaller, getGreenwichXml(LegacyNamespaces.GML)));
         pool.recycle(unmarshaller);
         assertIsGreenwich(pm);
     }

@@ -127,7 +127,7 @@ public class InterpolatedTransform extends DatumShiftTransform {
      *
      * @see #createGeodeticTransformation(MathTransformFactory, DatumShiftGrid)
      */
-    @SuppressWarnings({"this-escape", "fallthrough"})       // `this` appears in a cyclic graph.
+    @SuppressWarnings({"fallthrough", "this-escape", "OverridableMethodCallInConstructor"})  // `this` appears in a cyclic graph.
     protected <T extends Quantity<T>> InterpolatedTransform(final DatumShiftGrid<T,T> grid) throws NoninvertibleMatrixException {
         /*
          * Create the contextual parameters using the descriptor of the provider that created the datum shift grid.
@@ -385,6 +385,8 @@ public class InterpolatedTransform extends DatumShiftTransform {
 
     /**
      * @hidden because nothing new to said.
+     *
+     * @return the hash code value.
      */
     @Override
     protected int computeHashCode() {

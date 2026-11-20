@@ -23,7 +23,6 @@ import java.util.Set;
 import java.util.Map;
 import java.util.Collection;
 import java.util.MissingResourceException;
-import java.util.logging.Filter;
 import java.util.logging.LogRecord;
 import java.time.Instant;
 import java.time.Duration;
@@ -81,7 +80,7 @@ import org.apache.sis.util.iso.DefaultRecordSchemaTest;
  * @see <a href="https://issues.apache.org/jira/browse/SIS-400">SIS-400</a>
  */
 @SuppressWarnings("exports")
-public final class MarshallingTest extends TestUsingFile implements Filter {
+public final class MarshallingTest extends TestUsingFile {
     /**
      * The marshaller used to handle marshalling the created DefaultMetadata object.
      */
@@ -108,10 +107,10 @@ public final class MarshallingTest extends TestUsingFile implements Filter {
      * @throws JAXBException if an error occurred while preparing the marshaller.
      */
     public MarshallingTest() throws JAXBException {
+        super(true);   // This test is expected to emit some warnings.
         output     = new StringWriter();
         pool       = getMarshallerPool();
         marshaller = pool.acquireMarshaller();
-        marshaller.setProperty(XML.WARNING_FILTER, this);
     }
 
     /**
@@ -229,8 +228,7 @@ public final class MarshallingTest extends TestUsingFile implements Filter {
                                    new DefaultResponsibility(Role.POINT_OF_CONTACT, null, individual2)));
         }
         // Date info (date stamp in legacy ISO 19115:2003 model)
-        final var dateInfo = Set.of(new DefaultCitationDate(
-                Instant.ofEpochMilli(1260961229580L), DateType.CREATION));
+        final var dateInfo = Set.of(new DefaultCitationDate(Instant.ofEpochMilli(1260961229580L), DateType.CREATION));
         md.setDateInfo(dateInfo);
         {
             // Metadata standard
@@ -345,7 +343,7 @@ public final class MarshallingTest extends TestUsingFile implements Filter {
             final var extent = new DefaultExtent();
             extent.setDescription(new SimpleInternationalString("Azores"));
             {
-                final DefaultGeographicBoundingBox bbox = new DefaultGeographicBoundingBox();
+                final var bbox = new DefaultGeographicBoundingBox();
                 bbox.setInclusion(true);
                 bbox.setNorthBoundLatitude( 40.00);
                 bbox.setEastBoundLongitude(-32.00);
@@ -507,7 +505,7 @@ public final class MarshallingTest extends TestUsingFile implements Filter {
         final Collection<AssociatedResource> associatedResources;
         {
             // Associated resources (AggregationInfo in 19139)
-            final DefaultAssociatedResource associatedResource = new DefaultAssociatedResource();
+            final var associatedResource = new DefaultAssociatedResource();
             associatedResource.setAssociationType(AssociationType.DEPENDENCY);
             associatedResource.setInitiativeType(InitiativeType.EXPERIMENT);
             associatedResource.getIdentifierMap().putSpecialized(IdentifierSpace.ID, "dependency");
@@ -610,8 +608,9 @@ public final class MarshallingTest extends TestUsingFile implements Filter {
         legacyXML = true;
         final DefaultMetadata md = metadata();
         marshaller.setProperty(XML.METADATA_VERSION, VERSION_2007);
+        marshaller.setProperty(XML.WARNING_FILTER, this);
         marshaller.marshal(md, output);
-        recycle();
+        verifyWarnings();
     }
 
     /**
@@ -627,37 +626,32 @@ public final class MarshallingTest extends TestUsingFile implements Filter {
     public void testCurrentSchema() throws JAXBException, URISyntaxException {
         final DefaultMetadata md = metadata();
         marshaller.setProperty(XML.METADATA_VERSION, VERSION_2014);
+        marshaller.setProperty(XML.WARNING_FILTER, this);
         marshaller.marshal(md, output);
-        recycle();
+        verifyWarnings();
     }
 
     /**
-     * Invoked only on success, for recycling the marshaller.
-     */
-    private void recycle() {
-        pool.recycle(marshaller);
-    }
-
-    /**
-     * Invoked when a warning occurred while marshalling a test XML fragment. Expected warnings are
+     * Verifies the warning that occurred while marshalling a test XML fragment. Expected warnings are
      * "Cannot find resource for bundle {@code java.util.PropertyResourceBundle}, key <i>Foo</i>".
-     * When marshalling legacy XML only, additional warnings may occur.
+     * When marshalling legacy <abbr>XML</abbr> only, additional warnings may occur.
      *
-     * @param  warning  the warning.
+     * <p>This method shall be invoked last, because it opportunistically recycle the marshaller on success.</p>
      */
-    @Override
-    public boolean isLoggable(final LogRecord warning) {
-        if (warning.getThrown() instanceof MissingResourceException) {
-            assertNull(warning.getParameters(), "Expected a warning message without parameters.");
-            return false;
+    private void verifyWarnings() {
+        for (final LogRecord warning : warnings) {
+            if (warning.getThrown() instanceof MissingResourceException) {
+                assertNull(warning.getParameters(), "Expected a warning message without parameters.");
+            } else {
+                final String message = warning.getMessage();
+                if (legacyXML) {
+                    assertEquals("IgnoredPropertiesAfterFirst_1", message);
+                    assertArrayEquals(new String[] {"RangeDimension"}, warning.getParameters());
+                } else {
+                    fail("Unexpected logging message: " + message);
+                }
+            }
         }
-        final String message = warning.getMessage();
-        if (legacyXML) {
-            assertEquals("IgnoredPropertiesAfterFirst_1", message);
-            assertArrayEquals(new String[] {"RangeDimension"}, warning.getParameters());
-        } else {
-            fail("Unexpected logging message: " + message);
-        }
-        return false;
+        pool.recycle(marshaller);   // Invoke only on success.
     }
 }

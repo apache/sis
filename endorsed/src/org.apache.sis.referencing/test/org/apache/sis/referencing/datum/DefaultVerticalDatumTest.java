@@ -46,7 +46,7 @@ import org.opengis.referencing.datum.RealizationMethod;
  *
  * @author  Martin Desruisseaux (Geomatys)
  */
-@SuppressWarnings("deprecation")
+@SuppressWarnings({"exports", "deprecation"})
 public final class DefaultVerticalDatumTest extends TestCase {
     /**
      * Creates a new test case.

@@ -221,6 +221,7 @@ public class ReferenceResolver {
                 reasonIfNull = Errors.Keys.CanNotResolveAsAbsolutePath_1;
                 object = null;
             } else {
+                // Access control verified by the default implementation of `resolveExternal(…)`.
                 object = resolveExternal(context, source);
                 reasonIfNull = 0;
             }

@@ -85,6 +85,7 @@ public final class DefaultProjectedCRSTest extends TestCase.WithLogs {
         verifyParameters(crs.getConversionFromBase().getParameterValues());
         assertEquals(2, crs.getCoordinateSystem().getDimension(), "dimension");
         loggings.assertNoUnexpectedLog();
+        assertNoWarning();
     }
 
     /**
@@ -98,6 +99,7 @@ public final class DefaultProjectedCRSTest extends TestCase.WithLogs {
         verifyParameters(crs.getConversionFromBase().getParameterValues());
         assertEquals(3, crs.getCoordinateSystem().getDimension(), "dimension");
         loggings.assertNoUnexpectedLog();
+        assertNoWarning();
     }
 
     /**
@@ -111,6 +113,7 @@ public final class DefaultProjectedCRSTest extends TestCase.WithLogs {
                              "Should not accept a three-dimensional base CRS with two-dimensional CS.");
         assertMessageContains(e, "derivedCS");
         loggings.assertNoUnexpectedLog();
+        assertNoWarning();
     }
 
     /**
@@ -187,6 +190,7 @@ public final class DefaultProjectedCRSTest extends TestCase.WithLogs {
                 crs);
 
         loggings.assertNoUnexpectedLog();
+        assertNoWarning();
     }
 
     /**
@@ -219,6 +223,7 @@ public final class DefaultProjectedCRSTest extends TestCase.WithLogs {
                 crs);
 
         loggings.assertNoUnexpectedLog();
+        assertNoWarning();
     }
 
     /**
@@ -254,6 +259,7 @@ public final class DefaultProjectedCRSTest extends TestCase.WithLogs {
                 crs);
 
         loggings.assertNoUnexpectedLog();
+        assertNoWarning();
     }
 
     /**
@@ -293,6 +299,7 @@ public final class DefaultProjectedCRSTest extends TestCase.WithLogs {
                 crs);
 
         loggings.assertNoUnexpectedLog();
+        assertNoWarning();
     }
 
     /**
@@ -350,6 +357,7 @@ public final class DefaultProjectedCRSTest extends TestCase.WithLogs {
                 crs);
 
         loggings.assertNoUnexpectedLog();
+        assertNoWarning();
     }
 
     /**
@@ -403,6 +411,7 @@ public final class DefaultProjectedCRSTest extends TestCase.WithLogs {
                 crs);
 
         loggings.assertNoUnexpectedLog();
+        assertNoWarning();
     }
 
     /**
@@ -447,6 +456,7 @@ public final class DefaultProjectedCRSTest extends TestCase.WithLogs {
 
         loggings.assertNextLogContains("semi_minor", "WGS84");
         loggings.assertNoUnexpectedLog();
+        assertNoWarning();
     }
 
     /**
@@ -485,6 +495,7 @@ public final class DefaultProjectedCRSTest extends TestCase.WithLogs {
                 crs);
 
         loggings.assertNoUnexpectedLog();
+        assertNoWarning();
     }
 
     /**
@@ -516,6 +527,7 @@ public final class DefaultProjectedCRSTest extends TestCase.WithLogs {
         final String[] ignoredAttributes = {"xmlns:*", "xsi:schemaLocation", "gml:id"};
         assertMarshalEqualsFile(openTestFile(), crs, null, 0, ignoredNodes, ignoredAttributes);
         loggings.assertNoUnexpectedLog();
+        assertNoWarning();
     }
 
     /**
@@ -535,5 +547,6 @@ public final class DefaultProjectedCRSTest extends TestCase.WithLogs {
         assertTrue (c.equals(normalized, ComparisonMode.APPROXIMATE));
         assertTrue (c.equals(normalized, ComparisonMode.ALLOW_VARIANT));
         loggings.assertNoUnexpectedLog();
+        assertNoWarning();
     }
 }

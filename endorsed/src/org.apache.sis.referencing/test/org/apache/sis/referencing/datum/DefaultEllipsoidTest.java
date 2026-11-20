@@ -34,6 +34,7 @@ import static org.apache.sis.referencing.Assertions.assertRemarksEquals;
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
  */
+@SuppressWarnings("exports")
 public final class DefaultEllipsoidTest extends TestCase {
     /**
      * Creates a new test case.
@@ -57,7 +58,7 @@ public final class DefaultEllipsoidTest extends TestCase {
      */
     @Test
     public void testGetEccentricity() {
-        final DefaultEllipsoid e = new DefaultEllipsoid(GeodeticDatumMock.WGS84.getEllipsoid());
+        final var e = new DefaultEllipsoid(GeodeticDatumMock.WGS84.getEllipsoid());
         assertEquals(6378137.0,            e.getSemiMajorAxis());           // By definition
         assertEquals(298.257223563,        e.getInverseFlattening());       // By definition
         assertEquals(0.006694379990141317, e.getEccentricitySquared());
@@ -70,7 +71,7 @@ public final class DefaultEllipsoidTest extends TestCase {
      */
     @Test
     public void testSemiMajorAxisDifference() {
-        final DefaultEllipsoid e = new DefaultEllipsoid(GeodeticDatumMock.WGS84.getEllipsoid());
+        final var e = new DefaultEllipsoid(GeodeticDatumMock.WGS84.getEllipsoid());
         assertEquals(  0, e.semiMajorAxisDifference(GeodeticDatumMock.WGS84.getEllipsoid()));
         assertEquals(251, e.semiMajorAxisDifference(GeodeticDatumMock.ED50 .getEllipsoid()));
     }
@@ -81,7 +82,7 @@ public final class DefaultEllipsoidTest extends TestCase {
      */
     @Test
     public void testFlatteningDifference() {
-        final DefaultEllipsoid e = new DefaultEllipsoid(GeodeticDatumMock.WGS84.getEllipsoid());
+        final var e = new DefaultEllipsoid(GeodeticDatumMock.WGS84.getEllipsoid());
         assertEquals(0.0,         e.flatteningDifference(GeodeticDatumMock.WGS84.getEllipsoid()));
         assertEquals(1.41927E-05, e.flatteningDifference(GeodeticDatumMock.ED50 .getEllipsoid()), 1E-10);
     }

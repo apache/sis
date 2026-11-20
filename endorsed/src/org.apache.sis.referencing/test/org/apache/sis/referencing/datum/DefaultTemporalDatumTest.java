@@ -74,7 +74,7 @@ public final class DefaultTemporalDatumTest extends TestCase {
      * @param local  whether the datum origin should be a local date.
      */
     private static DefaultTemporalDatum create(final boolean local) {
-        final var properties = new HashMap<String,Object>(4);
+        final var properties = new HashMap<String, Object>(4);
         assertNull(properties.put(IDENTIFIERS_KEY,
                 new ImmutableIdentifier(HardCodedCitations.SIS, "SIS", "MJ")));
         assertNull(properties.put(NAME_KEY, "Modified Julian"));

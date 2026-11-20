@@ -16,7 +16,6 @@
  */
 package org.apache.sis.util.resources;
 
-import java.net.URI;
 import java.io.BufferedInputStream;
 import java.io.DataInputStream;
 import java.io.IOException;
@@ -408,8 +407,6 @@ public abstract class IndexedResourceBundle extends ResourceBundle implements Lo
                     text = ((InternationalString) element).toString(getLocale());
                 }
                 replacement = CharSequences.shortSentence(text, MAX_STRING_LENGTH);
-            } else if (element instanceof URI) {
-                replacement = ((URI) element).getSchemeSpecificPart();      // For decoding encoded characters.
             } else if (element instanceof Class<?>) {
                 replacement = Classes.getShortName(getPublicType((Class<?>) element));
             } else if (element instanceof Type) {

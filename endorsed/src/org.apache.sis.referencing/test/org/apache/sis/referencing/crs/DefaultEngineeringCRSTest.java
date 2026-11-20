@@ -42,6 +42,7 @@ import static org.opengis.test.Assertions.assertAxisDirectionsEqual;
  *
  * @author  Martin Desruisseaux (Geomatys)
  */
+@SuppressWarnings("exports")
 public final class DefaultEngineeringCRSTest extends TestCase {
     /**
      * Creates a new test case.

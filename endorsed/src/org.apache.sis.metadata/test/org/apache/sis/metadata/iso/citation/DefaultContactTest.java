@@ -18,13 +18,13 @@ package org.apache.sis.metadata.iso.citation;
 
 import java.util.List;
 import java.util.Collection;
-import java.util.logging.Filter;
 import java.util.logging.LogRecord;
+import jakarta.xml.bind.JAXBException;
 import org.opengis.metadata.citation.Telephone;
-import org.apache.sis.xml.bind.Context;
 
 // Test dependencies
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.BeforeEach;
 import static org.junit.jupiter.api.Assertions.*;
 import org.apache.sis.xml.test.TestCase;
 
@@ -40,44 +40,22 @@ import org.opengis.metadata.citation.TelephoneType;
  * @author  Martin Desruisseaux (Geomatys)
  */
 @SuppressWarnings("exports")
-public final class DefaultContactTest extends TestCase implements Filter {
-    /**
-     * The resource key for the message of the warning that occurred, or {@code null} if none.
-     */
-    private Object resourceKey;
-
-    /**
-     * The parameter of the warning that occurred, or {@code null} if none.
-     */
-    private Object[] parameters;
-
+public final class DefaultContactTest extends TestCase {
     /**
      * Creates a new test case.
      */
     public DefaultContactTest() {
-    }
-
-    /**
-     * Invoked when a warning occurred while unmarshalling a test XML fragment. This method ensures that no other
-     * warning occurred before this method call (i.e. each test is allowed to cause at most one warning), then
-     * remember the warning parameters for verification by the test method.
-     *
-     * @param  warning  the warning.
-     */
-    @Override
-    public boolean isLoggable(final LogRecord warning) {
-        assertNull(resourceKey);
-        assertNull(parameters);
-        assertNotNull(resourceKey = warning.getMessage());
-        assertNotNull(parameters  = warning.getParameters());
-        return false;
+        super(true);   // This test is expected to emit some warnings.
     }
 
     /**
      * Initializes the test for catching warning messages.
+     *
+     * @throws JAXBException if an error occurred while creating the context for the test.
      */
-    private void init() {
-        context = new Context(0, null, null, null, null, null, null, null, null, null, this);
+    @BeforeEach
+    public void createContext() throws JAXBException {
+        createContext(false, null, null);
     }
 
     /**
@@ -87,13 +65,12 @@ public final class DefaultContactTest extends TestCase implements Filter {
     @Test
     @SuppressWarnings("deprecation")
     public void testSetPhones() {
-        init();
-        final DefaultTelephone   tel1 = new DefaultTelephone("00.01", TelephoneType.SMS);
-        final DefaultTelephone   tel2 = new DefaultTelephone("00.02", TelephoneType.VOICE);
-        final DefaultTelephone   tel3 = new DefaultTelephone("00.03", TelephoneType.FACSIMILE);
-        final DefaultTelephone   tel4 = new DefaultTelephone("00.04", TelephoneType.VOICE);
-        final DefaultTelephone[] tels = new DefaultTelephone[] {tel1, tel2, tel3, tel4};
-        final DefaultContact  contact = new DefaultContact();
+        final var tel1 = new DefaultTelephone("00.01", TelephoneType.SMS);
+        final var tel2 = new DefaultTelephone("00.02", TelephoneType.VOICE);
+        final var tel3 = new DefaultTelephone("00.03", TelephoneType.FACSIMILE);
+        final var tel4 = new DefaultTelephone("00.04", TelephoneType.VOICE);
+        final var tels = new DefaultTelephone[] {tel1, tel2, tel3, tel4};
+        final var contact = new DefaultContact();
         contact.setPhones(List.of(tel1, tel2, tel3, tel4));
         assertArrayEquals(tels, contact.getPhones().toArray());
         /*
@@ -101,8 +78,9 @@ public final class DefaultContactTest extends TestCase implements Filter {
          * a warning, since the ISO 19115:2003 methods cannot represent SMS numbers.
          */
         assertSame(tel2, contact.getPhone());       // Shall ignore the TelephoneType.SMS.
-        assertEquals("IgnoredPropertyAssociatedTo_1", resourceKey);
-        assertArrayEquals(new String[] {"TelephoneType.SMS"}, parameters);
+        final LogRecord warning = assertOneWarning();
+        assertEquals("IgnoredPropertyAssociatedTo_1", warning.getMessage());
+        assertArrayEquals(new String[] {"TelephoneType.SMS"}, warning.getParameters());
         verifyLegacyLists(tels);
     }
 
@@ -151,8 +129,7 @@ public final class DefaultContactTest extends TestCase implements Filter {
      */
     @SuppressWarnings("deprecation")
     private void testSetPhone(final boolean hideSIS) {
-        init();
-        final DefaultTelephone tel = new DefaultTelephone();
+        final var tel = new DefaultTelephone();
         tel.setVoices(List.of("00.02", "00.04"));
         tel.setFacsimiles(List.of("00.03"));
         final Telephone view;
@@ -170,7 +147,7 @@ public final class DefaultContactTest extends TestCase implements Filter {
         /*
          * Give the telephone to a contact, and verify that new telephone instances were created.
          */
-        final DefaultContact contact = new DefaultContact();
+        final var contact = new DefaultContact();
         contact.setPhone(view);
         verifyLegacyLists(view);
         assertArrayEquals(new DefaultTelephone[] {
@@ -178,5 +155,7 @@ public final class DefaultContactTest extends TestCase implements Filter {
                 new DefaultTelephone("00.04", TelephoneType.VOICE),
                 new DefaultTelephone("00.03", TelephoneType.FACSIMILE)
             }, contact.getPhones().toArray());
+
+        assertNoWarning();
     }
 }

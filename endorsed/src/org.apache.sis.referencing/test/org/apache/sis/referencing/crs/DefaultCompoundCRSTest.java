@@ -50,6 +50,7 @@ import static org.opengis.test.Assertions.assertAxisDirectionsEqual;
  *
  * @author  Martin Desruisseaux (Geomatys)
  */
+@SuppressWarnings("exports")
 public final class DefaultCompoundCRSTest extends TestCase {
     /**
      * The vertical CRS arbitrarily chosen in this class for the tests.
@@ -83,7 +84,7 @@ public final class DefaultCompoundCRSTest extends TestCase {
     @Test
     @SuppressWarnings("ResultOfObjectAllocationIgnored")
     public void testDuplicatedComponent() {
-        final Map<String,Object> properties = new HashMap<>(4);
+        final var properties = new HashMap<String, Object>(4);
         assertNull(properties.put(DefaultCompoundCRS.LOCALE_KEY, Locale.ENGLISH));
         assertNull(properties.put(DefaultCompoundCRS.NAME_KEY,   "3D + illegal"));
 
@@ -111,7 +112,7 @@ public final class DefaultCompoundCRSTest extends TestCase {
     @Test
     @SuppressWarnings("ResultOfObjectAllocationIgnored")
     public void testEllipsoidalHeight() {
-        final Map<String,Object> properties = new HashMap<>(4);
+        final var properties = new HashMap<String, Object>(4);
         assertNull(properties.put(DefaultCompoundCRS.LOCALE_KEY, Locale.ENGLISH));
         assertNull(properties.put(DefaultCompoundCRS.NAME_KEY,   "3D"));
 

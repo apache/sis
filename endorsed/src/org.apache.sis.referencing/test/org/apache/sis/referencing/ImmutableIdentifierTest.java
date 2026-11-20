@@ -60,7 +60,7 @@ public final class ImmutableIdentifierTest extends TestCase {
      * Returns the properties map to be used in argument to test methods.
      */
     private static Map<String,Object> properties() {
-        final var properties = new HashMap<String,Object>();
+        final var properties = new HashMap<String, Object>();
         assertNull(properties.put(CODE_KEY,            "This is a code"));
         assertNull(properties.put(AUTHORITY_KEY,       "This is an authority"));
         assertNull(properties.put(VERSION_KEY,         "This is a version"));
@@ -76,7 +76,7 @@ public final class ImmutableIdentifierTest extends TestCase {
      */
     @Test
     public void testConstructorWithStringValues() {
-        final Map<String,Object> properties = properties();
+        final Map<String, Object> properties = properties();
         final var identifier = new ImmutableIdentifier(properties);
         Validators.validate(identifier);
 
@@ -95,7 +95,7 @@ public final class ImmutableIdentifierTest extends TestCase {
      */
     @Test
     public void testConstructorWithInternationalString() {
-        final Map<String,Object> properties = properties();
+        final Map<String, Object> properties = properties();
         assertNotNull(properties.put("description", new SimpleInternationalString("Overwritten description")));
         final var identifier = new ImmutableIdentifier(properties);
         Validators.validate(identifier);
@@ -114,7 +114,7 @@ public final class ImmutableIdentifierTest extends TestCase {
      */
     @Test
     public void testConstructorWithCitation() {
-        final Map<String,Object> properties = properties();
+        final Map<String, Object> properties = properties();
         assertNotNull(properties.put(AUTHORITY_KEY, new DefaultCitation("Another authority")));
         final var identifier = new ImmutableIdentifier(properties);
         Validators.validate(identifier);
@@ -135,7 +135,7 @@ public final class ImmutableIdentifierTest extends TestCase {
      */
     @Test
     public void testPredefinedCitation() {
-        final Map<String,Object> properties = properties();
+        final Map<String, Object> properties = properties();
         assertNotNull(properties.put(AUTHORITY_KEY, Constants.EPSG));
         final var identifier = new ImmutableIdentifier(properties);
         Validators.validate(identifier);
@@ -154,7 +154,7 @@ public final class ImmutableIdentifierTest extends TestCase {
      */
     @Test
     public void testConstructorWithWrongType() {
-        final Map<String,Object> properties = properties();
+        final Map<String, Object> properties = properties();
         assertNotNull(properties.put(AUTHORITY_KEY, Locale.CANADA));
         var e = assertThrows(IllegalArgumentException.class, () -> new ImmutableIdentifier(properties));
         assertMessageContains(e, AUTHORITY_KEY);

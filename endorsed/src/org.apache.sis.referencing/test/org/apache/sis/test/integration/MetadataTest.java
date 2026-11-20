@@ -384,6 +384,7 @@ public final class MetadataTest extends TestCase.WithLogs {
         comparator.ignoreComments = true;
         comparator.compare();
         loggings.assertNoUnexpectedLog();
+        assertNoWarning();
     }
 
     /**
@@ -417,5 +418,6 @@ public final class MetadataTest extends TestCase.WithLogs {
         final DefaultMetadata expected = createHardCoded();
         assertTrue(metadata.equals(expected, ComparisonMode.DEBUG));
         loggings.assertNoUnexpectedLog();
+        assertNoWarning();
     }
 }

@@ -187,6 +187,7 @@ public final class MetadataVerticalTest extends TestCase.WithLogs {
          */
         assertMarshalEqualsFile(openTestFile(), metadata, VERSION_2007, "xmlns:*", "xsi:schemaLocation");
         loggings.assertNoUnexpectedLog();
+        assertNoWarning();
     }
 
     /**
