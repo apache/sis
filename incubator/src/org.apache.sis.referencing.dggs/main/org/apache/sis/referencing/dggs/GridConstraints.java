@@ -50,14 +50,13 @@ public final class GridConstraints extends CodeList<GridConstraints> {
     public static final GridConstraints cellEquiAngular;
 
     /**
-     * ariation in distance from a cell’s representative position to all of it’s neighboring cell’s representative
+     * Variation in distance from a cell’s representative position to all of it’s neighboring cell’s representative
      * positions in each DiscreteGlobalGrid is minimized.
      */
     public static final GridConstraints cellEquiDistant;
 
     /**
-     * Each parent cell of dimension greater than 2 has a child cell for which the cell⇐zone.representativePosition
-     * lies on each of the parent’s faces (two-Dimensional topological boundary element)
+     * Variation in interior size between all cells in each DiscreteGlobalGrid is minimized.
      */
     public static final GridConstraints cellEquiSized;
 
@@ -103,7 +102,7 @@ public final class GridConstraints extends CodeList<GridConstraints> {
     }
 
     /**
-     * Returns the sub zone order type that matches the given string, or returns a new one if none match it.
+     * Returns the grid constraint that matches the given string, or returns a new one if none match it.
      *
      * @param code the name of the code to fetch or to create.
      * @return a code matching the given name.
@@ -113,7 +112,7 @@ public final class GridConstraints extends CodeList<GridConstraints> {
     }
 
     /**
-     * Returns the sub zone order type that matches the given string, or returns a new one if none match it.
+     * Returns the grid constraint that matches the given string, or returns a new one if none match it.
      *
      * @param code the name of the code to fetch or to create.
      * @param description if not found set this description to the newly created instance

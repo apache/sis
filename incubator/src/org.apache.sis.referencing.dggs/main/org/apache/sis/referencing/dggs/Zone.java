@@ -186,7 +186,7 @@ public interface Zone extends Location, Comparable<Zone> {
      * They must be of different level and one must be a child of the other.
      *
      * @param zone not null
-     * @return true if zones are siblings
+     * @return true if one zone is an ancestor of the other
      */
     boolean overlaps(Object zone);
 

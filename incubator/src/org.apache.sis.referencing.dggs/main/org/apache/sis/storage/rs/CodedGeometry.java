@@ -29,8 +29,6 @@ import org.opengis.referencing.operation.TransformException;
 import org.opengis.util.FactoryException;
 import org.apache.sis.coverage.grid.GridExtent;
 import org.apache.sis.coverage.grid.GridGeometry;
-import org.apache.sis.coverage.grid.IncompleteGridGeometryException;
-import org.apache.sis.coverage.grid.PixelInCell;
 import org.apache.sis.geometry.Envelopes;
 import org.apache.sis.referencing.dggs.DiscreteGlobalGridReferenceSystem;
 import org.apache.sis.referencing.rs.ReferenceSystems;
@@ -66,7 +64,7 @@ public class CodedGeometry {
      * A bitmask to specify the validity of the <q>grid to RS</q> transform.
      *
      * @see #isDefined(int)
-     * @see #getGridToRS(PixelInCell)
+     * @see #getGridToRS()
      */
     public static final int GRID_TO_RS = 4;
 
@@ -108,7 +106,7 @@ public class CodedGeometry {
     /**
      * Returns the ReferenceSystem.
      *
-     * @return ReferenceSystem, never null
+     * @return ReferenceSystem, or {@code null} if undefined
      */
     public ReferenceSystem getReferenceSystem() {
         return rs;
@@ -255,19 +253,16 @@ public class CodedGeometry {
 
     /**
      * Returns {@code true} if all the properties specified by the argument are set.
-     * If this method returns {@code true}, then invoking the corresponding getter
-     * methods will not throw {@link IncompleteGridGeometryException}.
+     * If this method returns {@code true}, then the corresponding getter methods will not return {@code null}.
      *
-     * @param  bitmask  any combination of {@link #RS}, {@link #ENVELOPE}, {@link #EXTENT},
-     *         {@link #GRID_TO_RS} and derived bit masks.
-     * @return {@code true} if all specified properties are defined (i.e. invoking the
-     *         corresponding getter methods will not throw {@link IncompleteGridGeometryException}).
+     * @param  bitmask  any combination of {@link #RS}, {@link #EXTENT}, {@link #GRID_TO_RS} and {@link #GEOGRAPHIC_EXTENT}.
+     * @return {@code true} if all specified properties are defined.
      * @throws IllegalArgumentException if the specified bitmask is not a combination of known masks.
      *
      * @see #getReferenceSystem()
-     * @see #getEnvelope()
      * @see #getExtent()
      * @see #getGridToRS()
+     * @see #getGeographicExtent()
      */
     public boolean isDefined(final int bitmask) {
         if ((bitmask & ~(RS | EXTENT | GRID_TO_RS | GEOGRAPHIC_EXTENT)) != 0) {

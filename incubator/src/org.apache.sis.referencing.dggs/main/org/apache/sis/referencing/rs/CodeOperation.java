@@ -51,8 +51,6 @@ public interface CodeOperation extends IdentifiedObject {
      * Returns the <abbr>RS</abbr> to which codes are changed.
      *
      * @return the <abbr>RS</abbr> to which codes are changed.
-     *
-     * @see #getTargetEpoch()
      */
     ReferenceSystem getTargetRS();
 

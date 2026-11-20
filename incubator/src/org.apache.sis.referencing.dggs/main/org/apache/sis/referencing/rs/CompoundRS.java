@@ -57,7 +57,7 @@ public final class CompoundRS implements ReferenceSystem {
         }
 
         if (name == null) {
-            final StringBuilder sb = new StringBuilder("CompundLS [");
+            final StringBuilder sb = new StringBuilder("CompoundRS [");
             for (int i = 0, n = rss.size(); i < n; i++) {
                 final ReferenceSystem cdt = rss.get(i);
                 if (i != 0) sb.append(',');
@@ -109,13 +109,10 @@ public final class CompoundRS implements ReferenceSystem {
     }
 
     /**
-     * Returns the ordered list of <abbr>CRS</abbr> components, none of which itself compound.
-     * If this compound <abbr>CRS</abbr> contains nested compound <abbr>CRS</abbr> components,
-     * then those components are flattened recursively in a sequence of {@link SingleCRS} objects.
+     * Returns the ordered list of <abbr>RS</abbr> components, none of which itself compound.
+     * Nested compound <abbr>RS</abbr> and compound <abbr>CRS</abbr> components are flattened recursively.
      *
-     * @return the ordered list of components of this compound <abbr>CRS</abbr>, none of which itself compound.
-     *
-     * @since SIS 3.1
+     * @return the ordered list of components of this compound <abbr>RS</abbr>, none of which itself compound.
      */
     public List<ReferenceSystem> getSingleComponents() {
         var singles = new ArrayList<ReferenceSystem>(5);

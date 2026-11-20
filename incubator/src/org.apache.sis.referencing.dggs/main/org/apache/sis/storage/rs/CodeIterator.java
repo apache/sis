@@ -85,8 +85,10 @@ public interface CodeIterator {
     public abstract double getSampleDouble(int band);
 
     /**
-     * Get cell values..
+     * Get cell values.
      *
+     * @param dest array where to store the values, or {@code null} for a new array.
+     *        Its length must be at least {@link #getNumBands()}.
      * @return all band values
      */
     default int[] getCell(int[] dest) {
@@ -97,25 +99,30 @@ public interface CodeIterator {
     }
 
     /**
-     * Get cell values..
+     * Get cell values.
      *
+     * @param dest array where to store the values, or {@code null} for a new array.
+     *        Its length must be at least {@link #getNumBands()}.
      * @return all band values
      */
     default float[] getCell(float[] dest) {
         final double[] cell = getCell((double[]) null);
         if (dest == null) dest = new float[cell.length];
-        for (int i = 0; i < cell.length; i++) dest[i] = (int) cell[i];
+        for (int i = 0; i < cell.length; i++) dest[i] = (float) cell[i];
         return dest;
     }
 
     /**
      * Get cell values.
      *
+     * @param dest array where to store the values, or {@code null} for a new array.
+     *        Its length must be at least {@link #getNumBands()}.
      * @return all band values
      */
     default double[] getCell(double[] dest) {
-        if (dest == null) dest = new double[getNumBands()];
-        for (int i = 0; i < dest.length; i++) dest[i] = getSampleDouble(i);
+        final int numBands = getNumBands();
+        if (dest == null) dest = new double[numBands];
+        for (int i = 0; i < numBands; i++) dest[i] = getSampleDouble(i);
         return dest;
     }
 

@@ -112,7 +112,7 @@ public final class RefinementStrategy extends CodeList<RefinementStrategy> {
     }
 
     /**
-     * Returns the sub zone order type that matches the given string, or returns a new one if none match it.
+     * Returns the refinement strategy that matches the given string, or returns a new one if none match it.
      *
      * @param code the name of the code to fetch or to create.
      * @return a code matching the given name.
@@ -122,7 +122,7 @@ public final class RefinementStrategy extends CodeList<RefinementStrategy> {
     }
 
     /**
-     * Returns the sub zone order type that matches the given string, or returns a new one if none match it.
+     * Returns the refinement strategy that matches the given string, or returns a new one if none match it.
      *
      * @param code the name of the code to fetch or to create.
      * @param description if not found set this description to the newly created instance
