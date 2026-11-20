@@ -40,7 +40,6 @@ import org.opengis.feature.PropertyType;
 import org.opengis.filter.FilterFactory;
 import org.opengis.geometry.DirectPosition;
 import org.opengis.geometry.Envelope;
-import org.opengis.metadata.spatial.DimensionNameType;
 import org.opengis.referencing.ReferenceSystem;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import org.opengis.referencing.cs.AxisDirection;
@@ -56,6 +55,7 @@ import org.apache.sis.coverage.grid.GridCoverageBuilder;
 import org.apache.sis.coverage.grid.GridExtent;
 import org.apache.sis.coverage.grid.GridGeometry;
 import org.apache.sis.coverage.grid.GridOrientation;
+import org.apache.sis.coverage.grid.PixelInCell;
 import org.apache.sis.feature.Features;
 import org.apache.sis.feature.internal.shared.AttributeConvention;
 import org.apache.sis.filter.DefaultFilterFactory;
@@ -64,7 +64,6 @@ import org.apache.sis.maths.DataType;
 import org.apache.sis.maths.NDArrays;
 import org.apache.sis.maths.SampleSystem;
 import org.apache.sis.maths.Vector1D;
-import org.apache.sis.geometry.DirectPosition1D;
 import org.apache.sis.geometry.GeneralDirectPosition;
 import org.apache.sis.geometry.GeneralEnvelope;
 import org.apache.sis.geometry.wrapper.jts.JTS;
@@ -74,6 +73,7 @@ import org.apache.sis.referencing.dggs.DiscreteGlobalGrid;
 import org.apache.sis.referencing.dggs.DiscreteGlobalGridHierarchy;
 import org.apache.sis.referencing.dggs.DiscreteGlobalGridReferenceSystem;
 import org.apache.sis.referencing.dggs.Zone;
+import org.apache.sis.referencing.operation.transform.TransformSeparator;
 import org.apache.sis.referencing.rs.Code;
 import org.apache.sis.referencing.rs.CodeOperation;
 import org.apache.sis.referencing.rs.ReferenceSystems;
@@ -560,19 +560,16 @@ public final class DiscreteGlobalGridCoverageProcessor {
 
         try (final WritableCodeIterator iterator = target.createWritableIterator()) {
 
-            CoordinateReferenceSystem crs = source.getGridGeometry().getCoordinateReferenceSystem();
-            CoordinateSystem cs = crs.getCoordinateSystem();
-            int dimension = cs.getDimension();
+            final GridGeometry sourceGrid = source.getGridGeometry();
+            final CoordinateSystem cs = sourceGrid.getCoordinateReferenceSystem().getCoordinateSystem();
 
             int cellDimensionId = -1;
-            for (int dimIdx = 0; dimIdx < dimension; dimIdx++) {
-                CoordinateSystemAxis csa = cs.getAxis(dimIdx);
-                AxisDirection axisDirection = csa.getDirection();
-                String abbreviation = csa.getAbbreviation().toLowerCase();
-                DimensionNameType axisType = source.getGridGeometry().getExtent().getAxisType(dimIdx).orElse(null);
-
-                if (cellDimensionId == -1 && (axisDirection == AxisDirection.COLUMN_POSITIVE || Arrays.asList(CELLS_RESOURCES_NAMES).contains(abbreviation))) {
+            for (int dimIdx = 0; dimIdx < cs.getDimension(); dimIdx++) {
+                final CoordinateSystemAxis csa = cs.getAxis(dimIdx);
+                final String abbreviation = csa.getAbbreviation().toLowerCase();
+                if (csa.getDirection() == AxisDirection.COLUMN_POSITIVE || Arrays.asList(CELLS_RESOURCES_NAMES).contains(abbreviation)) {
                     cellDimensionId = dimIdx;
+                    break;
                 }
             }
 
@@ -580,15 +577,22 @@ public final class DiscreteGlobalGridCoverageProcessor {
                 throw new DataStoreException("No cell dimension found in the source raster resource.");
             }
 
-            final Envelope env = source.getGridGeometry().getEnvelope();
-            GeneralEnvelope env2 = new GeneralEnvelope(env);
-            env2.setRange(0, env.getMinimum(0), env.getMinimum(0));
-            final GridExtent extent = new GridExtent(source.getGridGeometry().getExtent().getHigh(0), 1L);
-            final GridGeometry grid = new GridGeometry(extent, env2, GridOrientation.REFLECTION_Y);
+            //keep all cells, read only the first slice of the other dimensions
+            final GridGeometry grid;
+            try {
+                final TransformSeparator separator = new TransformSeparator(sourceGrid.getGridToCRS(PixelInCell.CELL_CENTER));
+                separator.addTargetDimensions(cellDimensionId);
+                separator.separate();
+                grid = sourceGrid.derive().sliceByRatio(0, separator.getSourceDimensions()).build();
+            } catch (FactoryException ex) {
+                throw new DataStoreException(ex.getMessage(), ex);
+            }
+            //the cell coordinate is replaced for each zone, the other coordinates are on the slice
+            final GeneralDirectPosition dp = new GeneralDirectPosition(GeneralEnvelope.castOrCopy(grid.getEnvelope()).getMedian());
 
             try {
                 source.setLoadingStrategy(RasterLoadingStrategy.AT_GET_TILE_TIME);
-                final GridCoverage coverage = source.read(grid);
+                final GridCoverage coverage = source.read(grid, range);
                 final GridCoverage.Evaluator evaluator = coverage.evaluator();
                 evaluator.setNullIfOutside(true);
 
@@ -597,16 +601,7 @@ public final class DiscreteGlobalGridCoverageProcessor {
                     final Code code = gridToRS.toCode(position);
                     final Object zid = code.getOrdinate(0);
                     final Zone zone = coder.decode(zid);
-                    final long cellId = zone.getLongIdentifier();
-
-                    DirectPosition dp = new DirectPosition1D(cellId);
-
-//                    DirectPosition dp;
-//                    if (timeDimensionId != -1) {
-//                        dp = new DirectPosition2D(coverage.getCoordinateReferenceSystem(), source.getEnvelope().orElseThrow().getMinimum(0), cellId);
-//                    } else {
-//                        dp = new DirectPosition1D(cellId);
-//                    }
+                    dp.setCoordinate(cellDimensionId, zone.getLongIdentifier());
 
                     double[] values = evaluator.apply(dp);
                     if (values == null) {
@@ -651,6 +646,7 @@ public final class DiscreteGlobalGridCoverageProcessor {
             final CodeOperation op = ReferenceSystems.findOperation(dggrs, coverage.getGeometry().getReferenceSystem(), null);
             final CodeTransform toCode = dggGrid.getGridToRS();
             final CodedCoverage.CodeEvaluator eva = coverage.codeEvaluator();
+            eva.setNullIfOutside(true);
 
             final ArrayDiscreteGlobalGridCoverage target = new ArrayDiscreteGlobalGridCoverage(Names.createLocalName(null, null, "Resampled"), dggGrid, sampleDimensions.toArray(SampleDimension[]::new));
             Code tcode = null;
@@ -680,6 +676,7 @@ public final class DiscreteGlobalGridCoverageProcessor {
         final CodeOperation op = ReferenceSystems.findOperation(dggrs, coverage.getGeometry().getReferenceSystem(), null);
         final CodeTransform toCode = query.getGridToRS();
         final CodedCoverage.CodeEvaluator eva = coverage.codeEvaluator();
+        eva.setNullIfOutside(true);
 
         Code tcode = null;
         try (final WritableCodeIterator iterator = target.createWritableIterator()) {

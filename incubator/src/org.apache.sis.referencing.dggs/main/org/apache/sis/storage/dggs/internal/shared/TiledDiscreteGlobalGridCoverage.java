@@ -18,6 +18,7 @@ package org.apache.sis.storage.dggs.internal.shared;
 
 import java.util.Arrays;
 import java.util.List;
+import java.util.Objects;
 import org.opengis.coverage.CannotEvaluateException;
 import org.opengis.coverage.PointOutsideCoverageException;
 import org.opengis.geometry.DirectPosition;
@@ -80,7 +81,7 @@ public final class TiledDiscreteGlobalGridCoverage extends AbstractDiscreteGloba
 
             if (dggrs == null) {
                 dggrs = geometry.getReferenceSystem();
-            } else if (dggrs != geometry.getReferenceSystem()){
+            } else if (!dggrs.equals(geometry.getReferenceSystem())) {
                 throw new IllegalArgumentException("Tiles must have the same DGGRS");
             }
 
@@ -92,7 +93,7 @@ public final class TiledDiscreteGlobalGridCoverage extends AbstractDiscreteGloba
 
             if (relativeDepth == null) {
                 relativeDepth = geometry.getRelativeDepth();
-            } else if (relativeDepth != geometry.getRelativeDepth()){
+            } else if (!Objects.equals(relativeDepth, geometry.getRelativeDepth())) {
                 throw new IllegalArgumentException("Tiles must have the same relative depth");
             }
         }

@@ -17,10 +17,7 @@
 package org.apache.sis.storage.dggs.internal.shared;
 
 import java.util.AbstractList;
-import java.util.Iterator;
 import java.util.List;
-import java.util.ListIterator;
-import java.util.NoSuchElementException;
 import java.util.function.LongFunction;
 
 
@@ -59,11 +56,6 @@ public final class ComputedZoneIndexList extends AbstractList<Object> {
     }
 
     @Override
-    public Iterator<Object> iterator() {
-        return listIterator();
-    }
-
-    @Override
     public Object get(int index) {
         if (index < 0 || index >= count) throw new IndexOutOfBoundsException();
         return toId.apply(start + index * step);
@@ -71,16 +63,19 @@ public final class ComputedZoneIndexList extends AbstractList<Object> {
 
     @Override
     public int indexOf(Object o) {
+        final long value;
         if (o instanceof Integer i) {
-            long s = ((long) i - start) / step;
-            if (s < 0 || s >= count) return -1;
-            return (int) s;
-        } else if (o instanceof Long i) {
-            long s = (i - start) / step;
-            if (s < 0 || s >= count) return -1;
-            return (int) s;
+            value = i;
+        } else if (o instanceof Long l) {
+            value = l;
+        } else {
+            return -1;
         }
-        return -1;
+        final long delta = value - start;
+        if (delta % step != 0) return -1;
+        final long s = delta / step;
+        if (s < 0 || s >= count) return -1;
+        return (int) s;
     }
 
     @Override
@@ -89,75 +84,9 @@ public final class ComputedZoneIndexList extends AbstractList<Object> {
     }
 
     @Override
-    public ListIterator<Object> listIterator() {
-        return listIterator(0);
-    }
-
-    @Override
-    public ListIterator<Object> listIterator(int i) {
-        final Ite ite = new Ite();
-        ite.idx = i-1;
-        return ite;
-    }
-
-    @Override
     public List<Object> subList(int fromIndex, int toIndex) {
         final int nb = toIndex - fromIndex;
         return new ComputedZoneIndexList(start + step*fromIndex, step, nb, toId);
-    }
-
-    private class Ite implements ListIterator<Object> {
-
-        private int idx = -1;
-
-        @Override
-        public boolean hasNext() {
-            return idx < count;
-        }
-
-        @Override
-        public Object next() {
-            if (idx == count) throw new NoSuchElementException();
-            idx++;
-            return toId.apply(start + idx*step);
-        }
-
-        @Override
-        public boolean hasPrevious() {
-            return idx > 0;
-        }
-
-        @Override
-        public Object previous() {
-            if (idx == 0) throw new NoSuchElementException();
-            idx--;
-            return toId.apply(start + idx*step);
-        }
-
-        @Override
-        public int nextIndex() {
-            return idx + 1;
-        }
-
-        @Override
-        public int previousIndex() {
-            return idx - 1;
-        }
-
-        @Override
-        public void remove() {
-            throw new UnsupportedOperationException("Not supported.");
-        }
-
-        @Override
-        public void set(Object e) {
-            throw new UnsupportedOperationException("Not supported.");
-        }
-
-        @Override
-        public void add(Object e) {
-            throw new UnsupportedOperationException("Not supported.");
-        }
     }
 
 }
