@@ -307,7 +307,7 @@ public final class Interpolate<R> extends AbstractLookupFunction<R,Object> {
        private final Expression<R, ? extends Number> data;
 
        /**
-        * The value associated to the data.
+        * The value associated with the data.
         */
        private final Expression<R,?> value;
 
@@ -315,7 +315,7 @@ public final class Interpolate<R> extends AbstractLookupFunction<R,Object> {
         * Creates a new interpolation point.
         *
         * @param  data   the data value, usually a literal.
-        * @param  value  the value associated to the data, usually a color literal.
+        * @param  value  the value associated with the data, usually a color literal.
         */
        public InterpolationPoint(final Expression<R, ? extends Number> data, final Expression<R,?> value) {
            this.data  = Objects.requireNonNull(data,  "data");
@@ -332,9 +332,9 @@ public final class Interpolate<R> extends AbstractLookupFunction<R,Object> {
        }
 
        /**
-        * Returns the value associated to the data.
+        * Returns the value associated with the data.
         *
-        * @return the value associated to the data.
+        * @return the value associated with the data.
         */
        public Expression<R,?> getValue() {
            return value;

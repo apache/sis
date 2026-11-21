@@ -240,7 +240,7 @@ public final class ModelTiePointsTest extends TestCase {
     /**
      * Tests a grid where the last step is genuinely shorter than the other steps,
      * as in Sentinel 1 images where the tie points are spaced by 1320 pixels except
-     * the last two which are 1302 pixels apart. Contrarily to the ICEYE grids, the
+     * the last two which are 1302 pixels apart. Contrary to the ICEYE grids, the
      * spacing of this grid is not uniform up to a rounding to integers, so it has to
      * be handled by splitting the grid in parts.
      *

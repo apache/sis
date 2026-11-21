@@ -166,7 +166,7 @@ public final class AggregatedImageTest extends TestCase implements PlanarImage.O
 
     /**
      * Creates the aggregated image to test and store the image in the {@link #image} field.
-     * All other fields of this class must be initialized before to invoke this method,
+     * All other fields of this class must be initialized before invoking this method,
      * except {@link #bounds} which can be {@code null} for automatic calculation.
      *
      * @param  sources  the images to aggregate with their transforms from <em>source</em> to <em>this</em>.

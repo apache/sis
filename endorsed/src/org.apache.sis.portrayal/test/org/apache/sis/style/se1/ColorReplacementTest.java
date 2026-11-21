@@ -16,15 +16,14 @@
  */
 package org.apache.sis.style.se1;
 
+import java.awt.Color;
+import java.util.List;
+import org.apache.sis.style.se1.function.Recode;
+import org.apache.sis.style.se1.function.Recode.MapItem;
+
 // Test dependencies
 import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.*;
-
-// Specific to the geoapi-3.1 and geoapi-4.0 branches:
-import java.awt.Color;
-import java.util.List;
-import org.apache.sis.style.se1.function.Recode.MapItem;
-import org.apache.sis.style.se1.function.Recode;
 
 
 /**

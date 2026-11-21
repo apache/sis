@@ -163,7 +163,7 @@ final class GridMapping {
      *
      * <p>If this <abbr>CRS</abbr> is geographic, its axis order may be (latitude, longitude).
      * This order may or may not be consistent with the axis order of netCDF variables using this CRS.
-     * Each netCDF variable can have its own axis order and be associated to the same <abbr>CRS</abbr>,
+     * Each netCDF variable can have its own axis order and be associated with the same <abbr>CRS</abbr>,
      * so users of this <abbr>CRS</abbr> need to check anyway for change of axis order.</p>
      *
      * @see #crs()

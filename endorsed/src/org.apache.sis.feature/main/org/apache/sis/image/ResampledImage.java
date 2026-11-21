@@ -75,10 +75,10 @@ import static org.apache.sis.image.internal.shared.ImageUtilities.LOGGER;
  *
  * <h2>Interpolated image <i>versus</i> aggregated image</h2>
  * The algorithm used by this class (coordinates transformed from <em>this</em> to <em>source</em> image)
- * is suitable to interpolations, which are themselves suitable to both upsampling (higher resolution) and
+ * is suitable for interpolations, which are themselves suitable for both upsampling (higher resolution) and
  * downsampling (lower resolution).
  * An algorithm using transforms in the opposite direction (from <em>source</em> image to <em>this</em> image)
- * is also possible, but is more suitable to aggregation methods such as weighted average, median or mode,
+ * is also possible, but is more suitable for aggregation methods such as weighted average, median or mode,
  * which are themselves better suited to downsampling rather than upsampling.
  * That alternative approach is handled by the {@link AggregatedImage} class.
  *
