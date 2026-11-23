@@ -85,7 +85,7 @@ public interface DiscreteGlobalGridResource extends CodedResource {
         try {
             coder.setPrecision(coverageResolution, null);
             final DiscreteGlobalGrid grid = dggrs.getGridSystem().getHierarchy().getGrids().get(coder.getPrecisionLevel());
-            zones = grid.getZones(domain.getEnvelope(dggrs.getGridSystem().getCrs()));
+            zones = grid.getZones(domain.getEnvelope(dggrs.getGridSystem().getCoordinateReferenceSystem()));
         } catch (IncommensurableException | TransformException ex) {
             throw new DataStoreException(ex);
         }

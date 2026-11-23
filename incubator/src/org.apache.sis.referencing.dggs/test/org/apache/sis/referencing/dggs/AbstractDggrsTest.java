@@ -197,7 +197,7 @@ public abstract class AbstractDggrsTest {
         final List<Zone> rootZoneIds = dggrs.getGridSystem().getHierarchy().getGrids().get(0).getZones().toList();
         final DiscreteGlobalGridReferenceSystem.Coder coder = dggrs.createCoder();
 
-        final GeodeticCalculator calculator = GeodeticCalculator.create(dggrs.getGridSystem().getCrs());
+        final GeodeticCalculator calculator = GeodeticCalculator.create(dggrs.getGridSystem().getCoordinateReferenceSystem());
 
         for (Zone zone : rootZoneIds) {
             final List<Zone> candidates = zone.getChildrenAtRelativeDepth(3).toList();

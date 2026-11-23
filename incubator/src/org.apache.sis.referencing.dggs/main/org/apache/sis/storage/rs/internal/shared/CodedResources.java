@@ -16,14 +16,19 @@
  */
 package org.apache.sis.storage.rs.internal.shared;
 
+import java.util.ArrayList;
 import java.util.List;
 import org.opengis.referencing.ReferenceSystem;
+import org.opengis.util.FactoryException;
+import org.opengis.util.GenericName;
+import org.apache.sis.coverage.SampleDimension;
 import org.apache.sis.coverage.grid.DisjointExtentException;
 import org.apache.sis.coverage.grid.IllegalGridGeometryException;
 import org.apache.sis.referencing.dggs.DiscreteGlobalGridReferenceSystem;
 import org.apache.sis.referencing.rs.ReferenceSystems;
 import org.apache.sis.storage.DataStoreException;
 import org.apache.sis.storage.NoSuchDataException;
+import org.apache.sis.storage.rs.CodedCoverage;
 import org.apache.sis.storage.rs.CodedGeometry;
 import org.apache.sis.storage.rs.CodedResource;
 
@@ -36,6 +41,48 @@ import org.apache.sis.storage.rs.CodedResource;
 public final class CodedResources {
 
     private CodedResources(){}
+
+    /**
+     * Returns a view of the given coverage with only the given bands, in the given order.
+     *
+     * @param  name      name of the view.
+     * @param  coverage  the coverage to view.
+     * @param  range     indices of the bands to keep, or {@code null} or empty for all bands.
+     * @return the coverage itself if no range is specified, otherwise a view on the selected bands.
+     * @throws DataStoreException if the view cannot be created.
+     * @throws IndexOutOfBoundsException if a band index is out of bounds.
+     */
+    public static CodedCoverage selectBands(final GenericName name, final CodedCoverage coverage, final int... range)
+            throws DataStoreException
+    {
+        if (range == null || range.length == 0) {
+            return coverage;
+        }
+        try {
+            return new ReorderCodedCoverage(name, coverage, range);
+        } catch (FactoryException ex) {
+            throw new DataStoreException(ex.getMessage(), ex);
+        }
+    }
+
+    /**
+     * Returns the sample dimensions at the given indices, in the given order.
+     *
+     * @param  bands  all sample dimensions.
+     * @param  range  indices of the bands to keep, or {@code null} or empty for all bands.
+     * @return the selected sample dimensions.
+     * @throws IndexOutOfBoundsException if a band index is out of bounds.
+     */
+    public static List<SampleDimension> selectBands(final List<SampleDimension> bands, final int... range) {
+        if (range == null || range.length == 0) {
+            return bands;
+        }
+        final List<SampleDimension> selected = new ArrayList<>(range.length);
+        for (final int band : range) {
+            selected.add(bands.get(band));
+        }
+        return selected;
+    }
 
     /**
      * Aligns a query on the resource geometry.

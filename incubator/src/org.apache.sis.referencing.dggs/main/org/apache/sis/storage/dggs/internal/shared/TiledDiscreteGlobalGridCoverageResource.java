@@ -104,7 +104,7 @@ public abstract class TiledDiscreteGlobalGridCoverageResource extends AbstractRe
         }
 
         try {
-            return new TiledDiscreteGlobalGridCoverage(tiles.toArray(CodedCoverage[]::new));
+            return CodedResources.selectBands(null, new TiledDiscreteGlobalGridCoverage(tiles.toArray(CodedCoverage[]::new)), range);
         } catch (TransformException ex) {
             throw new DataStoreException(ex);
         }

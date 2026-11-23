@@ -109,8 +109,10 @@ public abstract class AbstractZone<T extends DiscreteGlobalGridReferenceSystem> 
     @Override
     public boolean overlaps(Object zone) {
         final Zone cdt = dggrs.getGridSystem().getHierarchy().getZone(zone);
-        if (cdt.getLocationType().getRefinementLevel() == getLocationType().getRefinementLevel()) return false;
-        throw new UnsupportedOperationException("Not supported yet."); // Generated from nbfs://nbhost/SystemFileSystem/Templates/Classes/Code/GeneratedMethodBody
+        final int depth = cdt.getLocationType().getRefinementLevel() - getLocationType().getRefinementLevel();
+        if (depth > 0) return isAncestorOf(cdt, depth);
+        if (depth < 0) return isDescendantOf(cdt, -depth);
+        return false;
     }
 
     @Override

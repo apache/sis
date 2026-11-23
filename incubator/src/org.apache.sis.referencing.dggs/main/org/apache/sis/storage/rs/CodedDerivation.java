@@ -374,7 +374,7 @@ public class CodedDerivation {
         coder.setPrecision(GridAsDiscreteGlobalGridResource.computeAverageResolution(grid), null);
         final DiscreteGlobalGrid dgg = dggrs.getGridSystem().getHierarchy().getGrids().get(coder.getPrecisionLevel());
         final List<Object> zoneIds;
-        try (Stream<Zone> zones = dgg.getZones(grid.getEnvelope(dggrs.getGridSystem().getCrs()))) {
+        try (Stream<Zone> zones = dgg.getZones(grid.getEnvelope(dggrs.getGridSystem().getCoordinateReferenceSystem()))) {
             zoneIds = zones.map(Zone::getIdentifier).toList();
         }
         if (zoneIds.isEmpty()) throw new DisjointExtentException("Area of interest does not intersect any zone");

@@ -148,7 +148,7 @@ public final class ReferenceSystems {
     public static CoordinateReferenceSystem getLeaningCRS(ReferenceSystem rs) throws FactoryException {
         if (rs instanceof CoordinateReferenceSystem crs) return crs;
         if (rs instanceof CompoundRS drs) return drs.getLeaningCrs();
-        if (rs instanceof DiscreteGlobalGridReferenceSystem dggrs) return dggrs.getGridSystem().getCrs();
+        if (rs instanceof DiscreteGlobalGridReferenceSystem dggrs) return dggrs.getGridSystem().getCoordinateReferenceSystem();
 
         final List<ReferenceSystem> singleComponents = ReferenceSystems.getSingleComponents(rs, true);
         final List<CoordinateReferenceSystem> crss = new ArrayList<>(singleComponents.size()+1);
@@ -157,7 +157,7 @@ public final class ReferenceSystems {
             if (srs instanceof CoordinateReferenceSystem crs) {
                 crss.add(crs);
             } else if (srs instanceof DiscreteGlobalGridReferenceSystem dggrs) {
-                crss.add(dggrs.getGridSystem().getCrs());
+                crss.add(dggrs.getGridSystem().getCoordinateReferenceSystem());
             } else if (srs instanceof ReferencingByIdentifiers rbi) {
                 crss.add(CommonCRS.WGS84.normalizedGeographic());
             } else {
@@ -219,7 +219,7 @@ public final class ReferenceSystems {
 
             } catch (FactoryException ex) {
                 //do nothing
-                throw new FactoryException("No mapping found from " + source + " to " + target);
+                throw new FactoryException("No mapping found from " + source + " to " + target, ex);
             }
         }
 

@@ -66,7 +66,7 @@ public abstract class AbstractDiscreteGlobalGrid<T extends AbstractDiscreteGloba
     private synchronized boolean initTransform() {
         if (crs != null) return crsToId != null;
 
-        crs = hierarchy.dggrs.getGridSystem().getCrs();
+        crs = hierarchy.dggrs.getGridSystem().getCoordinateReferenceSystem();
         crsDim = crs.getCoordinateSystem().getDimension();
         if (!hierarchy.dggrs.getZonalSystem().supportUInt64Form()) return false;
 

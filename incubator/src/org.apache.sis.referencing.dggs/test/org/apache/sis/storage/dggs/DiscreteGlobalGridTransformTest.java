@@ -20,6 +20,7 @@ import java.util.List;
 import org.apache.sis.referencing.dggs.DiscreteGlobalGridReferenceSystem;
 import org.apache.sis.referencing.dggs.Zone;
 import org.apache.sis.referencing.dggs.s2.S2Dggrs;
+import org.apache.sis.referencing.dggs.smc.SmcDggrs;
 import org.apache.sis.referencing.rs.Code;
 
 // Test dependencies
@@ -56,6 +57,28 @@ public class DiscreteGlobalGridTransformTest {
         for (int i = 0; i < 8; i++) {
             assertEquals(i, transform.toGrid(new Code(dggrs, zoneIds.get(i)))[0], "Grid position");
         }
+    }
+
+    /**
+     * Tests that transforms on the same zone identifiers are equal only if they use the same reference system.
+     * The two SMC systems use the same identifiers, but the second one has a rotated pole.
+     */
+    @Test
+    public void testEqualsComparesReferenceSystem() throws Exception {
+        final DiscreteGlobalGridReferenceSystem smc = new SmcDggrs();
+        final DiscreteGlobalGridReferenceSystem rotated = new SmcDggrs("SMC rotated", null, 0, -90, 45, 30, 8, 6, 10, 135);
+        assertNotEquals(smc, rotated);
+        final Object[] ids = smc.getGridSystem().getHierarchy().getGrids().get(0).getZones().limit(2).map(Zone::getIdentifier).toArray();
+
+        assertEquals   (DiscreteGlobalGridTransform.unstructured(smc, ids), DiscreteGlobalGridTransform.unstructured(smc, ids));
+        assertNotEquals(DiscreteGlobalGridTransform.unstructured(smc, ids), DiscreteGlobalGridTransform.unstructured(rotated, ids));
+
+        assertEquals   (DiscreteGlobalGridTransform.subZone(smc, ids[0], 1), DiscreteGlobalGridTransform.subZone(smc, ids[0], 1));
+        assertEquals   (DiscreteGlobalGridTransform.subZone(smc, ids[0], 1).hashCode(), DiscreteGlobalGridTransform.subZone(smc, ids[0], 1).hashCode());
+        assertNotEquals(DiscreteGlobalGridTransform.subZone(smc, ids[0], 1), DiscreteGlobalGridTransform.subZone(rotated, ids[0], 1));
+
+        assertEquals   (DiscreteGlobalGridTransform.subZones(smc, ids, 1), DiscreteGlobalGridTransform.subZones(smc, ids, 1));
+        assertNotEquals(DiscreteGlobalGridTransform.subZones(smc, ids, 1), DiscreteGlobalGridTransform.subZones(rotated, ids, 1));
     }
 
     /**

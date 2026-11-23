@@ -27,7 +27,6 @@ import org.opengis.referencing.operation.MathTransform;
 import org.opengis.referencing.operation.NoninvertibleTransformException;
 import org.opengis.referencing.operation.TransformException;
 import org.opengis.util.FactoryException;
-import org.apache.sis.referencing.CRS;
 import org.apache.sis.referencing.NamedIdentifier;
 import org.apache.sis.referencing.gazetteer.ReferencingByIdentifiers;
 import org.apache.sis.referencing.rs.Code;
@@ -303,31 +302,33 @@ public final class CodeOperations {
 
     public static final class CrsToCrs implements CodeOperation {
 
-        private final CoordinateOperation op;
+        private final CoordinateReferenceSystem sourceCrs;
+        private final CoordinateReferenceSystem targetCrs;
         private final MathTransform transform;
 
         public CrsToCrs(CoordinateOperation op) {
-            this.op = op;
-            transform = op.getMathTransform();
+            this(op.getSourceCRS(), op.getTargetCRS(), op.getMathTransform());
+        }
+
+        private CrsToCrs(CoordinateReferenceSystem sourceCrs, CoordinateReferenceSystem targetCrs, MathTransform transform) {
+            this.sourceCrs = sourceCrs;
+            this.targetCrs = targetCrs;
+            this.transform = transform;
         }
 
         @Override
         public ReferenceSystem getSourceRS() {
-            return op.getSourceCRS();
+            return sourceCrs;
         }
 
         @Override
         public ReferenceSystem getTargetRS() {
-            return op.getTargetCRS();
+            return targetCrs;
         }
 
         @Override
         public CodeOperation inverse() throws NoninvertibleTransformException {
-            try {
-                return new CrsToCrs(CRS.findOperation(op.getTargetCRS(), op.getSourceCRS(), null));
-            } catch (FactoryException ex) {
-                throw new NoninvertibleTransformException(ex);
-            }
+            return new CrsToCrs(targetCrs, sourceCrs, transform.inverse());
         }
 
         @Override

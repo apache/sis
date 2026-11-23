@@ -158,7 +158,7 @@ public final class DiscreteGlobalGridSystems {
      *
      */
     public static List<Zone> firstIntersect(DiscreteGlobalGridReferenceSystem dggrs, Envelope env) throws TransformException {
-        final GeneralEnvelope genv = new GeneralEnvelope(Envelopes.transform(env, dggrs.getGridSystem().getCrs()));
+        final GeneralEnvelope genv = new GeneralEnvelope(Envelopes.transform(env, dggrs.getGridSystem().getCoordinateReferenceSystem()));
 
         try (Stream<Zone> stream = dggrs.getGridSystem().getHierarchy().getGrids().get(0).getZones()) {
             final S2Polygon polygon = S2.toS2Polygon(genv);

@@ -128,15 +128,17 @@ public final class Code {
     }
 
     public DirectPosition toDirectPosition() throws TransformException, FactoryException {
-        final ReferenceSystem rs = getReferenceSystem();
         double[] position = new double[0];
-        final List<ReferenceSystem> singleComponents = ReferenceSystems.getSingleComponents(rs, true);
-        for (int i = 0; i < singleComponents.size(); i++) {
-            final ReferenceSystem srs = singleComponents.get(i);
+        int offset = 0;
+        for (final ReferenceSystem srs : ReferenceSystems.getSingleComponents(rs, true)) {
             if (srs instanceof CoordinateReferenceSystem crs) {
-                position = ArraysExt.concatenate(position, new double[]{((Number)getOrdinate(i)).doubleValue()});
+                final double[] coordinates = new double[crs.getCoordinateSystem().getDimension()];
+                for (int i = 0; i < coordinates.length; i++) {
+                    coordinates[i] = ((Number) ordinates[offset++]).doubleValue();
+                }
+                position = ArraysExt.concatenate(position, coordinates);
             } else if (srs instanceof DiscreteGlobalGridReferenceSystem dggrs) {
-                Zone zone = dggrs.getGridSystem().getHierarchy().getZone(getOrdinate(i));
+                final Zone zone = dggrs.getGridSystem().getHierarchy().getZone(ordinates[offset++]);
                 position = ArraysExt.concatenate(position, zone.getPosition().getCoordinates());
             } else {
                 throw new UnsupportedOperationException("todo");

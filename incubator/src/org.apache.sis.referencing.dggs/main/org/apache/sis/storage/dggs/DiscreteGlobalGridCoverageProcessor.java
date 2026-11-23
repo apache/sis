@@ -91,6 +91,7 @@ import org.apache.sis.storage.rs.CodedGeometry;
 import org.apache.sis.storage.rs.WritableCodeIterator;
 import org.apache.sis.storage.rs.internal.shared.AddDimCodedCoverage;
 import org.apache.sis.storage.rs.internal.shared.ArrayCodedCoverage;
+import org.apache.sis.storage.rs.internal.shared.CodedResources;
 import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.Utilities;
 import org.apache.sis.util.iso.Names;
@@ -214,14 +215,7 @@ public final class DiscreteGlobalGridCoverageProcessor {
      */
     public CodedCoverage resample(GridCoverageResource source, DiscreteGlobalGridGeometry gridGeometry, int ... range) throws DataStoreException, TransformException {
         final List<Object> zones = gridGeometry.getZoneIds();
-        List<SampleDimension> sampleDimensions = source.getSampleDimensions();
-        if (range != null && range.length != 0) {
-            final List<SampleDimension> selected = new ArrayList<>();
-            for (int i = 0; i < range.length; i++) {
-                selected.add(sampleDimensions.get(range[i]));
-            }
-            sampleDimensions = selected;
-        }
+        final List<SampleDimension> sampleDimensions = CodedResources.selectBands(source.getSampleDimensions(), range);
 
         final List<Array> samples = new ArrayList<>();
         final double[] nans = new double[sampleDimensions.size()];
@@ -340,7 +334,7 @@ public final class DiscreteGlobalGridCoverageProcessor {
         final FilterFactory<Feature, Object, Object> ff = DefaultFilterFactory.forFeatures();
         // todo FIX SIS !!!!!!
         projections.add(new FeatureQuery.NamedExpression(ff.property(AttributeConvention.GEOMETRY), AttributeConvention.GEOMETRY));
-        //projections.add(new FeatureQuery.NamedExpression(ff.function("ST_Transform", ff.property(AttributeConvention.GEOMETRY), ff.literal(dggrs.getGridSystem().getCrs())), AttributeConvention.GEOMETRY_PROPERTY));
+        //projections.add(new FeatureQuery.NamedExpression(ff.function("ST_Transform", ff.property(AttributeConvention.GEOMETRY), ff.literal(dggrs.getGridSystem().getCoordinateReferenceSystem())), AttributeConvention.GEOMETRY_PROPERTY));
         sampleDimensions.forEach((n) -> projections.add(new FeatureQuery.NamedExpression(ff.property(n.getName().toString()), n.getName())));
         final FeatureQuery query = new FeatureQuery();
         query.setSelection(env);
@@ -358,7 +352,7 @@ public final class DiscreteGlobalGridCoverageProcessor {
         MathTransform trs;
         try { //todo remove when SIS bug is fixed
             final CoordinateReferenceSystem srcCrs = FeatureExt.getCRS(featureSet.getType());
-            final CoordinateReferenceSystem targetCrs = dggrs.getGridSystem().getCrs();
+            final CoordinateReferenceSystem targetCrs = dggrs.getGridSystem().getCoordinateReferenceSystem();
             if (!Utilities.equalsIgnoreMetadata(srcCrs, targetCrs)) {
                 trs = CRS.findOperation(srcCrs, targetCrs, null).getMathTransform();
             } else {
@@ -533,15 +527,7 @@ public final class DiscreteGlobalGridCoverageProcessor {
      */
     public CodedCoverage resampleZonalCoverage(GridCoverageResource source, DiscreteGlobalGridGeometry gridGeometry, int... range) throws DataStoreException, TransformException {
         final List<Object> zones = gridGeometry.getZoneIds();
-
-        List<SampleDimension> sampleDimensions = source.getSampleDimensions();
-        if (range != null && range.length != 0) {
-            final List<SampleDimension> selected = new ArrayList<>();
-            for (int i = 0; i < range.length; i++) {
-                selected.add(sampleDimensions.get(range[i]));
-            }
-            sampleDimensions = selected;
-        }
+        final List<SampleDimension> sampleDimensions = CodedResources.selectBands(source.getSampleDimensions(), range);
 
         final List<Array> samples = new ArrayList<>();
         final double[] nans = new double[sampleDimensions.size()];
@@ -641,7 +627,7 @@ public final class DiscreteGlobalGridCoverageProcessor {
 
             final DiscreteGlobalGridReferenceSystem dggrs = dggGrid.getReferenceSystem();
             final DiscreteGlobalGridHierarchy dggh = dggrs.getGridSystem().getHierarchy();
-            final List<SampleDimension> sampleDimensions = coverage.getSampleDimensions();
+            final List<SampleDimension> sampleDimensions = CodedResources.selectBands(coverage.getSampleDimensions(), range);
 
             final CodeOperation op = ReferenceSystems.findOperation(dggrs, coverage.getGeometry().getReferenceSystem(), null);
             final CodeTransform toCode = dggGrid.getGridToRS();
@@ -658,9 +644,9 @@ public final class DiscreteGlobalGridCoverageProcessor {
                         code.setOrdinate(0, dggh.toTextIdentifier(code.getOrdinate(0)));
                     }
                     tcode = op.transform(code, tcode);
-                    double[] values = eva.apply(tcode);
+                    final double[] values = eva.apply(tcode);
                     if (values != null) {
-                        iterator.setCell(values);
+                        iterator.setCell(selectValues(values, range));
                     }
                 }
             }
@@ -670,7 +656,7 @@ public final class DiscreteGlobalGridCoverageProcessor {
 
         //general case
         final ReferenceSystem dggrs = query.getReferenceSystem();
-        final List<SampleDimension> sampleDimensions = coverage.getSampleDimensions();
+        final List<SampleDimension> sampleDimensions = CodedResources.selectBands(coverage.getSampleDimensions(), range);
         final CodedCoverage target = new ArrayCodedCoverage(Names.createLocalName(null, null, "Resampled"), query, sampleDimensions.toArray(SampleDimension[]::new));
 
         final CodeOperation op = ReferenceSystems.findOperation(dggrs, coverage.getGeometry().getReferenceSystem(), null);
@@ -684,13 +670,29 @@ public final class DiscreteGlobalGridCoverageProcessor {
                 final int[] gridPosition = iterator.getPosition();
                 final Code code = toCode.toCode(gridPosition);
                 tcode = op.transform(code, tcode);
-                double[] values = eva.apply(tcode);
+                final double[] values = eva.apply(tcode);
                 if (values != null) {
-                    iterator.setCell(values);
+                    iterator.setCell(selectValues(values, range));
                 }
             }
         }
 
         return target;
+    }
+
+    /**
+     * Returns the values at the given indices.
+     *
+     * @param  range  indices of the bands to keep, or {@code null} or empty for all bands.
+     */
+    private static double[] selectValues(final double[] values, final int[] range) {
+        if (range == null || range.length == 0) {
+            return values;
+        }
+        final double[] selected = new double[range.length];
+        for (int i = 0; i < range.length; i++) {
+            selected[i] = values[range[i]];
+        }
+        return selected;
     }
 }

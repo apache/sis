@@ -110,7 +110,7 @@ public abstract class AbstractCodedCoverage extends CodedCoverage{
         final List<CoordinateReferenceSystem> ccrs = new ArrayList<>();
         for (int i = 0, n = singleRS.size(); i < n ;i++) {
             if (i == horizontalRsIndex) {
-                ccrs.add(horizontalRs.getGridSystem().getCrs());
+                ccrs.add(horizontalRs.getGridSystem().getCoordinateReferenceSystem());
             } else {
                 ccrs.add((CoordinateReferenceSystem) singleRS.get(i));
             }

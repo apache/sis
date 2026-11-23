@@ -119,7 +119,7 @@ public final class CodeTransforms {
         }
 
         @Override
-        public ReferenceSystem getRS() {
+        public ReferenceSystem getReferenceSystem() {
             return rs;
         }
 
@@ -185,7 +185,7 @@ public final class CodeTransforms {
         }
 
         @Override
-        public ReferenceSystem getRS() {
+        public ReferenceSystem getReferenceSystem() {
             return grid.isDefined(GridGeometry.CRS) ? grid.getCoordinateReferenceSystem() : null;
         }
 
@@ -309,7 +309,7 @@ public final class CodeTransforms {
         }
 
         @Override
-        public ReferenceSystem getRS() {
+        public ReferenceSystem getReferenceSystem() {
             return rs;
         }
 
@@ -389,11 +389,11 @@ public final class CodeTransforms {
             this.trs2 = trs2;
             dimension1 = trs1.getDimension();
             dimension = dimension1 + trs2.getDimension();
-            rs = ReferenceSystems.createCompound(trs1.getRS(), trs2.getRS());
+            rs = ReferenceSystems.createCompound(trs1.getReferenceSystem(), trs2.getReferenceSystem());
         }
 
         @Override
-        public ReferenceSystem getRS() {
+        public ReferenceSystem getReferenceSystem() {
             return rs;
         }
 

@@ -62,15 +62,16 @@ public final class MemoryCodedResource extends AbstractResource implements Coded
     @Override
     public CodedCoverage read(CodedGeometry geometry, int... range) throws DataStoreException {
         geometry = CodedResources.align(this, geometry);
-        if (geometry.equals(coverage.getGeometry())) {
-            return coverage;
+        CodedCoverage result = coverage;
+        if (!geometry.equals(coverage.getGeometry())) {
+            //view restricted to the requested cells
+            try {
+                result = new ResampledCodedCoverage(name, coverage, geometry);
+            } catch (FactoryException ex) {
+                throw new DataStoreException(ex.getMessage(), ex);
+            }
         }
-        //view restricted to the requested cells
-        try {
-            return new ResampledCodedCoverage(name, coverage, geometry);
-        } catch (FactoryException ex) {
-            throw new DataStoreException(ex.getMessage(), ex);
-        }
+        return CodedResources.selectBands(name, result, range);
     }
 
 }

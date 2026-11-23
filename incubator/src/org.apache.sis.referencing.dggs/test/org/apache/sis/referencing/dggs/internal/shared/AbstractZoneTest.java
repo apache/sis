@@ -16,6 +16,8 @@
  */
 package org.apache.sis.referencing.dggs.internal.shared;
 
+import java.util.List;
+import org.opengis.referencing.operation.TransformException;
 import org.apache.sis.referencing.dggs.DiscreteGlobalGridReferenceSystem;
 import org.apache.sis.referencing.dggs.Zone;
 import org.apache.sis.referencing.dggs.s2.S2Dggrs;
@@ -32,16 +34,31 @@ import org.junit.jupiter.api.Test;
  */
 public class AbstractZoneTest {
 
+    private final DiscreteGlobalGridReferenceSystem dggrs = new S2Dggrs();
+
+    /**
+     * Returns the first two S2 faces.
+     */
+    private List<Zone> faces() throws TransformException {
+        return dggrs.getGridSystem().getHierarchy().getGrids().get(0).getZones().limit(2).toList();
+    }
+
+    /**
+     * Returns the first child of the given zone.
+     */
+    private static Zone firstChild(Zone zone) {
+        return zone.getChildren().iterator().next();
+    }
+
     /**
      * Tests {@link AbstractZone#isAncestorOf(Object, int)} and {@link AbstractZone#isDescendantOf(Object, int)}
      * with a maximum depth equal to or greater than the actual depth.
      */
     @Test
     public void testAncestorAndDescendant() throws Exception {
-        final DiscreteGlobalGridReferenceSystem dggrs = new S2Dggrs();
-        final Zone face = dggrs.getGridSystem().getHierarchy().getGrids().get(0).getZones().findFirst().orElseThrow();
-        final Zone child = face.getChildren().iterator().next();
-        final Zone grandChild = child.getChildren().iterator().next();
+        final Zone face = faces().get(0);
+        final Zone child = firstChild(face);
+        final Zone grandChild = firstChild(child);
 
         assertTrue (face.isAncestorOf(child, 1));
         assertTrue (face.isAncestorOf(child, 5));
@@ -50,5 +67,25 @@ public class AbstractZoneTest {
         assertTrue (face.isAncestorOf(grandChild, 5));
         assertFalse(child.isAncestorOf(face, 5));
         assertTrue (grandChild.isDescendantOf(face, 5));
+    }
+
+    /**
+     * Tests {@link AbstractZone#overlaps(Object)} in both directions, at different depths.
+     */
+    @Test
+    public void testOverlaps() throws Exception {
+        final List<Zone> faces = faces();
+        final Zone face = faces.get(0);
+        final Zone child = firstChild(face);
+        final Zone grandChild = firstChild(child);
+        final Zone otherChild = firstChild(faces.get(1));
+
+        assertTrue (face.overlaps(child));
+        assertTrue (child.overlaps(face));
+        assertTrue (face.overlaps(grandChild));
+        assertTrue (grandChild.overlaps(face));
+        assertFalse(face.overlaps(face));
+        assertFalse(face.overlaps(otherChild));
+        assertFalse(otherChild.overlaps(face));
     }
 }

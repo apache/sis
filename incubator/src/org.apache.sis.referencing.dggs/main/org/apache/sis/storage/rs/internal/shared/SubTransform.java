@@ -31,7 +31,7 @@ public abstract class SubTransform implements CodeTransform {
     public Code toCode(int[] gridPosition) throws TransformException {
         final Object[] ordinates = new Object[getDimension()];
         toAddress(gridPosition, ordinates, 0);
-        return new Code(getRS(), ordinates);
+        return new Code(getReferenceSystem(), ordinates);
     }
 
     @Override

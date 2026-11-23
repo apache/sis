@@ -124,7 +124,7 @@ public abstract class IndexedDiscreteGlobalGridCoverage extends AbstractDiscrete
             final Rectangle imgRect = new Rectangle(width, height);
             final Area bbox = new Area(imgRect);
 
-            final MathTransform zoneToCrs = CRS.findOperation(dggrs.getGridSystem().getCrs(), tileArea.getCoordinateReferenceSystem(), null).getMathTransform();
+            final MathTransform zoneToCrs = CRS.findOperation(dggrs.getGridSystem().getCoordinateReferenceSystem(), tileArea.getCoordinateReferenceSystem(), null).getMathTransform();
             final MathTransform zoneToGrid = MathTransforms.concatenate(zoneToCrs, gridToCRS.inverse());
 
             //prepare the coverage

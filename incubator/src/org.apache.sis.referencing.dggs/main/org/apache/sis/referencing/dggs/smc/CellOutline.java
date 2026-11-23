@@ -167,7 +167,7 @@ final class CellOutline {
             west  = -180;
             east  = 180;
         }
-        final GeneralEnvelope envelope = new GeneralEnvelope(dggs.getCrs());
+        final GeneralEnvelope envelope = new GeneralEnvelope(dggs.getCoordinateReferenceSystem());
         envelope.setRange(0, west, east);
         envelope.setRange(1, south, north);
         return envelope;

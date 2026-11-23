@@ -16,9 +16,7 @@
  */
 package org.apache.sis.referencing.dggs;
 
-import java.io.IOException;
 import java.net.URI;
-import java.net.URISyntaxException;
 import java.util.List;
 import java.util.Map;
 import javax.measure.IncommensurableException;
@@ -39,23 +37,28 @@ import org.apache.sis.referencing.gazetteer.ReferencingByIdentifiers;
  */
 public abstract class DiscreteGlobalGridReferenceSystem extends ReferencingByIdentifiers {
 
+    /**
+     * The owner of this system, created when first needed.
+     */
     private Party party;
-    private boolean partyCreated = false;
 
     public DiscreteGlobalGridReferenceSystem(Map<String, ?> properties, LocationType[] types) {
         super(properties, types);
     }
 
+    /**
+     * Returns an organisation named after this system, with a logo showing a grid of this system on a globe.
+     * The organisation is created on the first call after the construction of this system.
+     *
+     * <ul>
+     *   <li>Returns {@code null} if invoked during construction, before the grid system is available.
+     *       The parent constructor does that for location types without owner.</li>
+     * </ul>
+     */
     @Override
-    public Party getOverallOwner() {
-        if (!partyCreated) {
-            partyCreated = true;
-            try {
-                party = DiscreteGlobalGridReferenceSystems.createParty(getName().getCode(), getGridSystem());
-                if (party == null) partyCreated = false;
-            } catch (TransformException | IOException | URISyntaxException ex) {
-                //do nothing
-            }
+    public synchronized Party getOverallOwner() {
+        if (party == null) {
+            party = DiscreteGlobalGridReferenceSystems.createParty(getName().getCode(), getGridSystem());
         }
         return party;
     }

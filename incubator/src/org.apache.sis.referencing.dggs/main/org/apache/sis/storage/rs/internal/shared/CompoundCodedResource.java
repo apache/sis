@@ -17,6 +17,7 @@
 package org.apache.sis.storage.rs.internal.shared;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
@@ -40,6 +41,8 @@ import org.apache.sis.storage.DataStoreException;
 import org.apache.sis.storage.rs.CodedCoverage;
 import org.apache.sis.storage.rs.CodedGeometry;
 import org.apache.sis.storage.rs.CodedResource;
+import org.apache.sis.util.ArraysExt;
+import org.apache.sis.util.iso.Names;
 import static org.apache.sis.storage.rs.CodedGeometry.compound;
 
 
@@ -51,7 +54,18 @@ public final class CompoundCodedResource extends AbstractResource implements Cod
 
     private final GenericName name;
     private final List<CodedResource> resources;
-    private List<SampleDimension> sampleDimensions;
+    private final List<SampleDimension> sampleDimensions;
+
+    /**
+     * For each band of this resource, the index of the resource providing it.
+     */
+    private final int[] bandToResource;
+
+    /**
+     * For each band of this resource, the band index in the resource providing it.
+     */
+    private final int[] bandToResourceBand;
+
     private final CodedGeometry geometry;
 
 
@@ -60,13 +74,14 @@ public final class CompoundCodedResource extends AbstractResource implements Cod
         this.name = name;
         this.resources = resources;
 
-        sampleDimensions = new ArrayList<>();
+        final List<SampleDimension> bands = new ArrayList<>();
+        final List<Integer> resourceOfBands = new ArrayList<>();
+        final List<Integer> bandsInResources = new ArrayList<>();
 
         //create the sum of all dimensions in the grid geometry
-
-
         ReferenceSystem rs = resources.get(0).getGridGeometry().getReferenceSystem();
-        for (CodedResource cr : resources) {
+        for (int r = 0; r < resources.size(); r++) {
+            final CodedResource cr = resources.get(r);
             final String crName = cr.getIdentifier().get().tip().toString();
             final CodedGeometry gridGeom = cr.getGridGeometry();
 
@@ -74,15 +89,19 @@ public final class CompoundCodedResource extends AbstractResource implements Cod
                 rs = null;
             }
 
-            for (SampleDimension sd : cr.getSampleDimensions()) {
-                final String attName = sd.getName().toString();
-                final String finalName = crName+":"+attName;
-                sampleDimensions.add(new SampleDimension.Builder().setName(finalName).build());
+            final List<SampleDimension> sds = cr.getSampleDimensions();
+            for (int b = 0; b < sds.size(); b++) {
+                final SampleDimension sd = sds.get(b);
+                bands.add(ReorderCodedCoverage.rename(sd, Names.createLocalName(null, null, crName + ":" + sd.getName())));
+                resourceOfBands.add(r);
+                bandsInResources.add(b);
             }
         }
 
         geometry = new CodedGeometry(rs, null, null, null);
-        sampleDimensions = Collections.unmodifiableList(sampleDimensions);
+        sampleDimensions = Collections.unmodifiableList(bands);
+        bandToResource = resourceOfBands.stream().mapToInt(Integer::intValue).toArray();
+        bandToResourceBand = bandsInResources.stream().mapToInt(Integer::intValue).toArray();
     }
 
     @Override
@@ -103,16 +122,47 @@ public final class CompoundCodedResource extends AbstractResource implements Cod
     @Override
     public CodedCoverage read(CodedGeometry geometry, int... range) throws DataStoreException {
         /*
+         * Only the resources providing at least one requested band are read,
+         * each one with only the bands it provides, in the order they are requested.
+         * The coverages are stacked, then reordered in the requested order
+         * and renamed with the band names of this resource.
+         */
+        final int[] bands = (range == null || range.length == 0) ? ArraysExt.range(0, sampleDimensions.size()) : range;
+        final int[] coverageOfResource = new int[resources.size()];
+        Arrays.fill(coverageOfResource, -1);
+        final List<CodedResource> used = new ArrayList<>();
+        final List<List<Integer>> usedBands = new ArrayList<>();       // Indices in this resource.
+        for (final int band : bands) {
+            final int r = bandToResource[band];
+            if (coverageOfResource[r] < 0) {
+                coverageOfResource[r] = used.size();
+                used.add(resources.get(r));
+                usedBands.add(new ArrayList<>());
+            }
+            final List<Integer> resourceBands = usedBands.get(coverageOfResource[r]);
+            if (!resourceBands.contains(band)) {
+                resourceBands.add(band);
+            }
+        }
+        final List<Integer> stacked = usedBands.stream().flatMap(List::stream).toList();
+        final int[] reorder = new int[bands.length];
+        final GenericName[] bandNames = new GenericName[bands.length];
+        for (int i = 0; i < bands.length; i++) {
+            reorder[i] = stacked.indexOf(bands[i]);
+            bandNames[i] = sampleDimensions.get(bands[i]).getName();
+        }
+        /*
          * Do not align the query on this resource geometry : it has no extent and no transform,
          * aligning would only add undefined components, resulting in a geometry without extent.
          * Each resource aligns the query on its own geometry.
          */
         try {
-            final CodedCoverage[] coverages = new CodedCoverage[resources.size()];
+            final CodedCoverage[] coverages = new CodedCoverage[used.size()];
             final CodedGeometry[] geometries = new CodedGeometry[coverages.length + 1];
             geometries[0] = geometry;
             for (int i = 0; i < coverages.length; i++) {
-                coverages[i] = resources.get(i).read(geometry);
+                final int[] resourceRange = usedBands.get(i).stream().mapToInt((band) -> bandToResourceBand[band]).toArray();
+                coverages[i] = used.get(i).read(geometry, resourceRange);
                 geometries[i+1] = coverages[i].getGeometry();
             }
             //sources may have added dimensions which are not in the query, aggregate them
@@ -124,10 +174,10 @@ public final class CompoundCodedResource extends AbstractResource implements Cod
             }
             for (int i = 0; i < coverages.length; i++) {
                 if (!target.equals(coverages[i].getGeometry())) {
-                    coverages[i] = new ResampledCodedCoverage(resources.get(i).getIdentifier().get(), coverages[i], target);
+                    coverages[i] = new ResampledCodedCoverage(used.get(i).getIdentifier().get(), coverages[i], target);
                 }
             }
-            return new CompoundCodedCoverage(name, coverages, sampleDimensions);
+            return new ReorderCodedCoverage(name, new CompoundCodedCoverage(name, coverages), reorder, bandNames);
         } catch (FactoryException | TransformException ex) {
             throw new DataStoreException(ex.getMessage(), ex);
         }

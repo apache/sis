@@ -44,11 +44,11 @@ public abstract class DiscreteGlobalGridTransform extends SubTransform {
         return new Unstructured(dggrs, zoneIds);
     }
 
-    public static DiscreteGlobalGridTransform.SubZoneTransform subZone(DiscreteGlobalGridReferenceSystem dggrs, Object baseZoneId, Integer relativeDepth) {
+    public static DiscreteGlobalGridTransform.SubZoneTransform subZone(DiscreteGlobalGridReferenceSystem dggrs, Object baseZoneId, int relativeDepth) {
         return new SubZoneTransform(dggrs, baseZoneId, relativeDepth);
     }
 
-    public static DiscreteGlobalGridTransform.SubZoneTransforms subZones(DiscreteGlobalGridReferenceSystem dggrs, Object[] baseZoneIds, Integer relativeDepth) {
+    public static DiscreteGlobalGridTransform.SubZoneTransforms subZones(DiscreteGlobalGridReferenceSystem dggrs, Object[] baseZoneIds, int relativeDepth) {
         final SubZoneTransform[] subZones = new SubZoneTransform[baseZoneIds.length];
         for (int i = 0; i < subZones.length; i++) {
             subZones[i] = new SubZoneTransform(dggrs, baseZoneIds[i], relativeDepth);
@@ -59,6 +59,10 @@ public abstract class DiscreteGlobalGridTransform extends SubTransform {
 
     protected final DiscreteGlobalGridReferenceSystem dggrs;
     protected final Object[] baseZoneIds;
+
+    /**
+     * Depth of the zones relative to the base zones, or {@code null} for unstructured transforms.
+     */
     protected final Integer relativeDepth;
 
     public DiscreteGlobalGridTransform(DiscreteGlobalGridReferenceSystem dggrs, Object[] baseZoneIds, Integer relativeDepth) {
@@ -68,7 +72,7 @@ public abstract class DiscreteGlobalGridTransform extends SubTransform {
     }
 
     @Override
-    public DiscreteGlobalGridReferenceSystem getRS() {
+    public DiscreteGlobalGridReferenceSystem getReferenceSystem() {
         return dggrs;
     }
 
@@ -160,6 +164,7 @@ public abstract class DiscreteGlobalGridTransform extends SubTransform {
         @Override
         public int hashCode() {
             int hash = 7;
+            hash = 37 * hash + Objects.hashCode(this.dggrs);
             hash = 37 * hash + Arrays.deepHashCode(this.zids);
             return hash;
         }
@@ -176,7 +181,7 @@ public abstract class DiscreteGlobalGridTransform extends SubTransform {
                 return false;
             }
             final Unstructured other = (Unstructured) obj;
-            return Arrays.deepEquals(this.zids, other.zids);
+            return Objects.equals(this.dggrs, other.dggrs) && Arrays.deepEquals(this.zids, other.zids);
         }
     }
 
@@ -187,7 +192,7 @@ public abstract class DiscreteGlobalGridTransform extends SubTransform {
         private Object[] zids;
         private final Map<Object,Integer> index = new HashMap<>();
 
-        private SubZoneTransform(DiscreteGlobalGridReferenceSystem dggrs, Object baseZoneId, Integer relativeDepth) {
+        private SubZoneTransform(DiscreteGlobalGridReferenceSystem dggrs, Object baseZoneId, int relativeDepth) {
             super(dggrs, new Object[]{baseZoneId}, relativeDepth);
             this.extent = new GridExtent(null, 0, dggrs.getGridSystem().getHierarchy().getZone(baseZoneId).countChildrenAtRelativeDepth(relativeDepth), false);
         }
@@ -274,8 +279,9 @@ public abstract class DiscreteGlobalGridTransform extends SubTransform {
         @Override
         public int hashCode() {
             int hash = 7;
-            hash = 37 * hash + this.getRelativeDepth();
-            hash = 37 * hash + Arrays.deepHashCode(this.getBaseZoneIds());
+            hash = 37 * hash + Objects.hashCode(this.dggrs);
+            hash = 37 * hash + Objects.hashCode(this.relativeDepth);
+            hash = 37 * hash + Arrays.deepHashCode(this.baseZoneIds);
             return hash;
         }
 
@@ -291,10 +297,9 @@ public abstract class DiscreteGlobalGridTransform extends SubTransform {
                 return false;
             }
             final SubZoneTransform other = (SubZoneTransform) obj;
-            if (!Objects.equals(this.getRelativeDepth(), other.getRelativeDepth())) {
-                return false;
-            }
-            return Arrays.deepEquals(this.getBaseZoneIds(), other.getBaseZoneIds());
+            return Objects.equals(this.dggrs, other.dggrs)
+                && Objects.equals(this.relativeDepth, other.relativeDepth)
+                && Arrays.deepEquals(this.baseZoneIds, other.baseZoneIds);
         }
     }
 
@@ -396,8 +401,9 @@ public abstract class DiscreteGlobalGridTransform extends SubTransform {
         @Override
         public int hashCode() {
             int hash = 7;
-            hash = 37 * hash + this.getRelativeDepth();
-            hash = 37 * hash + Arrays.deepHashCode(this.getBaseZoneIds());
+            hash = 37 * hash + Objects.hashCode(this.dggrs);
+            hash = 37 * hash + Objects.hashCode(this.relativeDepth);
+            hash = 37 * hash + Arrays.deepHashCode(this.baseZoneIds);
             return hash;
         }
 
@@ -413,10 +419,9 @@ public abstract class DiscreteGlobalGridTransform extends SubTransform {
                 return false;
             }
             final SubZoneTransforms other = (SubZoneTransforms) obj;
-            if (!Objects.equals(this.getRelativeDepth(), other.getRelativeDepth())) {
-                return false;
-            }
-            return Arrays.deepEquals(this.getBaseZoneIds(), other.getBaseZoneIds());
+            return Objects.equals(this.dggrs, other.dggrs)
+                && Objects.equals(this.relativeDepth, other.relativeDepth)
+                && Arrays.deepEquals(this.baseZoneIds, other.baseZoneIds);
         }
     }
 

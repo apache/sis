@@ -43,6 +43,8 @@ public class DiscreteGlobalGridReferenceSystemsTest {
         assertInstanceOf(S2Dggrs.class,  DiscreteGlobalGridReferenceSystems.forCode("https://www.opengis.net/def/dggrs/S2"));
         assertInstanceOf(SmcDggrs.class, DiscreteGlobalGridReferenceSystems.forCode("SMC"));
         assertInstanceOf(SmcDggrs.class, DiscreteGlobalGridReferenceSystems.forCode("smc"));
+        assertInstanceOf(SmcDggrs.class, DiscreteGlobalGridReferenceSystems.forCode("sMc"));
+        assertInstanceOf(S2Dggrs.class,  DiscreteGlobalGridReferenceSystems.forCode("https://www.opengis.net/def/dggrs/S2/"));
         assertThrows(NoSuchIdentifierException.class, () -> DiscreteGlobalGridReferenceSystems.forCode("unknown"));
     }
 }

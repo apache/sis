@@ -16,13 +16,6 @@
  */
 package org.apache.sis.referencing.dggs;
 
-import java.awt.BasicStroke;
-import java.awt.Color;
-import java.awt.Graphics2D;
-import java.awt.LinearGradientPaint;
-import java.awt.Rectangle;
-import java.awt.RenderingHints;
-import java.awt.image.BufferedImage;
 import java.awt.image.RenderedImage;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
@@ -34,24 +27,20 @@ import java.util.Base64;
 import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
-import java.util.Map;
+import java.util.NavigableMap;
 import java.util.ServiceLoader;
 import java.util.Set;
 import java.util.TreeMap;
-import java.util.stream.Stream;
+import java.util.logging.Logger;
 import javax.imageio.ImageIO;
-import org.locationtech.jts.geom.Coordinate;
 import org.opengis.metadata.citation.Organisation;
-import org.opengis.referencing.operation.Matrix;
 import org.opengis.referencing.operation.TransformException;
 import org.opengis.util.FactoryException;
 import org.opengis.util.NoSuchIdentifierException;
-import org.apache.sis.image.ImageProcessor;
-import org.apache.sis.image.Interpolation;
 import org.apache.sis.metadata.iso.citation.DefaultOrganisation;
 import org.apache.sis.metadata.iso.identification.DefaultBrowseGraphic;
-import org.apache.sis.referencing.operation.transform.AbstractMathTransform2D;
-import org.apache.sis.storage.dggs.DiscreteGlobalGridSystems;
+import org.apache.sis.referencing.dggs.internal.shared.GlobeLogo;
+import org.apache.sis.util.logging.Logging;
 
 
 /**
@@ -61,9 +50,15 @@ import org.apache.sis.storage.dggs.DiscreteGlobalGridSystems;
 public final class DiscreteGlobalGridReferenceSystems {
 
     /**
-     * Store and keep DGGRS list in a consistant order.
+     * Logger for the problems which do not prevent the use of the systems.
      */
-    private static final Map<String, DiscreteGlobalGridReferenceSystemFactory> DGGRS = new TreeMap<>();
+    private static final Logger LOGGER = Logger.getLogger("org.apache.sis.referencing.dggs");
+
+    /**
+     * Store and keep DGGRS list in a consistant order.
+     * Keys are compared ignoring case.
+     */
+    private static final NavigableMap<String, DiscreteGlobalGridReferenceSystemFactory> DGGRS = new TreeMap<>(String.CASE_INSENSITIVE_ORDER);
 
     static {
         final Iterator<DiscreteGlobalGridReferenceSystemFactory> ite = ServiceLoader.load(DiscreteGlobalGridReferenceSystemFactory.class).iterator();
@@ -92,6 +87,11 @@ public final class DiscreteGlobalGridReferenceSystems {
      * - [ogc-dggrs:IVEA4R]
      * - https://www.opengis.net/def/dggrs/IVEA4R
      *
+     * <ul>
+     *   <li>The identifier is case-insensitive.</li>
+     *   <li>Trailing slashes of URLs are ignored.</li>
+     * </ul>
+     *
      * @param code
      * @return
      * @throws org.opengis.util.FactoryException
@@ -99,111 +99,47 @@ public final class DiscreteGlobalGridReferenceSystems {
      */
     public static DiscreteGlobalGridReferenceSystem forCode(String code) throws FactoryException, NoSuchIdentifierException{
         if (code.startsWith("http")) {
-            code = code.substring(code.lastIndexOf('/') + 1);
+            int end = code.length();
+            while (end > 0 && code.charAt(end - 1) == '/') end--;
+            code = code.substring(code.lastIndexOf('/', end - 1) + 1, end);
         }
         if (code.startsWith("[ogc-dggrs:") && code.endsWith("]")) {
             code = code.substring(11, code.length() - 1);
         }
-
-        DiscreteGlobalGridReferenceSystemFactory cdt = DGGRS.get(code);
-        if (cdt == null) {
-            code = code.toUpperCase();
-            cdt = DGGRS.get(code);
+        final DiscreteGlobalGridReferenceSystemFactory factory = DGGRS.get(code);
+        if (factory == null) {
+            throw new NoSuchIdentifierException("Unknown identifier", code);
         }
-        if (cdt == null) {
-            code = code.toLowerCase();
-            cdt = DGGRS.get(code);
-        }
-        if (cdt != null) {
-            return cdt.createDggrs(code, null, null);
-        } else {
-            throw new NoSuchIdentifierException("Unknown identifier",code);
-        }
-
+        // Give the identifier as declared by the factory.
+        return factory.createDggrs(DGGRS.floorKey(code), null, null);
     }
 
-    public static Organisation createParty(String name, DiscreteGlobalGridSystem dggs) throws TransformException, IOException, URISyntaxException {
+    /**
+     * Creates the organisation owning a discrete global grid system.
+     * Its logo shows a grid of the system on a globe.
+     * If the logo cannot be created, it is omitted and the reason is logged.
+     *
+     * @param  name  name of the organisation.
+     * @param  dggs  the discrete global grid system, or {@code null}.
+     * @return the organisation, or {@code null} if the system is null.
+     */
+    public static Organisation createParty(final String name, final DiscreteGlobalGridSystem dggs) {
         if (dggs == null) return null;
-        return new DefaultOrganisation(name, new DefaultBrowseGraphic(toBase64(createLogo(dggs))), null, null);
-    }
-
-    private static RenderedImage createLogo(DiscreteGlobalGridSystem dggs) throws TransformException {
-
-        final double scale = 2.0;
-        final BufferedImage image = new BufferedImage((int)(360*scale), (int)(180*scale), BufferedImage.TYPE_INT_ARGB);
-        final Graphics2D g = image.createGraphics();
-        g.setPaint(new LinearGradientPaint(0, 0, image.getWidth(), 0, new float[]{0,1}, new Color[]{Color.BLACK, Color.WHITE}));
-        g.fillRect(0, 0, image.getWidth(), image.getHeight());
-        g.setColor(Color.WHITE);
-        g.setStroke(new BasicStroke(1));
-        g.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
-
-        try (Stream<Zone> zones = dggs.getHierarchy().getGrids().get(1).getZones()) {
-            final Iterator<Zone> iterator = zones.iterator();
-            while (iterator.hasNext()) {
-                Zone zone = iterator.next();
-                org.locationtech.jts.geom.Polygon polygon = DiscreteGlobalGridSystems.toJTSPolygon(zone.getGeographicExtent());
-                Coordinate[] coordinates = polygon.getExteriorRing().getCoordinates();
-                for (int i = 0; i < coordinates.length-1; i++) {
-                    double x0 = coordinates[i].x;
-                    double y0 = coordinates[i].y;
-                    double x1 = coordinates[i+1].x;
-                    double y1 = coordinates[i+1].y;
-                    g.drawLine((int)((x0 + 180)*scale),
-                               (int)((y0 + 90)*scale),
-                               (int)((x1 + 180)*scale),
-                               (int)((y1 + 90)*scale));
-
-                }
-            }
+        DefaultBrowseGraphic logo = null;
+        try {
+            logo = new DefaultBrowseGraphic(toBase64(GlobeLogo.create(dggs)));
+        } catch (TransformException | IOException | URISyntaxException | RuntimeException ex) {
+            // The logo is decorative, its failure shall not prevent the creation of the organisation.
+            Logging.unexpectedException(LOGGER, DiscreteGlobalGridReferenceSystems.class, "createParty", ex);
         }
-        g.dispose();
-
-        final ImageProcessor p = new ImageProcessor();
-        p.setInterpolation(Interpolation.LANCZOS);
-
-        RenderedImage imageSphere = p.resample(image, new Rectangle(0, 0, 256, 256), new AbstractMathTransform2D() {
-            @Override
-            public Matrix transform(double[] source, int inIdx, double[] target, int outIdx, boolean bln) throws TransformException {
-
-
-                double x = source[inIdx];
-                double y = source[inIdx+1];
-                double sx = (x - 128.0) / 128.0;
-                double sy = (y - 128.0) / 128.0;
-                if (Math.hypot(sx, sy) > 1) {
-                    target[outIdx] = -1000;
-                    target[outIdx+1] = -1000;
-                    return null;
-                } //out of sphere
-
-                //            z = Math.sin(latr);
-                // Math.asin(z) = latr
-                double latr = Math.asin(sy);
-
-                //                             y = Math.sin(lonr) * Math.cos(latr)
-                //            y / Math.cos(latr) = Math.sin(lonr)
-                // Math.asin(y / Math.cos(latr)) = lonr
-                double lonr = Math.asin(sx / Math.cos(latr));
-
-                double lon = Math.toDegrees(lonr);
-                double lat = Math.toDegrees(latr);
-                double lonx = (lon + 180)*scale;
-                double laty = (lat + 90)*scale;
-
-                target[outIdx] = lonx;
-                target[outIdx+1] = laty;
-
-                return null;
-            }
-        });
-
-        return imageSphere;
+        return new DefaultOrganisation(name, logo, null, null);
     }
 
     private static URI toBase64(RenderedImage image) throws IOException, URISyntaxException {
         final ByteArrayOutputStream out = new ByteArrayOutputStream();
-        boolean res = ImageIO.write(image, "png", out);
+        if (!ImageIO.write(image, "png", out)) {
+            throw new IOException("No PNG image writer available.");
+        }
         out.flush();
         byte[] bytes = out.toByteArray();
         StringBuilder sb = new StringBuilder();

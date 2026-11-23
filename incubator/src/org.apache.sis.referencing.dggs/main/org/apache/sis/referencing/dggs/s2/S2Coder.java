@@ -43,7 +43,7 @@ final class S2Coder extends DiscreteGlobalGridReferenceSystem.Coder{
 
     public S2Coder(S2Dggrs dggrs) {
         this.dggrs = dggrs;
-        this.baseCrs = this.dggrs.getGridSystem().getCrs();
+        this.baseCrs = this.dggrs.getGridSystem().getCoordinateReferenceSystem();
     }
 
     @Override

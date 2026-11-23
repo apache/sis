@@ -134,6 +134,30 @@ public class DiscreteGlobalGridCoverageProcessorTest {
     }
 
     /**
+     * Tests resampling a coded coverage with a selection of bands.
+     */
+    @Test
+    public void testResampleCodedCoverageRange() throws Exception {
+        final List<Object> zones = hierarchy.getGrids().get(1).getZones().map(Zone::getIdentifier).toList();
+        final DiscreteGlobalGridGeometry geometry = DiscreteGlobalGridGeometry.unstructured(dggrs, zones, null);
+        final ArrayDiscreteGlobalGridCoverage source = new ArrayDiscreteGlobalGridCoverage(NAME, geometry,
+                new SampleDimension.Builder().setName("a").build(),
+                new SampleDimension.Builder().setName("b").build());
+        try (WritableCodeIterator iterator = source.createWritableIterator()) {
+            while (iterator.next()) {
+                iterator.setSample(0, 10.0 * iterator.getPosition()[0]);
+                iterator.setSample(1, 20.0 * iterator.getPosition()[0]);
+            }
+        }
+        final CodedCoverage result = new DiscreteGlobalGridCoverageProcessor().resample(source, geometry, 1);
+        assertEquals(1, result.getSampleDimensions().size());
+        final CodeIterator iterator = result.createIterator();
+        while (iterator.next()) {
+            assertEquals(20.0 * iterator.getPosition()[0], iterator.getSampleDouble(0));
+        }
+    }
+
+    /**
      * Tests resampling a grid coverage whose second dimension is the zone identifier.
      * The first dimension has two slices, only the first one shall be read.
      * The source has two bands, only the second one is requested.

@@ -174,7 +174,8 @@ public final class FeatureSetAsDiscreteGlobalGridResource extends AbstractResour
         }
 
         try {
-            return processor.resample(featureSet, geometry, sampleDimensions);
+            //only the requested properties are resampled
+            return processor.resample(featureSet, geometry, CodedResources.selectBands(sampleDimensions, range));
         } catch (TransformException ex) {
             throw new DataStoreException(ex.getMessage(), ex);
         }

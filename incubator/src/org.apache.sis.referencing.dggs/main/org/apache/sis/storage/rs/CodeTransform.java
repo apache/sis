@@ -27,7 +27,7 @@ import org.apache.sis.referencing.rs.Code;
  */
 public interface CodeTransform {
 
-    ReferenceSystem getRS();
+    ReferenceSystem getReferenceSystem();
 
     int getDimension();
 

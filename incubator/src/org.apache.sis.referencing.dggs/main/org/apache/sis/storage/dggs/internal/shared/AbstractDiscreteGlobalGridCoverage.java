@@ -67,7 +67,7 @@ public abstract class AbstractDiscreteGlobalGridCoverage extends CodedCoverage{
 
     @Override
     public CoordinateReferenceSystem getCoordinateReferenceSystem() {
-        return getGeometry().getReferenceSystem().getGridSystem().getCrs();
+        return getGeometry().getReferenceSystem().getGridSystem().getCoordinateReferenceSystem();
     }
 
     @Override

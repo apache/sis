@@ -72,15 +72,16 @@ public final class MemoryDiscreteGlobalGridResource extends AbstractResource imp
     @Override
     public CodedCoverage read(CodedGeometry geometry, int... range) throws DataStoreException {
         geometry = CodedResources.align(this, geometry);
-        if (geometry.equals(coverage.getGeometry())) {
-            return coverage;
+        CodedCoverage result = coverage;
+        if (!geometry.equals(coverage.getGeometry())) {
+            //view restricted to the requested zones
+            try {
+                result = new ResampledCodedCoverage(null, coverage, geometry);
+            } catch (FactoryException ex) {
+                throw new DataStoreException(ex.getMessage(), ex);
+            }
         }
-        //view restricted to the requested zones
-        try {
-            return new ResampledCodedCoverage(null, coverage, geometry);
-        } catch (FactoryException ex) {
-            throw new DataStoreException(ex.getMessage(), ex);
-        }
+        return CodedResources.selectBands(null, result, range);
     }
 
 }

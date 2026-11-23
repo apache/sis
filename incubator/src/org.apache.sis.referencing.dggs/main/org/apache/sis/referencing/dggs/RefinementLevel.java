@@ -19,11 +19,11 @@ package org.apache.sis.referencing.dggs;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
+import java.util.Objects;
 import org.opengis.metadata.citation.Party;
 import org.opengis.metadata.extent.GeographicExtent;
 import org.opengis.referencing.gazetteer.LocationType;
 import org.opengis.util.InternationalString;
-import org.apache.sis.metadata.iso.citation.DefaultOrganisation;
 import org.apache.sis.metadata.iso.extent.DefaultGeographicBoundingBox;
 import org.apache.sis.util.SimpleInternationalString;
 
@@ -78,9 +78,12 @@ public final class RefinementLevel implements LocationType {
         return dggrs;
     }
 
+    /**
+     * Returns the owner of the reference system.
+     */
     @Override
     public Party getOwner() {
-        return new DefaultOrganisation();
+        return dggrs.getOverallOwner();
     }
 
     @Override
@@ -96,4 +99,22 @@ public final class RefinementLevel implements LocationType {
         return List.of(new RefinementLevel(dggrs, level+1));
     }
 
+    /**
+     * Returns {@code true} if the given object is a level of the same number in the same reference system.
+     */
+    @Override
+    public boolean equals(final Object obj) {
+        if (this == obj) {
+            return true;
+        }
+        if (obj instanceof RefinementLevel other) {
+            return level == other.level && Objects.equals(dggrs, other.dggrs);
+        }
+        return false;
+    }
+
+    @Override
+    public int hashCode() {
+        return 31 * Objects.hashCode(dggrs) + level;
+    }
 }

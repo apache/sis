@@ -65,7 +65,7 @@ final class S2Dgg extends AbstractDiscreteGlobalGrid<S2Dggh> {
 
     @Override
     public Zone getZone(DirectPosition dp) throws TransformException {
-        final CoordinateReferenceSystem baseCrs = hierarchy.dggrs.dggs.getCrs();
+        final CoordinateReferenceSystem baseCrs = hierarchy.dggrs.dggs.getCoordinateReferenceSystem();
         final CoordinateReferenceSystem dpcrs = dp.getCoordinateReferenceSystem();
         if (dpcrs != null && !Utilities.equalsIgnoreMetadata(baseCrs, dpcrs)) {
             MathTransform trs;

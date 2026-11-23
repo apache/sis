@@ -17,41 +17,66 @@
 package org.apache.sis.storage.rs.internal.shared;
 
 import java.util.List;
+import java.util.stream.IntStream;
+import java.util.stream.Stream;
 import org.opengis.util.FactoryException;
 import org.opengis.util.GenericName;
-import org.apache.sis.coverage.SampleDimension;
 import org.apache.sis.storage.rs.CodeIterator;
 import org.apache.sis.storage.rs.CodedCoverage;
 import org.apache.sis.storage.rs.WritableCodeIterator;
 
 
 /**
+ * Stack of the bands of several coded coverages sharing the same geometry.
+ * The bands of the first coverage come first, then the bands of the second coverage, <i>etc.</i>
  *
  * @author Johann Sorel (Geomatys)
+ *
+ * @see ReorderCodedCoverage
  */
 public final class CompoundCodedCoverage extends AbstractCodedCoverage{
 
     private final CodedCoverage[] coverages;
+
+    /**
+     * For each band of this coverage, the index of the coverage providing it.
+     */
     private final int[] bandToCoverage;
+
+    /**
+     * For each band of this coverage, the band index in the coverage providing it.
+     */
     private final int[] bandToCoverageBand;
 
-    public CompoundCodedCoverage(GenericName name, CodedCoverage[] coverages, List<SampleDimension> sampleDimensions) throws FactoryException {
-        super(name, coverages[0].getGeometry(), sampleDimensions == null ? List.of(coverages).stream().map(CodedCoverage::getSampleDimensions).flatMap(List::stream).toList() : sampleDimensions);
+    /**
+     * Creates a coverage with all the bands of the given coverages, in order.
+     * All coverages shall have the same geometry.
+     * The sample dimensions are those of the coverages.
+     */
+    public CompoundCodedCoverage(GenericName name, CodedCoverage[] coverages) throws FactoryException {
+        super(name, coverages[0].getGeometry(),
+              Stream.of(coverages).map(CodedCoverage::getSampleDimensions).flatMap(List::stream).toList());
         this.coverages = coverages;
-        this.bandToCoverage = new int[this.sampleDimensions.size()];
-        this.bandToCoverageBand = new int[bandToCoverage.length];
+        this.bandToCoverage = coverageOfBands(coverages);
+        this.bandToCoverageBand = bandsInCoverages(coverages);
+    }
 
-        int idx = 0;
-        for (int i = 0; i < coverages.length; i++) {
-            final List<SampleDimension> sds = coverages[i].getSampleDimensions();
-            int si = 0;
-            for (SampleDimension sd : sds) {
-                bandToCoverage[idx] = i;
-                bandToCoverageBand[idx] = si;
-                idx++;
-                si++;
-            }
-        }
+    /**
+     * Returns, for each band of all coverages in order, the index of the coverage providing it.
+     */
+    private static int[] coverageOfBands(final CodedCoverage[] coverages) {
+        return IntStream.range(0, coverages.length)
+                .flatMap((i) -> IntStream.generate(() -> i).limit(coverages[i].getSampleDimensions().size()))
+                .toArray();
+    }
+
+    /**
+     * Returns, for each band of all coverages in order, the band index in the coverage providing it.
+     */
+    private static int[] bandsInCoverages(final CodedCoverage[] coverages) {
+        return Stream.of(coverages)
+                .flatMapToInt((c) -> IntStream.range(0, c.getSampleDimensions().size()))
+                .toArray();
     }
 
     @Override
@@ -98,20 +123,25 @@ public final class CompoundCodedCoverage extends AbstractCodedCoverage{
             }
         }
 
+        /**
+         * Moves the first iterator to its next cell, and the other iterators to the same position.
+         * The iteration order of the coverages may differ.
+         */
         @Override
         public boolean next() {
-            boolean hasNext = false;
-            for (int i = 0; i < iterators.length; i++) {
-                hasNext = iterators[i].next();
+            if (!iterators[0].next()) {
+                return false;
             }
-            return hasNext;
+            final int[] position = iterators[0].getPosition();
+            for (int i = 1; i < iterators.length; i++) {
+                iterators[i].moveTo(position);
+            }
+            return true;
         }
 
         @Override
         public void rewind() {
-            for (int i = 0; i < iterators.length; i++) {
-                iterators[i].rewind();
-            }
+            iterators[0].rewind();
         }
 
     }

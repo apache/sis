@@ -165,7 +165,7 @@ public abstract class CodedCoverage extends BandedCoverageExt {
 
         @Override
         public CodedCoverage getCoverage() {
-            return (CodedCoverage) ceval.getCoverage();
+            return CodedCoverage.this;
         }
 
         @Override

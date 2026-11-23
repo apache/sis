@@ -75,7 +75,7 @@ public final class CompoundRS implements ReferenceSystem {
             if (srs instanceof CoordinateReferenceSystem crs) {
                 crss.add(crs);
             } else if (srs instanceof DiscreteGlobalGridReferenceSystem dggrs) {
-                crss.add(dggrs.getGridSystem().getCrs());
+                crss.add(dggrs.getGridSystem().getCoordinateReferenceSystem());
             } else if (srs instanceof ReferencingByIdentifiers rbi) {
                 crss.add(CommonCRS.WGS84.normalizedGeographic());
             } else {

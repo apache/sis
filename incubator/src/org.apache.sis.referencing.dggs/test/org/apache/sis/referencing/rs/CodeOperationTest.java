@@ -16,12 +16,20 @@
  */
 package org.apache.sis.referencing.rs;
 
+import java.util.Map;
 import org.opengis.referencing.ReferenceSystem;
+import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import org.opengis.referencing.crs.TemporalCRS;
+import org.opengis.referencing.operation.CoordinateOperation;
 import org.opengis.referencing.operation.NoninvertibleTransformException;
+import org.opengis.referencing.operation.OperationMethod;
 import org.opengis.referencing.operation.TransformException;
 import org.opengis.util.FactoryException;
+import org.apache.sis.referencing.CRS;
 import org.apache.sis.referencing.CommonCRS;
+import org.apache.sis.referencing.operation.DefaultConversion;
+import org.apache.sis.referencing.operation.transform.DefaultMathTransformFactory;
+import org.apache.sis.referencing.operation.transform.MathTransforms;
 import org.apache.sis.referencing.gazetteer.GazetteerException;
 import org.apache.sis.referencing.gazetteer.GeohashReferenceSystem;
 import org.apache.sis.referencing.gazetteer.MilitaryGridReferenceSystem;
@@ -288,6 +296,24 @@ public class CodeOperationTest {
         final CodeOperation operation = ReferenceSystems.findOperation(source, target, null);
         final Code code = operation.transform(new Code(source, "4Q FJ 12 67", 1000.0, 50.0), null);
         assertArrayEquals(new Object[]{1000.0, 50.0, "4Q FJ 12 67"}, code.getOrdinates());
+    }
+
+    /**
+     * Tests the inverse of {@link CodeOperations.CrsToCrs} when no operation can be found from the target to the source CRS.
+     * The inverse shall be built from the inverse transform.
+     */
+    @Test
+    public void crsToCrsInverseWithoutReverseOperation() throws Exception {
+        final CoordinateReferenceSystem source = CommonCRS.Engineering.GRID.crs();
+        final CoordinateReferenceSystem target = CommonCRS.Engineering.DISPLAY.crs();
+        assertThrows(FactoryException.class, () -> CRS.findOperation(target, source, null));
+
+        final OperationMethod affine = DefaultMathTransformFactory.provider().getOperationMethod("Affine");
+        final CoordinateOperation forward = new DefaultConversion(Map.of(DefaultConversion.NAME_KEY, "Scale"),
+                source, target, null, affine, MathTransforms.scale(2, 2));
+        final CodeOperation inverse = CodeOperations.CrsToCrs(forward).inverse();
+        assertSame(target, inverse.getSourceRS());
+        assertSame(source, inverse.getTargetRS());
     }
 
     /**

@@ -37,7 +37,7 @@ public interface DiscreteGlobalGridSystem {
     /**
      * @return base CRS
      */
-    CoordinateReferenceSystem getCrs();
+    CoordinateReferenceSystem getCoordinateReferenceSystem();
 
     /**
      * @return surface of the celestial body.

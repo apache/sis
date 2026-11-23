@@ -44,7 +44,7 @@ public abstract class AbstractDiscreteGlobalGridSystem implements DiscreteGlobal
     }
 
     @Override
-    public final CoordinateReferenceSystem getCrs() {
+    public final CoordinateReferenceSystem getCoordinateReferenceSystem() {
         return crs;
     }
 

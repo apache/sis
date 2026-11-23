@@ -26,6 +26,7 @@ import org.opengis.referencing.operation.MathTransform;
 import org.opengis.referencing.operation.TransformException;
 import org.opengis.util.FactoryException;
 import org.apache.sis.coverage.grid.GridExtent;
+import org.apache.sis.coverage.grid.IncompleteGridGeometryException;
 import org.apache.sis.geometries.Geometry;
 import org.apache.sis.geometries.operation.GeometryProcessor;
 import org.apache.sis.geometry.GeneralEnvelope;
@@ -70,12 +71,12 @@ public class DiscreteGlobalGridGeometry extends CodedGeometry {
         return new DiscreteGlobalGridGeometry(dggrs, extent, trs, bbox);
     }
 
-    public static DiscreteGlobalGridGeometry subZone(DiscreteGlobalGridReferenceSystem dggrs, Object baseZoneId, Integer relativeDepth) {
+    public static DiscreteGlobalGridGeometry subZone(DiscreteGlobalGridReferenceSystem dggrs, Object baseZoneId, int relativeDepth) {
         final DiscreteGlobalGridTransform.SubZoneTransform trs = DiscreteGlobalGridTransform.subZone(dggrs, baseZoneId, relativeDepth);
         return new DiscreteGlobalGridGeometry(dggrs, trs.getExtent(), trs, null);
     }
 
-    public static DiscreteGlobalGridGeometry subZones(DiscreteGlobalGridReferenceSystem dggrs, Object[] baseZoneIds, Integer relativeDepth) {
+    public static DiscreteGlobalGridGeometry subZones(DiscreteGlobalGridReferenceSystem dggrs, Object[] baseZoneIds, int relativeDepth) {
         DiscreteGlobalGridTransform.SubZoneTransforms trs = DiscreteGlobalGridTransform.subZones(dggrs, baseZoneIds, relativeDepth);
         return new DiscreteGlobalGridGeometry(dggrs, trs.getExtent(), trs, null);
     }
@@ -130,19 +131,27 @@ public class DiscreteGlobalGridGeometry extends CodedGeometry {
         return null;
     }
 
+    /**
+     * Returns the zones covering this geometry: the base zones if any, otherwise all zones.
+     *
+     * @return zone identifiers, or {@code null} if this geometry has no zone list.
+     */
+    private List<Object> coveringZoneIds() {
+        final Object[] bases = getBaseZoneIds();
+        return (bases == null || bases.length == 0) ? getZoneIds() : List.of(bases);
+    }
+
+    /**
+     * Returns the union of the zone envelopes.
+     *
+     * @return envelope of the zones, or {@code null} if this geometry has no zone.
+     */
     @Override
     public Envelope getEnvelope() {
+        final List<Object> candidates = coveringZoneIds();
+        if (candidates == null) return null;
         final DiscreteGlobalGridHierarchy hierarchy = getReferenceSystem().getGridSystem().getHierarchy();
         GeneralEnvelope all = null;
-
-        Object[] bases = getBaseZoneIds();
-        final List<Object> candidates;
-        if (bases == null || bases.length == 0) {
-            candidates = getZoneIds();
-        } else {
-            candidates = List.of(bases);
-        }
-
         for (Object zid : candidates) {
             final Zone zone = hierarchy.getZone(zid);
             final Envelope env = zone.getEnvelope();
@@ -157,11 +166,18 @@ public class DiscreteGlobalGridGeometry extends CodedGeometry {
         return all;
     }
 
+    /**
+     * Returns the union of the zone envelopes in the given CRS.
+     *
+     * @return envelope of the zones, or {@code null} if this geometry has no zone.
+     */
     @Override
     public Envelope getEnvelope(CoordinateReferenceSystem crs) throws TransformException {
         if (crs == null) return getEnvelope();
+        final List<Object> candidates = coveringZoneIds();
+        if (candidates == null) return null;
 
-        final CoordinateReferenceSystem baseCrs = getReferenceSystem().getGridSystem().getCrs();
+        final CoordinateReferenceSystem baseCrs = getReferenceSystem().getGridSystem().getCoordinateReferenceSystem();
         MathTransform trs = null;
         if (!Utilities.equalsIgnoreMetadata(baseCrs, crs)) {
             try {
@@ -174,15 +190,6 @@ public class DiscreteGlobalGridGeometry extends CodedGeometry {
         }
 
         final DiscreteGlobalGridHierarchy hierarchy = getReferenceSystem().getGridSystem().getHierarchy();
-
-        Object[] bases = getBaseZoneIds();
-        final List<Object> candidates;
-        if (bases == null || bases.length == 0) {
-            candidates = getZoneIds();
-        } else {
-            candidates = List.of(bases);
-        }
-
         GeneralEnvelope all = null;
         for (Object zid : candidates) {
             final Zone zo = hierarchy.getZone(zid);
@@ -238,15 +245,7 @@ public class DiscreteGlobalGridGeometry extends CodedGeometry {
         if (bboxComputed) return geoExtent;
         bboxComputed = true;
         final DiscreteGlobalGridReferenceSystem.Coder coder = getReferenceSystem().createCoder();
-
-        Object[] bases = getBaseZoneIds();
-        final List<Object> candidates;
-        if (bases == null || bases.length == 0) {
-            candidates = getZoneIds();
-        } else {
-            candidates = List.of(bases);
-        }
-
+        final List<Object> candidates = coveringZoneIds();
         if (candidates == null) return null;
         GeneralEnvelope all = null;
         try {
@@ -295,6 +294,8 @@ public class DiscreteGlobalGridGeometry extends CodedGeometry {
 
     /**
      * @return refinement level of zones in the coverage geometry.
+     * @throws IncompleteGridGeometryException if this geometry has no zone.
+     * @throws IllegalArgumentException if the zones are not all at the same level.
      */
     public synchronized int getRefinementLevel() {
         if (depth != null) return depth;
@@ -303,6 +304,9 @@ public class DiscreteGlobalGridGeometry extends CodedGeometry {
         //check all zone are at same depth
         final DiscreteGlobalGridReferenceSystem dggrs = getReferenceSystem();
         final List<Object> zones = getZoneIds();
+        if (zones == null || zones.isEmpty()) {
+            throw new IncompleteGridGeometryException("Geometry has no zone, the refinement level is undefined.");
+        }
         final DiscreteGlobalGridReferenceSystem.Coder coder = dggrs.createCoder();
         Integer d = null;
         try {
