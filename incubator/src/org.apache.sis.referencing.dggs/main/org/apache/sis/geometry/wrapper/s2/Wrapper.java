@@ -17,11 +17,9 @@
 package org.apache.sis.geometry.wrapper.s2;
 
 import java.util.Iterator;
-import com.google.common.geometry.S2LatLngRect;
 import com.google.common.geometry.S2Region;
 import org.opengis.geometry.DirectPosition;
 import org.apache.sis.geometry.GeneralEnvelope;
-import org.apache.sis.referencing.CommonCRS;
 import org.apache.sis.geometry.wrapper.Geometries;
 import org.apache.sis.geometry.wrapper.GeometryWrapper;
 
@@ -69,15 +67,7 @@ final class Wrapper extends GeometryWrapper {
      */
     @Override
     public GeneralEnvelope getEnvelope() {
-        final S2LatLngRect rect = geometry.getRectBound();
-        final GeneralEnvelope envelope = new GeneralEnvelope(CommonCRS.WGS84.normalizedGeographic());
-        if (rect.lat().lo() > rect.lat().hi()) {
-            envelope.setToNaN();
-        } else {
-            envelope.setRange(0, Math.toDegrees(rect.lng().lo()), Math.toDegrees(rect.lng().hi()));
-            envelope.setRange(1, Math.toDegrees(rect.lat().lo()), Math.toDegrees(rect.lat().hi()));
-        }
-        return envelope;
+        return S2.toEnvelope(geometry);
     }
 
     @Override

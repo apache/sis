@@ -55,8 +55,9 @@ public class S2Test extends AbstractDggrsTest {
         final Envelope envelope = zone.getEnvelope();
         assertEquals(-180, envelope.getMinimum(0), 0.0);
         assertEquals(-169.38034472384487, envelope.getMaximum(0), 0.0);
-        assertEquals(22.270575488008195, envelope.getMinimum(1), 0.0);
-        assertEquals(34.50852298766839, envelope.getMaximum(1), 0.0);
+        // S2 enlarges latitude bounds slightly against rounding errors.
+        assertEquals(22.270575488008195, envelope.getMinimum(1), 1e-9);
+        assertEquals(34.50852298766839, envelope.getMaximum(1), 1e-9);
 
     }
 }

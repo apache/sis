@@ -26,6 +26,7 @@ import org.locationtech.jts.geom.MultiPolygon;
 import org.locationtech.jts.geom.Polygon;
 import org.locationtech.jts.geom.impl.PackedCoordinateSequence;
 import com.google.common.geometry.S2LatLng;
+import com.google.common.geometry.S2LatLngRect;
 import com.google.common.geometry.S2Loop;
 import com.google.common.geometry.S2Point;
 import com.google.common.geometry.S2Polygon;
@@ -185,6 +186,33 @@ public final class S2 {
      */
     public static BoundingPolygon toGeographicExtent(S2Region polygon) {
         return new DefaultBoundingPolygon(Factory.INSTANCE.castOrWrap(polygon));
+    }
+
+    /**
+     * Returns the CRS:84 envelope of a S2 region.
+     * The envelope includes the edges bulging between vertices and the poles inside the region.
+     * The lower longitude is greater than the upper one if the region crosses the anti-meridian.
+     * S2 bounds are slightly enlarged to be robust to rounding errors.
+     *
+     * @param region not null
+     * @return envelope in CRS:84, NaN if the region is empty
+     */
+    public static GeneralEnvelope toEnvelope(S2Region region) {
+        final S2LatLngRect rect = region.getRectBound();
+        final GeneralEnvelope envelope = new GeneralEnvelope(CommonCRS.WGS84.normalizedGeographic());
+        if (rect.isEmpty()) {
+            envelope.setToNaN();
+        } else {
+            double west = rect.lng().lo();
+            final double east = rect.lng().hi();
+            if (west == Math.PI && east < Math.PI) {
+                // S2 writes the -180° meridian as 180°, the region does not cross the anti-meridian.
+                west = -Math.PI;
+            }
+            envelope.setRange(0, Math.toDegrees(west), Math.toDegrees(east));
+            envelope.setRange(1, Math.toDegrees(rect.lat().lo()), Math.toDegrees(rect.lat().hi()));
+        }
+        return envelope;
     }
 
     /**

@@ -50,7 +50,6 @@ import org.apache.sis.storage.rs.CodeIterator;
 
 // Test dependencies
 import static org.junit.jupiter.api.Assertions.*;
-import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 
 
@@ -173,7 +172,6 @@ public abstract class AbstractDggrsTest {
         }
     }
 
-    @Disabled //TODO does not pass for all H3 and Healpix cells yet
     @Test
     public void testSearchEnvelope() throws TransformException, IncommensurableException {
 
@@ -190,7 +188,6 @@ public abstract class AbstractDggrsTest {
 
     }
 
-    @Disabled //TODO does not pass for all A5 cells yet
     @Test
     public void testPickingInCellGeometry() throws TransformException, IncommensurableException {
 

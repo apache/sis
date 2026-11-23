@@ -27,8 +27,8 @@ import org.opengis.geometry.Envelope;
 import org.opengis.metadata.extent.GeographicExtent;
 import org.opengis.referencing.gazetteer.Location;
 import org.opengis.util.InternationalString;
-import org.apache.sis.geometries.Geometry;
-import org.apache.sis.geometry.GeneralEnvelope;
+import com.google.common.geometry.S2Polygon;
+import org.apache.sis.geometry.wrapper.s2.S2;
 import org.apache.sis.referencing.CRS;
 import org.apache.sis.referencing.CommonCRS;
 import org.apache.sis.storage.dggs.DiscreteGlobalGridSystems;
@@ -75,13 +75,20 @@ public interface Zone extends Location, Comparable<Zone> {
         return new SimpleInternationalString(getTextIdentifier().toString());
     }
 
+    /**
+     * Returns the CRS:84 envelope of the zone geographic extent.
+     * The envelope includes the edges bulging between vertices and the poles inside the zone.
+     * The lower longitude is greater than the upper one if the zone crosses the anti-meridian.
+     *
+     * @return envelope in CRS:84, the whole world if the zone has no geographic extent
+     */
     @Override
     default Envelope getEnvelope() {
-        final Geometry geometry = DiscreteGlobalGridSystems.toSISPolygon(getGeographicExtent());
-        if (geometry == null) {
+        final S2Polygon polygon = DiscreteGlobalGridSystems.toS2Polygon(getGeographicExtent());
+        if (polygon == null) {
             return CRS.getDomainOfValidity(CommonCRS.WGS84.normalizedGeographic());
         }
-        return new GeneralEnvelope(geometry.getEnvelope());
+        return S2.toEnvelope(polygon);
     }
 
     /**
