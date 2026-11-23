@@ -16,8 +16,13 @@
  */
 package org.apache.sis.referencing.dggs;
 
+import java.time.Duration;
 import java.util.Collection;
+import java.util.Optional;
 import java.util.stream.Stream;
+import javax.measure.Quantity;
+import javax.measure.quantity.Area;
+import javax.measure.quantity.Volume;
 import org.opengis.geometry.Envelope;
 import org.opengis.metadata.extent.GeographicExtent;
 import org.opengis.referencing.gazetteer.Location;
@@ -85,19 +90,19 @@ public interface Zone extends Location, Comparable<Zone> {
     String getShapeType();
 
     /**
-     * @return area of the zone, can be null if not 2D
+     * @return area of the zone, or empty if the zone is not two-dimensional.
      */
-    Double getAreaMetersSquare();
+    Optional<Quantity<Area>> getArea();
 
     /**
-     * @return volume if the zone, can be null if not 3D
+     * @return volume of the zone, or empty if the zone is not three-dimensional.
      */
-    Double volumeMetersCube();
+    Optional<Quantity<Volume>> getVolume();
 
     /**
-     * @return duration of the zone, can be null if it has no temporal dimension
+     * @return duration of the zone, or empty if the zone has no temporal dimension.
      */
-    Double temporalDurationSeconds();
+    Optional<Duration> getDuration();
 
     /**
      * @return refinement level
@@ -212,7 +217,8 @@ public interface Zone extends Location, Comparable<Zone> {
 
     /**
      * If zone have different levels, the lowest level is place first.
-     * If zone have the same level, they are sorted using the indexed identifier.
+     * If zone have the same level, they are sorted using the long identifier,
+     * or the text identifier if the hierarchy of one of the zones has no long identifiers.
      *
      * @param o to compare against
      */
@@ -220,12 +226,19 @@ public interface Zone extends Location, Comparable<Zone> {
     public default int compareTo(Zone o) {
         final int level = getLocationType().getRefinementLevel();
         final int levelOther = o.getLocationType().getRefinementLevel();
-        if (level == levelOther) {
-            return Long.compareUnsigned(getLongIdentifier(), o.getLongIdentifier());
-        } else if (level < levelOther) {
-            return -1; //place it before
-        } else {
-            return +1; //place it after
+        if (level != levelOther) {
+            return Integer.compare(level, levelOther);
         }
+        if (hasLongIdentifier(this) && hasLongIdentifier(o)) {
+            return Long.compareUnsigned(getLongIdentifier(), o.getLongIdentifier());
+        }
+        return getTextIdentifier().toString().compareTo(o.getTextIdentifier().toString());
+    }
+
+    /**
+     * Returns whether the hierarchy of the given zone has long identifiers.
+     */
+    private static boolean hasLongIdentifier(final Zone zone) {
+        return zone.getLocationType().getReferenceSystem().getGridSystem().getHierarchy().supportLongIdentifiers();
     }
 }

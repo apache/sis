@@ -52,7 +52,7 @@ public final class S2Dggrs extends DiscreteGlobalGridReferenceSystem {
     public static final String IDENTIFIER = "S2";
     public static final S2Dggrs INSTANCE = new S2Dggrs();
 
-    private static final ZonalReferenceSystem ZRS = new DefaultZonalReferenceSystem("default", "", true);
+    private static final ZonalReferenceSystem ZRS = new DefaultZonalReferenceSystem("default", "");
 
     final S2Dggs dggs;
 

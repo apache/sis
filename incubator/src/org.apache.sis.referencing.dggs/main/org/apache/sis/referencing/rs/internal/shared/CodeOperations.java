@@ -18,6 +18,8 @@ package org.apache.sis.referencing.rs.internal.shared;
 
 import java.util.Arrays;
 import java.util.List;
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 import org.opengis.geometry.DirectPosition;
 import org.opengis.referencing.ReferenceSystem;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
@@ -27,11 +29,15 @@ import org.opengis.referencing.operation.MathTransform;
 import org.opengis.referencing.operation.NoninvertibleTransformException;
 import org.opengis.referencing.operation.TransformException;
 import org.opengis.util.FactoryException;
+import org.apache.sis.geometry.GeneralDirectPosition;
+import org.apache.sis.referencing.CRS;
 import org.apache.sis.referencing.NamedIdentifier;
+import org.apache.sis.referencing.dggs.DiscreteGlobalGridReferenceSystem;
 import org.apache.sis.referencing.gazetteer.ReferencingByIdentifiers;
 import org.apache.sis.referencing.rs.Code;
 import org.apache.sis.referencing.rs.CodeOperation;
 import org.apache.sis.referencing.rs.ReferenceSystems;
+import org.apache.sis.util.Utilities;
 import org.apache.sis.util.iso.Names;
 
 // Specific to the geoapi-4.0 branch:
@@ -248,6 +254,11 @@ public final class CodeOperations {
         private final ReferencingByIdentifiers.Coder coder;
         private final CoordinateReferenceSystem leaningCrs;
 
+        /**
+         * Transforms from the CRS of the decoded positions to the leaning CRS, created when first needed.
+         */
+        private final Map<CoordinateReferenceSystem, MathTransform> toLeaningTransforms = new ConcurrentHashMap<>();
+
         public RbiToCrs(ReferencingByIdentifiers.Coder coder, CoordinateReferenceSystem leaningCrs) {
             this.coder = coder;
             this.leaningCrs = leaningCrs;
@@ -272,12 +283,42 @@ public final class CodeOperations {
             return new CrsToRbi(leaningCrs, coder);
         }
 
+        /**
+         * Decodes the identifier and returns the location position, as one ordinate per axis of the leaning CRS.
+         * Identifiers of discrete global grids may be in any type accepted by their hierarchy.
+         */
         @Override
         public Code transform(Code source, Code target) throws TransformException {
-            final Location location = coder.decode((CharSequence) source.getOrdinate(0));
-            if (target == null) target = new Code(leaningCrs, new Object[1]);
-            target.setOrdinate(0, location.getPosition());
+            final Object identifier = source.getOrdinate(0);
+            final Location location = (coder instanceof DiscreteGlobalGridReferenceSystem.Coder dggs)
+                    ? dggs.decode(identifier) : coder.decode(identifier.toString());
+            final double[] coordinates = toLeaningCrs(location.getPosition());
+            if (target == null) target = new Code(leaningCrs);
+            for (int i = 0; i < coordinates.length; i++) {
+                target.setOrdinate(i, coordinates[i]);
+            }
             return target;
+        }
+
+        /**
+         * Returns the coordinates of the given position in the leaning CRS.
+         * Positions may be in another CRS, for example UTM zones for the Military Grid Reference System.
+         */
+        private double[] toLeaningCrs(final DirectPosition position) throws TransformException {
+            final CoordinateReferenceSystem crs = position.getCoordinateReferenceSystem();
+            if (crs == null || Utilities.equalsIgnoreMetadata(crs, leaningCrs)) {
+                return position.getCoordinates();
+            }
+            MathTransform toLeaning = toLeaningTransforms.get(crs);
+            if (toLeaning == null) {
+                try {
+                    toLeaning = CRS.findOperation(crs, leaningCrs, null).getMathTransform();
+                } catch (FactoryException ex) {
+                    throw new TransformException(ex.getMessage(), ex);
+                }
+                toLeaningTransforms.put(crs, toLeaning);
+            }
+            return toLeaning.transform(position, null).getCoordinates();
         }
 
         @Override
@@ -331,11 +372,22 @@ public final class CodeOperations {
             return new CrsToCrs(targetCrs, sourceCrs, transform.inverse());
         }
 
+        /**
+         * Transforms the coordinates, given as one ordinate per axis.
+         */
         @Override
         public Code transform(Code source, Code target) throws TransformException {
-            final DirectPosition dp = transform.transform((DirectPosition) source.getOrdinate(0), null);
-            if (target == null) target = new Code(getTargetRS(), new Object[1]);
-            target.setOrdinate(0, dp);
+            final int sourceDimension = transform.getSourceDimensions();
+            final int targetDimension = transform.getTargetDimensions();
+            final double[] coordinates = new double[Math.max(sourceDimension, targetDimension)];
+            for (int i = 0; i < sourceDimension; i++) {
+                coordinates[i] = ((Number) source.getOrdinate(i)).doubleValue();
+            }
+            transform.transform(coordinates, 0, coordinates, 0, 1);
+            if (target == null) target = new Code(targetCrs);
+            for (int i = 0; i < targetDimension; i++) {
+                target.setOrdinate(i, coordinates[i]);
+            }
             return target;
         }
 
@@ -388,11 +440,20 @@ public final class CodeOperations {
             return new RbiToCrs(coder, leaningCrs);
         }
 
+        /**
+         * Encodes the coordinates, given as one ordinate per axis of the leaning CRS.
+         * Discrete global grids give zone identifiers in their native type, other systems give text.
+         */
         @Override
         public Code transform(Code source, Code target) throws TransformException {
-            final String code = coder.encode((DirectPosition) source.getOrdinate(0));
-            if (target == null) target = new Code(coder.getReferenceSystem(), new Object[1]);
-            target.setOrdinate(0, code);
+            final GeneralDirectPosition position = new GeneralDirectPosition(leaningCrs);
+            for (int i = 0; i < position.getDimension(); i++) {
+                position.setCoordinate(i, ((Number) source.getOrdinate(i)).doubleValue());
+            }
+            final Object identifier = (coder instanceof DiscreteGlobalGridReferenceSystem.Coder dggs)
+                    ? dggs.encodeIdentifier(position) : coder.encode(position);
+            if (target == null) target = new Code(coder.getReferenceSystem());
+            target.setOrdinate(0, identifier);
             return target;
         }
 

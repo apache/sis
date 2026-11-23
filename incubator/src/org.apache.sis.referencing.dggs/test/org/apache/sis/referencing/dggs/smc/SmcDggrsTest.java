@@ -83,9 +83,10 @@ public class SmcDggrsTest {
                 double area = 0;
                 for (SmcZone child : zone.getChildren()) {
                     assertEquals(zone, child.getFirstParent());
-                    area += child.getAreaMetersSquare();
+                    area += child.getArea().orElseThrow().getValue().doubleValue();
                 }
-                assertEquals(zone.getAreaMetersSquare(), area, 1e-12 * zone.getAreaMetersSquare(), zone::toString);
+                final double expected = zone.getArea().orElseThrow().getValue().doubleValue();
+                assertEquals(expected, area, 1e-12 * expected, zone::toString);
             }
         }
     }

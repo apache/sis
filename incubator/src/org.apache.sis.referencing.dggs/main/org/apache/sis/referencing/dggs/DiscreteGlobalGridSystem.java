@@ -17,6 +17,8 @@
 package org.apache.sis.referencing.dggs;
 
 import java.util.List;
+import javax.measure.Quantity;
+import javax.measure.quantity.Area;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 
 
@@ -42,7 +44,7 @@ public interface DiscreteGlobalGridSystem {
     /**
      * @return surface of the celestial body.
      */
-    double getCelestialBodySurface();
+    Quantity<Area> getCelestialBodySurface();
 
     /**
      * @return name of the DGGS base polyhedron geometry

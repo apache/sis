@@ -25,6 +25,7 @@ import org.opengis.referencing.operation.TransformException;
 import org.opengis.util.FactoryException;
 import org.apache.sis.geometry.DirectPosition2D;
 import org.apache.sis.measure.Longitude;
+import org.apache.sis.measure.Units;
 import org.apache.sis.referencing.CRS;
 import org.apache.sis.referencing.CommonCRS;
 import org.apache.sis.referencing.crs.DefaultGeographicCRS;
@@ -78,7 +79,7 @@ final class SmcDggs extends AbstractDiscreteGlobalGridSystem {
      * Returns the radius of the sphere having the surface of the celestial body.
      */
     double radius() {
-        return Math.sqrt(getCelestialBodySurface() / (4 * Math.PI));
+        return Math.sqrt(getCelestialBodySurface().to(Units.SQUARE_METRE).getValue().doubleValue() / (4 * Math.PI));
     }
 
     /**

@@ -146,9 +146,10 @@ public class SmcTest extends AbstractDggrsTest {
                 assertEquals(zone, child.getFirstParent());
                 assertTrue(child.south() >= zone.south() && child.north() <= zone.north(), child::toString);
                 assertTrue(child.west()  >= zone.west()  && child.east()  <= zone.east(),  child::toString);
-                area += child.getAreaMetersSquare();
+                area += child.getArea().orElseThrow().getValue().doubleValue();
             }
-            assertEquals(zone.getAreaMetersSquare(), area, 1e-12 * zone.getAreaMetersSquare(), zone::toString);
+            final double expected = zone.getArea().orElseThrow().getValue().doubleValue();
+            assertEquals(expected, area, 1e-12 * expected, zone::toString);
         }
     }
 

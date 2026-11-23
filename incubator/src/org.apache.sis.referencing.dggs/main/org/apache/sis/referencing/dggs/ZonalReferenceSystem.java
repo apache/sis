@@ -38,11 +38,8 @@ public interface ZonalReferenceSystem {
 
     /**
      * @return description of the zonal reference system
+     *
+     * @see DiscreteGlobalGridHierarchy#supportLongIdentifiers()
      */
     String getDescription();
-
-    /**
-     * @return true if create ZonalIdentifiers have a Long type representation
-     */
-    boolean supportUInt64Form();
 }

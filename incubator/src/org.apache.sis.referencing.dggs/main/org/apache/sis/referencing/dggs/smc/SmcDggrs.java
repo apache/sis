@@ -79,7 +79,7 @@ public final class SmcDggrs extends DiscreteGlobalGridReferenceSystem {
     static final double TOLERANCE = 1e-9;
 
     private static final ZonalReferenceSystem ZRS = new DefaultZonalReferenceSystem("default",
-            "Level, then column and row of the cell south-west corner in units of the level.", true);
+            "Level, then column and row of the cell south-west corner in units of the level.");
 
     /**
      * Longitude and latitude in degrees of the domain south-west corner, in lattice coordinates.

@@ -19,6 +19,9 @@ package org.apache.sis.referencing.dggs.s2;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
+import java.util.Optional;
+import javax.measure.Quantity;
+import javax.measure.quantity.Area;
 import com.google.common.geometry.S2Cell;
 import com.google.common.geometry.S2CellId;
 import com.google.common.geometry.S2LatLng;
@@ -71,9 +74,12 @@ final class S2Zone extends AbstractZone<S2Dggrs> {
         return "square";
     }
 
+    /**
+     * Returns the cell area, computed from its area on the unit sphere.
+     */
     @Override
-    public Double getAreaMetersSquare() {
-        return new S2Cell(new S2CellId(hash)).exactArea();
+    public Optional<Quantity<Area>> getArea() {
+        return areaFromSurfaceFraction(new S2Cell(new S2CellId(hash)).exactArea() / (4 * Math.PI));
     }
 
     @Override

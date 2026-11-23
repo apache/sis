@@ -38,7 +38,13 @@ import org.apache.sis.util.ArraysExt;
 /**
  * Holds the ordinates for geometry/area/zone/point within some reference system.
  *
-+ * synonym : ISO-19170 : 8.2.4.3.  Cell address
+ * <ul>
+ *   <li>A coordinate reference system component has one ordinate per axis, as a {@link Number}.</li>
+ *   <li>A referencing by identifiers component has one ordinate, the identifier.
+ *       Identifiers of discrete global grids may be in any type accepted by their hierarchy.</li>
+ * </ul>
+ *
+ * Synonym: ISO-19170 : 8.2.4.3. Cell address
  *
  * @author Johann Sorel (Geomatys)
  */

@@ -17,7 +17,10 @@
 package org.apache.sis.referencing.dggs.internal.shared;
 
 import java.util.List;
+import javax.measure.Quantity;
+import javax.measure.quantity.Area;
 import org.opengis.referencing.operation.TransformException;
+import org.apache.sis.measure.Units;
 import org.apache.sis.referencing.dggs.DiscreteGlobalGridReferenceSystem;
 import org.apache.sis.referencing.dggs.Zone;
 import org.apache.sis.referencing.dggs.s2.S2Dggrs;
@@ -48,6 +51,30 @@ public class AbstractZoneTest {
      */
     private static Zone firstChild(Zone zone) {
         return zone.getChildren().iterator().next();
+    }
+
+    /**
+     * Tests the surface of the celestial body: Earth surface is about 5.1×10¹⁴ m².
+     */
+    @Test
+    public void testCelestialBodySurface() {
+        final Quantity<Area> surface = dggrs.getGridSystem().getCelestialBodySurface();
+        assertEquals(Units.SQUARE_METRE, surface.getUnit());
+        assertEquals(5.1E14, surface.getValue().doubleValue(), 0.005 * 5.1E14);
+    }
+
+    /**
+     * Tests the measures of a zone. The six S2 faces have the same area, a sixth of the celestial body surface.
+     */
+    @Test
+    public void testMeasures() throws Exception {
+        final double surface = dggrs.getGridSystem().getCelestialBodySurface().getValue().doubleValue();
+        final Zone face = faces().get(0);
+        final Quantity<Area> area = face.getArea().orElseThrow();
+        assertEquals(Units.SQUARE_METRE, area.getUnit());
+        assertEquals(surface / 6, area.getValue().doubleValue(), surface * 1E-9);
+        assertTrue(face.getVolume().isEmpty());
+        assertTrue(face.getDuration().isEmpty());
     }
 
     /**

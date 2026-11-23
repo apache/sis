@@ -16,9 +16,14 @@
  */
 package org.apache.sis.referencing.dggs.internal.shared;
 
+import javax.measure.Quantity;
+import javax.measure.UnitConverter;
+import javax.measure.quantity.Area;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import org.opengis.referencing.crs.GeographicCRS;
 import org.opengis.referencing.datum.Ellipsoid;
+import org.apache.sis.measure.Quantities;
+import org.apache.sis.measure.Units;
 import org.apache.sis.referencing.datum.DatumOrEnsemble;
 import org.apache.sis.referencing.dggs.DiscreteGlobalGridSystem;
 
@@ -30,17 +35,20 @@ import org.apache.sis.referencing.dggs.DiscreteGlobalGridSystem;
 public abstract class AbstractDiscreteGlobalGridSystem implements DiscreteGlobalGridSystem {
 
     protected final CoordinateReferenceSystem crs;
-    protected final double surfaceArea;
+
+    /**
+     * Surface of the celestial body, in square metres.
+     */
+    protected final Quantity<Area> surfaceArea;
 
     public AbstractDiscreteGlobalGridSystem(CoordinateReferenceSystem crs) {
         this.crs = crs;
 
         final GeographicCRS gcrs = (GeographicCRS) crs;
         final Ellipsoid ellipsoid = DatumOrEnsemble.asDatum(gcrs).getEllipsoid();
-        final double semiMajorAxis = ellipsoid.getSemiMajorAxis();
-        final double semiMinorAxis = ellipsoid.getSemiMinorAxis();
-        final double r = (semiMajorAxis + semiMinorAxis) / 2;
-        surfaceArea = 4.0 * Math.PI * r * r;
+        final UnitConverter toMetre = ellipsoid.getAxisUnit().getConverterTo(Units.METRE);
+        final double r = toMetre.convert((ellipsoid.getSemiMajorAxis() + ellipsoid.getSemiMinorAxis()) / 2);
+        surfaceArea = Quantities.create(4.0 * Math.PI * r * r, Units.SQUARE_METRE);
     }
 
     @Override
@@ -49,7 +57,7 @@ public abstract class AbstractDiscreteGlobalGridSystem implements DiscreteGlobal
     }
 
     @Override
-    public final double getCelestialBodySurface() {
+    public final Quantity<Area> getCelestialBodySurface() {
         return surfaceArea;
     }
 

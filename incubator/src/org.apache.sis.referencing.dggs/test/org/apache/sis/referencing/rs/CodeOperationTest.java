@@ -25,8 +25,12 @@ import org.opengis.referencing.operation.NoninvertibleTransformException;
 import org.opengis.referencing.operation.OperationMethod;
 import org.opengis.referencing.operation.TransformException;
 import org.opengis.util.FactoryException;
+import org.apache.sis.geometry.DirectPosition2D;
 import org.apache.sis.referencing.CRS;
 import org.apache.sis.referencing.CommonCRS;
+import org.apache.sis.referencing.dggs.DiscreteGlobalGridReferenceSystem;
+import org.apache.sis.referencing.dggs.Zone;
+import org.apache.sis.referencing.dggs.s2.S2Dggrs;
 import org.apache.sis.referencing.operation.DefaultConversion;
 import org.apache.sis.referencing.operation.transform.DefaultMathTransformFactory;
 import org.apache.sis.referencing.operation.transform.MathTransforms;
@@ -327,5 +331,66 @@ public class CodeOperationTest {
         final CodeOperation inverse = CodeOperations.reorder(source, target, new int[]{1, 0}).inverse();
         final Code code = inverse.transform(new Code(target, 1000.0, 10.0, 20.0), null);
         assertArrayEquals(new Object[]{10.0, 20.0, 1000.0}, code.getOrdinates());
+    }
+
+    /**
+     * Tests an operation between two CRS, with one ordinate per axis.
+     */
+    @Test
+    public void crsToCrsPerAxis() throws FactoryException, TransformException {
+        final CodeOperation operation = ReferenceSystems.findOperation(
+                CommonCRS.WGS84.geographic(), CommonCRS.WGS84.normalizedGeographic(), null);
+        final Code code = operation.transform(new Code(CommonCRS.WGS84.geographic(), 10.0, 20.0), null);
+        assertArrayEquals(new Object[]{20.0, 10.0}, code.getOrdinates());
+    }
+
+    /**
+     * Tests the conversion of a MGRS code to the leaning CRS, with one ordinate per axis.
+     * The expected position is the center of the geohash {@code 87z9y8fhdbff}.
+     */
+    @Test
+    public void rbiToCrsPerAxis() throws FactoryException, TransformException {
+        final CodeOperation operation = ReferenceSystems.findOperation(MGRS, CommonCRS.WGS84.normalizedGeographic(), null);
+        final Code code = operation.transform(new Code(MGRS, "4Q FJ 12 67"), null);
+        assertEquals(2, code.getDimension());
+        assertEquals(-157.914612, (Double) code.getOrdinate(0), 1E-5, "Longitude");
+        assertEquals(  21.406264, (Double) code.getOrdinate(1), 1E-5, "Latitude");
+    }
+
+    /**
+     * Tests transforming a code with a referencing by identifiers and a temporal component.
+     */
+    @Test
+    public void transformCompoundPerAxis() throws FactoryException, TransformException {
+        final ReferenceSystem source = ReferenceSystems.createCompound(MGRS, TIME_JAVA);
+        final ReferenceSystem target = ReferenceSystems.createCompound(GEOHASH, TIME_JULIAN);
+        final Code code = ReferenceSystems.findOperation(source, target, null).transform(new Code(source, "4Q FJ 12 67", 1000.0), null);
+        assertEquals("87z9y8fhdbff", code.getOrdinate(0));
+        assertEquals(2440587.5 + 1000.0 / 86400000, (Double) code.getOrdinate(1), 1E-9, "Julian day of 1 second after 1970");
+    }
+
+    /**
+     * Tests the conversion of a zone identifier in its native type, without conversion to text.
+     */
+    @Test
+    public void dggrsToCrsWithNativeIdentifier() throws Exception {
+        final DiscreteGlobalGridReferenceSystem dggrs = new S2Dggrs();
+        final Zone zone = dggrs.getGridSystem().getHierarchy().getGrids().get(3).getZones().findFirst().orElseThrow();
+        final CodeOperation operation = ReferenceSystems.findOperation(dggrs, CommonCRS.WGS84.normalizedGeographic(), null);
+        final Code code = operation.transform(new Code(dggrs, zone.getIdentifier()), null);
+        assertEquals(zone.getPosition().getCoordinate(0), (Double) code.getOrdinate(0), 1E-9);
+        assertEquals(zone.getPosition().getCoordinate(1), (Double) code.getOrdinate(1), 1E-9);
+    }
+
+    /**
+     * Tests that converting a position to a DGGRS gives the zone identifier in its native type.
+     */
+    @Test
+    public void crsToDggrsWithNativeIdentifier() throws Exception {
+        final DiscreteGlobalGridReferenceSystem dggrs = new S2Dggrs();
+        final CodeOperation operation = ReferenceSystems.findOperation(CommonCRS.WGS84.normalizedGeographic(), dggrs, null);
+        final Code code = operation.transform(new Code(CommonCRS.WGS84.normalizedGeographic(), 15.0, 30.0), null);
+        final Object expected = dggrs.createCoder().encodeIdentifier(new DirectPosition2D(CommonCRS.WGS84.normalizedGeographic(), 15, 30));
+        assertEquals(expected, code.getOrdinate(0));
     }
 }

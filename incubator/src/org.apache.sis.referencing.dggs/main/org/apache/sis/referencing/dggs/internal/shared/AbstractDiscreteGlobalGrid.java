@@ -49,7 +49,8 @@ public abstract class AbstractDiscreteGlobalGrid<T extends AbstractDiscreteGloba
 
     @Override
     public Quantity<?> getPrecision() {
-        final double area = this.hierarchy.dggrs.getGridSystem().getCelestialBodySurface() / getZoneCount();
+        final double area = this.hierarchy.dggrs.getGridSystem().getCelestialBodySurface()
+                .to(Units.SQUARE_METRE).getValue().doubleValue() / getZoneCount();
         return Quantities.create(Math.sqrt(area), Units.METRE);
     }
 
@@ -68,7 +69,7 @@ public abstract class AbstractDiscreteGlobalGrid<T extends AbstractDiscreteGloba
 
         crs = hierarchy.dggrs.getGridSystem().getCoordinateReferenceSystem();
         crsDim = crs.getCoordinateSystem().getDimension();
-        if (!hierarchy.dggrs.getZonalSystem().supportUInt64Form()) return false;
+        if (!hierarchy.supportLongIdentifiers()) return false;
 
         idToCrs = new AbstractMathTransform() {
             @Override

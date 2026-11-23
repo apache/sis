@@ -27,12 +27,10 @@ public class DefaultZonalReferenceSystem implements ZonalReferenceSystem {
 
     private final String identifier;
     private final String description;
-    private final boolean supportUInt64;
 
-    public DefaultZonalReferenceSystem(String identifier, String description, boolean supportUInt64) {
+    public DefaultZonalReferenceSystem(String identifier, String description) {
         this.identifier = identifier;
         this.description = description;
-        this.supportUInt64 = supportUInt64;
     }
 
     @Override
@@ -43,11 +41,6 @@ public class DefaultZonalReferenceSystem implements ZonalReferenceSystem {
     @Override
     public String getDescription() {
         return description;
-    }
-
-    @Override
-    public boolean supportUInt64Form() {
-        return supportUInt64;
     }
 
 }

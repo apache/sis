@@ -19,7 +19,10 @@ package org.apache.sis.referencing.dggs.smc;
 import java.util.ArrayList;
 import java.util.LinkedHashSet;
 import java.util.List;
+import java.util.Optional;
 import java.util.Set;
+import javax.measure.Quantity;
+import javax.measure.quantity.Area;
 import org.opengis.geometry.DirectPosition;
 import org.opengis.geometry.Envelope;
 import org.opengis.metadata.extent.BoundingPolygon;
@@ -146,10 +149,9 @@ final class SmcZone extends AbstractZone<SmcDggrs> {
      * Returns the cell area on the sphere having the celestial body surface.
      */
     @Override
-    public Double getAreaMetersSquare() {
-        final double radius = dggrs.dggs.radius();
-        final double width  = Math.toRadians(east() - west());
-        return radius * radius * width * Math.abs(Math.sin(Math.toRadians(north())) - Math.sin(Math.toRadians(south())));
+    public Optional<Quantity<Area>> getArea() {
+        final double width = Math.toRadians(east() - west());
+        return areaFromSurfaceFraction(width * Math.abs(Math.sin(Math.toRadians(north())) - Math.sin(Math.toRadians(south()))) / (4 * Math.PI));
     }
 
     @Override

@@ -16,12 +16,19 @@
  */
 package org.apache.sis.referencing.dggs.internal.shared;
 
+import java.time.Duration;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Objects;
+import java.util.Optional;
+import javax.measure.Quantity;
+import javax.measure.quantity.Area;
+import javax.measure.quantity.Volume;
 import org.opengis.metadata.citation.Party;
 import org.opengis.metadata.extent.TemporalExtent;
 import org.opengis.util.InternationalString;
+import org.apache.sis.measure.Quantities;
+import org.apache.sis.measure.Units;
 import org.apache.sis.referencing.dggs.DiscreteGlobalGridReferenceSystem;
 import org.apache.sis.referencing.dggs.Zone;
 
@@ -38,14 +45,30 @@ public abstract class AbstractZone<T extends DiscreteGlobalGridReferenceSystem> 
         this.dggrs = dggrs;
     }
 
+    /**
+     * Returns an empty value, zones are two-dimensional by default.
+     */
     @Override
-    public Double volumeMetersCube() {
-        return null;
+    public Optional<Quantity<Volume>> getVolume() {
+        return Optional.empty();
     }
 
+    /**
+     * Returns an empty value, zones have no temporal dimension by default.
+     */
     @Override
-    public Double temporalDurationSeconds() {
-        return null;
+    public Optional<Duration> getDuration() {
+        return Optional.empty();
+    }
+
+    /**
+     * Returns the area of a zone covering the given fraction of the celestial body surface.
+     *
+     * @param  fraction  area of the zone on the unit sphere divided by 4π.
+     */
+    protected final Optional<Quantity<Area>> areaFromSurfaceFraction(final double fraction) {
+        final double surface = dggrs.getGridSystem().getCelestialBodySurface().to(Units.SQUARE_METRE).getValue().doubleValue();
+        return Optional.of(Quantities.create(fraction * surface, Units.SQUARE_METRE));
     }
 
     @Override

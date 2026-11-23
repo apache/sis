@@ -626,7 +626,6 @@ public final class DiscreteGlobalGridCoverageProcessor {
             }
 
             final DiscreteGlobalGridReferenceSystem dggrs = dggGrid.getReferenceSystem();
-            final DiscreteGlobalGridHierarchy dggh = dggrs.getGridSystem().getHierarchy();
             final List<SampleDimension> sampleDimensions = CodedResources.selectBands(coverage.getSampleDimensions(), range);
 
             final CodeOperation op = ReferenceSystems.findOperation(dggrs, coverage.getGeometry().getReferenceSystem(), null);
@@ -640,9 +639,6 @@ public final class DiscreteGlobalGridCoverageProcessor {
                 while (iterator.next()) {
                     final int[] gridPosition = iterator.getPosition();
                     final Code code = toCode.toCode(gridPosition);
-                    if (!(code.getOrdinate(0) instanceof CharSequence)) {
-                        code.setOrdinate(0, dggh.toTextIdentifier(code.getOrdinate(0)));
-                    }
                     tcode = op.transform(code, tcode);
                     final double[] values = eva.apply(tcode);
                     if (values != null) {
