@@ -1845,17 +1845,21 @@ final class ImageFileDirectory extends DataCube {
      * May also be invoked as a fallback for image with more bands if more suitable color model couldn't be created.
      */
     private void createSingleBandColorModel(final Color zero, final Color high) throws DataStoreContentException {
-        double min = 0;
-        double max = Numerics.bitmask(bitsPerSample);   // Exclusive.
+        long min = 0;
+        long max = Numerics.bitmask(bitsPerSample) - 1;   // Inclusive.
         switch (sampleFormat) {
             default: break;
             case FLOAT:  max = 1; break;
-            case SIGNED: max /= 2; min = -max; break;
+            case SIGNED: max >>>= 1; min = ~max; break;
         }
-        if (minValues != null) min = Math.max(min, minValues.doubleValue(VISIBLE_BAND));
-        if (maxValues != null) max = Math.min(max, maxValues.doubleValue(VISIBLE_BAND) + 1);
-        colorModel = ColorModelFactory.createColorScale(getSampleModel(null).getDataType(),
-                        samplesPerPixel, VISIBLE_BAND, min, max, zero, high);
+        colorModel = ColorModelFactory.createColorScale(
+                getSampleModel(null).getDataType(),
+                samplesPerPixel,
+                VISIBLE_BAND,
+                (minValues == null) ? min : Math.max(min, minValues.doubleValue(VISIBLE_BAND)),
+                (maxValues == null) ? max : Math.min(max, maxValues.doubleValue(VISIBLE_BAND)),
+                zero,
+                high);
     }
 
     /**

@@ -197,7 +197,7 @@ class BandedSampleConverter extends WritableComputedImage {
             this.sourceRanges = sourceRanges;
             this.converters   = converters;
             final int numBands = converters.length;
-            final int visibleBand;
+            int visibleBand;
             /*
              * Create the sample model and get the color model if it was explicitly specified.
              */
@@ -218,14 +218,18 @@ class BandedSampleConverter extends WritableComputedImage {
              */
             if (colorModel == null && (colorModel = searchColorModelInSources(source)) == null) {
                 SampleDimension sd = null;
-                if (sampleDimensions != null && visibleBand >= 0 && visibleBand < sampleDimensions.size()) {
+                if (visibleBand < 0) {
+                    visibleBand = 0;    // Arbitrary choice.
+                }
+                if (sampleDimensions != null && visibleBand < sampleDimensions.size()) {
                     sd = sampleDimensions.get(visibleBand);
                 }
+                final SampleModel sourceSM = source.getSampleModel();
                 final var builder = new ColorScaleBuilder(ColorScaleBuilder.GRAYSCALE, null, false);
-                if (builder.initialize(source.getSampleModel(), sd) ||
-                    builder.initialize(source.getColorModel()))
+                if (builder.initialize(sourceSM, sd) ||
+                    builder.initialize(source.getColorModel(), sourceSM, visibleBand))
                 {
-                    colorModel = builder.createColorModel(targetType, numBands, Math.max(visibleBand, 0));
+                    colorModel = builder.createColorModel(targetType, numBands, visibleBand);
                 }
             }
         }

@@ -408,13 +408,12 @@ public class RenderingData implements CloneAccess {
      * @throws FactoryException if the CRS changed but the transform from old to new CRS cannot be determined.
      * @throws TransformException if an error occurred while transforming coordinates from old to new CRS.
      */
-    public final boolean ensureImageLoaded(GridCoverage coverage, final GridExtent sliceExtent, final boolean force)
+    public final boolean ensureImageLoaded(final GridCoverage coverage, final GridExtent sliceExtent, final boolean force)
             throws FactoryException, TransformException
     {
         if (!force && data != null && Objects.equals(currentSlice, sliceExtent)) {
             return false;
         }
-        coverage = coverage.forConvertedValues(true);
         final GridGeometry old = dataGeometry;
         final List<SampleDimension> ranges = coverage.getSampleDimensions();
         final RenderedImage image = coverage.render(sliceExtent);
@@ -550,7 +549,7 @@ public class RenderingData implements CloneAccess {
      * @return statistics on sample values for each band, in a modifiable map.
      * @throws DataStoreException if an error occurred while reading the image at coarsest resolution.
      */
-    protected final Map<String,Object> statistics() throws DataStoreException {
+    protected final Map<String, Object> statistics() throws DataStoreException {
         if (statistics == null) {
             RenderedImage image = data;
             final MultiResolutionCoverageLoader loader = coverageLoader;
@@ -560,7 +559,7 @@ public class RenderingData implements CloneAccess {
                      * If coarser data are available, we will compute statistics on those data instead of on the
                      * current pyramid level. We need to adjust the slice extent to the coordinates of coarser data.
                      */
-                    final GridCoverage coarse = loader.getOrLoad(0).forConvertedValues(true);
+                    final GridCoverage coarse = loader.getOrLoad(0);
                     GridExtent sliceExtent = currentSlice;
                     if (sliceExtent != null) {
                         if (sliceExtent.getDimension() <= BIDIMENSIONAL) {
@@ -577,7 +576,7 @@ public class RenderingData implements CloneAccess {
             }
             statistics = processor.valueOfStatistics(image, null, SampleDimensions.toSampleFilters(dataRanges));
         }
-        final var modifiers = new HashMap<String,Object>(8);
+        final var modifiers = new HashMap<String, Object>(8);
         modifiers.put("statistics", statistics);
         modifiers.put("sampleDimensions", dataRanges);
         return modifiers;

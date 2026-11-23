@@ -81,8 +81,8 @@ public final class RasterFactory {
      * @param  height         the desired image height.
      * @param  numComponents  the number of components.
      * @param  visibleBand    the band to use for computing colors.
-     * @param  minimum        the minimal sample value expected.
-     * @param  maximum        the maximal sample value expected.
+     * @param  minimum        the minimal sample value expected (inclusive).
+     * @param  maximum        the maximal sample value expected (inclusive).
      * @return the color space for the given range of values.
      */
     public static BufferedImage createGrayScaleImage(final int dataType, final int width, final int height,

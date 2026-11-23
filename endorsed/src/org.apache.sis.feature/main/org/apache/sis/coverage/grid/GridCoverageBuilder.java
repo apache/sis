@@ -587,7 +587,7 @@ public class GridCoverageBuilder {
     {
         final ColorModel colors;
         final var colorizer = new ColorScaleBuilder(ColorScaleBuilder.GRAYSCALE, null, false);
-        if (colorizer.initialize(sm, bands.get(visibleBand)) || colorizer.initialize(sm, visibleBand)) {
+        if (colorizer.initialize(sm, bands.get(visibleBand)) || colorizer.initialize(null, sm, visibleBand)) {
             colors = colorizer.createColorModel(sm, bands.size(), visibleBand);
         } else {
             colors = ColorScaleBuilder.NULL_COLOR_MODEL;

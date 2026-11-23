@@ -40,9 +40,15 @@ final class ScaledColorSpace extends ColorSpace {
     private static final long serialVersionUID = -5146474397268513490L;
 
     /**
-     * The scaling factor from sample values to RGB values. The target RGB values will be in range 0
-     * to 255 inclusive. Note that the target range is different than the range of {@link ColorSpace}
-     * normalized values; methods in this class has to divide values by {@value ScaledColorModel#RANGE}.
+     * The maximum value, inclusive. Must be a power of 2 minus 1.
+     */
+    static final int MAXIMUM = 0xFF;
+
+    /**
+     * The scaling factor from sample values to <abbr>RGB</abbr> values.
+     * The target <abbr>RGB</abbr> values will be in range 0 to 255 inclusive.
+     * Note that the target range is different than the range of {@link ColorSpace} normalized values.
+     * Therefore, methods in this class have to divide values by {@value #MAXIMUM}.
      */
     final double scale;
 
@@ -52,7 +58,7 @@ final class ScaledColorSpace extends ColorSpace {
     final double offset;
 
     /**
-     * The maximum value specified at construction time.
+     * The maximum value (inclusive) specified at construction time.
      */
     final double maximum;
 
@@ -74,7 +80,7 @@ final class ScaledColorSpace extends ColorSpace {
         super(TYPE_GRAY, numComponents);
         this.visibleBand = visibleBand;
         this.maximum     = maximum;
-        this.scale       = ScaledColorModel.RANGE / (maximum - minimum);
+        this.scale       = MAXIMUM / (maximum - minimum);
         this.offset      = minimum;
     }
 
@@ -100,7 +106,7 @@ final class ScaledColorSpace extends ColorSpace {
      */
     @Override
     public float[] toRGB(final float[] samples) {
-        float value = Math.min(1, (float) ((samples[visibleBand] - offset) * (1d/ScaledColorModel.RANGE * scale)));
+        float value = Math.min(1, (float) ((samples[visibleBand] - offset) * scale / MAXIMUM));
         if (!(value >= 0)) value = 0;                   // Use `!` for replacing NaN.
         return new float[] {value, value, value};
     }
@@ -115,7 +121,7 @@ final class ScaledColorSpace extends ColorSpace {
     public float[] fromRGB(final float[] color) {
         final float[] values = new float[getNumComponents()];
         values[visibleBand] = (float) ((color[0] + color[1] + color[2])
-                            / (3d/ScaledColorModel.RANGE * scale) + offset);
+                            / (3d/MAXIMUM * scale) + offset);
         return values;
     }
 
@@ -143,7 +149,7 @@ final class ScaledColorSpace extends ColorSpace {
     public float[] fromCIEXYZ(final float[] color) {
         final float[] values = new float[getNumComponents()];
         values[visibleBand] = (float) ((color[0] / 0.9642f + color[1] + color[2] / 0.8249f)
-                            / (3d/ScaledColorModel.RANGE * scale) + offset);
+                            / (3d/MAXIMUM * scale) + offset);
         return values;
     }
 

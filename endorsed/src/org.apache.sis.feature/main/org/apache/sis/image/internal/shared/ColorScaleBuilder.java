@@ -39,7 +39,6 @@ import org.apache.sis.image.DataType;
 import org.apache.sis.measure.NumberRange;
 import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.ArraysExt;
-import org.apache.sis.util.internal.shared.Numerics;
 import org.apache.sis.util.resources.Errors;
 import org.apache.sis.util.resources.Vocabulary;
 
@@ -293,68 +292,25 @@ public final class ColorScaleBuilder {
     }
 
     /**
-     * Applies colors on the range of values of a raster using given sample model. The 0 index will be reserved
-     * for NaN value, and indices in the [1 … 255] range will be mapped to the range of sample values that can
-     * be stored in the specified band.
+     * Applies colors on the range of values of a raster using the given color model and/or sample model.
+     * The colors in the given color model are ignored because they will be replaced by colors specified
+     * by this {@code ColorScaleBuilder}. Only the range of values will be fetched, if such range exists.
+     * {@link ScaledColorModel} range has precedence and {@link SampleModel} range is used as as fallback.
+     * In compact mode, the 0 index will be reserved for NaN value and indices in the [1 … 255] will be
+     * mapped to the given range.
      *
-     * @param  source  sample model of raster to be colored, or {@code null}.
-     * @param  band    raster band to be colored.
+     * @param  source       the color model from which to get a range of values, or {@code null}.
+     * @param  sourceSM     sample model associated to the given color model, or {@code null} if unknown.
+     * @param  visibleBand  the band which will be shown, or -1 if unknown.
      * @return {@code true} on success, or {@code false} if no range of values has been found.
      * @throws IllegalStateException if a sample dimension is already defined on this colorizer.
      */
-    public boolean initialize(final SampleModel source, final int band) {
+    public boolean initialize(final ColorModel source, final SampleModel sourceSM, final int visibleBand) {
         checkInitializationStatus(false);
-        if (DataType.isInteger(source)) {
-            long minimum = 0;
-            long maximum = Numerics.bitmask(source.getSampleSize(band)) - 1;
-            if (!DataType.isUnsigned(source)) {
-                maximum >>>= 1;
-                minimum = ~maximum;
-            }
-            initialize(minimum, maximum);
+        defaultRange = ImageUtilities.inferRangeFromType(source, sourceSM, visibleBand);
+        if (defaultRange != null) {
+            applyDefaultRange();
             return true;
-        }
-        return false;
-    }
-
-    /**
-     * Uses the given color model for mapping range of values to new colors. The colors in the given color model
-     * are ignored (because they will be replaced by colors specified by this {@code ColorScaleBuilder});
-     * only the range of values will be fetched, if such range exists.
-     *
-     * @param  source  the color model from which to get a range of values, or {@code null}.
-     * @return {@code true} on success, or {@code false} if no range of values has been found.
-     * @throws IllegalStateException if a sample dimension is already defined on this colorizer.
-     */
-    public boolean initialize(final ColorModel source) {
-        checkInitializationStatus(false);
-        if (source != null) {
-            final ColorSpace cs = source.getColorSpace();
-            if (cs instanceof ScaledColorSpace) {
-                final ScaledColorSpace scs = (ScaledColorSpace) cs;
-                initialize(scs.offset, scs.maximum, source.getTransferType());
-                return true;
-            }
-            /*
-             * If the color model uses integer type, compute the maximal value based on the number of bits.
-             * The main use case is `IndexColorModel` with values on 16 bits but with a color ramp that does
-             * not exploit the full range allowed by 16 bits.
-             */
-            if (ImageUtilities.isIntegerType(source.getTransferType())) {
-                long maximum = Numerics.bitmask(source.getPixelSize()) - 1;
-                long minimum = 0;
-                if (source instanceof IndexColorModel) {
-                    final IndexColorModel indexed = (IndexColorModel) source;
-                    int t = indexed.getMapSize();
-                    if (t <= maximum) maximum = t - 1L;     // Inclusive.
-                    t = indexed.getTransparentPixel();
-                    if (t == 0) minimum = 1;
-                }
-                if (minimum < maximum) {
-                    initialize(minimum, maximum);
-                    return true;
-                }
-            }
         }
         return false;
     }
@@ -387,21 +343,6 @@ public final class ColorScaleBuilder {
         } else {
             defaultRange = NumberRange.create(minimum, true, maximum, true);
         }
-        applyDefaultRange();
-    }
-
-    /**
-     * Applies colors on the given range of values.
-     * This method does the same work as {@link #initialize(double, double, int)},
-     * but is preferred to the latter when the sample values are known to be integer values.
-     *
-     * @param  minimum  minimum value, inclusive.
-     * @param  maximum  maximum value, inclusive.
-     * @throws IllegalStateException if a sample dimension is already defined on this colorizer.
-     */
-    public void initialize(final long minimum, final long maximum) {
-        checkInitializationStatus(false);
-        defaultRange = NumberRange.create(minimum, true, maximum, true);
         applyDefaultRange();
     }
 
@@ -467,7 +408,7 @@ public final class ColorScaleBuilder {
                         widest = entry;
                     }
                 }
-                defaultRange = NumberRange.create(minimum, true, maximum, false);
+                defaultRange = NumberRange.create(minimum, true, maximum, true);
                 if (widest != null && widestSpan != widest.sampleRange.getSpan()) {
                     widest.sampleRange = defaultRange;
                     target = null;      // For recomputing the transfer function later.
@@ -561,8 +502,8 @@ reuse:  if (source != null) {
                 if (lower >= MAX_VALUE) {
                     throw new IllegalArgumentException(Resources.format(Resources.Keys.TooManyQualitatives));
                 }
-                final NumberRange<Integer> targetRange = NumberRange.create(lower, true, ++lower, false);
-                if (mapper.put(targetRange, entry) == null) {
+                final NumberRange<Integer> targetRange = NumberRange.create(lower, true, lower++, true);
+                if (mapper.putIfAbsent(targetRange, entry) == null) {
                     final double value = sourceRange.getMinDouble();
                     /*
                      * In the usual case where we have a mix of quantitative and qualitative categories,
@@ -606,7 +547,7 @@ reuse:  if (source != null) {
          */
         if (deferred == 0 && themes != null) {
             if (defaultRange == null) {
-                defaultRange = NumberRange.create(0, true, Short.MAX_VALUE + 1, false);
+                defaultRange = NumberRange.create(0, true, Short.MAX_VALUE, true);
             }
             // Following loop will usually be executed only once.
             for (final NumberRange<?> sourceRange : defaultRange.subtractAny(themes)) {
@@ -623,18 +564,18 @@ reuse:  if (source != null) {
          * all remaining values in the [0 … 255] range, but code below is tolerant to arbitrary number of ranges.
          */
         final int base = lower;
-        final double toIndexRange = (MAX_VALUE + 1 - base) / span;
+        final double toIndexRange = (MAX_VALUE - base) / span;
         span = 0;
         for (int i=0; i<deferred; i++) {
             final ColorsForRange entry = entries[i];
             span += entry.sampleRange.getSpan();
-            final int upper = Math.toIntExact(Math.round(span * toIndexRange) + base);
+            final int upper = Math.toIntExact(Math.round(span * toIndexRange) + base + 1);  // Exclusive.
             if (upper <= lower) {
                 // May happen if too many qualitative categories have been added by previous loop.
                 throw new IllegalArgumentException(Resources.format(Resources.Keys.TooManyQualitatives));
             }
             final NumberRange<Integer> samples = NumberRange.create(lower, true, upper, false);
-            if (mapper.put(samples, entry) == null) {
+            if (mapper.putIfAbsent(samples, entry) == null) {
                 builder.addQuantitative(entry.name(), samples, entry.sampleRange);
             }
             lower = upper;
@@ -651,8 +592,9 @@ reuse:  if (source != null) {
         target = builder.build();
         for (final Category category : target.getCategories()) {
             final NumberRange<?> packed = category.getSampleRange();
-            mapper.get(packed).sampleRange = packed;
-            // A NullPointerException on above line would be a bug in our construction of `mapper`.
+            @SuppressWarnings("element-type-mismatch")
+            ColorsForRange entry = mapper.get(packed);
+            entry.sampleRange = packed;     // NullPointerException would be a bug in our construction of `mapper`.
         }
     }
 

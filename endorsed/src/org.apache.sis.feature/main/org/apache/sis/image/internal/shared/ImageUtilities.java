@@ -39,6 +39,7 @@ import org.apache.sis.image.DataType;
 import org.apache.sis.image.PlanarImage;
 import org.apache.sis.system.Modules;
 import org.apache.sis.math.NumberType;
+import org.apache.sis.measure.NumberRange;
 import org.apache.sis.util.internal.shared.Numerics;
 import org.apache.sis.util.resources.Vocabulary;
 import static org.apache.sis.util.internal.shared.Numerics.COMPARISON_THRESHOLD;
@@ -391,6 +392,72 @@ public final class ImageUtilities {
             }
         }
         return true;
+    }
+
+    /**
+     * Infers the maximal range of values expected for an image having the specified color and sample model.
+     * If the raster data type {@linkplain #isIntegerType(int) is an integer}, then the returned range will be
+     * parameterized with type {@code Long} or smaller. Otherwise, it is parameterized with type {@code Double}
+     * or {@code Float}.
+     *
+     * @param  cm           the color model from which to infer the range of values, or {@code null}.
+     * @param  sm           sample model associated to the given color model, or {@code null} if unknown.
+     * @param  visibleBand  the sample model band for which to infer the range of values, or -1 if unknown.
+     * @return the range of values, or {@code null} if no range of values could be inferred.
+     */
+    public static NumberRange<?> inferRangeFromType(final ColorModel cm, final SampleModel sm, final int visibleBand) {
+        final int dataType;
+        if (sm != null) {
+            dataType = sm.getDataType();
+        } else if (cm != null) {
+            dataType = cm.getTransferType();
+        } else {
+            return null;
+        }
+        if (cm != null) {
+            final ColorSpace cs = cm.getColorSpace();
+            if (cs instanceof ScaledColorSpace) {
+                final var scs = (ScaledColorSpace) cs;
+                if (visibleBand < 0 || scs.visibleBand == visibleBand) {
+                    final double minimum = scs.offset;
+                    final double maximum = scs.maximum;
+                    if (isIntegerType(dataType)) {
+                        return NumberRange.create(Math.round(minimum), true, Math.round(maximum), true);
+                    } else {
+                        return NumberRange.create(minimum, true, maximum, true);
+                    }
+                }
+            }
+        }
+        /*
+         * If the color model uses integer type, compute the maximal value based on the number of bits.
+         * The main use case is `IndexColorModel` with values on 16 bits but with a color ramp that does
+         * not exploit the full range allowed by 16 bits.
+         */
+        if (isIntegerType(dataType)) {
+            final int numBits;
+            if (sm != null && visibleBand >= 0) {
+                numBits = sm.getSampleSize(visibleBand);
+            } else {
+                numBits = cm.getPixelSize();
+            }
+            long minimum = 0;
+            long maximum = Numerics.bitmask(numBits) - 1;
+            if (cm instanceof IndexColorModel) {
+                final var indexed = (IndexColorModel) cm;
+                int t = indexed.getMapSize();
+                if (t <= maximum) maximum = t - 1;      // Inclusive.
+                t = indexed.getTransparentPixel();
+                if (t == 0) minimum = 1;
+            } else if (!DataType.isUnsigned(sm)) {
+                maximum >>>= 1;
+                minimum = ~maximum;
+            }
+            if (minimum < maximum) {
+                return NumberRange.create(minimum, true, maximum, true);
+            }
+        }
+        return null;
     }
 
     /**

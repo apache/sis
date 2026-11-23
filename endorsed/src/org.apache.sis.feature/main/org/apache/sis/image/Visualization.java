@@ -319,7 +319,7 @@ final class Visualization extends ResampledImage {
                      * There is no call to `rescaleMainRange(…)` because the following code already uses the range
                      * specified by the ColorModel, if available.
                      */
-                    initialized = builder.initialize(sourceCM);
+                    initialized = builder.initialize(sourceCM, sourceSM, visibleBand);
                     if (!initialized) {
                         if (coloredSource instanceof RecoloredImage) {
                             final var colored = (RecoloredImage) coloredSource;
@@ -329,7 +329,7 @@ final class Visualization extends ResampledImage {
                             }
                         }
                         if (!initialized) {
-                            initialized = builder.initialize(sourceSM, visibleBand);
+                            initialized = builder.initialize(colorModel, sourceSM, visibleBand);
                         }
                     }
                 }

@@ -19,7 +19,6 @@ package org.apache.sis.image.internal.shared;
 import java.util.Random;
 import java.awt.Transparency;
 import java.awt.image.BufferedImage;
-import java.awt.image.ColorModel;
 import java.awt.image.ComponentColorModel;
 import java.awt.image.DataBuffer;
 import java.awt.image.WritableRaster;
@@ -68,8 +67,8 @@ public final class ScaledColorSpaceTest extends ImageTestCase {
         assertEquals(maximum, colors.getMaxValue(0), SAMPLE_TOLERANCE);
 
         final float[] array = new float[1];
-        final double step = (maximum - minimum) / 256;
-        for (double x=minimum; x<maximum; x+=step) {
+        final double step = (maximum - minimum) / ScaledColorSpace.MAXIMUM;
+        for (double x = minimum; x < maximum; x += step) {
             array[0] = (float) x;
             assertEquals(x, colors.fromRGB(colors.toRGB(array))[0], 2*SAMPLE_TOLERANCE);
         }
@@ -84,13 +83,13 @@ public final class ScaledColorSpaceTest extends ImageTestCase {
         if (viewEnabled) {
             final int transparency = Transparency.OPAQUE;
             final int datatype     = DataBuffer.TYPE_FLOAT;
-            final ColorModel model = new ComponentColorModel(colors, false, false, transparency, datatype);
+            final var model = new ComponentColorModel(colors, false, false, transparency, datatype);
             final WritableRaster data = model.createCompatibleWritableRaster(200, 200);
             image = new BufferedImage(model, data, false, null);
             final int width  = data.getWidth();
             final int height = data.getHeight();
             for (int x=width; --x>=0;) {
-                for (int y=height; --y>=0;) {
+                for (int y = height; --y >= 0;) {
                     double v = hypot(((double) x) / width - 0.5, ((double) y) / height - 0.5);
                     v = v*(maximum - minimum) + minimum;
                     data.setSample(x, y, 0, v);

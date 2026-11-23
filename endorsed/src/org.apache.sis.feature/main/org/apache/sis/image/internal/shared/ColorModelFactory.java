@@ -131,7 +131,7 @@ public final class ColorModelFactory {
     private final int visibleBand;
 
     /**
-     * The minimum (inclusive) and maximum (exclusive) sample values.
+     * The minimum (inclusive) and maximum (<em>inclusive</em>) sample values.
      * If no category or color map was specified, then the minimum and maximum are set to the standard range of values.
      * For integer types, this is the full range of values allowed by that type. For floating-point types, this is 0…1.
      *
@@ -182,11 +182,11 @@ public final class ColorModelFactory {
         for (final ColorsForRange entry : colors) {
             final NumberRange<?> range = entry.sampleRange;
             final double min = range.getMinDouble(true);
-            final double max = range.getMaxDouble(false);
+            final double max = range.getMaxDouble(true);
             if (min < minimum) minimum = min;
             if (max > maximum) maximum = max;
-            final int lower = Math.round((float) min);
-            final int upper = Math.round((float) max);
+            final int lower = Numerics.clamp(Math.round(min));
+            final int upper = Numerics.clamp(Math.round(range.getMaxDouble(false)));
             if (lower < upper) {
                 if (lower < 0 || upper > 0x10000) {
                     starts = ArraysExt.EMPTY_INT;
@@ -224,15 +224,15 @@ public final class ColorModelFactory {
          * If no category or color map was specified, default to the standard range of values.
          * For floating point types, the standard range of values is defined by Java2D as 0 … 1.
          */
-        if (minimum >= maximum) {
+        if (!(minimum <= maximum)) {
             minimum = 0;
-            maximum = 1;
+            maximum = 1;    // Inclusive.
             if (ImageUtilities.isIntegerType(dataType)) {
                 if (dataType == DataBuffer.TYPE_SHORT) {
                     minimum = Short.MIN_VALUE;
-                    maximum = Short.MAX_VALUE + 1;  // Exclusive.
+                    maximum = Short.MAX_VALUE;
                 } else {
-                    maximum = 1L << DataBuffer.getDataTypeSize(dataType);
+                    maximum = Numerics.bitmask(DataBuffer.getDataTypeSize(dataType)) - 1;
                 }
             }
         }
@@ -506,20 +506,20 @@ public final class ColorModelFactory {
      * @param  dataType     the color model type.
      * @param  numBands     the number of bands for the color model (usually 1).
      * @param  visibleBand  the band to be made visible (usually 0). All other bands (if any) will be ignored.
-     * @param  lower        the minimum value, inclusive.
-     * @param  upper        the maximum value, exclusive.
+     * @param  minimum      the minimum value, inclusive.
+     * @param  maximum      the maximum value, inclusive.
      * @param  colors       the colors to use for the range of sample values.
      * @return a color model suitable for {@link RenderedImage} objects with values in the given ranges.
      */
     public static ColorModel createColorScale(final int dataType, final int numBands, final int visibleBand,
-                                              final double lower, final double upper, final Color... colors)
+                                              final double minimum, final double maximum, final Color... colors)
     {
         ArgumentChecks.ensureNonEmpty("colors", colors);
         if (colors.length == 2 && colors[0].getRGB() == 0xFF000000 && colors[1].getRGB() == 0xFFFFFFFF) {
-            return createGrayScale(dataType, numBands, visibleBand, lower, upper);
+            return createGrayScale(dataType, numBands, visibleBand, minimum, maximum);
         }
         return createPiecewise(dataType, numBands, visibleBand, new ColorsForRange[] {
-            new ColorsForRange(null, new NumberRange<>(Double.class, lower, true, upper, false), colors, true, null)
+            new ColorsForRange(null, new NumberRange<>(Double.class, minimum, true, maximum, true), colors, true, null)
         });
     }
 
@@ -534,8 +534,8 @@ public final class ColorModelFactory {
      * @param  dataType       the color model type as one of {@code DataBuffer.TYPE_*} constants.
      * @param  numComponents  the number of components.
      * @param  visibleBand    the band to use for computing colors.
-     * @param  minimum        the minimal sample value expected.
-     * @param  maximum        the maximal sample value expected.
+     * @param  minimum        the minimal sample value expected (inclusive).
+     * @param  maximum        the maximal sample value expected (inclusive).
      * @return the color model for the given range of values.
      *
      * @see RasterFactory#createGrayScaleImage(int, int, int, int, int, double, double)
@@ -618,7 +618,7 @@ public final class ColorModelFactory {
         double minimum, maximum;
         if (range != null) {
             minimum = range.getMinDouble();
-            maximum = range.getMaxDouble();
+            maximum = range.getMaxDouble();     // Taken as inclusive.
         } else {
             minimum = 0;
             maximum = 1;
@@ -896,8 +896,10 @@ public final class ColorModelFactory {
     @Override
     public String toString() {
         final var buffer = new StringBuilder(Strings.toString(getClass(),
-                "dataType", DataType.forDataBufferType(dataType), "numBands", numBands, "visibleBand", visibleBand,
-                "range", NumberRange.create(minimum, true, maximum, false)));
+                "dataType",    DataType.forDataBufferType(dataType),
+                "numBands",    numBands,
+                "visibleBand", visibleBand,
+                "range",       NumberRange.create(minimum, true, maximum, true)));
         final int n = (pieceStarts != null) ? pieceStarts.length : 0;
         for (int i=0; i<n; i++) {
             final String start = Integer.toString(pieceStarts[i]);

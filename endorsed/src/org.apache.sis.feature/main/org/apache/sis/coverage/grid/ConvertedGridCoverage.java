@@ -19,7 +19,6 @@ package org.apache.sis.coverage.grid;
 import java.util.List;
 import java.util.Arrays;
 import java.util.ArrayList;
-import java.util.Optional;
 import java.util.Collection;
 import java.util.stream.Stream;
 import java.awt.image.RenderedImage;
@@ -28,11 +27,14 @@ import org.opengis.referencing.operation.MathTransform1D;
 import org.opengis.referencing.operation.TransformException;
 import org.opengis.referencing.operation.NoninvertibleTransformException;
 import org.apache.sis.referencing.operation.transform.MathTransforms;
+import org.apache.sis.coverage.Category;
 import org.apache.sis.coverage.SampleDimension;
 import org.apache.sis.measure.MeasurementRange;
 import org.apache.sis.measure.NumberRange;
+import org.apache.sis.math.NumberType;
 import org.apache.sis.image.DataType;
 import org.apache.sis.image.ImageProcessor;
+import org.apache.sis.util.logging.Logging;
 
 // Specific to the geoapi-3.1 and geoapi-4.0 branches:
 import org.opengis.coverage.CannotEvaluateException;
@@ -152,9 +154,9 @@ final class ConvertedGridCoverage extends DerivedGridCoverage {
             targets.add(tgt);
             if (src != tgt) {
                 MathTransform1D tr = src.getTransferFunction().orElse(identity);
-                Optional<MathTransform1D> complete = tgt.getTransferFunction();
-                if (complete.isPresent()) {
-                    tr = MathTransforms.concatenate(tr, complete.get().inverse());
+                MathTransform1D complete = tgt.getTransferFunction().orElse(null);
+                if (complete != null) {
+                    tr = MathTransforms.concatenate(tr, complete.inverse());
                 }
                 converters[i] = tr;
             }
@@ -172,7 +174,7 @@ final class ConvertedGridCoverage extends DerivedGridCoverage {
      *
      * @param  targets    the sample dimensions for which to get the data type.
      * @param  converted  whether the image will hold converted or packed values.
-     * @param  source     if the type cannot be determined, coverage from which to inherit the type as a fallback.
+     * @param  source     the coverage from which the converted values are computed.
      * @return the data type (never null).
      *
      * @see GridCoverage#getBandType()
@@ -181,9 +183,8 @@ final class ConvertedGridCoverage extends DerivedGridCoverage {
         NumberRange<?> union = null;
         boolean allowsNaN = false;
         for (final SampleDimension dimension : targets) {
-            final Optional<NumberRange<?>> c = dimension.getSampleRange();
-            if (c.isPresent()) {
-                final NumberRange<?> range = c.get();
+            final NumberRange<?> range = dimension.getSampleRange().orElse(null);
+            if (range != null) {
                 if (union == null) {
                     union = range;
                 } else {
@@ -198,7 +199,9 @@ final class ConvertedGridCoverage extends DerivedGridCoverage {
                     union = union.unionAny(range);
                 }
             }
-            if (!allowsNaN) allowsNaN = dimension.allowsNaN();
+            if (!allowsNaN) {
+                allowsNaN = dimension.allowsNaN();
+            }
         }
         if (union == null) {
             return source.getBandType();
@@ -207,7 +210,48 @@ final class ConvertedGridCoverage extends DerivedGridCoverage {
         if (allowsNaN) {
             type = type.toFloat();
         }
+        /*
+         * If double-precision floating point values have been selected (probably because at least
+         * one of the given ranges was using that data type), check if this is really necessary.
+         */
+reduce: if (type == DataType.DOUBLE) {
+            for (SampleDimension dimension : targets) {
+                dimension = dimension.forConvertedValues(!converted);
+                for (final Category category : dimension.getCategories()) {
+                    final NumberRange<?> range = category.getSampleRange();
+                    if (!NumberType.isInteger(range.getElementType())) {
+                        break reduce;
+                    }
+                    final MathTransform1D tr = category.getTransferFunction().orElse(null);
+                    if (tr != null) {   // Ignore qualitative categories.
+                        if (requireDoublePrecision(tr, range.getMinDouble()) ||
+                            requireDoublePrecision(tr, range.getMaxDouble()))
+                        {
+                            break reduce;
+                        }
+                    }
+                }
+            }
+            type = DataType.FLOAT;
+        }
         return type;
+    }
+
+    /**
+     * Tests whether double precision is required for differentiating the given sample value
+     * with the neighbor sample value.
+     *
+     * @param  tr     the transform used for converting sample values.
+     * @param  value  the sample value to test.
+     * @return whether double-precision is required.
+     */
+    private static boolean requireDoublePrecision(final MathTransform1D tr, final double value) {
+        try {
+            return Math.abs(tr.derivative(value)) < Math.ulp((float) tr.transform(value));
+        } catch (TransformException e) {
+            Logging.ignorableException(GridExtent.LOGGER, GridCoverage.class, "forConvertedValues", e);
+            return true;
+        }
     }
 
     /**

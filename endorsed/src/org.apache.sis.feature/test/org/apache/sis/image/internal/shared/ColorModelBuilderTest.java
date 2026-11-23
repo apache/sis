@@ -95,7 +95,7 @@ public final class ColorModelBuilderTest extends TestCase {
      */
     @Test
     public void testSampleDimension() throws TransformException {
-        final SampleDimension sd = new SampleDimension.Builder()
+        final var sd = new SampleDimension.Builder()
                 .addQualitative ("No data", Float.NaN)
                 .addQuantitative("Low temperature", -5, 24, Units.CELSIUS)
                 .addQuantitative("Hot temperature", 25, 40, Units.CELSIUS)
@@ -105,7 +105,7 @@ public final class ColorModelBuilderTest extends TestCase {
         final var colorizer = new ColorScaleBuilder(ColorScaleBuilder.GRAYSCALE, null, true);
         assertTrue(colorizer.initialize(null, sd));
         final var dt = DataType.forDataBufferType(ColorScaleBuilder.TYPE_COMPACT);
-        final var cm = (IndexColorModel) colorizer.createColorModel(dt, 1, 0);      // Must be first.
+        final var cm = assertInstanceOf(IndexColorModel.class, colorizer.createColorModel(dt, 1, 0));      // Must be first.
         /*
          * Test conversion of a few sample values to packed values.
          */
@@ -126,27 +126,28 @@ public final class ColorModelBuilderTest extends TestCase {
               0, 0x00000000,
               1, 0x00000000,
               2, 0xFF000000,
-             16, 0xFF161616,
+             16, 0xFF151515,
              32, 0xFF2E2E2E,
-             48, 0xFF474747,
+             48, 0xFF464646,
              64, 0xFF5F5F5F,
-             80, 0xFF787878,
+             80, 0xFF777777,
              96, 0xFF909090,
-            112, 0xFFA9A9A9,
-            128, 0xFFC2C2C2,
-            144, 0xFFDADADA,
-            160, 0xFFF3F3F3,
-            176, 0xFF151515,
-            192, 0xFF444444,
-            208, 0xFF747474,
-            224, 0xFFA3A3A3,
-            240, 0xFFD3D3D3,
+            112, 0xFFA8A8A8,
+            128, 0xFFC0C0C0,
+            144, 0xFFD9D9D9,
+            160, 0xFFF1F1F1,
+            176, 0xFF121212,
+            192, 0xFF424242,
+            208, 0xFF727272,
+            224, 0xFFA2A2A2,
+            240, 0xFFD2D2D2,
             255, 0xFFFFFFFF
         };
         for (int k=0; k<expected.length;) {
             final int i = expected[k++];
             final int e = expected[k++];
-            assertEquals(e, cm.getRGB(i));
+            final int a = cm.getRGB(i);
+            assertEquals(e, a, () -> "RGB[" + i + "]: " + Integer.toHexString(e) + " ≠ " + Integer.toHexString(a));
         }
     }
 }

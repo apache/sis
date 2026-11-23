@@ -51,7 +51,7 @@ enum Stretching {
      * The initial value is {@link #NONE}.
      */
     static ChoiceBox<Stretching> createButton(final ChangeListener<Stretching> listener) {
-        final ChoiceBox<Stretching> button = new ChoiceBox<>();
+        final var button = new ChoiceBox<Stretching>();
         button.getItems().addAll(values());
         final SingleSelectionModel<Stretching> select = button.getSelectionModel();
         select.select(0);

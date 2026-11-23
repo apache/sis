@@ -32,18 +32,13 @@ import org.apache.sis.feature.internal.Resources;
  *
  * @author  Martin Desruisseaux (Geomatys)
  */
+@SuppressWarnings("EqualsAndHashcode")
 final class ScaledColorModel extends ComponentColorModel {
     /**
      * The mask to apply for getting a single color component.
      * This is also the maximum (inclusive) color/alpha value.
      */
-    private static final int MASK = 0xFF;
-
-    /**
-     * Size of the range of color values. Since minimum value is zero,
-     * this range is also the maximum (exclusive) color/alpha value.
-     */
-    static final int RANGE = 0x100;
+    private static final int MASK = ScaledColorSpace.MAXIMUM;
 
     /**
      * The object from which to get the coefficients for converting values to colors.
@@ -146,15 +141,15 @@ final class ScaledColorModel extends ComponentColorModel {
      * Returns {@code true} if the given object is also an instance of {@link ScaledColorModel}
      * with equals color space and same transfer type.
      *
-     * <h4>Implementation note</h4>
+     * <p><b>Implementation note</b>
      * We have to override this method because the {@link ComponentColorModel#equals(Object)} implementation
      * is confused by our overriding of {@link #getTransparency()} method. However, we do not need to override
-     * {@link #hashCode()}.
+     * {@link #hashCode()}.</p>
      */
     @Override
     public boolean equals(final Object obj) {
         if (obj instanceof ScaledColorModel) {
-            final ScaledColorModel other = (ScaledColorModel) obj;
+            final var other = (ScaledColorModel) obj;
             return transferType == other.getTransferType() && cs.equals(other.cs);
         }
         return false;

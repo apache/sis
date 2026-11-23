@@ -772,7 +772,7 @@ public class ImageRenderer {
         final var colorizer = new ColorScaleBuilder(colors, null, false);
         final ColorModel cm;
         final SampleModel sm = raster.getSampleModel();
-        if (colorizer.initialize(sm, bands[visibleBand]) || colorizer.initialize(sm, visibleBand)) {
+        if (colorizer.initialize(sm, bands[visibleBand]) || colorizer.initialize(null, sm, visibleBand)) {
             DataType type = DataType.forDataBufferType(buffer.getDataType());
             cm = colorizer.createColorModel(type, bands.length, visibleBand);
         } else {
