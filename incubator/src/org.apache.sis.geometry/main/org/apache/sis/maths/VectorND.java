@@ -35,27 +35,6 @@ public abstract sealed class VectorND<T extends VectorND<T>> extends AbstractVec
     public VectorND() {
     }
 
-    /**
-     * Create a new vector, linear combination of this vector and the other vector : a*this + b*other.
-     * The other vector is expected to have the same dimension as this vector.
-     *
-     * @param a coefficient of this vector
-     * @param other second vector
-     * @param b coefficient of the other vector
-     * @return new vector
-     */
-    protected abstract T combine(double a, Vector<?> other, double b);
-
-    /**
-     * Same as {@link #combine(double, Vector, double)} but computed with compensated arithmetic.
-     *
-     * @param a coefficient of this vector
-     * @param other second vector
-     * @param b coefficient of the other vector
-     * @return new vector
-     */
-    protected abstract T combineAccurate(double a, Vector<?> other, double b);
-
     @Override
     public T normalize() {
         return scale(1.0 / length());
@@ -214,7 +193,7 @@ public abstract sealed class VectorND<T extends VectorND<T>> extends AbstractVec
         }
 
         @Override
-        protected Byte combine(double a, Vector<?> other, double b) {
+        public Byte combine(double a, Vector<?> other, double b) {
             final Byte result = new Byte(values.length);
             final byte[] dest = result.values;
             for (int i = 0; i < dest.length; i++) {
@@ -224,7 +203,7 @@ public abstract sealed class VectorND<T extends VectorND<T>> extends AbstractVec
         }
 
         @Override
-        protected Byte combineAccurate(double a, Vector<?> other, double b) {
+        public Byte combineAccurate(double a, Vector<?> other, double b) {
             final Byte result = new Byte(values.length);
             final byte[] dest = result.values;
             for (int i = 0; i < dest.length; i++) {
@@ -381,7 +360,7 @@ public abstract sealed class VectorND<T extends VectorND<T>> extends AbstractVec
         }
 
         @Override
-        protected UByte combine(double a, Vector<?> other, double b) {
+        public UByte combine(double a, Vector<?> other, double b) {
             final UByte result = new UByte(values.length);
             final byte[] dest = result.values;
             for (int i = 0; i < dest.length; i++) {
@@ -391,7 +370,7 @@ public abstract sealed class VectorND<T extends VectorND<T>> extends AbstractVec
         }
 
         @Override
-        protected UByte combineAccurate(double a, Vector<?> other, double b) {
+        public UByte combineAccurate(double a, Vector<?> other, double b) {
             final UByte result = new UByte(values.length);
             final byte[] dest = result.values;
             for (int i = 0; i < dest.length; i++) {
@@ -548,7 +527,7 @@ public abstract sealed class VectorND<T extends VectorND<T>> extends AbstractVec
         }
 
         @Override
-        protected Short combine(double a, Vector<?> other, double b) {
+        public Short combine(double a, Vector<?> other, double b) {
             final Short result = new Short(values.length);
             final short[] dest = result.values;
             for (int i = 0; i < dest.length; i++) {
@@ -558,7 +537,7 @@ public abstract sealed class VectorND<T extends VectorND<T>> extends AbstractVec
         }
 
         @Override
-        protected Short combineAccurate(double a, Vector<?> other, double b) {
+        public Short combineAccurate(double a, Vector<?> other, double b) {
             final Short result = new Short(values.length);
             final short[] dest = result.values;
             for (int i = 0; i < dest.length; i++) {
@@ -715,7 +694,7 @@ public abstract sealed class VectorND<T extends VectorND<T>> extends AbstractVec
         }
 
         @Override
-        protected UShort combine(double a, Vector<?> other, double b) {
+        public UShort combine(double a, Vector<?> other, double b) {
             final UShort result = new UShort(values.length);
             final short[] dest = result.values;
             for (int i = 0; i < dest.length; i++) {
@@ -725,7 +704,7 @@ public abstract sealed class VectorND<T extends VectorND<T>> extends AbstractVec
         }
 
         @Override
-        protected UShort combineAccurate(double a, Vector<?> other, double b) {
+        public UShort combineAccurate(double a, Vector<?> other, double b) {
             final UShort result = new UShort(values.length);
             final short[] dest = result.values;
             for (int i = 0; i < dest.length; i++) {
@@ -882,7 +861,7 @@ public abstract sealed class VectorND<T extends VectorND<T>> extends AbstractVec
         }
 
         @Override
-        protected Int combine(double a, Vector<?> other, double b) {
+        public Int combine(double a, Vector<?> other, double b) {
             final Int result = new Int(values.length);
             final int[] dest = result.values;
             for (int i = 0; i < dest.length; i++) {
@@ -892,7 +871,7 @@ public abstract sealed class VectorND<T extends VectorND<T>> extends AbstractVec
         }
 
         @Override
-        protected Int combineAccurate(double a, Vector<?> other, double b) {
+        public Int combineAccurate(double a, Vector<?> other, double b) {
             final Int result = new Int(values.length);
             final int[] dest = result.values;
             for (int i = 0; i < dest.length; i++) {
@@ -1049,7 +1028,7 @@ public abstract sealed class VectorND<T extends VectorND<T>> extends AbstractVec
         }
 
         @Override
-        protected UInt combine(double a, Vector<?> other, double b) {
+        public UInt combine(double a, Vector<?> other, double b) {
             final UInt result = new UInt(values.length);
             final int[] dest = result.values;
             for (int i = 0; i < dest.length; i++) {
@@ -1059,7 +1038,7 @@ public abstract sealed class VectorND<T extends VectorND<T>> extends AbstractVec
         }
 
         @Override
-        protected UInt combineAccurate(double a, Vector<?> other, double b) {
+        public UInt combineAccurate(double a, Vector<?> other, double b) {
             final UInt result = new UInt(values.length);
             final int[] dest = result.values;
             for (int i = 0; i < dest.length; i++) {
@@ -1216,7 +1195,7 @@ public abstract sealed class VectorND<T extends VectorND<T>> extends AbstractVec
         }
 
         @Override
-        protected Long combine(double a, Vector<?> other, double b) {
+        public Long combine(double a, Vector<?> other, double b) {
             final Long result = new Long(values.length);
             final long[] dest = result.values;
             for (int i = 0; i < dest.length; i++) {
@@ -1226,7 +1205,7 @@ public abstract sealed class VectorND<T extends VectorND<T>> extends AbstractVec
         }
 
         @Override
-        protected Long combineAccurate(double a, Vector<?> other, double b) {
+        public Long combineAccurate(double a, Vector<?> other, double b) {
             final Long result = new Long(values.length);
             final long[] dest = result.values;
             for (int i = 0; i < dest.length; i++) {
@@ -1394,7 +1373,7 @@ public abstract sealed class VectorND<T extends VectorND<T>> extends AbstractVec
         }
 
         @Override
-        protected Float combine(double a, Vector<?> other, double b) {
+        public Float combine(double a, Vector<?> other, double b) {
             final Float result = new Float(values.length);
             final float[] dest = result.values;
             for (int i = 0; i < dest.length; i++) {
@@ -1404,7 +1383,7 @@ public abstract sealed class VectorND<T extends VectorND<T>> extends AbstractVec
         }
 
         @Override
-        protected Float combineAccurate(double a, Vector<?> other, double b) {
+        public Float combineAccurate(double a, Vector<?> other, double b) {
             final Float result = new Float(values.length);
             final float[] dest = result.values;
             for (int i = 0; i < dest.length; i++) {
@@ -1607,7 +1586,7 @@ public abstract sealed class VectorND<T extends VectorND<T>> extends AbstractVec
         }
 
         @Override
-        protected Double combine(double a, Vector<?> other, double b) {
+        public Double combine(double a, Vector<?> other, double b) {
             final Double result = new Double(values.length);
             final double[] dest = result.values;
             for (int i = 0; i < dest.length; i++) {
@@ -1617,7 +1596,7 @@ public abstract sealed class VectorND<T extends VectorND<T>> extends AbstractVec
         }
 
         @Override
-        protected Double combineAccurate(double a, Vector<?> other, double b) {
+        public Double combineAccurate(double a, Vector<?> other, double b) {
             final Double result = new Double(values.length);
             final double[] dest = result.values;
             for (int i = 0; i < dest.length; i++) {

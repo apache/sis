@@ -40,27 +40,6 @@ public abstract sealed class Vector4D<T extends Vector4D<T>> extends AbstractVec
         return 4;
     }
 
-    /**
-     * Create a new vector, linear combination of this vector and the other vector : a*this + b*other.
-     * The other vector is expected to have the same dimension as this vector.
-     *
-     * @param a coefficient of this vector
-     * @param other second vector
-     * @param b coefficient of the other vector
-     * @return new vector
-     */
-    protected abstract T combine(double a, Vector<?> other, double b);
-
-    /**
-     * Same as {@link #combine(double, Vector, double)} but computed with compensated arithmetic.
-     *
-     * @param a coefficient of this vector
-     * @param other second vector
-     * @param b coefficient of the other vector
-     * @return new vector
-     */
-    protected abstract T combineAccurate(double a, Vector<?> other, double b);
-
     @Override
     public T normalize() {
         return scale(1.0 / length());
@@ -278,7 +257,7 @@ public abstract sealed class Vector4D<T extends Vector4D<T>> extends AbstractVec
         }
 
         @Override
-        protected Byte combine(double a, Vector<?> other, double b) {
+        public Byte combine(double a, Vector<?> other, double b) {
             return new Byte(
                     (byte) (a * x + b * other.get(0)),
                     (byte) (a * y + b * other.get(1)),
@@ -287,7 +266,7 @@ public abstract sealed class Vector4D<T extends Vector4D<T>> extends AbstractVec
         }
 
         @Override
-        protected Byte combineAccurate(double a, Vector<?> other, double b) {
+        public Byte combineAccurate(double a, Vector<?> other, double b) {
             return new Byte(
                     (byte) (LinearCombination.of(a, x, b, other.get(0))),
                     (byte) (LinearCombination.of(a, y, b, other.get(1))),
@@ -486,7 +465,7 @@ public abstract sealed class Vector4D<T extends Vector4D<T>> extends AbstractVec
         }
 
         @Override
-        protected UByte combine(double a, Vector<?> other, double b) {
+        public UByte combine(double a, Vector<?> other, double b) {
             return new UByte(
                     (byte) (a * (x & 0xFF) + b * other.get(0)),
                     (byte) (a * (y & 0xFF) + b * other.get(1)),
@@ -495,7 +474,7 @@ public abstract sealed class Vector4D<T extends Vector4D<T>> extends AbstractVec
         }
 
         @Override
-        protected UByte combineAccurate(double a, Vector<?> other, double b) {
+        public UByte combineAccurate(double a, Vector<?> other, double b) {
             return new UByte(
                     (byte) (LinearCombination.of(a, (x & 0xFF), b, other.get(0))),
                     (byte) (LinearCombination.of(a, (y & 0xFF), b, other.get(1))),
@@ -694,7 +673,7 @@ public abstract sealed class Vector4D<T extends Vector4D<T>> extends AbstractVec
         }
 
         @Override
-        protected Short combine(double a, Vector<?> other, double b) {
+        public Short combine(double a, Vector<?> other, double b) {
             return new Short(
                     (short) (a * x + b * other.get(0)),
                     (short) (a * y + b * other.get(1)),
@@ -703,7 +682,7 @@ public abstract sealed class Vector4D<T extends Vector4D<T>> extends AbstractVec
         }
 
         @Override
-        protected Short combineAccurate(double a, Vector<?> other, double b) {
+        public Short combineAccurate(double a, Vector<?> other, double b) {
             return new Short(
                     (short) (LinearCombination.of(a, x, b, other.get(0))),
                     (short) (LinearCombination.of(a, y, b, other.get(1))),
@@ -917,7 +896,7 @@ public abstract sealed class Vector4D<T extends Vector4D<T>> extends AbstractVec
         }
 
         @Override
-        protected UShort combine(double a, Vector<?> other, double b) {
+        public UShort combine(double a, Vector<?> other, double b) {
             return new UShort(
                     (short) (a * (x & 0xFFFF) + b * other.get(0)),
                     (short) (a * (y & 0xFFFF) + b * other.get(1)),
@@ -926,7 +905,7 @@ public abstract sealed class Vector4D<T extends Vector4D<T>> extends AbstractVec
         }
 
         @Override
-        protected UShort combineAccurate(double a, Vector<?> other, double b) {
+        public UShort combineAccurate(double a, Vector<?> other, double b) {
             return new UShort(
                     (short) (LinearCombination.of(a, (x & 0xFFFF), b, other.get(0))),
                     (short) (LinearCombination.of(a, (y & 0xFFFF), b, other.get(1))),
@@ -1125,7 +1104,7 @@ public abstract sealed class Vector4D<T extends Vector4D<T>> extends AbstractVec
         }
 
         @Override
-        protected Int combine(double a, Vector<?> other, double b) {
+        public Int combine(double a, Vector<?> other, double b) {
             return new Int(
                     (int) (a * x + b * other.get(0)),
                     (int) (a * y + b * other.get(1)),
@@ -1134,7 +1113,7 @@ public abstract sealed class Vector4D<T extends Vector4D<T>> extends AbstractVec
         }
 
         @Override
-        protected Int combineAccurate(double a, Vector<?> other, double b) {
+        public Int combineAccurate(double a, Vector<?> other, double b) {
             return new Int(
                     (int) (LinearCombination.of(a, x, b, other.get(0))),
                     (int) (LinearCombination.of(a, y, b, other.get(1))),
@@ -1343,7 +1322,7 @@ public abstract sealed class Vector4D<T extends Vector4D<T>> extends AbstractVec
         }
 
         @Override
-        protected UInt combine(double a, Vector<?> other, double b) {
+        public UInt combine(double a, Vector<?> other, double b) {
             return new UInt(
                     (int) (long) (a * Integer.toUnsignedLong(x) + b * other.get(0)),
                     (int) (long) (a * Integer.toUnsignedLong(y) + b * other.get(1)),
@@ -1352,7 +1331,7 @@ public abstract sealed class Vector4D<T extends Vector4D<T>> extends AbstractVec
         }
 
         @Override
-        protected UInt combineAccurate(double a, Vector<?> other, double b) {
+        public UInt combineAccurate(double a, Vector<?> other, double b) {
             return new UInt(
                     (int) (long) (LinearCombination.of(a, Integer.toUnsignedLong(x), b, other.get(0))),
                     (int) (long) (LinearCombination.of(a, Integer.toUnsignedLong(y), b, other.get(1))),
@@ -1551,7 +1530,7 @@ public abstract sealed class Vector4D<T extends Vector4D<T>> extends AbstractVec
         }
 
         @Override
-        protected Long combine(double a, Vector<?> other, double b) {
+        public Long combine(double a, Vector<?> other, double b) {
             return new Long(
                     (long) (a * x + b * other.get(0)),
                     (long) (a * y + b * other.get(1)),
@@ -1560,7 +1539,7 @@ public abstract sealed class Vector4D<T extends Vector4D<T>> extends AbstractVec
         }
 
         @Override
-        protected Long combineAccurate(double a, Vector<?> other, double b) {
+        public Long combineAccurate(double a, Vector<?> other, double b) {
             return new Long(
                     (long) (LinearCombination.of(a, x, b, other.get(0))),
                     (long) (LinearCombination.of(a, y, b, other.get(1))),
@@ -1788,7 +1767,7 @@ public abstract sealed class Vector4D<T extends Vector4D<T>> extends AbstractVec
         }
 
         @Override
-        protected Float combine(double a, Vector<?> other, double b) {
+        public Float combine(double a, Vector<?> other, double b) {
             return new Float(
                     (float) (a * x + b * other.get(0)),
                     (float) (a * y + b * other.get(1)),
@@ -1797,7 +1776,7 @@ public abstract sealed class Vector4D<T extends Vector4D<T>> extends AbstractVec
         }
 
         @Override
-        protected Float combineAccurate(double a, Vector<?> other, double b) {
+        public Float combineAccurate(double a, Vector<?> other, double b) {
             return new Float(
                     (float) (LinearCombination.of(a, x, b, other.get(0))),
                     (float) (LinearCombination.of(a, y, b, other.get(1))),
@@ -2045,7 +2024,7 @@ public abstract sealed class Vector4D<T extends Vector4D<T>> extends AbstractVec
         }
 
         @Override
-        protected Double combine(double a, Vector<?> other, double b) {
+        public Double combine(double a, Vector<?> other, double b) {
             return new Double(
                     a * x + b * other.get(0),
                     a * y + b * other.get(1),
@@ -2054,7 +2033,7 @@ public abstract sealed class Vector4D<T extends Vector4D<T>> extends AbstractVec
         }
 
         @Override
-        protected Double combineAccurate(double a, Vector<?> other, double b) {
+        public Double combineAccurate(double a, Vector<?> other, double b) {
             return new Double(
                     LinearCombination.of(a, x, b, other.get(0)),
                     LinearCombination.of(a, y, b, other.get(1)),

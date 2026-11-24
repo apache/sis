@@ -60,6 +60,20 @@ public class GreatCircleArcTest {
     }
 
     /**
+     * Length of short arcs on the Earth, where the arc cosine of the dot product loses most digits.
+     */
+    @Test
+    public void getLengthShortTest() {
+        final double radius = 6371007.2;
+        for (final double length : new double[] {1000, 10, 0.1}) {
+            final double angle = length / radius;
+            final GreatCircleArc arc = new GreatCircleArc(new DefaultSphere(3, radius), a,
+                    new Vector3D.Double(Math.cos(angle), Math.sin(angle), 0));
+            assertEquals(length, arc.getLength(), length * 1e-12);
+        }
+    }
+
+    /**
      * Interpolation must land on the arc ends, on the arc middle, and space the points
      * evenly in angle along the way.
      */
@@ -108,5 +122,23 @@ public class GreatCircleArcTest {
         assertArrayEquals(a.toArrayDouble(), antipodal.pointAt(0.0).toArrayDouble(), TOLERANCE);
         assertThrows(IllegalArgumentException.class, () -> antipodal.pointAt(0.5));
         assertThrows(IllegalArgumentException.class, () -> antipodal.pointAt(0.25));
+    }
+
+    /**
+     * Sampling returns the interior points at regular fractions of the arc, at most the spacing apart.
+     */
+    @Test
+    public void sampleTest() {
+        final GreatCircleArc arc = new GreatCircleArc(new DefaultSphere(3), a, b);
+        final Vector<?>[] samples = arc.sample(Math.PI / 8);
+        assertEquals(3, samples.length);
+        for (int i = 0; i < samples.length; i++) {
+            final double angle = (i + 1) * Math.PI / 8;
+            assertArrayEquals(new double[] {Math.cos(angle), Math.sin(angle), 0}, samples[i].toArrayDouble(), TOLERANCE);
+        }
+        // a spacing longer than the arc gives no interior point
+        assertEquals(0, arc.sample(Math.PI).length);
+        // the spacing is in the units of the sphere radius
+        assertEquals(3, new GreatCircleArc(new DefaultSphere(3, 2), a, b).sample(Math.PI / 4).length);
     }
 }

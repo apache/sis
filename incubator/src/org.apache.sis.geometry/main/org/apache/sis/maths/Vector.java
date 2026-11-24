@@ -752,6 +752,33 @@ public sealed interface Vector<T extends Vector<T>> permits AbstractVector {
     }
 
     /**
+     * Computes the shortest angle between this vector and the other vector.
+     * See {@link Vectors#shortestAngle(double[], double[])} for the formula, which keeps
+     * full precision for nearly parallel and nearly opposite vectors.
+     *
+     * @param other second vector, of the same dimension
+     * @return shortest angle in radians, or NaN if a vector has a length of zero
+     * @throws IllegalArgumentException if vectors do not have the same dimension
+     */
+    default double shortestAngle(Vector<?> other) {
+        AbstractVector.ensureDimension(other, getDimension());
+        final double lengthThis  = length();
+        final double lengthOther = other.length();
+        if (lengthThis == 0 || lengthOther == 0) {
+            return Double.NaN;
+        }
+        double difference = 0;
+        double sum = 0;
+        for (int i = 0, n = getDimension(); i < n; i++) {
+            final double a = get(i) * lengthOther;
+            final double b = other.get(i) * lengthThis;
+            difference += (a - b) * (a - b);
+            sum += (a + b) * (a + b);
+        }
+        return 2 * Math.atan2(Math.sqrt(difference), Math.sqrt(sum));
+    }
+
+    /**
      * Increase size of the tuple by one value.
      *
      * @param d last dimension value
@@ -805,7 +832,7 @@ public sealed interface Vector<T extends Vector<T>> permits AbstractVector {
      * @param b coefficient of the other vector
      * @return new vector
      */
-    private T combination(double a, Vector<?> other, double b) {
+    default T combine(double a, Vector<?> other, double b) {
         final double[] values = new double[getDimension()];
         for (int i = 0; i < values.length; i++) {
             values[i] = a * get(i) + b * other.get(i);
@@ -814,9 +841,9 @@ public sealed interface Vector<T extends Vector<T>> permits AbstractVector {
     }
 
     /**
-     * Same as {@link #combination(double, Vector, double)} but computed with compensated arithmetic.
+     * Same as {@link #combine(double, Vector, double)} but computed with compensated arithmetic.
      */
-    private T combinationAccurate(double a, Vector<?> other, double b) {
+    default T combineAccurate(double a, Vector<?> other, double b) {
         final double[] values = new double[getDimension()];
         for (int i = 0; i < values.length; i++) {
             values[i] = LinearCombination.of(a, get(i), b, other.get(i));
@@ -931,7 +958,7 @@ public sealed interface Vector<T extends Vector<T>> permits AbstractVector {
      */
     default T perpendicular(Vector<?> unit) {
         AbstractVector.ensureDimension(unit, getDimension());
-        return combination(1, unit, -dot(unit));
+        return combine(1, unit, -dot(unit));
     }
 
     /**
@@ -944,7 +971,7 @@ public sealed interface Vector<T extends Vector<T>> permits AbstractVector {
      */
     default T vectorTo(Vector<?> other) {
         AbstractVector.ensureDimension(other, getDimension());
-        return combination(-1, other, 1);
+        return combine(-1, other, 1);
     }
 
     /**
@@ -977,7 +1004,7 @@ public sealed interface Vector<T extends Vector<T>> permits AbstractVector {
      */
     default T lerpAccurate(Vector<?> other, double ratio) {
         AbstractVector.ensureDimension(other, getDimension());
-        return combinationAccurate(1 - ratio, other, ratio);
+        return combineAccurate(1 - ratio, other, ratio);
     }
 
     /**
@@ -1005,7 +1032,7 @@ public sealed interface Vector<T extends Vector<T>> permits AbstractVector {
      *         which case they define no unique arc to interpolate along
      */
     default T slerp(Vector<?> other, double ratio) {
-        return AbstractVector.slerp(this, other, ratio, (a, b) -> combination(a, other, b));
+        return AbstractVector.slerp(this, other, ratio, (a, b) -> combine(a, other, b));
     }
 
     /**

@@ -456,7 +456,7 @@ public class Matrix4D extends AbstractMatrix<Matrix4D> {
     }
 
     @Override
-    public Vector<?> transform(Vector<?> vector) {
+    public Vector4D.Double transform(Vector<?> vector) {
         final double x = vector.get(0);
         final double y = vector.get(1);
         final double z = vector.get(2);

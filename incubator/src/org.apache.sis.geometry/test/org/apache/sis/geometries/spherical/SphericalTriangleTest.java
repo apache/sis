@@ -17,6 +17,7 @@
 package org.apache.sis.geometries.spherical;
 
 import org.apache.sis.geometries.internal.shared.DefaultSphere;
+import org.apache.sis.maths.Array;
 import org.apache.sis.maths.Vector;
 import org.apache.sis.maths.Vector3D;
 
@@ -73,6 +74,24 @@ public class SphericalTriangleTest {
     public void getSphericalExcessTest() {
         final SphericalTriangle triangle = new SphericalTriangle(new DefaultSphere(3), a, b, c);
         assertEquals(Math.PI / 2, triangle.getSphericalExcess(), TOLERANCE);
+    }
+
+    /**
+     * Spherical excess of small triangles, where summing the three angles and subtracting PI loses
+     * most digits. A right triangle at the pole with two legs of angle s has an excess E with
+     * tan(E/2) = tan²(s/2). The excess is positive whatever the winding of the corners.
+     */
+    @Test
+    public void getSphericalExcessSmallTest() {
+        for (final double s : new double[] {1e-2, 1e-4, 1e-6}) {
+            final Vector<?> pole = new Vector3D.Double(0, 0, 1);
+            final Vector<?> east = new Vector3D.Double(Math.sin(s), 0, Math.cos(s));
+            final Vector<?> north = new Vector3D.Double(0, Math.sin(s), Math.cos(s));
+            final double t = Math.tan(s / 2);
+            final double expected = 2 * Math.atan(t * t);
+            assertEquals(expected, new SphericalTriangle(new DefaultSphere(3), pole, east, north).getSphericalExcess(), expected * 1e-9);
+            assertEquals(expected, new SphericalTriangle(new DefaultSphere(3), pole, north, east).getSphericalExcess(), expected * 1e-9);
+        }
     }
 
     /**
@@ -209,5 +228,41 @@ public class SphericalTriangleTest {
         final SphericalTriangle triangle = new SphericalTriangle(new DefaultSphere(3), a, b, c);
         assertThrows(IllegalArgumentException.class, () -> triangle.subdivide(0));
         assertThrows(IllegalArgumentException.class, () -> triangle.subdivide(-1));
+    }
+
+    /**
+     * The margin is positive inside, zero on a corner and negative outside.
+     */
+    @Test
+    public void marginTest() {
+        final SphericalTriangle triangle = new SphericalTriangle(new DefaultSphere(3), a, b, c);
+        assertTrue(triangle.margin(triangle.getCentroidVector()) > 0);
+        assertEquals(0, triangle.margin(a), 1e-15);
+        assertTrue(triangle.margin(new Vector3D.Double(-1, -1, -1).normalize()) < 0);
+    }
+
+    /**
+     * Densified boundary : the corners, then the points at thirds of each edge, closed ring.
+     */
+    @Test
+    public void getBoundaryTest() {
+        final SphericalTriangle triangle = new SphericalTriangle(new DefaultSphere(3), a, b, c);
+        final Array boundary = triangle.getBoundary(3);
+        assertEquals(10, boundary.getLength());
+        assertArrayEquals(a.toArrayDouble(), boundary.get(0).toArrayDouble(), TOLERANCE);
+        final double third = Math.PI / 6;
+        assertArrayEquals(new double[] {Math.cos(third), Math.sin(third), 0}, boundary.get(1).toArrayDouble(), TOLERANCE);
+        assertArrayEquals(b.toArrayDouble(), boundary.get(3).toArrayDouble(), TOLERANCE);
+        assertArrayEquals(c.toArrayDouble(), boundary.get(6).toArrayDouble(), TOLERANCE);
+        assertArrayEquals(a.toArrayDouble(), boundary.get(9).toArrayDouble(), TOLERANCE);
+    }
+
+    /**
+     * The signed excess is negative for clockwise corners.
+     */
+    @Test
+    public void signedExcessTest() {
+        assertEquals(Math.PI / 2, SphericalTriangle.signedExcess(a, b, c), TOLERANCE);
+        assertEquals(-Math.PI / 2, SphericalTriangle.signedExcess(a, c, b), TOLERANCE);
     }
 }

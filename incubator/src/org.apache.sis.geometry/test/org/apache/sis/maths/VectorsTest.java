@@ -231,4 +231,59 @@ public class VectorsTest {
         assertArrayEquals(new double[] {1, 0, 0}, start.toArrayDouble(), SLERP_TOLERANCE);
         assertArrayEquals(new double[] {0, 1, 0}, end.toArrayDouble(), SLERP_TOLERANCE);
     }
+
+    /**
+     * The shortest angle must be exact for usual angles and vectors of any length.
+     */
+    @Test
+    public void shortestAngleTest() {
+        assertEquals(Math.PI / 2, Vectors.shortestAngle(new double[] {1, 0}, new double[] {0, 1}), 1e-15);
+        assertEquals(Math.PI / 2, Vectors.shortestAngle(new double[] {2, 0}, new double[] {0, 3}), 1e-15);
+        assertEquals(Math.PI / 4, Vectors.shortestAngle(new double[] {1, 0, 0}, new double[] {5, 5, 0}), 1e-15);
+        assertEquals(Math.PI,     Vectors.shortestAngle(new double[] {1, 0, 0}, new double[] {-4, 0, 0}), 1e-15);
+        assertEquals(0,           Vectors.shortestAngle(new double[] {1, 0, 0}, new double[] {7, 0, 0}), 0);
+        assertEquals((float) (Math.PI / 2), Vectors.shortestAngle(new float[] {2, 0}, new float[] {0, 3}), 1e-6f);
+        assertTrue(Double.isNaN(Vectors.shortestAngle(new double[] {0, 0}, new double[] {0, 1})), "a zero vector has no direction");
+    }
+
+    /**
+     * The shortest angle must keep its precision for nearly parallel and nearly opposite vectors,
+     * where the arc cosine of the normalized dot product loses half of its digits.
+     */
+    @Test
+    public void shortestAngleAccuracyTest() {
+        final double angle = 1e-10;
+        final double[] parallel = {3 * Math.cos(angle), 3 * Math.sin(angle), 0};
+        final double[] opposite = {-2 * Math.cos(angle), 2 * Math.sin(angle), 0};
+        assertEquals(angle, Vectors.shortestAngle(new double[] {1, 0, 0}, parallel), angle * 1e-6);
+        assertEquals(Math.PI - angle, Vectors.shortestAngle(new double[] {1, 0, 0}, opposite), 1e-15);
+    }
+
+    /**
+     * The shortest angle on vectors must be the one on arrays, with the same precision.
+     */
+    @Test
+    public void shortestAngleOnVectorTest() {
+        final double angle = 1e-10;
+        final Vector3D.Double a = new Vector3D.Double(1, 0, 0);
+        final Vector3D.Double b = new Vector3D.Double(3 * Math.cos(angle), 3 * Math.sin(angle), 0);
+        assertEquals(angle, a.shortestAngle(b), angle * 1e-6);
+        assertEquals(Vectors.shortestAngle(a.toArrayDouble(), b.toArrayDouble()), a.shortestAngle(b), 0);
+        assertTrue(Double.isNaN(a.shortestAngle(new Vector3D.Double())), "a zero vector has no direction");
+    }
+
+    /**
+     * Spherical interpolation between nearly opposite vectors needs the angle with full precision,
+     * where the arc cosine of the normalized dot product loses digits.
+     */
+    @Test
+    public void slerpNearlyOppositeTest() {
+        final double delta = 1e-6;
+        final double[] start = {1, 0, 0};
+        final double[] end = {-Math.cos(delta), Math.sin(delta), 0};
+        final double half = (Math.PI - delta) / 2;
+        final double[] expected = {Math.cos(half), Math.sin(half), 0};
+        assertArrayEquals(expected, Vectors.slerp(start, end, 0.5, null), 1e-8);
+        assertArrayEquals(expected, new Vector3D.Double(start).slerp(new Vector3D.Double(end), 0.5).toArrayDouble(), 1e-8);
+    }
 }

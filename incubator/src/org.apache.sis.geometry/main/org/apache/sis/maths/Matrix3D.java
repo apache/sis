@@ -267,7 +267,7 @@ public class Matrix3D extends AbstractMatrix<Matrix3D> {
     }
 
     @Override
-    public Vector<?> transform(Vector<?> vector) {
+    public Vector3D.Double transform(Vector<?> vector) {
         final double x = vector.get(0);
         final double y = vector.get(1);
         final double z = vector.get(2);

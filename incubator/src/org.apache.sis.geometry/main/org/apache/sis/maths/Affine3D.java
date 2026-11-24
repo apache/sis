@@ -227,7 +227,7 @@ public final class Affine3D extends AbstractAffine<Affine3D> {
     }
 
     @Override
-    public Vector<?> transform(Vector<?> source) {
+    public Vector3D.Double transform(Vector<?> source) {
         final double x = source.get(0);
         final double y = source.get(1);
         final double z = source.get(2);

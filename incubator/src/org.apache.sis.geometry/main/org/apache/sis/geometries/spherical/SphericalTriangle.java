@@ -17,7 +17,7 @@
 package org.apache.sis.geometries.spherical;
 
 import org.apache.sis.geometries.surface.Sphere;
-import org.apache.sis.maths.Maths;
+import org.apache.sis.maths.Array;
 import org.apache.sis.maths.Vector;
 import org.apache.sis.util.ArgumentChecks;
 
@@ -105,21 +105,33 @@ public final class SphericalTriangle {
     /**
      * Compute the spherical excess of this triangle : the sum of its three
      * angles minus PI.
+     * <p>
+     * Computed with the Van Oosterom–Strackee formula tan(E/2) = |A·(B×C)| / (1 + A·B + B·C + C·A),
+     * which keeps full precision for small triangles, where summing the angles loses most digits.
+     * The excess is positive whatever the winding of the corners.
      *
      * @see <a href="https://mathworld.wolfram.com/SphericalExcess.html">Spherical Excess</a>
+     * @see "Van Oosterom and Strackee, The Solid Angle of a Plane Triangle, IEEE Trans. Biomed. Eng. 30(2), 1983"
      * @return spherical excess in radians
      */
     public double getSphericalExcess() {
-        final double cosA = Maths.clamp(vecB.dot(vecC),-1,1);
-        final double cosB = Maths.clamp(vecC.dot(vecA),-1,1);
-        final double cosC = Maths.clamp(vecA.dot(vecB),-1,1);
-        final double sinA = Math.sqrt(1 - cosA * cosA);
-        final double sinB = Math.sqrt(1 - cosB * cosB);
-        final double sinC = Math.sqrt(1 - cosC * cosC);
-        final double angleA = Math.acos(Maths.clamp((cosA - cosB * cosC) / (sinB * sinC),-1,1));
-        final double angleB = Math.acos(Maths.clamp((cosB - cosC * cosA) / (sinC * sinA),-1,1));
-        final double angleC = Math.acos(Maths.clamp((cosC - cosA * cosB) / (sinA * sinB),-1,1));
-        return angleA + angleB + angleC - Math.PI;
+        return Math.abs(signedExcess(vecA, vecB, vecC));
+    }
+
+    /**
+     * Computes the signed spherical excess of the triangle of the given unit vectors,
+     * with the Van Oosterom–Strackee formula tan(E/2) = A·(B×C) / (1 + A·B + B·C + C·A).
+     * The excess is positive when the corners are counter-clockwise seen from outside the sphere.
+     *
+     * @param a first corner, as a unit direction vector from the sphere center
+     * @param b second corner, as a unit direction vector from the sphere center
+     * @param c third corner, as a unit direction vector from the sphere center
+     * @return signed spherical excess in radians, in the [-2π … 2π] range
+     * @see #getSphericalExcess()
+     */
+    public static double signedExcess(Vector<?> a, Vector<?> b, Vector<?> c) {
+        final double norm = 1 + a.dot(b) + b.dot(c) + c.dot(a);
+        return 2 * Math.atan2(a.dot(b.cross(c)), norm);
     }
 
     /**
@@ -153,6 +165,28 @@ public final class SphericalTriangle {
         return vecP.dot(vecA.cross(vecB)) >= epsilon
             && vecP.dot(vecB.cross(vecC)) >= epsilon
             && vecP.dot(vecC.cross(vecA)) >= epsilon;
+    }
+
+    /**
+     * Computes how far the given vector is inside this triangle.
+     * See {@link SphericalConvexPolygon#margin(Vector)} for the meaning of the value.
+     *
+     * @param vecP unit vector to test
+     * @return positive inside, zero on the boundary, negative outside
+     */
+    public double margin(Vector<?> vecP) {
+        return SphericalConvexPolygon.margin(new Vector<?>[] {vecA, vecB, vecC}, vecP);
+    }
+
+    /**
+     * Returns the boundary of this triangle, each edge divided in arcs of equal length.
+     *
+     * @param segments number of arcs per edge, must be 1 or more
+     * @return closed ring of unit vectors, starting and ending on corner A
+     * @throws IllegalArgumentException if {@code segments} is less than 1
+     */
+    public Array getBoundary(int segments) {
+        return SphericalConvexPolygon.boundary(new Vector<?>[] {vecA, vecB, vecC}, segments);
     }
 
     /**

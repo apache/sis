@@ -443,26 +443,49 @@ public final class Vectors {
 
     /**
      * Computes the shortest angle between given vectors.
-     * formula : acos(dot(vector,other)/(length(vector)*length(other)))
+     * formula : 2·atan2(‖a·|b| − b·|a|‖, ‖a·|b| + b·|a|‖), which is 2·atan2(‖a−b‖, ‖a+b‖) for unit vectors.
+     * Unlike the arc cosine of the normalized dot product, it keeps full precision over the whole [0 … π] range,
+     * including nearly parallel and nearly opposite vectors.
      *
      * @param vector input vector
      * @param other second vector
-     * @return shortest angle in radian
+     * @return shortest angle in radian, or NaN if a vector has a length of zero
+     * @see "Kahan, How Futile are Mindless Assessments of Roundoff in Floating-Point Computation?, section 12"
      */
     public static double shortestAngle(final double[] vector, final double[] other){
-        return Math.acos(cos( vector, other ));
+        if (vector.length != other.length) {
+            throw new IllegalArgumentException("Both vectors must have same length.");
+        }
+        final double lengthVector = length(vector);
+        final double lengthOther  = length(other);
+        if (lengthVector == 0 || lengthOther == 0) {
+            return Double.NaN;
+        }
+        double difference = 0;
+        double sum = 0;
+        for (int i = 0; i < vector.length; i++) {
+            final double a = vector[i] * lengthOther;
+            final double b = other[i] * lengthVector;
+            difference += (a - b) * (a - b);
+            sum += (a + b) * (a + b);
+        }
+        return 2 * Math.atan2(Math.sqrt(difference), Math.sqrt(sum));
     }
 
     /**
      * Computes the shortest angle between given vectors.
-     * formula : acos(dot(vector,other)/(length(vector)*length(other)))
+     * See {@link #shortestAngle(double[], double[])} for the formula, computed with {@code double} precision.
      *
      * @param vector input vector
      * @param other second vector
-     * @return shortest angle in radian
+     * @return shortest angle in radian, or NaN if a vector has a length of zero
      */
     public static float shortestAngle(final float[] vector, final float[] other){
-        return (float)Math.acos(cos( vector, other ));
+        final double[] v = new double[vector.length];
+        final double[] o = new double[other.length];
+        for (int i = 0; i < v.length; i++) v[i] = vector[i];
+        for (int i = 0; i < o.length; i++) o[i] = other[i];
+        return (float) shortestAngle(v, o);
     }
 
     /**
@@ -1271,19 +1294,17 @@ public final class Vectors {
         }
 
         /*
-         * Angle between the two directions. Dividing by the lengths keeps the angle right
-         * for vectors which are not unit vectors. A vector of length zero has no direction,
-         * which the parallel case below handles as a linear interpolation.
+         * Angle between the two directions, with full precision for nearly parallel and nearly
+         * opposite vectors. A vector of length zero has no direction, which the parallel case
+         * below handles as a linear interpolation.
          */
         final double lengthStart = length(start);
         final double lengthEnd = length(end);
-        final double lengths = lengthStart * lengthEnd;
-        final double cosAngle = (lengths > 0) ? Maths.clamp(dot(start, end) / lengths, -1, 1) : 1;
-        final double angle = Math.acos(cosAngle);
+        final double angle = (lengthStart > 0 && lengthEnd > 0) ? shortestAngle(start, end) : 0;
         final double sinAngle = Math.sin(angle);
 
         if (sinAngle < 1E-9) {
-            if (cosAngle < 0) {
+            if (angle > Math.PI / 2) {
                 throw new IllegalArgumentException("Cannot interpolate between vectors pointing in "
                         + "opposite directions, they define no unique arc.");
             }

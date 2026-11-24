@@ -86,4 +86,45 @@ public class SphericalConvexPolygonTest {
         assertFalse(polygon.contains(new Vector3D.Double(0, -1, 0)));
     }
 
+
+    /**
+     * The margin is positive inside, zero on a corner and negative outside.
+     */
+    @Test
+    public void marginTest() {
+        assertTrue(polygon.margin(new Vector3D.Double(0, 0, 1)) > 0);
+        assertEquals(0, polygon.margin(a), 1e-15);
+        assertTrue(polygon.margin(new Vector3D.Double(0, 0, -1)) < 0);
+        assertTrue(polygon.margin(new Vector3D.Double(1, 1, 0).normalize()) < 0);
+        // a point nearer to the center is further inside
+        assertTrue(polygon.margin(new Vector3D.Double(0, 0, 1)) > polygon.margin(new Vector3D.Double(0.2, 0, 1).normalize()));
+    }
+
+    /**
+     * Area of the square cap : four right triangles at the pole with legs of 45°,
+     * each having an excess E with tan(E/2) = tan²(PI/8).
+     */
+    @Test
+    public void getAreaTest() {
+        final double t = Math.tan(Math.PI / 8);
+        assertEquals(4 * 2 * Math.atan(t * t), polygon.getArea(), 1e-14);
+        final SphericalConvexPolygon bigger = new SphericalConvexPolygon(new DefaultSphere(3, 3), points);
+        assertEquals(9 * polygon.getArea(), bigger.getArea(), 1e-13);
+    }
+
+    /**
+     * Densified boundary : corners at every second point, edge middles in between, closed ring.
+     */
+    @Test
+    public void getBoundaryTest() {
+        final Array boundary = polygon.getBoundary(2);
+        assertEquals(9, boundary.getLength());
+        final Vector3D.Double[] corners = {a, b, c, d, a};
+        for (int i = 0; i < 9; i++) {
+            final double[] expected = (i % 2 == 0)
+                    ? corners[i / 2].toArrayDouble()
+                    : corners[i / 2].add(corners[i / 2 + 1]).normalize().toArrayDouble();
+            assertArrayEquals(expected, boundary.get(i).toArrayDouble(), 1e-15);
+        }
+    }
 }

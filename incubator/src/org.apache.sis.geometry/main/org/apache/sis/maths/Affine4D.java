@@ -331,7 +331,7 @@ public final class Affine4D extends AbstractAffine<Affine4D> {
     }
 
     @Override
-    public Vector<?> transform(Vector<?> source) {
+    public Vector4D.Double transform(Vector<?> source) {
         final double x = source.get(0);
         final double y = source.get(1);
         final double z = source.get(2);

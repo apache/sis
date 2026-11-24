@@ -143,7 +143,7 @@ public final class Affine2D extends AbstractAffine<Affine2D> {
     }
 
     @Override
-    public Vector<?> transform(Vector<?> source) {
+    public Vector2D.Double transform(Vector<?> source) {
         final double x = source.get(0);
         final double y = source.get(1);
         return new Vector2D.Double(

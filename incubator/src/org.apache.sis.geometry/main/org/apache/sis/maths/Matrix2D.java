@@ -205,7 +205,7 @@ public class Matrix2D extends AbstractMatrix<Matrix2D> {
     }
 
     @Override
-    public Vector<?> transform(Vector<?> vector) {
+    public Vector2D.Double transform(Vector<?> vector) {
         final double x = vector.get(0);
         final double y = vector.get(1);
         return new Vector2D.Double(

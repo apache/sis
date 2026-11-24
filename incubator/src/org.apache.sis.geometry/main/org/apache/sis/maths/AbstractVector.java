@@ -137,19 +137,17 @@ abstract sealed class AbstractVector<T extends AbstractVector<T>> implements Vec
         }
 
         /*
-         * Angle between the two directions. Dividing by the lengths keeps the angle right
-         * for vectors which are not unit vectors. A vector of length zero has no direction,
-         * which the parallel case below handles as a linear interpolation.
+         * Angle between the two directions, with full precision for nearly parallel and nearly
+         * opposite vectors. A vector of length zero has no direction, which the parallel case
+         * below handles as a linear interpolation.
          */
         final double lengthStart = start.length();
         final double lengthEnd = end.length();
-        final double lengths = lengthStart * lengthEnd;
-        final double cosAngle = (lengths > 0) ? Maths.clamp(start.dot(end) / lengths, -1, 1) : 1;
-        final double angle = Math.acos(cosAngle);
+        final double angle = (lengthStart > 0 && lengthEnd > 0) ? start.shortestAngle(end) : 0;
         final double sinAngle = Math.sin(angle);
 
         if (sinAngle < 1E-9) {
-            if (cosAngle < 0) {
+            if (angle > Math.PI / 2) {
                 throw new IllegalArgumentException("Cannot interpolate between vectors pointing in "
                         + "opposite directions, they define no unique arc.");
             }

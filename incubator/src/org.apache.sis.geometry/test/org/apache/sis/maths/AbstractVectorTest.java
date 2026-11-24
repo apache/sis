@@ -510,6 +510,8 @@ public abstract class AbstractVectorTest {
         assertNewVector(vector, original, vector.multiply(second),    Vectors.multiply(v, s), TOLERANCE);
         assertNewVector(vector, original, vector.divide(second),      Vectors.divide(v, s), TOLERANCE);
         assertNewVector(vector, original, vector.scale(3),            Vectors.scale(v, 3), TOLERANCE);
+        assertNewVector(vector, original, vector.combine(1.0, second, 3), Vectors.add(v, Vectors.scale(s, 3)), TOLERANCE);
+        assertEquals(Vectors.shortestAngle(v, s), vector.shortestAngle(second), 1e-15, "shortestAngle");
         assertNewVector(vector, original, vector.perpendicular(unit), perpendicular, TOLERANCE);
         assertNewVector(vector, original, vector.lerp(second, 0.5),   Vectors.lerp(v, s, 0.5, null), TOLERANCE);
         assertNewVector(vector, original, vector.transform(MathTransforms.scale(factors)), Vectors.scale(v, 3), TOLERANCE);
