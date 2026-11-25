@@ -28,6 +28,7 @@ import org.apache.sis.geometries.Geometries;
 import org.apache.sis.geometries.Geometry;
 import org.apache.sis.geometries.GeometryFactory;
 import org.apache.sis.geometries.GeometryType;
+import org.apache.sis.geometries.Point;
 import org.apache.sis.geometries.Representation;
 import org.apache.sis.geometries.Surface;
 import org.apache.sis.geometries.SurfaceInterpolation;
@@ -228,6 +229,62 @@ public sealed interface Cylinder extends Surface
             area += Math.PI * (r1*r1 + r2*r2);
         }
         return Quantities.create(area, Geometries.getAreaUnit(this));
+    }
+
+    /**
+     * Returns the volume enclosed by this cylinder, πh(r₁² + r₁r₂ + r₂²)∕3 where <var>h</var>
+     * is the {@linkplain #getHeight() height}.
+     *
+     * <ul>
+     *   <li>Not in ISO 19107, which defines volumes on solids only.</li>
+     *   <li>An open cylinder gives the volume it would enclose if it were {@linkplain #isClosed() closed}.</li>
+     * </ul>
+     *
+     * @return volume enclosed by this cylinder.
+     * @throws UnsupportedOperationException if this cylinder is not 3-dimensional.
+     */
+    default Quantity<?> getEnclosedVolume() {
+        if (getDataPoints().getDimension() != 3) {
+            throw new UnsupportedOperationException("The volume of a cylinder is computed in 3 dimensions only.");
+        }
+        final double r1 = getRadiusBottom();
+        final double r2 = getRadiusTop();
+        final double volume = Math.PI * getHeight() * (r1*r1 + r1*r2 + r2*r2) / 3;
+        return Quantities.create(volume, Geometries.getVolumeUnit(this));
+    }
+
+    /**
+     * Returns the centroid of this surface, which is on the axis of this cylinder.
+     * The two data points are interpolated, so the centroid gets their attributes.
+     *
+     * <ul>
+     *   <li>The lateral surface has its centroid at the fraction (r₁ + 2r₂) ∕ 3(r₁ + r₂)
+     *       of the axis, from the bottom.</li>
+     *   <li>The end disks of a {@linkplain #isClosed() closed} cylinder are weighted by their areas.</li>
+     *   <li>A cylinder without area has its centroid at the middle of its axis.</li>
+     * </ul>
+     *
+     * @throws UnsupportedOperationException if this cylinder is not 3-dimensional.
+     *
+     * @see "ISO 19107:2019 section 6.4.4.8"
+     */
+    @Override
+    default Point getCentroid() {
+        if (getDataPoints().getDimension() != 3) {
+            throw new UnsupportedOperationException("The centroid of a cylinder is computed in 3 dimensions only.");
+        }
+        final double r1 = getRadiusBottom();
+        final double r2 = getRadiusTop();
+        final double slant = Math.hypot(getHeight(), r1 - r2);
+        // Areas and moments along the axis, all divided by π and by the height.
+        double area   = (r1 + r2) * slant;
+        double moment = (r1 + 2*r2) * slant / 3;
+        if (isClosed()) {
+            area   += r1*r1 + r2*r2;
+            moment += r2*r2;
+        }
+        final double ratio = (area > 0) ? moment / area : 0.5;
+        return getDataPoints().getInterpolatedPoint(0, 1, ratio);
     }
 
     /**

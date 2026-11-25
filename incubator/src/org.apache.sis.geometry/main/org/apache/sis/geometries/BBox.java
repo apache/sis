@@ -19,6 +19,7 @@ package org.apache.sis.geometries;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
+import javax.measure.Quantity;
 import org.opengis.coordinate.MismatchedDimensionException;
 import org.opengis.geometry.Envelope;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
@@ -30,6 +31,7 @@ import org.apache.sis.maths.NDArrays;
 import org.apache.sis.maths.SampleSystem;
 import org.apache.sis.maths.Vectors;
 import org.apache.sis.maths.Vector;
+import org.apache.sis.measure.Quantities;
 
 
 /**
@@ -254,6 +256,89 @@ public final class BBox extends GeneralEnvelope implements Geometry {
                     NDArrays.of(ring, SampleSystem.of(crs), DataType.DOUBLE))), null);
         }
         return factory.createMultiPolygon(crs, polygons);
+    }
+
+    /**
+     * Returns the median position of this box, or {@code null} if this box is empty.
+     *
+     * <ul>
+     *   <li>On an axis with wraparound, the median of a box crossing the anti-meridian
+     *       is on the anti-meridian side.</li>
+     * </ul>
+     *
+     * @see "ISO 19107:2019 section 6.4.4.8"
+     */
+    @Override
+    public Point getCentroid() {
+        if (isEmpty()) {
+            return null;
+        }
+        final double[] median = new double[getDimension()];
+        for (int i = 0; i < median.length; i++) {
+            median[i] = getMedian(i);
+        }
+        return GeometryFactory.DEFAULT.createPoint(getCoordinateReferenceSystem(), median);
+    }
+
+    /**
+     * Returns the area of this box: the interior area in 2 dimensions,
+     * or the sum of the areas of the six faces in 3 dimensions.
+     *
+     * <ul>
+     *   <li>An axis whose span is zero, negative or undefined contributes a length of zero.</li>
+     *   <li>The area is planar, in the units of the coordinate system axes.</li>
+     * </ul>
+     *
+     * @return area of this box.
+     * @throws UnsupportedOperationException if this box has not 2 or 3 dimensions.
+     *
+     * @see "ISO 19107:2019 section 6.4.25.7"
+     * @see "ISO 19107:2019 section 6.4.28.3"
+     */
+    public Quantity<?> getArea() {
+        final double area;
+        switch (getDimension()) {
+            case 2: {
+                area = length(0) * length(1);
+                break;
+            }
+            case 3: {
+                final double a = length(0), b = length(1), c = length(2);
+                area = 2 * (a*b + b*c + c*a);
+                break;
+            }
+            default: {
+                throw new UnsupportedOperationException("The area of a box is computed in 2 or 3 dimensions only.");
+            }
+        }
+        return Quantities.create(area, Geometries.getAreaUnit(this));
+    }
+
+    /**
+     * Returns the volume of this box.
+     *
+     * <ul>
+     *   <li>An axis whose span is zero, negative or undefined contributes a length of zero.</li>
+     * </ul>
+     *
+     * @return volume of this box.
+     * @throws UnsupportedOperationException if this box has not 3 dimensions.
+     *
+     * @see "ISO 19107:2019 section 6.4.28.4"
+     */
+    public Quantity<?> getVolume() {
+        if (getDimension() != 3) {
+            throw new UnsupportedOperationException("The volume of a box is computed in 3 dimensions only.");
+        }
+        return Quantities.create(length(0) * length(1) * length(2), Geometries.getVolumeUnit(this));
+    }
+
+    /**
+     * Returns the span of this box on the given axis, or zero if that span is not positive.
+     */
+    private double length(final int dimension) {
+        final double span = getSpan(dimension);
+        return (span > 0) ? span : 0;
     }
 
     @Override

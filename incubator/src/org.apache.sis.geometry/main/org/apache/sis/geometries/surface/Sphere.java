@@ -27,9 +27,11 @@ import org.apache.sis.geometries.Geometries;
 import org.apache.sis.geometries.Geometry;
 import org.apache.sis.geometries.GeometryFactory;
 import org.apache.sis.geometries.GeometryType;
+import org.apache.sis.geometries.Point;
 import org.apache.sis.geometries.Representation;
 import org.apache.sis.geometries.SurfaceInterpolation;
 import org.apache.sis.geometries.internal.shared.DefaultSphere;
+import org.apache.sis.maths.Maths;
 import org.apache.sis.maths.NDRange;
 import org.apache.sis.maths.Vector;
 import org.apache.sis.measure.Quantities;
@@ -135,16 +137,37 @@ public sealed interface Sphere extends ParametricCurveSurface
     @Override
     default Quantity<?> getArea() {
         final int n = getDimension();
-        /*
-         * Measure of the unit (n−1)-sphere, from S(1) = 2 and S(2) = 2π with the recurrence
-         * S(n+2) = 2π⋅S(n)/n, which avoids computing the Gamma function.
-         */
-        int k = (n % 2 == 0) ? 2 : 1;
-        double measure = (k == 2) ? 2*Math.PI : 2;
-        for (; k + 2 <= n; k += 2) {
-            measure *= 2*Math.PI / k;
-        }
+        final double measure = n * Maths.unitBallVolume(n);     // Measure of the unit (n−1)-sphere.
         return Quantities.create(measure * Math.pow(getRadius(), n - 1), Geometries.getLinearUnit(this).pow(n - 1));
+    }
+
+    /**
+     * Returns the volume of the ball bounded by this sphere, which is 4πr³∕3 in a 3-dimensional space.
+     *
+     * <ul>
+     *   <li>Not in ISO 19107, which defines volumes on solids only.</li>
+     *   <li>In an <var>n</var>-dimensional space, this is the volume of the <var>n</var>-ball
+     *       expressed in the linear unit raised to the power <var>n</var>.
+     *       In a 2-dimensional space, it is therefore the area πr² of the disk.</li>
+     * </ul>
+     *
+     * @return volume enclosed by this sphere.
+     *
+     * @see Maths#unitBallVolume(int)
+     */
+    default Quantity<?> getEnclosedVolume() {
+        final int n = getDimension();
+        return Quantities.create(Maths.unitBallVolume(n) * Math.pow(getRadius(), n), Geometries.getLinearUnit(this).pow(n));
+    }
+
+    /**
+     * Returns the {@linkplain #getCenter() center} of this sphere, with the attributes of its data point.
+     *
+     * @see "ISO 19107:2019 section 6.4.4.8"
+     */
+    @Override
+    default Point getCentroid() {
+        return getDataPoints().getInterpolatedPoint(new int[] {0}, new double[] {1});
     }
 
     /**

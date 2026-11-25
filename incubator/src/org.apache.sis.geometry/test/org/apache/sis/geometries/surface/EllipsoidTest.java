@@ -119,4 +119,22 @@ public class EllipsoidTest extends GeometryTest {
         }
         assertEnvelope(curve.getEnvelope(), 0, 0, -1, 0, 2, 1);
     }
+
+    /**
+     * The centroid of an ellipsoid is its center.
+     */
+    @Test
+    public void testGetCentroid() {
+        final Ellipsoid ellipsoid = GeometryFactory.DEFAULT.createEllipsoid(
+                GeometryFactory.DEFAULT.createDataPoints(CRS, 1, 2, 3), 3, 2, 1);
+        assertPosition(1, 2, 3, ellipsoid.getCentroid().getPosition());
+    }
+
+    /**
+     * The enclosed volume of an ellipsoid is 4π<var>abc</var>∕3.
+     */
+    @Test
+    public void testGetEnclosedVolume() {
+        assertEquals(8 * Math.PI, ellipsoid().getEnclosedVolume().getValue().doubleValue(), TOLERANCE);
+    }
 }

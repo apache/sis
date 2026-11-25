@@ -17,7 +17,6 @@
 package org.apache.sis.geometries.internal.shared;
 
 import java.util.Objects;
-import javax.measure.Quantity;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import org.apache.sis.geometries.DataPoints;
 import org.apache.sis.geometries.Geometries;
@@ -95,11 +94,6 @@ public non-sealed class DefaultCapsule extends AbstractGeometry implements Capsu
     @Override
     public void setRadiusBottom(double radius) {
         this.radiusBottom = radius;
-    }
-
-    @Override
-    public Quantity<?> getArea() {
-        throw new UnsupportedOperationException("Not supported yet.");
     }
 
     @Override

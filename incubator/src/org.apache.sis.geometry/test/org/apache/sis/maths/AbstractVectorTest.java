@@ -418,6 +418,13 @@ public abstract class AbstractVectorTest {
         assertEquals(Vectors.length(diff), vector.distance(second), TOLERANCE);
         assertEquals(0, vector.distance(vector), TOLERANCE);
         assertThrows(IllegalArgumentException.class, () -> vector.distance(Vector.of(new double[vector.getDimension() + 1])));
+        double rectilinear = 0;
+        for (final double d : diff) {
+            rectilinear += Math.abs(d);
+        }
+        assertEquals(rectilinear, vector.distanceRectilinear(second), TOLERANCE);
+        assertEquals(0, vector.distanceRectilinear(vector), TOLERANCE);
+        assertThrows(IllegalArgumentException.class, () -> vector.distanceRectilinear(Vector.of(new double[vector.getDimension() + 1])));
     }
 
     /**

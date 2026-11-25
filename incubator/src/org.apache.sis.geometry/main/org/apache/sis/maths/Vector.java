@@ -752,6 +752,24 @@ public sealed interface Vector<T extends Vector<T>> permits AbstractVector {
     }
 
     /**
+     * Rectilinear distance between this vector and the other vector, both seen as points.
+     * This is the sum of the absolute coordinate differences, also known as the Manhattan
+     * or taxicab distance.
+     *
+     * @param other second point, of the same dimension
+     * @return rectilinear distance
+     * @throws IllegalArgumentException if vectors do not have the same dimension
+     */
+    default double distanceRectilinear(Vector<?> other) {
+        AbstractVector.ensureDimension(other, getDimension());
+        double sum = 0;
+        for (int i = 0, n = getDimension(); i < n; i++) {
+            sum += Math.abs(get(i) - other.get(i));
+        }
+        return sum;
+    }
+
+    /**
      * Computes the shortest angle between this vector and the other vector.
      * See {@link Vectors#shortestAngle(double[], double[])} for the formula, which keeps
      * full precision for nearly parallel and nearly opposite vectors.

@@ -100,6 +100,20 @@ public class MathsTest {
 
     }
 
+    /**
+     * Tests the volume of the unit ball in 0 to 5 dimensions.
+     */
+    @Test
+    public void testUnitBallVolume() {
+        assertEquals(1,                              Maths.unitBallVolume(0), EPSILON);
+        assertEquals(2,                              Maths.unitBallVolume(1), EPSILON);
+        assertEquals(Math.PI,                        Maths.unitBallVolume(2), EPSILON);
+        assertEquals(4 * Math.PI / 3,                Maths.unitBallVolume(3), EPSILON);
+        assertEquals(Math.PI * Math.PI / 2,          Maths.unitBallVolume(4), EPSILON);
+        assertEquals(8 * Math.PI * Math.PI / 15,     Maths.unitBallVolume(5), EPSILON);
+        assertThrows(IllegalArgumentException.class, () -> Maths.unitBallVolume(-1));
+    }
+
     @Test
     public void testDistanceSquare() {
 

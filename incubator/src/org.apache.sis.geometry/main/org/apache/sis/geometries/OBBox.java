@@ -16,6 +16,7 @@
  */
 package org.apache.sis.geometries;
 
+import javax.measure.Quantity;
 import org.opengis.geometry.Envelope;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import org.apache.sis.geometries.internal.shared.AbstractGeometry;
@@ -24,6 +25,7 @@ import org.apache.sis.maths.DataType;
 import org.apache.sis.maths.NDRange;
 import org.apache.sis.maths.Vector;
 import org.apache.sis.maths.Vector3D;
+import org.apache.sis.measure.Quantities;
 
 
 /**
@@ -201,6 +203,50 @@ public final class OBBox extends AbstractGeometry {
         }
         final boolean leftHanded = xAxis.dot(yAxis.cross(zAxis)) < 0;
         return BBox.boxFaces(getCoordinateReferenceSystem(), corners, leftHanded);
+    }
+
+    /**
+     * Returns the {@linkplain #getCenter() center} of this box.
+     *
+     * @see "ISO 19107:2019 section 6.4.4.8"
+     */
+    @Override
+    public Point getCentroid() {
+        return GeometryFactory.DEFAULT.createPoint(crs, center.toArrayDouble());
+    }
+
+    /**
+     * Returns the sum of the areas of the six faces of this box.
+     *
+     * <ul>
+     *   <li>The axes need not be orthogonal: the faces are then parallelograms.</li>
+     * </ul>
+     *
+     * @return area of this box.
+     *
+     * @see "ISO 19107:2019 section 6.4.28.3"
+     */
+    public Quantity<?> getArea() {
+        final double area = 8 * (xAxis.cross(yAxis).length()
+                               + yAxis.cross(zAxis).length()
+                               + zAxis.cross(xAxis).length());
+        return Quantities.create(area, Geometries.getAreaUnit(this));
+    }
+
+    /**
+     * Returns the volume of this box.
+     *
+     * <ul>
+     *   <li>The axes need not be orthogonal: the box is then a parallelepiped.</li>
+     * </ul>
+     *
+     * @return volume of this box.
+     *
+     * @see "ISO 19107:2019 section 6.4.28.4"
+     */
+    public Quantity<?> getVolume() {
+        final double volume = 8 * Math.abs(xAxis.dot(yAxis.cross(zAxis)));
+        return Quantities.create(volume, Geometries.getVolumeUnit(this));
     }
 
     /**

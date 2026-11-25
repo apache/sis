@@ -60,6 +60,33 @@ public final class Maths {
     private static final double INCIRCLE_ERROR_FACTOR = 8.0;
 
     /**
+     * Returns the volume of the ball of radius 1 in a space of the given dimension:
+     * 2 in 1 dimension, π in 2 dimensions, 4π∕3 in 3 dimensions.
+     *
+     * <ul>
+     *   <li>The measure of the unit sphere bounding that ball is <var>n</var> times this volume.</li>
+     *   <li>Computed by the recurrence <var>V</var>(<var>n</var>) = 2π∕<var>n</var>⋅<var>V</var>(<var>n</var>−2)
+     *       from <var>V</var>(0) = 1 and <var>V</var>(1) = 2, which avoids the Gamma function.</li>
+     * </ul>
+     *
+     * @param  dimension  number of dimensions of the space, zero or positive.
+     * @return volume of the unit ball.
+     * @throws IllegalArgumentException if the dimension is negative.
+     */
+    public static double unitBallVolume(final int dimension) {
+        if (dimension < 0) {
+            throw new IllegalArgumentException("Negative dimension: " + dimension);
+        }
+        int n = (dimension % 2 == 0) ? 0 : 1;
+        double volume = (n == 0) ? 1 : 2;
+        while (n < dimension) {
+            n += 2;
+            volume *= 2 * Math.PI / n;
+        }
+        return volume;
+    }
+
+    /**
      * Calculate normal of triangle made of given 3 points.
      *
      * @param a first triangle point

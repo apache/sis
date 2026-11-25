@@ -23,6 +23,7 @@ import org.apache.sis.geometries.DataPoints;
 import org.apache.sis.geometries.Geometries;
 import org.apache.sis.geometries.GeometryFactory;
 import org.apache.sis.geometries.GeometryType;
+import org.apache.sis.geometries.Point;
 import org.apache.sis.geometries.curve.Arc;
 import org.apache.sis.geometries.curve.Circle;
 import org.apache.sis.maths.Vector;
@@ -138,5 +139,29 @@ public class SphereTest extends GeometryTest {
             assertEquals(2, Math.hypot(p[1] - 2, p[2] - 3), TOLERANCE, "Point not on the sphere.");
         }
         assertEnvelope(curve.getEnvelope(), 1, 2, 1, 1, 4, 5);
+    }
+
+    /**
+     * The enclosed volume is the volume of the ball, or the area of the disk in 2 dimensions.
+     */
+    @Test
+    public void testGetEnclosedVolume() {
+        assertEquals(32 * Math.PI / 3, sphere().getEnclosedVolume().getValue().doubleValue(), TOLERANCE);
+        final Sphere circle = GeometryFactory.DEFAULT.createSphere(
+                GeometryFactory.DEFAULT.createDataPoints(Geometries.getUndefinedCRS(2), 1, 2), 3);
+        assertEquals(9 * Math.PI, circle.getEnclosedVolume().getValue().doubleValue(), TOLERANCE);
+        assertEquals(6 * Math.PI, circle.getArea().getValue().doubleValue(), TOLERANCE);
+    }
+
+    /**
+     * The centroid of a sphere is its center, as a point independent of the sphere.
+     */
+    @Test
+    public void testGetCentroid() {
+        final Sphere sphere = sphere();
+        final Point centroid = sphere.getCentroid();
+        assertPosition(1, 2, 3, centroid.getPosition());
+        sphere.setCenter(Vector.of(0, 0, 0));
+        assertPosition(1, 2, 3, centroid.getPosition());
     }
 }

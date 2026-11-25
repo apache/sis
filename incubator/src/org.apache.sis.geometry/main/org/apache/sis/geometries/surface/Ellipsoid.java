@@ -17,19 +17,24 @@
 package org.apache.sis.geometries.surface;
 
 import java.util.List;
+import javax.measure.Quantity;
 import static org.opengis.annotation.Specification.ISO_19107;
 import org.opengis.annotation.UML;
 import org.opengis.geometry.Envelope;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import org.apache.sis.geometries.DataPointsType;
+import org.apache.sis.geometries.Geometries;
 import org.apache.sis.geometries.Geometry;
 import org.apache.sis.geometries.GeometryFactory;
 import org.apache.sis.geometries.GeometryType;
+import org.apache.sis.geometries.Point;
 import org.apache.sis.geometries.Representation;
 import org.apache.sis.geometries.SurfaceInterpolation;
 import org.apache.sis.geometries.internal.shared.DefaultEllipsoid;
+import org.apache.sis.maths.Maths;
 import org.apache.sis.maths.NDRange;
 import org.apache.sis.maths.Vector;
+import org.apache.sis.measure.Quantities;
 
 
 /**
@@ -152,6 +157,38 @@ public sealed interface Ellipsoid extends ParametricCurveSurface
      * @param position new center of the ellipsoid
      */
     void setCenter(Vector<?> position);
+
+    /**
+     * Returns the {@linkplain #getCenter() center} of this ellipsoid, with the attributes of its data point.
+     *
+     * @see "ISO 19107:2019 section 6.4.4.8"
+     */
+    @Override
+    default Point getCentroid() {
+        return getDataPoints().getInterpolatedPoint(new int[] {0}, new double[] {1});
+    }
+
+    /**
+     * Returns the volume enclosed by this ellipsoid, which is 4π<var>abc</var>∕3 in a 3-dimensional space.
+     *
+     * <ul>
+     *   <li>Not in ISO 19107, which defines volumes on solids only.</li>
+     *   <li>In an <var>n</var>-dimensional space, this is the volume of the unit <var>n</var>-ball times
+     *       the product of the semi-axes, expressed in the linear unit raised to the power <var>n</var>.</li>
+     * </ul>
+     *
+     * @return volume enclosed by this ellipsoid.
+     *
+     * @see Maths#unitBallVolume(int)
+     */
+    default Quantity<?> getEnclosedVolume() {
+        final double[] semiAxes = getSemiAxes();
+        double volume = Maths.unitBallVolume(semiAxes.length);
+        for (final double semiAxis : semiAxes) {
+            volume *= semiAxis;
+        }
+        return Quantities.create(volume, Geometries.getLinearUnit(this).pow(semiAxes.length));
+    }
 
     /**
      * Returns the empty geometry: an ellipsoid is a closed surface, so it has no edge.
