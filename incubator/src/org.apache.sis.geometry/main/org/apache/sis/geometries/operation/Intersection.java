@@ -22,15 +22,23 @@ import java.util.Comparator;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Optional;
+import java.util.function.DoubleFunction;
 import java.util.stream.Stream;
+import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import org.opengis.referencing.operation.TransformException;
+import org.apache.sis.geometries.DataPoints;
 import org.apache.sis.geometries.Geometries;
+import org.apache.sis.geometries.Geometry;
 import org.apache.sis.geometries.GeometryFactory;
+import org.apache.sis.geometries.GeometryType;
+import org.apache.sis.geometries.HyperPlane;
+import org.apache.sis.geometries.Plane;
 import org.apache.sis.geometries.Point;
 import org.apache.sis.geometries.DataPointsType;
 import org.apache.sis.geometries.GeometryCollection;
+import org.apache.sis.geometries.curve.Line;
 import org.apache.sis.geometries.curve.LineString;
-import org.apache.sis.geometries.internal.shared.ArrayDataPoints;
+import org.apache.sis.geometries.curve.Ray;
 import org.apache.sis.geometries.internal.shared.DefaultDataPoints;
 import org.apache.sis.geometries.internal.shared.DefaultNurbCurve;
 import org.apache.sis.geometries.internal.shared.DefaultNurbSurface;
@@ -41,6 +49,7 @@ import org.apache.sis.geometries.surface.PreparedTIN;
 import org.apache.sis.geometries.surface.Triangle;
 import org.apache.sis.maths.Array;
 import org.apache.sis.maths.Cursor;
+import org.apache.sis.maths.DataType;
 import org.apache.sis.maths.Maths;
 import org.apache.sis.maths.Matrices;
 import org.apache.sis.maths.NDArrays;
@@ -55,16 +64,12 @@ import static org.apache.sis.maths.Maths.clamp;
  */
 public final class Intersection {
 
+    /**
+     * Tolerance of the ray operations on geometries, relative to the largest absolute coordinate of the operands.
+     */
+    private static final double RAY_TOLERANCE = 1E-10;
+
     private Intersection(){}
-
-
-    static Vector<?> subtract(final Vector<?> a, final Vector<?> b) {
-        return a.subtract(b);
-    }
-
-    static Vector<?> scale(final Vector<?> a, final double s) {
-        return a.scale(s);
-    }
 
     /**
      * Inherit attributes from TIN.
@@ -758,6 +763,358 @@ public final class Intersection {
     }
 
     /**
+     * Part of a ray touching another geometry, as positions along the ray.
+     * The position <var>t</var> ≥ 0 is the point <var>origin</var> + <var>t</var>⋅<var>direction</var>.
+     *
+     * @param start  smallest position along the ray, or NaN if the ray touches nothing.
+     * @param end    largest position along the ray, equal to {@code start} for a single point,
+     *               or infinite for a ray lying in a plane.
+     *
+     * @see #rayPlane(Vector, Vector, Vector, Vector, double)
+     * @see #rayTriangle(Vector, Vector, Vector, Vector, Vector, double)
+     * @see #raySegment(Vector, Vector, Vector, Vector, double)
+     */
+    public record RayInterval(double start, double end) {
+        /**
+         * The interval of a ray which touches nothing.
+         */
+        public static final RayInterval NONE = new RayInterval(Double.NaN, Double.NaN);
+
+        static RayInterval point(final double t) {
+            return new RayInterval(t, t);
+        }
+
+        /**
+         * Returns whether the ray touches nothing.
+         *
+         * @return whether this interval is empty.
+         */
+        public boolean isEmpty() {
+            return Double.isNaN(start);
+        }
+
+        /**
+         * Returns whether the ray touches a single point.
+         *
+         * @return whether this interval is a single position.
+         */
+        public boolean isPoint() {
+            return start == end;
+        }
+    }
+
+    /**
+     * Computes where a ray crosses a hyperplane, in any number of dimensions.
+     *
+     * <ul>
+     *   <li>A ray starting within the tolerance of the hyperplane touches it at its origin,
+     *       or lies in it if the direction is parallel to the hyperplane.</li>
+     * </ul>
+     *
+     * @param  origin     start of the ray.
+     * @param  direction  direction of the ray, not zero.
+     * @param  point      a position of the hyperplane.
+     * @param  normal     normal of the hyperplane, not zero.
+     * @param  tolerance  largest distance to the hyperplane for considering the origin on it.
+     * @return the crossing point, the whole ray if it lies in the hyperplane, or nothing.
+     * @throws IllegalArgumentException if the direction or the normal is zero.
+     */
+    public static RayInterval rayPlane(Vector<?> origin, Vector<?> direction, Vector<?> point, Vector<?> normal, double tolerance) {
+        ensureNonZero(direction, "direction");
+        ensureNonZero(normal, "normal");
+        final double a = normal.dot(origin.copy(DataType.DOUBLE).subtract(point));
+        final double b = normal.dot(direction);
+        if (Math.abs(a) <= tolerance * normal.length()) {
+            return (b == 0) ? new RayInterval(0, Double.POSITIVE_INFINITY) : RayInterval.point(0);
+        }
+        return (b != 0 && -a / b >= 0) ? RayInterval.point(-a / b) : RayInterval.NONE;
+    }
+
+    /**
+     * Computes where a ray touches a triangle, in 3 dimensions. The ray is cut to a segment going beyond
+     * the triangle, which is given to {@link #segmentTriangle segmentTriangle(…)} for robust side tests.
+     *
+     * <ul>
+     *   <li>A ray in the plane of the triangle gives the part of the ray inside the triangle.</li>
+     *   <li>A degenerate triangle, whose corners are aligned, is never touched.</li>
+     * </ul>
+     *
+     * @param  origin     start of the ray.
+     * @param  direction  direction of the ray, not zero.
+     * @param  a          first corner of the triangle.
+     * @param  b          second corner of the triangle.
+     * @param  c          third corner of the triangle.
+     * @param  tolerance  largest distance to the plane of the triangle for considering a position on it.
+     * @return the part of the ray touching the triangle.
+     * @throws IllegalArgumentException if the direction is zero.
+     */
+    public static RayInterval rayTriangle(Vector<?> origin, Vector<?> direction, Vector<?> a, Vector<?> b, Vector<?> c, double tolerance) {
+        final double length = reach(origin, direction, a, b, c);
+        final double[] s0 = origin.toArrayDouble();
+        final double[] s1 = along(origin, direction, length).toArrayDouble();
+        final double[] pa = a.toArrayDouble(), pb = b.toArrayDouble(), pc = c.toArrayDouble();
+        final SegmentTriangle hit = segmentTriangle(s0, s1, pa, pb, pc, tolerance);
+        return switch (hit.type()) {
+            case NONE -> RayInterval.NONE;
+            case COPLANAR -> {
+                final double[] normal = normal(pa, pb, pc);
+                if (Vectors.lengthSquare(normal) == 0) {
+                    yield RayInterval.NONE;
+                }
+                final List<SegmentTriangle> ends = segmentInTriangle2D(s0, s1, pa, pb, pc, Maths.projectionAxes(normal));
+                yield ends.isEmpty() ? RayInterval.NONE
+                        : new RayInterval(ends.getFirst().ratio() * length, ends.getLast().ratio() * length);
+            }
+            default -> RayInterval.point(hit.ratio() * length);
+        };
+    }
+
+    /**
+     * Computes where a ray touches a line segment, in any number of dimensions.
+     *
+     * <ul>
+     *   <li>The ray touches the segment where their distance is within the tolerance.</li>
+     *   <li>A segment whose two ends are within the tolerance of the line of the ray
+     *       gives the part of the ray along the segment.</li>
+     * </ul>
+     *
+     * @param  origin     start of the ray.
+     * @param  direction  direction of the ray, not zero.
+     * @param  start      start of the segment.
+     * @param  end        end of the segment.
+     * @param  tolerance  largest distance between the ray and the segment for considering that they touch.
+     * @return the part of the ray touching the segment.
+     * @throws IllegalArgumentException if the direction is zero.
+     */
+    public static RayInterval raySegment(Vector<?> origin, Vector<?> direction, Vector<?> start, Vector<?> end, double tolerance) {
+        final double squaredLength = ensureNonZero(direction, "direction");
+        final double t0 = direction.dot(start.copy(DataType.DOUBLE).subtract(origin)) / squaredLength;
+        final double t1 = direction.dot(end  .copy(DataType.DOUBLE).subtract(origin)) / squaredLength;
+        final double high = Math.max(t0, t1);
+        if (high > 0 && along(origin, direction, t0).distance(start) <= tolerance
+                     && along(origin, direction, t1).distance(end)   <= tolerance)
+        {
+            return new RayInterval(Math.max(Math.min(t0, t1), 0), high);
+        }
+        /*
+         * The point of the ray nearest to the segment is not farther than the projections of the segment ends,
+         * so a part of the ray longer than those projections is enough for computing the distance.
+         */
+        final double length = 2 * Math.max(high, 0) + 1;
+        final int dimension = origin.getDimension();
+        final double[] ratios = new double[2];
+        final double distance = Distance.distanceSquare(
+                origin.toArrayDouble(), along(origin, direction, length).toArrayDouble(), new double[dimension],
+                start.toArrayDouble(), end.toArrayDouble(), new double[dimension], ratios, 0);
+        return (distance <= tolerance * tolerance) ? RayInterval.point(ratios[0] * length) : RayInterval.NONE;
+    }
+
+    /**
+     * Returns the squared length of the given vector.
+     *
+     * @throws IllegalArgumentException if the vector is zero.
+     */
+    private static double ensureNonZero(final Vector<?> vector, final String name) {
+        final double squaredLength = vector.lengthSquare();
+        if (!(squaredLength > 0)) {
+            throw new IllegalArgumentException("The " + name + " is zero.");
+        }
+        return squaredLength;
+    }
+
+    /**
+     * Returns a position along the ray beyond the projections of all the given positions on the ray.
+     */
+    private static double reach(final Vector<?> origin, final Vector<?> direction, final Vector<?>... positions) {
+        final double squaredLength = ensureNonZero(direction, "direction");
+        double reach = 0;
+        for (final Vector<?> position : positions) {
+            reach = Math.max(reach, direction.dot(position.copy(DataType.DOUBLE).subtract(origin)) / squaredLength);
+        }
+        return 2 * reach + 1;
+    }
+
+    /**
+     * Returns the point at the given position along the ray, in double precision.
+     */
+    private static Vector<?> along(final Vector<?> origin, final Vector<?> direction, final double t) {
+        return origin.copy(DataType.DOUBLE).combine(1, direction, t);
+    }
+
+    /**
+     * A part of a geometry touched by a ray, with its positions along the ray.
+     */
+    private record RayHit(double start, double end, Geometry geometry) {
+        /**
+         * Returns the point or the line string touched by the ray, as built by the given function from positions
+         * along the ray, or an empty list if the ray touches nothing.
+         */
+        static List<RayHit> of(final RayInterval interval, final DoubleFunction<Point> pointAt) {
+            if (interval.isEmpty()) {
+                return List.of();
+            }
+            final Point start = pointAt.apply(interval.start());
+            final Geometry geometry = interval.isPoint() ? start : line(start, pointAt.apply(interval.end()));
+            return List.of(new RayHit(interval.start(), interval.end(), geometry));
+        }
+    }
+
+    /**
+     * Computes the intersection of a ray with a hyperplane, a plane which is not a quad, a triangle or
+     * a line string. The intersection with a triangle or a line string gets the attributes of that geometry,
+     * interpolated where the ray touches it. The tolerance is {@value #RAY_TOLERANCE} times the largest
+     * absolute coordinate of the operands.
+     *
+     * @param  ray    the ray.
+     * @param  other  the geometry to intersect with the ray.
+     * @return the intersection, or {@code null} if the type of the other geometry is not supported.
+     * @throws OperationException if the geometries are not in the same reference system,
+     *         or if the intersection with that geometry cannot be computed.
+     */
+    static Geometry rayIntersection(final Ray ray, final Geometry other) throws OperationException {
+        final List<RayHit> hits;
+        switch (other) {
+            case HyperPlane plane  -> hits = planeHits(ray, plane, plane.getPosition(), plane.getNormal());
+            case Plane plane when !plane.isQuad() -> hits = planeHits(ray, plane, plane.getPosition(), plane.getNormal());
+            case Plane plane       -> throw new OperationException("The intersection of a ray with a plane of finite size is not supported.");
+            case Triangle triangle -> hits = triangleHits(ray, triangle);
+            case Line line         -> hits = polylineHits(ray, line, line.getDataPoints());
+            case LineString line   -> hits = polylineHits(ray, line, line.getDataPoints());
+            default -> {
+                return null;
+            }
+        }
+        final CoordinateReferenceSystem crs = ray.getCoordinateReferenceSystem();
+        final GeometryFactory factory = GeometryFactory.DEFAULT;
+        if (hits.isEmpty()) {
+            return factory.createEmpty(crs);
+        }
+        if (hits.size() == 1) {
+            return hits.getFirst().geometry();
+        }
+        final Geometry[] parts = hits.stream().sorted(Comparator.comparingDouble(RayHit::start))
+                                     .map(RayHit::geometry).toArray(Geometry[]::new);
+        if (Arrays.stream(parts).allMatch(Point.class::isInstance)) {
+            return factory.createMultiPoint(crs, Arrays.copyOf(parts, parts.length, Point[].class));
+        }
+        return factory.createGeometryCollection(GeometryType.GEOMETRY, crs, parts);
+    }
+
+    /**
+     * Intersection of a ray with a hyperplane: a point without attribute other than its position, or a copy of the ray.
+     */
+    private static List<RayHit> planeHits(final Ray ray, final Geometry plane, final Vector<?> point, final Vector<?> normal) {
+        ProcessorUtils.ensureSameCRS(ray, plane);
+        final Vector<?> origin = ray.getPosition();
+        final Vector<?> direction = ray.getDirection();
+        final RayInterval hit = rayPlane(origin, direction, point, normal, rayTolerance(origin, point));
+        if (hit.isEmpty()) {
+            return List.of();
+        }
+        final CoordinateReferenceSystem crs = ray.getCoordinateReferenceSystem();
+        final Geometry geometry = hit.isPoint()
+                ? GeometryFactory.DEFAULT.createPoint(crs, along(origin, direction, hit.start()).toArrayDouble())
+                : GeometryFactory.DEFAULT.createRay(crs, origin, direction);
+        return List.of(new RayHit(hit.start(), hit.end(), geometry));
+    }
+
+    /**
+     * Intersection of a ray with a triangle: a point or a line string, with attributes interpolated between the corners.
+     */
+    private static List<RayHit> triangleHits(final Ray ray, final Triangle triangle) {
+        ProcessorUtils.ensureSameCRS(ray, triangle);
+        final DataPoints corners = triangle.getExteriorRing().getDataPoints();
+        if (corners.getDimension() != 3) {
+            throw new OperationException("The intersection of a ray with a triangle is computed in 3 dimensions only.");
+        }
+        final Vector<?> origin = ray.getPosition();
+        final Vector<?> direction = ray.getDirection();
+        final Vector<?> a = corners.getPosition(0);
+        final Vector<?> b = corners.getPosition(1);
+        final Vector<?> c = corners.getPosition(2);
+        final RayInterval hit = rayTriangle(origin, direction, a, b, c, rayTolerance(origin, a, b, c));
+        return RayHit.of(hit, (t) -> corners.getInterpolatedPoint(new int[] {0, 1, 2},
+                triangle.getBarycentricValue(along(origin, direction, t))));
+    }
+
+    /**
+     * Intersection of a ray with each segment of a polyline, with attributes interpolated along the segments.
+     * A ray crossing a vertex touches the two segments sharing it, and a ray along a segment touches the ends
+     * of the adjacent segments: the points already in another part of the intersection are removed.
+     */
+    private static List<RayHit> polylineHits(final Ray ray, final Geometry line, final DataPoints points) {
+        ProcessorUtils.ensureSameCRS(ray, line);
+        final Vector<?> origin = ray.getPosition();
+        final Vector<?> direction = ray.getDirection();
+        final int count = points.size();
+        final Vector<?>[] positions = new Vector<?>[count + 1];
+        for (int i = 0; i < count; i++) {
+            positions[i] = points.getPosition(i);
+        }
+        positions[count] = origin;
+        final double tolerance = rayTolerance(positions);
+        final List<RayHit> hits = new ArrayList<>();
+        for (int i = 1; i < count; i++) {
+            final int end = i;
+            final RayInterval hit = raySegment(origin, direction, positions[i - 1], positions[i], tolerance);
+            hits.addAll(RayHit.of(hit, (t) -> pointOnSegment(points, end, along(origin, direction, t))));
+        }
+        final double margin = tolerance / direction.length();
+        final List<RayHit> kept = new ArrayList<>();
+        for (final RayHit hit : hits) {
+            if (!(hit.geometry() instanceof Point)) {
+                kept.add(hit);
+            }
+        }
+        for (final RayHit hit : hits) {
+            if (hit.geometry() instanceof Point && kept.stream().noneMatch(
+                    (other) -> hit.start() >= other.start() - margin && hit.start() <= other.end() + margin))
+            {
+                kept.add(hit);
+            }
+        }
+        return kept;
+    }
+
+    /**
+     * Returns the point of the segment ending at the given index which is nearest to the given position,
+     * with the attributes of the polyline interpolated at that point.
+     */
+    private static Point pointOnSegment(final DataPoints points, final int end, final Vector<?> position) {
+        final Vector<?> start = points.getPosition(end - 1).copy(DataType.DOUBLE);
+        final Vector<?> segment = points.getPosition(end).copy(DataType.DOUBLE).subtract(start);
+        final double squaredLength = segment.lengthSquare();
+        final double ratio = (squaredLength > 0) ? clamp(segment.dot(position.subtract(start)) / squaredLength, 0, 1) : 0;
+        return points.getInterpolatedPoint(end - 1, end, ratio);
+    }
+
+    /**
+     * Returns a line string between the two given points, with their attributes.
+     */
+    private static LineString line(final Point start, final Point end) {
+        final DataPointsType type = start.getDataPointsType();
+        final DataPoints points = GeometryFactory.DEFAULT.createDataPoints(type, 2);
+        for (final String name : type.getAttributeNames()) {
+            points.setAttribute(0, name, start.getAttribute(name));
+            points.setAttribute(1, name, end.getAttribute(name));
+        }
+        return GeometryFactory.DEFAULT.createLineString(points);
+    }
+
+    /**
+     * Returns the tolerance of the ray operations on geometries, relative to the largest absolute coordinate.
+     */
+    private static double rayTolerance(final Vector<?>... positions) {
+        double scale = 0;
+        for (final Vector<?> position : positions) {
+            for (int i = 0; i < position.getDimension(); i++) {
+                scale = Math.max(scale, Math.abs(position.get(i)));
+            }
+        }
+        return scale * RAY_TOLERANCE;
+    }
+
+    /**
      * Intersection operations on BSpline curves and surfaces.
      */
     public static interface BSpline {
@@ -825,10 +1182,10 @@ public final class Intersection {
 
             for (int iter = 0; iter < 10; iter++) {
                 final Vector<?> c1u = c1.evaluate(u1), c2u = c2.evaluate(u2);
-                final Vector<?> f = subtract(c1u, c2u);
+                final Vector<?> f = c1u.subtract(c2u);
 
                 final Vector<?> d1 = numericDerivative(c1, u1);
-                final Vector<?> d2 = scale(numericDerivative(c2, u2), -1);
+                final Vector<?> d2 = numericDerivative(c2, u2).scale(-1);
 
                 final double a = d1.dot(d1), b = d1.dot(d2), cc = d2.dot(d2);
                 final double rhs0 = -d1.dot(f), rhs1 = -d2.dot(f);
@@ -845,7 +1202,7 @@ public final class Intersection {
             }
 
             final Vector<?> p1 = c1.evaluate(u1), p2 = c2.evaluate(u2);
-            final double dist = subtract(p1, p2).length();
+            final double dist = p1.subtract(p2).length();
             if (dist > Math.max(tol, 1e-6)) {
                 return;
             }
@@ -867,9 +1224,9 @@ public final class Intersection {
             final double uPlus = Math.min(u + h, hi), uMinus = Math.max(u - h, lo);
             final double denom = uPlus - uMinus;
             if (denom == 0) {
-                return scale(curve.evaluate(u), 0);
+                return curve.evaluate(u).scale(0);
             }
-            return scale(subtract(curve.evaluate(uPlus), curve.evaluate(uMinus)), 1.0 / denom);
+            return curve.evaluate(uPlus).subtract(curve.evaluate(uMinus)).scale(1.0 / denom);
         }
 
 
@@ -955,12 +1312,12 @@ public final class Intersection {
 
             final double lambda = 1e-8; // Tikhonov regularization (under-determined system)
             for (int iter = 0; iter < 15; iter++) {
-                final Vector<?> f = subtract(s1.evaluate(u1, v1), s2.evaluate(u2, v2));
+                final Vector<?> f = s1.evaluate(u1, v1).subtract(s2.evaluate(u2, v2));
 
                 final Vector<?> dU1 = numericDerivativeU(s1, u1, v1);
                 final Vector<?> dV1 = numericDerivativeV(s1, u1, v1);
-                final Vector<?> dU2 = scale(numericDerivativeU(s2, u2, v2), -1);
-                final Vector<?> dV2 = scale(numericDerivativeV(s2, u2, v2), -1);
+                final Vector<?> dU2 = numericDerivativeU(s2, u2, v2).negate();
+                final Vector<?> dV2 = numericDerivativeV(s2, u2, v2).negate();
                 final Vector<?>[] cols = {dU1, dV1, dU2, dV2};
 
                 final double[][] JtJ = new double[4][4];
@@ -984,14 +1341,14 @@ public final class Intersection {
             }
 
             final Vector<?> p1 = s1.evaluate(u1, v1), p2 = s2.evaluate(u2, v2);
-            final double dist = subtract(p1, p2).length();
+            final double dist = p1.subtract(p2).length();
             if (dist > Math.max(tol, 1e-6)) {
                 return;
             }
 
             final double mergeTol = Math.max(tol * 5, 1e-4);
             final boolean duplicate = results.stream().anyMatch(r
-                    -> subtract(r.point, p1).length() < mergeTol);
+                    -> r.point.subtract(p1).length() < mergeTol);
             if (!duplicate) {
                 results.add(new SurfaceIntersectionPoint(u1, v1, u2, v2, p1));
             }
@@ -1006,9 +1363,9 @@ public final class Intersection {
             final double uPlus = Math.min(u + h, hi), uMinus = Math.max(u - h, lo);
             final double denom = uPlus - uMinus;
             if (denom == 0) {
-                return scale(s.evaluate(u, v), 0);
+                return s.evaluate(u, v).scale(0);
             }
-            return scale(subtract(s.evaluate(uPlus, v), s.evaluate(uMinus, v)), 1.0 / denom);
+            return s.evaluate(uPlus, v).subtract(s.evaluate(uMinus, v)).scale(1.0 / denom);
         }
 
         /**
@@ -1020,9 +1377,9 @@ public final class Intersection {
             final double vPlus = Math.min(v + h, hi), vMinus = Math.max(v - h, lo);
             final double denom = vPlus - vMinus;
             if (denom == 0) {
-                return scale(s.evaluate(u, v), 0);
+                return s.evaluate(u, v).scale(0);
             }
-            return scale(subtract(s.evaluate(u, vPlus), s.evaluate(u, vMinus)), 1.0 / denom);
+            return s.evaluate(u, vPlus).subtract(s.evaluate(u, vMinus)).scale(1.0 / denom);
         }
 
         /**

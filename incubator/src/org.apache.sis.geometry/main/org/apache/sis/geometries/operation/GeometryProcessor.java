@@ -47,6 +47,7 @@ import org.apache.sis.geometries.Representation;
 import org.apache.sis.geometries.curve.LineString;
 import org.apache.sis.geometries.curve.LinearRing;
 import org.apache.sis.geometries.curve.OffsetCurve;
+import org.apache.sis.geometries.curve.Ray;
 import org.apache.sis.geometries.cs.Bearing;
 import org.apache.sis.geometries.internal.shared.ArrayDataPoints;
 import org.apache.sis.geometries.internal.shared.Vertex;
@@ -230,6 +231,13 @@ public final class GeometryProcessor {
             }
         }
 
+        if (geom1 instanceof Ray ray) {
+            return Intersection.rayIntersection(ray, geom2);
+        }
+        if (geom2 instanceof Ray ray) {
+            return Intersection.rayIntersection(ray, geom1);
+        }
+
         //TODO : fallback on JTS until implemented, this loss the attributes !
         return fromJTS(jts(geom1).intersection(jts(geom2)), geom1);
     }
@@ -347,6 +355,13 @@ public final class GeometryProcessor {
         if (geom1.isEmpty() || geom2.isEmpty()) {
             // Negation of `disjoint(Geometry, Geometry)`.
             return false;
+        }
+
+        if (geom1 instanceof Ray ray) {
+            return !Intersection.rayIntersection(ray, geom2).isEmpty();
+        }
+        if (geom2 instanceof Ray ray) {
+            return !Intersection.rayIntersection(ray, geom1).isEmpty();
         }
 
         //TODO : fallback on JTS until implemented

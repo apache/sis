@@ -17,10 +17,12 @@
 package org.apache.sis.geometries.surface;
 
 import org.apache.sis.geometries.DataPoints;
+import org.apache.sis.geometries.Geometries;
 import org.apache.sis.geometries.GeometryFactory;
 import org.apache.sis.geometries.curve.LinearRing;
 import org.apache.sis.maths.Array;
 import org.apache.sis.maths.NDArrays;
+import org.apache.sis.maths.Vector;
 import org.apache.sis.referencing.CommonCRS;
 
 // Test dependencies
@@ -219,5 +221,19 @@ public class TriangleTest extends GeometryTest {
             assertArrayEquals(new double[]{0.4,0.3,0.3}, b, tolerance);
         }
 
+    }
+
+    /**
+     * Tests {@link Triangle#getBarycentricValue(Vector)} on a triangle which is not parallel to an axis plane.
+     */
+    @Test
+    public void testGetBarycentricValue() {
+        final GeometryFactory f = GeometryFactory.DEFAULT;
+        final Triangle triangle = f.createTriangle(f.createLinearRing(
+                f.createDataPoints(Geometries.getUndefinedCRS(3), 0,0,0, 4,0,4, 0,4,4, 0,0,0)));
+        assertArrayEquals(new double[] {1, 0, 0},        triangle.getBarycentricValue(Vector.of(0, 0, 0)), TOLERANCE);
+        assertArrayEquals(new double[] {0, 1, 0},        triangle.getBarycentricValue(Vector.of(4, 0, 4)), TOLERANCE);
+        assertArrayEquals(new double[] {0.5, 0.25, 0.25}, triangle.getBarycentricValue(Vector.of(1, 1, 2)), TOLERANCE);
+        assertArrayEquals(new double[] {-0.5, 0.75, 0.75}, triangle.getBarycentricValue(Vector.of(3, 3, 6)), TOLERANCE);
     }
 }

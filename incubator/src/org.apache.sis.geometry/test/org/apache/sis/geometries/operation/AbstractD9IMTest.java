@@ -18,18 +18,29 @@ package org.apache.sis.geometries.operation;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import org.apache.sis.geometries.Curve;
+import org.apache.sis.geometries.DataPoints;
+import org.apache.sis.geometries.DataPointsType;
 import org.apache.sis.geometries.Empty;
+import org.apache.sis.geometries.Geometries;
 import org.apache.sis.geometries.Geometry;
 import org.apache.sis.geometries.GeometryCollection;
 import org.apache.sis.geometries.GeometryFactory;
+import org.apache.sis.geometries.HyperPlane;
 import org.apache.sis.geometries.Point;
 import org.apache.sis.geometries.Surface;
 import org.apache.sis.geometries.adapter.WellKnownText;
 import org.apache.sis.geometries.curve.LineString;
+import org.apache.sis.geometries.curve.Ray;
 import org.apache.sis.geometries.surface.Polygon;
+import org.apache.sis.geometries.surface.Triangle;
+import org.apache.sis.maths.Array;
+import org.apache.sis.maths.NDArrays;
+import org.apache.sis.maths.Vector;
 import org.apache.sis.referencing.CommonCRS;
 
 // Test dependencies
@@ -53,6 +64,11 @@ public abstract class AbstractD9IMTest {
      * The coordinate reference system of all the geometries declared in this class.
      */
     public static final CoordinateReferenceSystem CRS_2D = CommonCRS.WGS84.geographic();
+
+    /**
+     * The coordinate reference system of the three-dimensional geometries undefined.
+     */
+    public static final CoordinateReferenceSystem CRS_3D = Geometries.getUndefinedCRS(3);
 
     /**
      * Tolerance threshold on the measurements computed by the operations.
@@ -276,6 +292,47 @@ public abstract class AbstractD9IMTest {
      */
     public static final GeometryCollection<?> COLLECTION =
             (GeometryCollection<?>) wkt("GEOMETRYCOLLECTION (POINT (5 5), LINESTRING (0 0, 10 0))");
+
+    /**
+     * Name of the attribute of {@link #TRIANGLE_3D} and {@link #RING_3D}, besides the position.
+     */
+    public static final String ATT_TEST = "TEST";
+
+    /**
+     * A triangle in the plane <var>z</var> = 5, of corners (0 0 5), (4 0 5) and (0 4 5)
+     * with the {@value #ATT_TEST} attribute values 10, 20 and 30.
+     */
+    public static final Triangle TRIANGLE_3D = GeometryFactory.DEFAULT.createTriangle(GeometryFactory.DEFAULT.createLinearRing(
+            attributed(new double[] {0,0,5,  4,0,5,  0,4,5,  0,0,5}, 10, 20, 30, 10)));
+
+    /**
+     * A closed square of side 4 in the plane <var>z</var> = 1, of corners (0 0 1), (4 0 1), (4 4 1) and (0 4 1)
+     * with the {@value #ATT_TEST} attribute values 0, 10, 20 and 40.
+     */
+    public static final LineString RING_3D = GeometryFactory.DEFAULT.createLineString(
+            attributed(new double[] {0,0,1,  4,0,1,  4,4,1,  0,4,1,  0,0,1}, 0, 10, 20, 40, 0));
+
+    /**
+     * The hyperplane <var>z</var> = 5.
+     */
+    public static final HyperPlane PLANE_Z5 = new HyperPlane(CRS_3D, Vector.of(0, 0, 5), Vector.of(0, 0, 1));
+
+    /**
+     * Creates data points in {@link #CRS_3D} with the given {@value #ATT_TEST} attribute values.
+     */
+    private static DataPoints attributed(final double[] positions, final double... values) {
+        final Map<String,Array> attributes = new LinkedHashMap<>();
+        attributes.put(DataPointsType.ATT_POSITION, NDArrays.of(CRS_3D, positions));
+        attributes.put(ATT_TEST, NDArrays.of(1, values));
+        return GeometryFactory.DEFAULT.createDataPoints(attributes);
+    }
+
+    /**
+     * Creates a ray in {@link #CRS_3D} from the given origin toward the given direction.
+     */
+    public static Ray ray(double x, double y, double z, double dx, double dy, double dz) {
+        return GeometryFactory.DEFAULT.createRay(CRS_3D, Vector.of(x, y, z), Vector.of(dx, dy, dz));
+    }
 
     /**
      * Decodes the given Well-Known Text in the {@link #CRS_2D} reference system.

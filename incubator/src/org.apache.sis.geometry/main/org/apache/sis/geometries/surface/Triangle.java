@@ -211,6 +211,38 @@ public sealed interface Triangle extends Polygon
     }
 
     /**
+     * Returns the barycentric weights of the given position relative to the three corners of this triangle.
+     *
+     * <ul>
+     *   <li>Computed in all dimensions of the coordinate system. A position outside the plane
+     *       of this triangle gets the weights of its projection on that plane.</li>
+     *   <li>The weights sum to 1. Some of them are negative if the position is outside this triangle.</li>
+     *   <li>The weights are NaN if this triangle is degenerate.</li>
+     * </ul>
+     *
+     * @param  position  the position for which to compute the weights.
+     * @return barycentric weight of each corner, in the order of the corners.
+     *
+     * @see #interpolate(double[])
+     */
+    default double[] getBarycentricValue(Vector<?> position) {
+        final DataPoints corners = getExteriorRing().getDataPoints();
+        final Vector<?> origin = corners.getPosition(0).copy(DataType.DOUBLE);
+        final Vector<?> edge1  = corners.getPosition(1).copy(DataType.DOUBLE).subtract(origin);
+        final Vector<?> edge2  = corners.getPosition(2).copy(DataType.DOUBLE).subtract(origin);
+        final Vector<?> offset = position.copy(DataType.DOUBLE).subtract(origin);
+        final double d11 = edge1.dot(edge1);
+        final double d12 = edge1.dot(edge2);
+        final double d22 = edge2.dot(edge2);
+        final double p1  = offset.dot(edge1);
+        final double p2  = offset.dot(edge2);
+        final double denominator = d11 * d22 - d12 * d12;
+        final double v = (d22 * p1 - d12 * p2) / denominator;
+        final double w = (d11 * p2 - d12 * p1) / denominator;
+        return new double[] {1 - v - w, v, w};
+    }
+
+    /**
      * Test if point is inside triangle and return it's barycentric weights.
      * This method first test a bounding box intersection then using side algorithm
      * and finally segment distant using given tolerance.

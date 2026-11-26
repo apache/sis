@@ -17,6 +17,8 @@
 package org.apache.sis.geometries.operation;
 
 import org.apache.sis.geometries.Geometry;
+import org.apache.sis.geometries.Plane;
+import org.apache.sis.maths.Vector;
 
 // Test dependencies
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -98,8 +100,31 @@ public class IntersectsTest extends AbstractD9IMTest {
         new TestCase(MULTI_POINT_SPREAD, SQUARE,           true,  null),
         new TestCase(MULTI_LINE,         SQUARE,           true,  null),
         new TestCase(MULTI_POLYGON,      SQUARE_INNER,     true,  null),
-        new TestCase(COLLECTION,         SQUARE,           true,  null)
+        new TestCase(COLLECTION,         SQUARE,           true,  null),
+        /*
+         * A ray and a triangle, a hyperplane or a line string, in either order. The ray touches
+         * the triangle inside, outside, or starts after it. A plane of finite size is not supported.
+         */
+        new TestCase(ray(1, 2, 0,  0, 0, 1),  TRIANGLE_3D,            true,  null),
+        new TestCase(TRIANGLE_3D,             ray(1, 2, 0,  0, 0, 1), true,  null),
+        new TestCase(ray(3, 3, 0,  0, 0, 1),  TRIANGLE_3D,            false, null),
+        new TestCase(ray(1, 2, 6,  0, 0, 1),  TRIANGLE_3D,            false, null),
+        new TestCase(ray(1, 2, 0,  0, 1, 1),  PLANE_Z5,               true,  null),
+        new TestCase(ray(1, 2, 0,  0, 0, -1), PLANE_Z5,               false, null),
+        new TestCase(ray(-1, 2, 1, 1, 0, 0),  RING_3D,                true,  null),
+        new TestCase(ray(-1, 2, 2, 1, 0, 0),  RING_3D,                false, null),
+        new TestCase(ray(1, 2, 0,  0, 0, 1),  quad(),                 null,  OperationException.class)
     };
+
+    /**
+     * Returns the square of size 2 × 2 centered on (0 0 5) in the plane <var>z</var> = 5.
+     */
+    private static Plane quad() {
+        final Plane plane = new Plane(CRS_3D, Vector.of(0, 0, 5), Vector.of(0, 0, 1));
+        plane.setSizeX(2);
+        plane.setSizeZ(2);
+        return plane;
+    }
 
     /**
      * Tests {@code intersects(Geometry, Geometry)} on all declared test cases.

@@ -897,20 +897,6 @@ public final class Maths {
     }
 
     /**
-     * Test if a point is inside given triangle.
-     *
-     * @param a first triangle point
-     * @param b second triangle point
-     * @param c third triangle point
-     * @param p point to test
-     * @return true if point is inside triangle
-     */
-    public static boolean inTriangle(double[] a, double[] b, double[] c, double[] p){
-        final double[] bary = getBarycentricValue(a, b, c, p);
-        return bary[1] >= 0.0 && bary[2] >= 0.0 && (bary[1] + bary[2]) <= 1.0;
-    }
-
-    /**
      * Test if a point is inside given triangle, its edges and corners included. Only X,Y ordinates are used.
      * Robust variant : the side of the point compared to each edge is computed with
      * {@link #lineSide(Vector, Vector, Vector)}, without division.
@@ -936,31 +922,6 @@ public final class Maths {
         final double x = p.get(0), y = p.get(1);
         return x >= Math.min(a.get(0), Math.min(b.get(0), c.get(0))) && x <= Math.max(a.get(0), Math.max(b.get(0), c.get(0)))
             && y >= Math.min(a.get(1), Math.min(b.get(1), c.get(1))) && y <= Math.max(a.get(1), Math.max(b.get(1), c.get(1)));
-    }
-
-    /**
-     * Calculate the barycentric value in triangle for given point.
-     *
-     * @param a first triangle point
-     * @param b second triangle point
-     * @param c third triangle point
-     * @param p point to test
-     * @return Vector barycentric values
-     */
-    public static double[] getBarycentricValue(final double[] a, final double[] b, final double[] c, final double[] p){
-        final double[] v0 = Vectors.subtract(b, a);
-        final double[] v1 = Vectors.subtract(c, a);
-        final double[] v2 = Vectors.subtract(p, a);
-        final double d00 = dot(v0, v0);
-        final double d01 = dot(v0,v1);
-        final double d11 = dot(v1,v1);
-        final double d20 = dot(v2,v0);
-        final double d21 = dot(v2,v1);
-        final double denom = d00 * d11 - d01 * d01;
-        final double v = (d11 * d20 - d01 * d21) / denom;
-        final double w = (d00 * d21 - d01 * d20) / denom;
-        final double u = 1.0f - v - w;
-        return new double[]{u, v, w};
     }
 
     /**
