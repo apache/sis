@@ -136,4 +136,23 @@ public class VectorTest {
         assertEquals(16785409.0, Vector.of(0f, 0f, 0f, 4097f).lengthSquare(), TOLERANCE);
         assertEquals(4097.0,     Vector.of(0f, 0f, 0f, 4097f).length(), TOLERANCE);
     }
+
+    /**
+     * Float and double vectors report a dimension mismatch with the same message as the other vectors.
+     */
+    @Test
+    public void testDimensionMismatch() {
+        final Vector<?> wrong = Vector.of(1.0, 2.0);
+        final Vector3D.Double d = Vector.of(1.0, 2.0, 3.0);
+        final Vector3D.Float  f = Vector.of(1f, 2f, 3f);
+        assertEquals("Vector dimension must be 3", assertThrows(IllegalArgumentException.class, () -> d.dot(wrong)).getMessage());
+        assertEquals("Vector dimension must be 3", assertThrows(IllegalArgumentException.class, () -> d.dotAccurate(wrong)).getMessage());
+        assertEquals("Vector dimension must be 3", assertThrows(IllegalArgumentException.class, () -> d.distanceSquare(wrong)).getMessage());
+        assertEquals("Vector dimension must be 3", assertThrows(IllegalArgumentException.class, () -> d.cross(wrong)).getMessage());
+        assertEquals("Vector dimension must be 3", assertThrows(IllegalArgumentException.class, () -> d.crossAccurate(wrong)).getMessage());
+        assertEquals("Vector dimension must be 3", assertThrows(IllegalArgumentException.class, () -> f.dot(wrong)).getMessage());
+        assertEquals("Vector dimension must be 3", assertThrows(IllegalArgumentException.class, () -> f.distanceSquare(wrong)).getMessage());
+        assertEquals("Vector dimension must be 1", assertThrows(IllegalArgumentException.class, () -> Vector.of(1.0).dot(wrong)).getMessage());
+        assertEquals("Vector dimension must be 4", assertThrows(IllegalArgumentException.class, () -> Vector.of(1f, 2f, 3f, 4f).dotAccurate(wrong)).getMessage());
+    }
 }

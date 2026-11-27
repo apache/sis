@@ -1611,9 +1611,7 @@ public abstract sealed class Vector3D<T extends Vector3D<T>> extends AbstractVec
 
         @Override
         public double dot(Vector<?> other) {
-            if (getDimension() != other.getDimension()) {
-                throw new IllegalArgumentException("Vectors size are different : "+getDimension()+" and "+other.getDimension());
-            }
+            ensureDimension(other, 3);
             return x * other.get(0)
                  + y * other.get(1)
                  + z * other.get(2);
@@ -1621,9 +1619,7 @@ public abstract sealed class Vector3D<T extends Vector3D<T>> extends AbstractVec
 
         @Override
         public double dotAccurate(Vector<?> other) {
-            if (getDimension() != other.getDimension()) {
-                throw new IllegalArgumentException("Vectors size are different : "+getDimension()+" and "+other.getDimension());
-            }
+            ensureDimension(other, 3);
             return LinearCombination.of(x, other.get(0), y, other.get(1), z, other.get(2));
         }
 
@@ -1774,9 +1770,7 @@ public abstract sealed class Vector3D<T extends Vector3D<T>> extends AbstractVec
 
         @Override
         public double distanceSquare(Vector<?> other) {
-            if (getDimension() != other.getDimension()) {
-                throw new IllegalArgumentException("Vectors size are different : "+getDimension()+" and "+other.getDimension());
-            }
+            ensureDimension(other, 3);
             final double dx = x - other.get(0);
             final double dy = y - other.get(1);
             final double dz = z - other.get(2);
@@ -1851,9 +1845,7 @@ public abstract sealed class Vector3D<T extends Vector3D<T>> extends AbstractVec
 
         @Override
         public double dot(Vector<?> other) {
-            if (getDimension() != other.getDimension()) {
-                throw new IllegalArgumentException("Vectors size are different : "+getDimension()+" and "+other.getDimension());
-            }
+            ensureDimension(other, 3);
             return x * other.get(0)
                  + y * other.get(1)
                  + z * other.get(2);
@@ -1861,17 +1853,13 @@ public abstract sealed class Vector3D<T extends Vector3D<T>> extends AbstractVec
 
         @Override
         public double dotAccurate(Vector<?> other) {
-            if (getDimension() != other.getDimension()) {
-                throw new IllegalArgumentException("Vectors size are different : "+getDimension()+" and "+other.getDimension());
-            }
+            ensureDimension(other, 3);
             return LinearCombination.of(x, other.get(0), y, other.get(1), z, other.get(2));
         }
 
         @Override
         public Double cross(Vector<?> other) {
-            if (getDimension() != other.getDimension()) {
-                throw new IllegalArgumentException("Vectors size are different : "+getDimension()+" and "+other.getDimension());
-            }
+            ensureDimension(other, 3);
             double ox = other.get(0);
             double oy = other.get(1);
             double oz = other.get(2);
@@ -1884,9 +1872,7 @@ public abstract sealed class Vector3D<T extends Vector3D<T>> extends AbstractVec
 
         @Override
         public Double crossAccurate(Vector<?> other) {
-            if (getDimension() != other.getDimension()) {
-                throw new IllegalArgumentException("Vectors size are different : "+getDimension()+" and "+other.getDimension());
-            }
+            ensureDimension(other, 3);
             double ox = other.get(0);
             double oy = other.get(1);
             double oz = other.get(2);
@@ -2044,9 +2030,7 @@ public abstract sealed class Vector3D<T extends Vector3D<T>> extends AbstractVec
 
         @Override
         public double distanceSquare(Vector<?> other) {
-            if (getDimension() != other.getDimension()) {
-                throw new IllegalArgumentException("Vectors size are different : "+getDimension()+" and "+other.getDimension());
-            }
+            ensureDimension(other, 3);
             final double dx = x - other.get(0);
             final double dy = y - other.get(1);
             final double dz = z - other.get(2);

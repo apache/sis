@@ -1122,9 +1122,7 @@ public abstract sealed class Vector1D<T extends Vector1D<T>> extends AbstractVec
 
         @Override
         public double dot(Vector<?> other) {
-            if (getDimension() != other.getDimension()) {
-                throw new IllegalArgumentException("Vectors size are different : "+getDimension()+" and "+other.getDimension());
-            }
+            ensureDimension(other, 1);
             return x * other.get(0);
         }
 
@@ -1237,9 +1235,7 @@ public abstract sealed class Vector1D<T extends Vector1D<T>> extends AbstractVec
 
         @Override
         public double distanceSquare(Vector<?> other) {
-            if (getDimension() != other.getDimension()) {
-                throw new IllegalArgumentException("Vectors size are different : "+getDimension()+" and "+other.getDimension());
-            }
+            ensureDimension(other, 1);
             final double dx = x - other.get(0);
             return dx*dx;
         }
@@ -1298,9 +1294,7 @@ public abstract sealed class Vector1D<T extends Vector1D<T>> extends AbstractVec
 
         @Override
         public double dot(Vector<?> other) {
-            if (getDimension() != other.getDimension()) {
-                throw new IllegalArgumentException("Vectors size are different : "+getDimension()+" and "+other.getDimension());
-            }
+            ensureDimension(other, 1);
             return x * other.get(0);
         }
 
@@ -1413,9 +1407,7 @@ public abstract sealed class Vector1D<T extends Vector1D<T>> extends AbstractVec
 
         @Override
         public double distanceSquare(Vector<?> other) {
-            if (getDimension() != other.getDimension()) {
-                throw new IllegalArgumentException("Vectors size are different : "+getDimension()+" and "+other.getDimension());
-            }
+            ensureDimension(other, 1);
             final double dx = x - other.get(0);
             return dx*dx;
         }

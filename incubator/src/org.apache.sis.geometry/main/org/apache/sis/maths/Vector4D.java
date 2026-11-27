@@ -1620,9 +1620,7 @@ public abstract sealed class Vector4D<T extends Vector4D<T>> extends AbstractVec
 
         @Override
         public double dot(Vector<?> other) {
-            if (getDimension() != other.getDimension()) {
-                throw new IllegalArgumentException("Vectors size are different : "+getDimension()+" and "+other.getDimension());
-            }
+            ensureDimension(other, 4);
             return x * other.get(0)
                  + y * other.get(1)
                  + z * other.get(2)
@@ -1631,9 +1629,7 @@ public abstract sealed class Vector4D<T extends Vector4D<T>> extends AbstractVec
 
         @Override
         public double dotAccurate(Vector<?> other) {
-            if (getDimension() != other.getDimension()) {
-                throw new IllegalArgumentException("Vectors size are different : "+getDimension()+" and "+other.getDimension());
-            }
+            ensureDimension(other, 4);
             return LinearCombination.of(x, other.get(0), y, other.get(1), z, other.get(2), w, other.get(3));
         }
 
@@ -1792,9 +1788,7 @@ public abstract sealed class Vector4D<T extends Vector4D<T>> extends AbstractVec
 
         @Override
         public double distanceSquare(Vector<?> other) {
-            if (getDimension() != other.getDimension()) {
-                throw new IllegalArgumentException("Vectors size are different : "+getDimension()+" and "+other.getDimension());
-            }
+            ensureDimension(other, 4);
             final double dx = x - other.get(0);
             final double dy = y - other.get(1);
             final double dz = z - other.get(2);
@@ -1877,9 +1871,7 @@ public abstract sealed class Vector4D<T extends Vector4D<T>> extends AbstractVec
 
         @Override
         public double dot(Vector<?> other) {
-            if (getDimension() != other.getDimension()) {
-                throw new IllegalArgumentException("Vectors size are different : "+getDimension()+" and "+other.getDimension());
-            }
+            ensureDimension(other, 4);
             return x * other.get(0)
                  + y * other.get(1)
                  + z * other.get(2)
@@ -1888,9 +1880,7 @@ public abstract sealed class Vector4D<T extends Vector4D<T>> extends AbstractVec
 
         @Override
         public double dotAccurate(Vector<?> other) {
-            if (getDimension() != other.getDimension()) {
-                throw new IllegalArgumentException("Vectors size are different : "+getDimension()+" and "+other.getDimension());
-            }
+            ensureDimension(other, 4);
             return LinearCombination.of(x, other.get(0), y, other.get(1), z, other.get(2), w, other.get(3));
         }
 
@@ -2049,9 +2039,7 @@ public abstract sealed class Vector4D<T extends Vector4D<T>> extends AbstractVec
 
         @Override
         public double distanceSquare(Vector<?> other) {
-            if (getDimension() != other.getDimension()) {
-                throw new IllegalArgumentException("Vectors size are different : "+getDimension()+" and "+other.getDimension());
-            }
+            ensureDimension(other, 4);
             final double dx = x - other.get(0);
             final double dy = y - other.get(1);
             final double dz = z - other.get(2);
