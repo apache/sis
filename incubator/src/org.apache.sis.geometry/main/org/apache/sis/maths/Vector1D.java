@@ -1112,12 +1112,12 @@ public abstract sealed class Vector1D<T extends Vector1D<T>> extends AbstractVec
 
         @Override
         public double length() {
-            return Math.sqrt(x*x);
+            return Math.sqrt((double) x * x);
         }
 
         @Override
         public double lengthSquare() {
-            return x*x;
+            return (double) x * x;
         }
 
         @Override

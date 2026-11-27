@@ -1610,12 +1610,12 @@ public abstract sealed class Vector4D<T extends Vector4D<T>> extends AbstractVec
 
         @Override
         public double length() {
-            return Math.sqrt(x*x + y*y + z*z + w*w);
+            return Math.sqrt((double) x * x + (double) y * y + (double) z * z + (double) w * w);
         }
 
         @Override
         public double lengthSquare() {
-            return x*x + y*y + z*z + w*w;
+            return (double) x * x + (double) y * y + (double) z * z + (double) w * w;
         }
 
         @Override

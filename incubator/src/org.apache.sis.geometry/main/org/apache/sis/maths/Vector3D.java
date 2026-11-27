@@ -1601,12 +1601,12 @@ public abstract sealed class Vector3D<T extends Vector3D<T>> extends AbstractVec
 
         @Override
         public double length() {
-            return Math.sqrt(x*x + y*y + z*z);
+            return Math.sqrt((double) x * x + (double) y * y + (double) z * z);
         }
 
         @Override
         public double lengthSquare() {
-            return x*x + y*y + z*z;
+            return (double) x * x + (double) y * y + (double) z * z;
         }
 
         @Override

@@ -121,4 +121,19 @@ public class VectorTest {
         assertArrayEquals(new double[] {0.5, 0.5, 0.5, 4.5, 5.0},
                 Vector.of(0.0, 0.0, 0.0, 4.0, 5.0).lerp(Vector.of(1.0, 1.0, 1.0, 5.0, 5.0), 0.5).toArrayDouble(), 0.0);
     }
+
+    /**
+     * The length of a float vector is computed in double precision: 4097² = 16785409 has no float representation.
+     */
+    @Test
+    public void testFloatLength() {
+        assertEquals(16785409.0, Vector.of(4097f).lengthSquare(), TOLERANCE);
+        assertEquals(4097.0,     Vector.of(4097f).length(), TOLERANCE);
+        assertEquals(16785409.0, Vector.of(0f, 4097f).lengthSquare(), TOLERANCE);
+        assertEquals(4097.0,     Vector.of(0f, 4097f).length(), TOLERANCE);
+        assertEquals(16785409.0, Vector.of(0f, 0f, 4097f).lengthSquare(), TOLERANCE);
+        assertEquals(4097.0,     Vector.of(0f, 0f, 4097f).length(), TOLERANCE);
+        assertEquals(16785409.0, Vector.of(0f, 0f, 0f, 4097f).lengthSquare(), TOLERANCE);
+        assertEquals(4097.0,     Vector.of(0f, 0f, 0f, 4097f).length(), TOLERANCE);
+    }
 }
