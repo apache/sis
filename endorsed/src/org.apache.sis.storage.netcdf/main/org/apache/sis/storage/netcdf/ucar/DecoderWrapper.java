@@ -18,6 +18,7 @@ package org.apache.sis.storage.netcdf.ucar;
 
 import java.io.File;
 import java.io.IOException;
+import java.nio.file.Path;
 import java.util.Set;
 import java.util.List;
 import java.util.Formatter;
@@ -27,6 +28,7 @@ import java.time.temporal.Temporal;
 import ucar.nc2.Group;
 import ucar.nc2.Attribute;
 import ucar.nc2.NetcdfFile;
+import ucar.nc2.NetcdfFiles;
 import ucar.nc2.dataset.DatasetUrl;
 import ucar.nc2.dataset.NetcdfDataset;
 import ucar.nc2.dataset.NetcdfDatasets;
@@ -161,6 +163,36 @@ public final class DecoderWrapper extends Decoder implements CancelTask {
          * (e.g. `int` instead of `short`).
          */
         file = NetcdfDatasets.openDataset(url, Set.of(NetcdfDataset.Enhance.CoordSystems), -1, this, null);
+        groups = new Group[1];
+        initialize();
+    }
+
+    /**
+     * Creates a new decoder for the given path. This constructor is used for paths
+     * that the UCAR library cannot open by itself, for example paths on S3 storage.
+     * The bytes are read through the Java NIO channel provided by the path file system.
+     *
+     * @param  path       the netCDF file from which to read data.
+     * @param  geomlib    the library for geometric objects, or {@code null} for the default.
+     * @param  listeners  where to send the warnings.
+     * @throws IOException if an error occurred while opening the netCDF file.
+     */
+    public DecoderWrapper(final Path path, final GeometryLibrary geomlib, final StoreListeners listeners)
+            throws IOException
+    {
+        super(geomlib, listeners);
+        final var raf = new ChannelRandomAccessFile(path);
+        try {
+            /*
+             * Same enhancement as in the constructor expecting a filename.
+             * See the comment in that constructor for more details.
+             */
+            file = NetcdfDatasets.enhance(NetcdfFiles.open(raf, raf.getLocation(), this, null),
+                                          Set.of(NetcdfDataset.Enhance.CoordSystems), this);
+        } catch (IOException | RuntimeException e) {
+            raf.close();
+            throw e;
+        }
         groups = new Group[1];
         initialize();
     }
