@@ -109,7 +109,6 @@ public abstract class AbstractVectorTest {
         testDot(vector);
         testDistance(vector);
         testVectorTo(vector);
-        testTransformFunction(vector);
         testNaNInfinite(tuple);
         testUnsignedArithmetic(tuple);
         testNewVectorOperations(tuple);
@@ -394,16 +393,6 @@ public abstract class AbstractVectorTest {
         final double expected = Vectors.dot(vector.toArrayDouble(), second.toArrayDouble());
         assertEquals(expected, vector.dot(second), TOLERANCE);
         assertThrows(IllegalArgumentException.class, () -> vector.dot(Vector.of(new double[vector.getDimension() + 1])));
-    }
-
-    /**
-     * Test applying a function on a vector.
-     */
-    private void testTransformFunction(Vector<?> vector) {
-        assertSame(vector, vector.transform((v) -> v));
-        assertEquals(vector.getDimension(), (int) vector.transform(Vector::getDimension));
-        final Vector<?> scaled = vector.transform((v) -> v.scale(2));
-        assertArrayEquals(Vectors.scale(vector.toArrayDouble(), 2), scaled.toArrayDouble(), TOLERANCE);
     }
 
     /**

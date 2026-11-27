@@ -16,7 +16,6 @@
  */
 package org.apache.sis.maths;
 
-import java.util.function.Function;
 import org.opengis.geometry.DirectPosition;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import org.opengis.referencing.operation.MathTransform;
@@ -1078,19 +1077,6 @@ public sealed interface Vector<T extends Vector<T>> permits AbstractVector {
      */
     default T transform(Transform trs) {
         return (T) Vectors.create(trs.transform(toArrayDouble(), new double[trs.getOutputDimensions()]), getDataType());
-    }
-
-    /**
-     * Apply the given function on this vector and return its result.
-     * This is a convenience method for chaining operations, for example
-     * {@code v.transform(Foo::bar)._normalize()}. This vector is unchanged.
-     *
-     * @param <R> type of the function result
-     * @param fn function to apply on this vector, not null
-     * @return function result
-     */
-    default <R> R transform(Function<? super T, ? extends R> fn) {
-        return fn.apply((T) this);
     }
 
     /**
