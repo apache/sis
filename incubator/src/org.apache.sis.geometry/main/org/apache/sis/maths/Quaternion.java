@@ -30,8 +30,8 @@ import static org.apache.sis.maths.Matrix.ROW_ORDER;
  */
 public class Quaternion {
 
-    private static final Vector3D.Double UNIT_X = new Vector3D.Double(1,0,0);
-    private static final Vector3D.Double UNIT_Y = new Vector3D.Double(0,1,0);
+    private static final Vector3D.Double UNIT_X = Vector.of(1.0,0.0,0.0);
+    private static final Vector3D.Double UNIT_Y = Vector.of(0.0,1.0,0.0);
 
     /**
      * Quaternion values x, y, z, w.
@@ -223,7 +223,7 @@ public class Quaternion {
      * @return quaternion values x, y, z, w as a new vector
      */
     public Vector4D.Double toVector() {
-        return new Vector4D.Double(values[0], values[1], values[2], values[3]);
+        return Vector.of(values[0], values[1], values[2], values[3]);
     }
 
     /**
@@ -327,7 +327,7 @@ public class Quaternion {
         uuvy *= 2;
         uuvz *= 2;
         // return vec3.add(out, a, vec3.add(out, uv, uuv));
-        return new Vector3D.Double(
+        return Vector.of(
                 v.x + uvx + uuvx,
                 v.y + uvy + uuvy,
                 v.z + uvz + uuvz);

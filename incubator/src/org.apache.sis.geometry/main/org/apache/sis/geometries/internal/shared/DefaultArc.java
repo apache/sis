@@ -28,7 +28,6 @@ import org.apache.sis.maths.Array;
 import org.apache.sis.maths.DataType;
 import org.apache.sis.maths.NDRange;
 import org.apache.sis.maths.Vector;
-import org.apache.sis.maths.Vector2D;
 
 
 /**
@@ -145,7 +144,7 @@ public non-sealed class DefaultArc extends DefaultConic implements Arc {
                     middle = centre.add(bisector.scale(r / length));
                 } else if (centre.getDimension() == 2) {
                     // Half turn: counterclockwise by default.
-                    middle = new Vector2D.Double(centre.get(0) - (start.get(1) - centre.get(1)),
+                    middle = Vector.of(centre.get(0) - (start.get(1) - centre.get(1)),
                                                  centre.get(1) + (start.get(0) - centre.get(0)));
                 } else {
                     throw new IllegalStateException("Arc " + i + " is a half turn, which plane is not determined"

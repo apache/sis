@@ -35,7 +35,6 @@ import org.apache.sis.maths.NDArrays;
 import org.apache.sis.maths.NDRange;
 import org.apache.sis.maths.SampleSystem;
 import org.apache.sis.maths.Vector;
-import org.apache.sis.maths.Vector2D;
 import org.apache.sis.measure.Quantities;
 
 
@@ -224,7 +223,7 @@ public final class CurveLinearizer {
             centre = start.copy(DataType.DOUBLE).lerp(middle, 0.5);
             radius = distance(start, centre);
             e1 = start.copy(DataType.DOUBLE).subtract(centre).scale(1 / radius);
-            e2 = new Vector2D.Double(-e1.get(1), e1.get(0));
+            e2 = Vector.of(-e1.get(1), e1.get(0));
         } else {
             u = u.scale(1 / chord);
             final Vector<?> mid = start.copy(DataType.DOUBLE).lerp(end, 0.5);

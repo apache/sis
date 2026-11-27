@@ -202,7 +202,7 @@ public class Matrix4D extends AbstractMatrix<Matrix4D> {
     }
 
     public Vector<?> getTranslation(){
-        return new Vector4D.Double(m03, m13, m23, 1);
+        return Vector.of(m03, m13, m23, 1.0);
     }
 
     public void setTranslation(Vector<?> translation){
@@ -461,7 +461,7 @@ public class Matrix4D extends AbstractMatrix<Matrix4D> {
         final double y = vector.get(1);
         final double z = vector.get(2);
         final double w = vector.get(3);
-        return new Vector4D.Double(
+        return Vector.of(
                 m00*x + m01*y + m02*z + m03*w,
                 m10*x + m11*y + m12*z + m13*w,
                 m20*x + m21*y + m22*z + m23*w,

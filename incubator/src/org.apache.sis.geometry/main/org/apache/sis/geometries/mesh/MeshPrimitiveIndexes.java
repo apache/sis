@@ -30,6 +30,7 @@ import org.apache.sis.maths.Cursor;
 import org.apache.sis.maths.DataType;
 import org.apache.sis.maths.NDArrays;
 import org.apache.sis.maths.Vector1D;
+import org.apache.sis.maths.Vector;
 
 
 /**
@@ -264,9 +265,9 @@ public final class MeshPrimitiveIndexes {
             Edge edge = root;
             triangle = edge.triangle;
             //add the 3 first indices
-            index.add(new Vector1D.Int(edge.start));
-            index.add(new Vector1D.Int(edge.end));
-            index.add(new Vector1D.Int(edge.next.end));
+            index.add(Vector.of(edge.start));
+            index.add(Vector.of(edge.end));
+            index.add(Vector.of(edge.next.end));
 
             //add each next triangle new vertex
             edge = edge.next;
@@ -276,7 +277,7 @@ public final class MeshPrimitiveIndexes {
             triangle.unregister(edges);
 
             for (boolean odd = false; edge != null; odd = !odd) {
-                index.add(new Vector1D.Int(edge.next.end));
+                index.add(Vector.of(edge.next.end));
                 edge = odd ? edge.next : edge.next.next;
                 triangle = edge.triangle;
                 edge = edge.neighbor;
@@ -289,7 +290,7 @@ public final class MeshPrimitiveIndexes {
             boolean odd = true;
             while (edge.neighbor != null && edge.neighbor.opposite(odd) != null) {
                 edge = edge.neighbor;
-                index.add(new Vector1D.Int(edge.next.end));
+                index.add(Vector.of(edge.next.end));
                 triangle = edge.triangle;
                 edge = edge.opposite(odd).neighbor;
                 triangle.unregister(edges);

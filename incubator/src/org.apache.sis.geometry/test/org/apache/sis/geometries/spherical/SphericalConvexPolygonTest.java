@@ -22,6 +22,7 @@ import org.apache.sis.maths.Array;
 import org.apache.sis.maths.DataType;
 import org.apache.sis.maths.NDArrays;
 import org.apache.sis.maths.Vector3D;
+import org.apache.sis.maths.Vector;
 
 // Test dependencies
 import static org.junit.jupiter.api.Assertions.*;
@@ -39,10 +40,10 @@ public class SphericalConvexPolygonTest {
      * Corners of a spherical square cap centered on the north pole, given in
      * CCW order viewed from outside the sphere.
      */
-    private final Vector3D.Double a = new Vector3D.Double(1, 0, 1).normalize();
-    private final Vector3D.Double b = new Vector3D.Double(0, 1, 1).normalize();
-    private final Vector3D.Double c = new Vector3D.Double(-1, 0, 1).normalize();
-    private final Vector3D.Double d = new Vector3D.Double(0, -1, 1).normalize();
+    private final Vector3D.Double a = Vector.of(1.0, 0.0, 1.0).normalize();
+    private final Vector3D.Double b = Vector.of(0.0, 1.0, 1.0).normalize();
+    private final Vector3D.Double c = Vector.of(-1.0, 0.0, 1.0).normalize();
+    private final Vector3D.Double d = Vector.of(0.0, -1.0, 1.0).normalize();
 
     private final Array points = NDArrays.of(List.of(a, b, c, d, a), 3, DataType.DOUBLE);
     private final SphericalConvexPolygon polygon = new SphericalConvexPolygon(new DefaultSphere(3), points);
@@ -63,7 +64,7 @@ public class SphericalConvexPolygonTest {
      */
     @Test
     public void containsInteriorTest() {
-        assertTrue(polygon.contains(new Vector3D.Double(0, 0, 1)));
+        assertTrue(polygon.contains(Vector.of(0.0, 0.0, 1.0)));
     }
 
     /**
@@ -71,7 +72,7 @@ public class SphericalConvexPolygonTest {
      */
     @Test
     public void containsOppositeSideTest() {
-        assertFalse(polygon.contains(new Vector3D.Double(0, 0, -1)));
+        assertFalse(polygon.contains(Vector.of(0.0, 0.0, -1.0)));
     }
 
     /**
@@ -80,10 +81,10 @@ public class SphericalConvexPolygonTest {
      */
     @Test
     public void containsOutsideEquatorTest() {
-        assertFalse(polygon.contains(new Vector3D.Double(1, 0, 0)));
-        assertFalse(polygon.contains(new Vector3D.Double(0, 1, 0)));
-        assertFalse(polygon.contains(new Vector3D.Double(-1, 0, 0)));
-        assertFalse(polygon.contains(new Vector3D.Double(0, -1, 0)));
+        assertFalse(polygon.contains(Vector.of(1.0, 0.0, 0.0)));
+        assertFalse(polygon.contains(Vector.of(0.0, 1.0, 0.0)));
+        assertFalse(polygon.contains(Vector.of(-1.0, 0.0, 0.0)));
+        assertFalse(polygon.contains(Vector.of(0.0, -1.0, 0.0)));
     }
 
 
@@ -92,12 +93,12 @@ public class SphericalConvexPolygonTest {
      */
     @Test
     public void marginTest() {
-        assertTrue(polygon.margin(new Vector3D.Double(0, 0, 1)) > 0);
+        assertTrue(polygon.margin(Vector.of(0.0, 0.0, 1.0)) > 0);
         assertEquals(0, polygon.margin(a), 1e-15);
-        assertTrue(polygon.margin(new Vector3D.Double(0, 0, -1)) < 0);
-        assertTrue(polygon.margin(new Vector3D.Double(1, 1, 0).normalize()) < 0);
+        assertTrue(polygon.margin(Vector.of(0.0, 0.0, -1.0)) < 0);
+        assertTrue(polygon.margin(Vector.of(1.0, 1.0, 0.0).normalize()) < 0);
         // a point nearer to the center is further inside
-        assertTrue(polygon.margin(new Vector3D.Double(0, 0, 1)) > polygon.margin(new Vector3D.Double(0.2, 0, 1).normalize()));
+        assertTrue(polygon.margin(Vector.of(0.0, 0.0, 1.0)) > polygon.margin(Vector.of(0.2, 0.0, 1.0).normalize()));
     }
 
     /**

@@ -305,14 +305,14 @@ public final class Geometries {
             double maxy = upper.get(1);
             double maxz = upper.get(2);
 
-            final Vector3D.Double lll = new Vector3D.Double(minx, miny, minz);
-            final Vector3D.Double ull = new Vector3D.Double(maxx, miny, minz);
-            final Vector3D.Double uul = new Vector3D.Double(maxx, maxy, minz);
-            final Vector3D.Double lul = new Vector3D.Double(minx, maxy, minz);
-            final Vector3D.Double ulu = new Vector3D.Double(maxx, miny, maxz);
-            final Vector3D.Double llu = new Vector3D.Double(minx, miny, maxz);
-            final Vector3D.Double uuu = new Vector3D.Double(maxx, maxy, maxz);
-            final Vector3D.Double luu = new Vector3D.Double(minx, maxy, maxz);
+            final Vector3D.Double lll = Vector.of(minx, miny, minz);
+            final Vector3D.Double ull = Vector.of(maxx, miny, minz);
+            final Vector3D.Double uul = Vector.of(maxx, maxy, minz);
+            final Vector3D.Double lul = Vector.of(minx, maxy, minz);
+            final Vector3D.Double ulu = Vector.of(maxx, miny, maxz);
+            final Vector3D.Double llu = Vector.of(minx, miny, maxz);
+            final Vector3D.Double uuu = Vector.of(maxx, maxy, maxz);
+            final Vector3D.Double luu = Vector.of(minx, maxy, maxz);
 
             final Array positions = NDArrays.of(system, new double[24*3]);
             //back

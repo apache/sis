@@ -18,7 +18,6 @@ package org.apache.sis.geometries.spherical;
 
 import org.apache.sis.geometries.internal.shared.DefaultSphere;
 import org.apache.sis.maths.Vector;
-import org.apache.sis.maths.Vector3D;
 
 // Test dependencies
 import static org.junit.jupiter.api.Assertions.*;
@@ -34,8 +33,8 @@ public class GreatCircleArcTest {
 
     private static final double TOLERANCE = 1e-12;
 
-    private final Vector<?> a = new Vector3D.Double(1, 0, 0);
-    private final Vector<?> b = new Vector3D.Double(0, 1, 0);
+    private final Vector<?> a = Vector.of(1.0, 0.0, 0.0);
+    private final Vector<?> b = Vector.of(0.0, 1.0, 0.0);
 
     /**
      * Length test.
@@ -51,7 +50,7 @@ public class GreatCircleArcTest {
         assertEquals(Math.PI, biggerArc.getLength(), TOLERANCE);
 
         // arc between antipodal points spans half a great circle
-        final GreatCircleArc halfArc = new GreatCircleArc(new DefaultSphere(3), a, new Vector3D.Double(-1, 0, 0));
+        final GreatCircleArc halfArc = new GreatCircleArc(new DefaultSphere(3), a, Vector.of(-1.0, 0.0, 0.0));
         assertEquals(Math.PI, halfArc.getLength(), TOLERANCE);
 
         // arc between a point and itself has no length
@@ -68,7 +67,7 @@ public class GreatCircleArcTest {
         for (final double length : new double[] {1000, 10, 0.1}) {
             final double angle = length / radius;
             final GreatCircleArc arc = new GreatCircleArc(new DefaultSphere(3, radius), a,
-                    new Vector3D.Double(Math.cos(angle), Math.sin(angle), 0));
+                    Vector.of(Math.cos(angle), Math.sin(angle), 0.0));
             assertEquals(length, arc.getLength(), length * 1e-12);
         }
     }
@@ -117,7 +116,7 @@ public class GreatCircleArcTest {
         assertArrayEquals(a.toArrayDouble(), coincident.pointAt(0.5).toArrayDouble(), TOLERANCE);
         assertArrayEquals(a.toArrayDouble(), coincident.pointAt(1.0).toArrayDouble(), TOLERANCE);
 
-        final GreatCircleArc antipodal = new GreatCircleArc(new DefaultSphere(3), a, new Vector3D.Double(-1, 0, 0));
+        final GreatCircleArc antipodal = new GreatCircleArc(new DefaultSphere(3), a, Vector.of(-1.0, 0.0, 0.0));
         //the ends themselves are still well defined
         assertArrayEquals(a.toArrayDouble(), antipodal.pointAt(0.0).toArrayDouble(), TOLERANCE);
         assertThrows(IllegalArgumentException.class, () -> antipodal.pointAt(0.5));

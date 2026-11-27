@@ -208,7 +208,7 @@ public class Matrix2D extends AbstractMatrix<Matrix2D> {
     public Vector2D.Double transform(Vector<?> vector) {
         final double x = vector.get(0);
         final double y = vector.get(1);
-        return new Vector2D.Double(
+        return Vector.of(
                 m00*x + m01*y,
                 m10*x + m11*y);
     }

@@ -271,7 +271,7 @@ public class Matrix3D extends AbstractMatrix<Matrix3D> {
         final double x = vector.get(0);
         final double y = vector.get(1);
         final double z = vector.get(2);
-        return new Vector3D.Double(
+        return Vector.of(
                 m00*x + m01*y + m02*z,
                 m10*x + m11*y + m12*z,
                 m20*x + m21*y + m22*z);
@@ -326,7 +326,7 @@ public class Matrix3D extends AbstractMatrix<Matrix3D> {
             }
         }
 
-        return new Vector3D.Double(angle_z, angle_y, angle_x);
+        return Vector.of(angle_z, angle_y, angle_x);
     }
 
     /**
@@ -380,9 +380,9 @@ public class Matrix3D extends AbstractMatrix<Matrix3D> {
      * @return
      */
     public Matrix3D setFromAngles(double x, double y, double z){
-        setFromAngle(x, new Vector3D.Double(1, 0, 0));
-        Matrix3D r2 = new Matrix3D().setFromAngle(y, new Vector3D.Double(0, 1, 0));
-        Matrix3D r3 = new Matrix3D().setFromAngle(z, new Vector3D.Double(0, 0, 1));
+        setFromAngle(x, Vector.of(1.0, 0.0, 0.0));
+        Matrix3D r2 = new Matrix3D().setFromAngle(y, Vector.of(0.0, 1.0, 0.0));
+        Matrix3D r3 = new Matrix3D().setFromAngle(z, Vector.of(0.0, 0.0, 1.0));
         this.multiply(r2);
         this.multiply(r3);
         return this;

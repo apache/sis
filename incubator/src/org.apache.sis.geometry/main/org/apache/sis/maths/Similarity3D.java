@@ -26,8 +26,8 @@ import java.util.Objects;
  */
 public final class Similarity3D extends AbstractSimilarity<Similarity3D> {
 
-    private Vector3D.Double scale = new Vector3D.Double(1, 1, 1);
-    private Vector3D.Double translation = new Vector3D.Double(0, 0, 0);
+    private Vector3D.Double scale = Vector.of(1.0, 1.0, 1.0);
+    private Vector3D.Double translation = Vector.of(0.0, 0.0, 0.0);
     private final Matrix3D rotation = new Matrix3D(1,0,0, 0,1,0, 0,0,1);
 
     public Similarity3D(){

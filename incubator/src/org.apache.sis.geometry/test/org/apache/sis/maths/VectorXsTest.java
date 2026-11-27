@@ -30,13 +30,7 @@ public class VectorXsTest extends AbstractVectorTest{
 
     @Override
     protected Vector create(int dim) {
-        switch (dim) {
-            case 1 : return new Vector1D.Short((short)0);
-            case 2 : return new Vector2D.Short((short)0,(short)0);
-            case 3 : return new Vector3D.Short((short)0,(short)0,(short)0);
-            case 4 : return new Vector4D.Short((short)0,(short)0,(short)0,(short)0);
-            default : return new VectorND.Short(dim);
-        }
+        return Vector.of(DataType.SHORT, new double[dim]);
     }
 
 }

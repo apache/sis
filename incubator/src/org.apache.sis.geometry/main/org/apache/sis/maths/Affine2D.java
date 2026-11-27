@@ -146,7 +146,7 @@ public final class Affine2D extends AbstractAffine<Affine2D> {
     public Vector2D.Double transform(Vector<?> source) {
         final double x = source.get(0);
         final double y = source.get(1);
-        return new Vector2D.Double(
+        return Vector.of(
                 m00*x + m01*y + m02,
                 m10*x + m11*y + m12);
     }

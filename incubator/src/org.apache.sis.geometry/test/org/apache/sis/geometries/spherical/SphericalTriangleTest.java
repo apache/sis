@@ -19,7 +19,6 @@ package org.apache.sis.geometries.spherical;
 import org.apache.sis.geometries.internal.shared.DefaultSphere;
 import org.apache.sis.maths.Array;
 import org.apache.sis.maths.Vector;
-import org.apache.sis.maths.Vector3D;
 
 // Test dependencies
 import static org.junit.jupiter.api.Assertions.*;
@@ -39,9 +38,9 @@ public class SphericalTriangleTest {
      * Triangle covering the octant of the sphere where x,y,z are all positive.
      * Corners are given in CCW order viewed from outside the sphere.
      */
-    private final Vector<?> a = new Vector3D.Double(1, 0, 0);
-    private final Vector<?> b = new Vector3D.Double(0, 1, 0);
-    private final Vector<?> c = new Vector3D.Double(0, 0, 1);
+    private final Vector<?> a = Vector.of(1.0, 0.0, 0.0);
+    private final Vector<?> b = Vector.of(0.0, 1.0, 0.0);
+    private final Vector<?> c = Vector.of(0.0, 0.0, 1.0);
 
     /**
      * Constructor and corner accessors test.
@@ -84,9 +83,9 @@ public class SphericalTriangleTest {
     @Test
     public void getSphericalExcessSmallTest() {
         for (final double s : new double[] {1e-2, 1e-4, 1e-6}) {
-            final Vector<?> pole = new Vector3D.Double(0, 0, 1);
-            final Vector<?> east = new Vector3D.Double(Math.sin(s), 0, Math.cos(s));
-            final Vector<?> north = new Vector3D.Double(0, Math.sin(s), Math.cos(s));
+            final Vector<?> pole = Vector.of(0.0, 0.0, 1.0);
+            final Vector<?> east = Vector.of(Math.sin(s), 0.0, Math.cos(s));
+            final Vector<?> north = Vector.of(0.0, Math.sin(s), Math.cos(s));
             final double t = Math.tan(s / 2);
             final double expected = 2 * Math.atan(t * t);
             assertEquals(expected, new SphericalTriangle(new DefaultSphere(3), pole, east, north).getSphericalExcess(), expected * 1e-9);
@@ -118,9 +117,9 @@ public class SphericalTriangleTest {
         assertTrue(triangle.contains(triangle.getB()));
         assertTrue(triangle.contains(triangle.getC()));
         assertTrue(triangle.contains(triangle.getCentroidVector()));
-        assertFalse(triangle.contains(new Vector3D.Double(-1, 0, 0)));
-        assertFalse(triangle.contains(new Vector3D.Double(0, -1, 0)));
-        assertFalse(triangle.contains(new Vector3D.Double(0, 0, -1)));
+        assertFalse(triangle.contains(Vector.of(-1.0, 0.0, 0.0)));
+        assertFalse(triangle.contains(Vector.of(0.0, -1.0, 0.0)));
+        assertFalse(triangle.contains(Vector.of(0.0, 0.0, -1.0)));
     }
 
     /**
@@ -238,7 +237,7 @@ public class SphericalTriangleTest {
         final SphericalTriangle triangle = new SphericalTriangle(new DefaultSphere(3), a, b, c);
         assertTrue(triangle.margin(triangle.getCentroidVector()) > 0);
         assertEquals(0, triangle.margin(a), 1e-15);
-        assertTrue(triangle.margin(new Vector3D.Double(-1, -1, -1).normalize()) < 0);
+        assertTrue(triangle.margin(Vector.of(-1.0, -1.0, -1.0).normalize()) < 0);
     }
 
     /**

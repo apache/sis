@@ -881,7 +881,7 @@ public sealed interface MeshPrimitive extends Geometry
                     final DataPoints points = candidate.getDataPoints();
                     long idx0 = ((Vertex)points.getPoint(0)).getIndex();
                     long idx1 = ((Vertex)points.getPoint(1)).getIndex();
-                    final Vector normal = new Vector3D.Float(0,0,1);
+                    final Vector normal = Vector.of(0f,0f,1f);
 
                     normals.set(idx0, normals.get(idx0).add(normal));
                     normals.set(idx1, normals.get(idx1).add(normal));
@@ -890,7 +890,7 @@ public sealed interface MeshPrimitive extends Geometry
                 @Override
                 protected void visit(Point candidate) {
                     long idx0 = ((Vertex)candidate).getIndex();
-                    final Vector normal = new Vector3D.Float(0,0,1);
+                    final Vector normal = Vector.of(0f,0f,1f);
                     normals.set(idx0, normal);
                 }
 
@@ -948,9 +948,9 @@ public sealed interface MeshPrimitive extends Geometry
                     for (Entry<List<Vector<?>>,Array> entry : mapping) {
                         entry.getKey().add(entry.getValue().get(idx));
                     }
-                    newIndex.add(new Vector1D.Int(newIdx));
+                    newIndex.add(Vector.of(newIdx));
                 } else {
-                    newIndex.add(new Vector1D.Int(previous));
+                    newIndex.add(Vector.of(previous));
                 }
             }
 

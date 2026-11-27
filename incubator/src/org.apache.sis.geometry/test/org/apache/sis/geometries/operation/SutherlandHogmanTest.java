@@ -18,7 +18,6 @@ package org.apache.sis.geometries.operation;
 
 import java.util.List;
 import org.apache.sis.maths.NDArrays;
-import org.apache.sis.maths.Vector2D;
 import org.apache.sis.maths.Array;
 import org.apache.sis.maths.Vector;
 
@@ -53,9 +52,9 @@ public final class SutherlandHogmanTest {
 
         final List<Vector> result = SutherlandHodgman.clip(NDArrays.asList(subject), NDArrays.asList(clip));
         assertEquals(4,result.size());
-        assertEquals(new Vector2D.Double(5,  8),result.get(0));
-        assertEquals(new Vector2D.Double(10,  8),result.get(1));
-        assertEquals(new Vector2D.Double(10, 20),result.get(2));
-        assertEquals(new Vector2D.Double(5, 20),result.get(3));
+        assertEquals(Vector.of(5.0,  8.0),result.get(0));
+        assertEquals(Vector.of(10.0,  8.0),result.get(1));
+        assertEquals(Vector.of(10.0, 20.0),result.get(2));
+        assertEquals(Vector.of(5.0, 20.0),result.get(3));
     }
 }

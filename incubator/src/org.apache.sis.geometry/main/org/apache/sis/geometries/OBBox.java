@@ -24,7 +24,6 @@ import org.apache.sis.geometries.internal.shared.SinglePositionDataPoints;
 import org.apache.sis.maths.DataType;
 import org.apache.sis.maths.NDRange;
 import org.apache.sis.maths.Vector;
-import org.apache.sis.maths.Vector3D;
 import org.apache.sis.measure.Quantities;
 
 
@@ -255,10 +254,10 @@ public final class OBBox extends AbstractGeometry {
      */
     public void fromEnvelope(Envelope env) {
         setCoordinateReferenceSystem(env.getCoordinateReferenceSystem());
-        center = new Vector3D.Double(env.getMedian(0), env.getMedian(1), env.getMedian(2));
-        xAxis = new Vector3D.Double(env.getSpan(0) / 2.0, 0.0, 0.0);
-        yAxis = new Vector3D.Double(0.0, env.getSpan(1) / 2.0, 0.0);
-        zAxis = new Vector3D.Double(0.0, 0.0, env.getSpan(2) / 2.0);
+        center = Vector.of(env.getMedian(0), env.getMedian(1), env.getMedian(2));
+        xAxis = Vector.of(env.getSpan(0) / 2.0, 0.0, 0.0);
+        yAxis = Vector.of(0.0, env.getSpan(1) / 2.0, 0.0);
+        zAxis = Vector.of(0.0, 0.0, env.getSpan(2) / 2.0);
     }
 
     /**

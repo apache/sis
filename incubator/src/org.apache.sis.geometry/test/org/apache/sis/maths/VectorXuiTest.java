@@ -30,13 +30,7 @@ public class VectorXuiTest extends AbstractVectorTest{
 
     @Override
     protected Vector create(int dim) {
-        switch (dim) {
-            case 1 : return new Vector1D.UInt(0);
-            case 2 : return new Vector2D.UInt(0,0);
-            case 3 : return new Vector3D.UInt(0,0,0);
-            case 4 : return new Vector4D.UInt(0,0,0,0);
-            default : return new VectorND.UInt(dim);
-        }
+        return Vector.of(DataType.UINT, new double[dim]);
     }
 
 }

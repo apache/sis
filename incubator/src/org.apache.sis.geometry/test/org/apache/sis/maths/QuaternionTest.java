@@ -85,21 +85,21 @@ public class QuaternionTest {
     @Test
     public void testFromEuler(){
 
-        Vector euler = new Vector3D.Double(0, 0, 0);
+        Vector euler = Vector.of(0.0, 0.0, 0.0);
         Quaternion q = new Quaternion().setFromEuler(euler);
         assertArrayEquals(new double[]{0, 0, 0, 1}, q.values, DELTA);
 
-        euler = new Vector3D.Double(Math.PI, 0, 0);
+        euler = Vector.of(Math.PI, 0.0, 0.0);
         q = new Quaternion().setFromEuler(euler);
         assertArrayEquals(new double[]{0, 0, 1, 0}, q.values, DELTA);
 
-        euler = new Vector3D.Double(0, Math.PI / 2.0, 0);
+        euler = Vector.of(0.0, Math.PI / 2.0, 0.0);
         q = new Quaternion().setFromEuler(euler);
         assertArrayEquals(new double[]{0, Math.cos(Math.PI / 4.0), 0, Math.cos(Math.PI / 4.0)}, q.values, DELTA);
         euler = q.toEuler();
         assertArrayEquals(new double[]{0, Math.PI / 2.0, 0}, euler.toArrayDouble(), DELTA);
 
-        euler = new Vector3D.Double(0, 0, Math.PI);
+        euler = Vector.of(0.0, 0.0, Math.PI);
         q = new Quaternion().setFromEuler(euler);
         assertArrayEquals(new double[]{1, 0, 0, 0}, q.values, DELTA);
 

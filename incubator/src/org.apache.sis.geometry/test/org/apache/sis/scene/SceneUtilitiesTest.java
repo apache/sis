@@ -17,7 +17,7 @@
 package org.apache.sis.scene;
 
 import org.apache.sis.maths.Similarity3D;
-import org.apache.sis.maths.Vector3D;
+import org.apache.sis.maths.Vector;
 
 // Test dependencies
 import static org.junit.jupiter.api.Assertions.*;
@@ -38,10 +38,10 @@ public class SceneUtilitiesTest {
         final SceneNode n1 = new SceneNode();
         final SceneNode n2 = new SceneNode();
         final SceneNode n3 = new SceneNode();
-        n0.getTransform().setTranslation(new Vector3D.Double(1,2,3));
-        n1.getTransform().setTranslation(new Vector3D.Double(4,5,6));
-        n2.getTransform().setTranslation(new Vector3D.Double(10,20,30));
-        n3.getTransform().setTranslation(new Vector3D.Double(100,200,300));
+        n0.getTransform().setTranslation(Vector.of(1.0,2.0,3.0));
+        n1.getTransform().setTranslation(Vector.of(4.0,5.0,6.0));
+        n2.getTransform().setTranslation(Vector.of(10.0,20.0,30.0));
+        n3.getTransform().setTranslation(Vector.of(100.0,200.0,300.0));
 
         root.getChildren().add(n0);
         root.getChildren().add(n1);
@@ -49,15 +49,15 @@ public class SceneUtilitiesTest {
         n1.getChildren().add(n3);
 
         Similarity3D t = SceneUtilities.computeRootOtNodeTransform(n0);
-        assertEquals(new Vector3D.Double(1,2,3), t.getTranslation());
+        assertEquals(Vector.of(1.0,2.0,3.0), t.getTranslation());
 
         t = SceneUtilities.computeRootOtNodeTransform(n1);
-        assertEquals(new Vector3D.Double(4,5,6), t.getTranslation());
+        assertEquals(Vector.of(4.0,5.0,6.0), t.getTranslation());
 
         t = SceneUtilities.computeRootOtNodeTransform(n2);
-        assertEquals(new Vector3D.Double(14,25,36), t.getTranslation());
+        assertEquals(Vector.of(14.0,25.0,36.0), t.getTranslation());
 
         t = SceneUtilities.computeRootOtNodeTransform(n3);
-        assertEquals(new Vector3D.Double(104,205,306), t.getTranslation());
+        assertEquals(Vector.of(104.0,205.0,306.0), t.getTranslation());
     }
 }

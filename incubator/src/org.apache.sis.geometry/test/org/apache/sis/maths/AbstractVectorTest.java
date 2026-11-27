@@ -379,7 +379,7 @@ public abstract class AbstractVectorTest {
      */
     private void testCross(Vector<?> vector) {
         if (vector.getDimension() != 3) return;
-        final Vector<?> second = new Vector3D.Double(5, 5, 5);
+        final Vector<?> second = Vector.of(5.0, 5.0, 5.0);
         final double[] expected = Vectors.cross(vector.toArrayDouble(), second.toArrayDouble());
         assertArrayEquals(expected, vector.cross(second).toArrayDouble(), TOLERANCE);
     }

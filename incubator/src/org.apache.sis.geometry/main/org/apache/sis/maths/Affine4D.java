@@ -336,7 +336,7 @@ public final class Affine4D extends AbstractAffine<Affine4D> {
         final double y = source.get(1);
         final double z = source.get(2);
         final double w = source.get(3);
-        return new Vector4D.Double(
+        return Vector.of(
                 m00*x + m01*y + m02*z + m03*w + m04,
                 m10*x + m11*y + m12*z + m13*w + m14,
                 m20*x + m21*y + m22*z + m23*w + m24,

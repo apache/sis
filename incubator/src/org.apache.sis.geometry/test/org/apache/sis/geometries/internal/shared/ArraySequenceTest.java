@@ -22,9 +22,8 @@ import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import org.apache.sis.geometries.Point;
 import org.apache.sis.geometries.DataPointsType;
 import org.apache.sis.maths.NDArrays;
-import org.apache.sis.maths.Vector2D;
-import org.apache.sis.maths.Vector3D;
 import org.apache.sis.maths.Array;
+import org.apache.sis.maths.Vector;
 import org.apache.sis.referencing.CommonCRS;
 
 // Test dependencies
@@ -104,31 +103,31 @@ public class ArraySequenceTest {
         assertEquals(normals, array.getAttribute(DataPointsType.ATT_NORMAL));
         assertEquals(2, array.getAttributeNames().size());
 
-        assertEquals(new Vector2D.Double(0, 0), array.getAttribute(0, DataPointsType.ATT_POSITION));
-        assertEquals(new Vector2D.Double(1, 0), array.getAttribute(1, DataPointsType.ATT_POSITION));
-        assertEquals(new Vector2D.Double(0, 1), array.getAttribute(2, DataPointsType.ATT_POSITION));
-        assertEquals(new Vector2D.Double(0, 0), array.getAttribute(3, DataPointsType.ATT_POSITION));
-        assertEquals(new Vector2D.Double(0, 0), array.getPosition(0));
-        assertEquals(new Vector2D.Double(1, 0), array.getPosition(1));
-        assertEquals(new Vector2D.Double(0, 1), array.getPosition(2));
-        assertEquals(new Vector2D.Double(0, 0), array.getPosition(3));
-        assertEquals(new Vector3D.Double(1, 0, 0), array.getAttribute(0, DataPointsType.ATT_NORMAL));
-        assertEquals(new Vector3D.Double(0, 1, 0), array.getAttribute(1, DataPointsType.ATT_NORMAL));
-        assertEquals(new Vector3D.Double(0, 0, 1), array.getAttribute(2, DataPointsType.ATT_NORMAL));
-        assertEquals(new Vector3D.Double(1, 0, 0), array.getAttribute(3, DataPointsType.ATT_NORMAL));
+        assertEquals(Vector.of(0.0, 0.0), array.getAttribute(0, DataPointsType.ATT_POSITION));
+        assertEquals(Vector.of(1.0, 0.0), array.getAttribute(1, DataPointsType.ATT_POSITION));
+        assertEquals(Vector.of(0.0, 1.0), array.getAttribute(2, DataPointsType.ATT_POSITION));
+        assertEquals(Vector.of(0.0, 0.0), array.getAttribute(3, DataPointsType.ATT_POSITION));
+        assertEquals(Vector.of(0.0, 0.0), array.getPosition(0));
+        assertEquals(Vector.of(1.0, 0.0), array.getPosition(1));
+        assertEquals(Vector.of(0.0, 1.0), array.getPosition(2));
+        assertEquals(Vector.of(0.0, 0.0), array.getPosition(3));
+        assertEquals(Vector.of(1.0, 0.0, 0.0), array.getAttribute(0, DataPointsType.ATT_NORMAL));
+        assertEquals(Vector.of(0.0, 1.0, 0.0), array.getAttribute(1, DataPointsType.ATT_NORMAL));
+        assertEquals(Vector.of(0.0, 0.0, 1.0), array.getAttribute(2, DataPointsType.ATT_NORMAL));
+        assertEquals(Vector.of(1.0, 0.0, 0.0), array.getAttribute(3, DataPointsType.ATT_NORMAL));
 
         Point pt0 = array.getPoint(0);
         Point pt1 = array.getPoint(1);
         Point pt2 = array.getPoint(2);
         Point pt3 = array.getPoint(3);
-        assertEquals(new Vector2D.Double(0, 0), pt0.getPosition());
-        assertEquals(new Vector2D.Double(1, 0), pt1.getPosition());
-        assertEquals(new Vector2D.Double(0, 1), pt2.getPosition());
-        assertEquals(new Vector2D.Double(0, 0), pt3.getPosition());
-        assertEquals(new Vector3D.Double(1, 0, 0), pt0.getAttribute(DataPointsType.ATT_NORMAL));
-        assertEquals(new Vector3D.Double(0, 1, 0), pt1.getAttribute(DataPointsType.ATT_NORMAL));
-        assertEquals(new Vector3D.Double(0, 0, 1), pt2.getAttribute(DataPointsType.ATT_NORMAL));
-        assertEquals(new Vector3D.Double(1, 0, 0), pt3.getAttribute(DataPointsType.ATT_NORMAL));
+        assertEquals(Vector.of(0.0, 0.0), pt0.getPosition());
+        assertEquals(Vector.of(1.0, 0.0), pt1.getPosition());
+        assertEquals(Vector.of(0.0, 1.0), pt2.getPosition());
+        assertEquals(Vector.of(0.0, 0.0), pt3.getPosition());
+        assertEquals(Vector.of(1.0, 0.0, 0.0), pt0.getAttribute(DataPointsType.ATT_NORMAL));
+        assertEquals(Vector.of(0.0, 1.0, 0.0), pt1.getAttribute(DataPointsType.ATT_NORMAL));
+        assertEquals(Vector.of(0.0, 0.0, 1.0), pt2.getAttribute(DataPointsType.ATT_NORMAL));
+        assertEquals(Vector.of(1.0, 0.0, 0.0), pt3.getAttribute(DataPointsType.ATT_NORMAL));
 
     }
 

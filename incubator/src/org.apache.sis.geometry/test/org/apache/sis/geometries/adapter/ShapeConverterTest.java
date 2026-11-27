@@ -122,7 +122,7 @@ public final class ShapeConverterTest {
         final var shape = new GeneralPath();
         shape.moveTo(10, 20);
         assertCoordinatesEqual(shape, Point.class,
-                new Vector2D.Double(10, 20));
+                Vector.of(10.0, 20.0));
     }
 
     /**
@@ -132,8 +132,8 @@ public final class ShapeConverterTest {
     public void testLine() {
         final var shape = new Line2D.Double(1, 2, 3, 4);
         assertCoordinatesEqual(shape, LineString.class,
-                new Vector2D.Double(1, 2),
-                new Vector2D.Double(3, 4));
+                Vector.of(1.0, 2.0),
+                Vector.of(3.0, 4.0));
     }
 
     /**
@@ -143,11 +143,11 @@ public final class ShapeConverterTest {
     public void testRectangle() {
         final var shape = new Rectangle2D.Double(1, 2, 10, 20);
         assertCoordinatesEqual(shape, Polygon.class,
-                new Vector2D.Double( 1,  2),
-                new Vector2D.Double(11,  2),
-                new Vector2D.Double(11, 22),
-                new Vector2D.Double( 1, 22),
-                new Vector2D.Double( 1,  2));
+                Vector.of( 1.0,  2.0),
+                Vector.of(11.0,  2.0),
+                Vector.of(11.0, 22.0),
+                Vector.of( 1.0, 22.0),
+                Vector.of( 1.0,  2.0));
     }
 
     /**
@@ -165,18 +165,18 @@ public final class ShapeConverterTest {
         assertEquals(1, polygon.getNumInteriorRing());
 
         assertCoordinatesEqual(polygon.getExteriorRing(), LinearRing.class,
-                new Vector2D.Double(1,   2),
-                new Vector2D.Double(1,  22),
-                new Vector2D.Double(11, 22),
-                new Vector2D.Double(11,  2),
-                new Vector2D.Double(1,   2));
+                Vector.of(1.0,   2.0),
+                Vector.of(1.0,  22.0),
+                Vector.of(11.0, 22.0),
+                Vector.of(11.0,  2.0),
+                Vector.of(1.0,   2.0));
 
         assertCoordinatesEqual(polygon.getInteriorRingN(0), LinearRing.class,
-                new Vector2D.Double(7, 6),
-                new Vector2D.Double(7, 9),
-                new Vector2D.Double(5, 9),
-                new Vector2D.Double(5, 6),
-                new Vector2D.Double(7, 6));
+                Vector.of(7.0, 6.0),
+                Vector.of(7.0, 9.0),
+                Vector.of(5.0, 9.0),
+                Vector.of(5.0, 6.0),
+                Vector.of(7.0, 6.0));
     }
 
     /**

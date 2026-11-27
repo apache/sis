@@ -120,7 +120,7 @@ public abstract sealed class Vector3D<T extends Vector3D<T>> extends AbstractVec
      */
     public static Vector3D.Double fromLatLon(double latRad, double lonRad) {
         final double cosLat = Math.cos(latRad);
-        return new Vector3D.Double(
+        return Vector.of(
                 cosLat * Math.cos(lonRad),
                 cosLat * Math.sin(lonRad),
                 Math.sin(latRad));
@@ -212,7 +212,7 @@ public abstract sealed class Vector3D<T extends Vector3D<T>> extends AbstractVec
         ensureDimension(other, 3);
         final double x = get(0), y = get(1), z = get(2);
         final double ox = other.get(0), oy = other.get(1), oz = other.get(2);
-        return new Vector3D.Double(
+        return Vector.of(
                 (y * oz) - (z * oy),
                 (z * ox) - (x * oz),
                 (x * oy) - (y * ox));
@@ -223,7 +223,7 @@ public abstract sealed class Vector3D<T extends Vector3D<T>> extends AbstractVec
         ensureDimension(other, 3);
         final double x = get(0), y = get(1), z = get(2);
         final double ox = other.get(0), oy = other.get(1), oz = other.get(2);
-        return new Vector3D.Double(
+        return Vector.of(
                 LinearCombination.of(y, oz, -z, oy),
                 LinearCombination.of(z, ox, -x, oz),
                 LinearCombination.of(x, oy, -y, ox));

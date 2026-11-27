@@ -617,11 +617,11 @@ public final class Matrices {
     public static double[][] focusedOrbit(final double xAngle, final double yAngle,
             double rollAngle, double distance){
 
-        final Vector4D.Double forward = new Vector4D.Double(1*distance, 0, 0, 0);
+        final Vector4D.Double forward = Vector.of(1*distance, 0.0, 0.0, 0.0);
 
         //calculate rotation matrix
-        final MatrixND rotateMatrix = new MatrixND(createRotation4(xAngle, new Vector3D.Double(0, 0, 1),null));
-        final MatrixND mv = new MatrixND(createRotation4(yAngle, new Vector3D.Double(0, -1, 0), null));
+        final MatrixND rotateMatrix = new MatrixND(createRotation4(xAngle, Vector.of(0.0, 0.0, 1.0),null));
+        final MatrixND mv = new MatrixND(createRotation4(yAngle, Vector.of(0.0, -1.0, 0.0), null));
         rotateMatrix.multiply(mv);
 
         //calculate translation vector

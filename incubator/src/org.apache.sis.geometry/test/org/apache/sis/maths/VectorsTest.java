@@ -35,42 +35,42 @@ public class VectorsTest {
     @Test
     public void octEncodingTest(){
 
-        Vector3D.Float normal = new Vector3D.Float(1,0,0);
+        Vector3D.Float normal = Vector.of(1f,0f,0f);
         byte[] bytes = Vectors.toOctByte(normal);
         Vector3D.Float res = Vectors.octToNormal(bytes[0], bytes[1]);
         assertArrayEquals(normal.toArrayFloat(), res.toArrayFloat(), .01f);
 
-        normal = new Vector3D.Float(0,1,0);
+        normal = Vector.of(0f,1f,0f);
         bytes = Vectors.toOctByte(normal);
         res = Vectors.octToNormal(bytes[0], bytes[1]);
         assertArrayEquals(normal.toArrayFloat(), res.toArrayFloat(), .01f);
 
-        normal = new Vector3D.Float(0,0,1);
+        normal = Vector.of(0f,0f,1f);
         bytes = Vectors.toOctByte(normal);
         res = Vectors.octToNormal(bytes[0], bytes[1]);
         assertArrayEquals(normal.toArrayFloat(), res.toArrayFloat(), .01f);
 
-        normal = new Vector3D.Float(0.5f,0,0.5f).normalize();
+        normal = Vector.of(0.5f,0f,0.5f).normalize();
         bytes = Vectors.toOctByte(normal);
         res = Vectors.octToNormal(bytes[0], bytes[1]);
         assertArrayEquals(normal.toArrayFloat(), res.toArrayFloat(), .01f);
 
-        normal = new Vector3D.Float(-1,0,0).normalize();
+        normal = Vector.of(-1f,0f,0f).normalize();
         bytes = Vectors.toOctByte(normal);
         res = Vectors.octToNormal(bytes[0], bytes[1]);
         assertArrayEquals(normal.toArrayFloat(), res.toArrayFloat(), .01f);
 
-        normal = new Vector3D.Float(0,-1,0).normalize();
+        normal = Vector.of(0f,-1f,0f).normalize();
         bytes = Vectors.toOctByte(normal);
         res = Vectors.octToNormal(bytes[0], bytes[1]);
         assertArrayEquals(normal.toArrayFloat(), res.toArrayFloat(), .01f);
 
-        normal = new Vector3D.Float(0,0,-1).normalize();
+        normal = Vector.of(0f,0f,-1f).normalize();
         bytes = Vectors.toOctByte(normal);
         res = Vectors.octToNormal(bytes[0], bytes[1]);
         assertArrayEquals(normal.toArrayFloat(), res.toArrayFloat(), .01f);
 
-        normal = new Vector3D.Float(0,-0.5f,0.5f).normalize();
+        normal = Vector.of(0f,-0.5f,0.5f).normalize();
         bytes = Vectors.toOctByte(normal);
         res = Vectors.octToNormal(bytes[0], bytes[1]);
         assertArrayEquals(normal.toArrayFloat(), res.toArrayFloat(), .02f);
@@ -84,14 +84,14 @@ public class VectorsTest {
         quantizeBox.setRange(1, 100, 300);
         quantizeBox.setRange(2, -300, -100);
 
-        final Vector3D.Double coord1 = new Vector3D.Double(0,100,-300);
-        final Vector3D.Double coord2 = new Vector3D.Double(100,300,-100);
+        final Vector3D.Double coord1 = Vector.of(0.0,100.0,-300.0);
+        final Vector3D.Double coord2 = Vector.of(100.0,300.0,-100.0);
 
         final Vector dp1 = Vectors.toQuantizedEncoding(coord1, quantizeBox, 32767);
         final Vector dp2 = Vectors.toQuantizedEncoding(coord2, quantizeBox, 32767);
 
-        assertEquals(new Vector3D.Double(0, 0, 0), dp1);
-        assertEquals(new Vector3D.Double(32767, 32767, 32767), dp2);
+        assertEquals(Vector.of(0.0, 0.0, 0.0), dp1);
+        assertEquals(Vector.of(32767.0, 32767.0, 32767.0), dp2);
         assertEquals(DataType.USHORT, dp1.getDataType());
         assertEquals(DataType.USHORT, dp2.getDataType());
 
@@ -109,8 +109,8 @@ public class VectorsTest {
 
         MathTransform trs = Vectors.quantizedTransform(quantizeBox, 32767);
 
-        final Vector3D.Double coord1 = new Vector3D.Double(0,100,-300);
-        final Vector3D.Double coord2 = new Vector3D.Double(100,300,-100);
+        final Vector3D.Double coord1 = Vector.of(0.0,100.0,-300.0);
+        final Vector3D.Double coord2 = Vector.of(100.0,300.0,-100.0);
 
         assertArrayEquals(new double[] {0, 0, 0}, coord1.transform(trs).toArrayDouble(), DELTA);
         assertArrayEquals(new double[] {32767, 32767, 32767}, coord2.transform(trs).toArrayDouble(), DELTA);
@@ -221,8 +221,8 @@ public class VectorsTest {
      */
     @Test
     public void slerpOnVectorTest() {
-        final Vector3D.Double start = new Vector3D.Double(1, 0, 0);
-        final Vector3D.Double end   = new Vector3D.Double(0, 1, 0);
+        final Vector3D.Double start = Vector.of(1.0, 0.0, 0.0);
+        final Vector3D.Double end   = Vector.of(0.0, 1.0, 0.0);
         final Vector3D.Double result = start.slerp(end, 0.5);
         assertNotSame(start, result);
         final double h = Math.sqrt(0.5);
@@ -265,11 +265,11 @@ public class VectorsTest {
     @Test
     public void shortestAngleOnVectorTest() {
         final double angle = 1e-10;
-        final Vector3D.Double a = new Vector3D.Double(1, 0, 0);
-        final Vector3D.Double b = new Vector3D.Double(3 * Math.cos(angle), 3 * Math.sin(angle), 0);
+        final Vector3D.Double a = Vector.of(1.0, 0.0, 0.0);
+        final Vector3D.Double b = Vector.of(3 * Math.cos(angle), 3 * Math.sin(angle), 0.0);
         assertEquals(angle, a.shortestAngle(b), angle * 1e-6);
         assertEquals(Vectors.shortestAngle(a.toArrayDouble(), b.toArrayDouble()), a.shortestAngle(b), 0);
-        assertTrue(Double.isNaN(a.shortestAngle(new Vector3D.Double())), "a zero vector has no direction");
+        assertTrue(Double.isNaN(a.shortestAngle(Vector.of(0.0,0.0,0.0))), "a zero vector has no direction");
     }
 
     /**

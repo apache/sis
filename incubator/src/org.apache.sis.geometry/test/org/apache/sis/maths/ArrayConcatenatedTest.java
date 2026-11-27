@@ -48,32 +48,32 @@ public class ArrayConcatenatedTest extends AbstractArrayTest {
         final Array array3 = NDArrays.of(2, new double[]{8,9,10,11});
         final Array cnt = NDArrays.concatenate(array1, array2, array3);
 
-        assertEquals(new Vector2D.Double(0,1), cnt.get(0));
-        assertEquals(new Vector2D.Double(2,3), cnt.get(1));
-        assertEquals(new Vector2D.Double(4,5), cnt.get(2));
-        assertEquals(new Vector2D.Double(6,7), cnt.get(3));
-        assertEquals(new Vector2D.Double(8,9), cnt.get(4));
-        assertEquals(new Vector2D.Double(10,11), cnt.get(5));
+        assertEquals(Vector.of(0.0,1.0), cnt.get(0));
+        assertEquals(Vector.of(2.0,3.0), cnt.get(1));
+        assertEquals(Vector.of(4.0,5.0), cnt.get(2));
+        assertEquals(Vector.of(6.0,7.0), cnt.get(3));
+        assertEquals(Vector.of(8.0,9.0), cnt.get(4));
+        assertEquals(Vector.of(10.0,11.0), cnt.get(5));
 
-        cnt.set(0, new Vector2D.Double(100,101));
-        cnt.set(1, new Vector2D.Double(102,103));
-        cnt.set(2, new Vector2D.Double(104,105));
-        cnt.set(3, new Vector2D.Double(106,107));
-        cnt.set(4, new Vector2D.Double(108,109));
-        cnt.set(5, new Vector2D.Double(110,111));
-        assertEquals(new Vector2D.Double(100,101), cnt.get(0));
-        assertEquals(new Vector2D.Double(102,103), cnt.get(1));
-        assertEquals(new Vector2D.Double(104,105), cnt.get(2));
-        assertEquals(new Vector2D.Double(106,107), cnt.get(3));
-        assertEquals(new Vector2D.Double(108,109), cnt.get(4));
-        assertEquals(new Vector2D.Double(110,111), cnt.get(5));
+        cnt.set(0, Vector.of(100.0,101.0));
+        cnt.set(1, Vector.of(102.0,103.0));
+        cnt.set(2, Vector.of(104.0,105.0));
+        cnt.set(3, Vector.of(106.0,107.0));
+        cnt.set(4, Vector.of(108.0,109.0));
+        cnt.set(5, Vector.of(110.0,111.0));
+        assertEquals(Vector.of(100.0,101.0), cnt.get(0));
+        assertEquals(Vector.of(102.0,103.0), cnt.get(1));
+        assertEquals(Vector.of(104.0,105.0), cnt.get(2));
+        assertEquals(Vector.of(106.0,107.0), cnt.get(3));
+        assertEquals(Vector.of(108.0,109.0), cnt.get(4));
+        assertEquals(Vector.of(110.0,111.0), cnt.get(5));
         //check base arrays are modified
-        assertEquals(new Vector2D.Double(100,101), array1.get(0));
-        assertEquals(new Vector2D.Double(102,103), array1.get(1));
-        assertEquals(new Vector2D.Double(104,105), array2.get(0));
-        assertEquals(new Vector2D.Double(106,107), array2.get(1));
-        assertEquals(new Vector2D.Double(108,109), array3.get(0));
-        assertEquals(new Vector2D.Double(110,111), array3.get(1));
+        assertEquals(Vector.of(100.0,101.0), array1.get(0));
+        assertEquals(Vector.of(102.0,103.0), array1.get(1));
+        assertEquals(Vector.of(104.0,105.0), array2.get(0));
+        assertEquals(Vector.of(106.0,107.0), array2.get(1));
+        assertEquals(Vector.of(108.0,109.0), array3.get(0));
+        assertEquals(Vector.of(110.0,111.0), array3.get(1));
     }
 
     @Test
@@ -87,22 +87,22 @@ public class ArrayConcatenatedTest extends AbstractArrayTest {
         final Cursor cursor = cnt.cursor();
         assertTrue(cursor.next());
         assertEquals(0, cursor.coordinate());
-        assertEquals(new Vector2D.Double(0,1), cursor.getSamples());
+        assertEquals(Vector.of(0.0,1.0), cursor.getSamples());
         assertTrue(cursor.next());
         assertEquals(1, cursor.coordinate());
-        assertEquals(new Vector2D.Double(2,3), cursor.getSamples());
+        assertEquals(Vector.of(2.0,3.0), cursor.getSamples());
         assertTrue(cursor.next());
         assertEquals(2, cursor.coordinate());
-        assertEquals(new Vector2D.Double(4,5), cursor.getSamples());
+        assertEquals(Vector.of(4.0,5.0), cursor.getSamples());
         assertTrue(cursor.next());
         assertEquals(3, cursor.coordinate());
-        assertEquals(new Vector2D.Double(6,7), cursor.getSamples());
+        assertEquals(Vector.of(6.0,7.0), cursor.getSamples());
         assertTrue(cursor.next());
         assertEquals(4, cursor.coordinate());
-        assertEquals(new Vector2D.Double(8,9), cursor.getSamples());
+        assertEquals(Vector.of(8.0,9.0), cursor.getSamples());
         assertTrue(cursor.next());
         assertEquals(5, cursor.coordinate());
-        assertEquals(new Vector2D.Double(10,11), cursor.getSamples());
+        assertEquals(Vector.of(10.0,11.0), cursor.getSamples());
         assertFalse(cursor.next());
     }
 

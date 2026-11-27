@@ -18,6 +18,7 @@ package org.apache.sis.scene.physics;
 
 import org.apache.sis.maths.Quaternion;
 import org.apache.sis.maths.Vector3D;
+import org.apache.sis.maths.Vector;
 
 
 /**
@@ -31,11 +32,11 @@ public final class Motion {
 
     private boolean isKinematic = false;
     private double mass = 1.0;
-    private Vector3D.Double centerOfMass = new Vector3D.Double(0,0,0);
-    private Vector3D.Double inertialDiagonal = new Vector3D.Double(0,0,0);
+    private Vector3D.Double centerOfMass = Vector.of(0.0,0.0,0.0);
+    private Vector3D.Double inertialDiagonal = Vector.of(0.0,0.0,0.0);
     private Quaternion inertiaOrientation = new Quaternion();
-    private Vector3D.Double linearVelocity = new Vector3D.Double(0,0,0);
-    private Vector3D.Double angularVelocity = new Vector3D.Double(0,0,0);
+    private Vector3D.Double linearVelocity = Vector.of(0.0,0.0,0.0);
+    private Vector3D.Double angularVelocity = Vector.of(0.0,0.0,0.0);
     private double gravityFactor = 1.0;
 
     /**

@@ -231,7 +231,7 @@ public final class Affine3D extends AbstractAffine<Affine3D> {
         final double x = source.get(0);
         final double y = source.get(1);
         final double z = source.get(2);
-        return new Vector3D.Double(
+        return Vector.of(
                 m00*x + m01*y + m02*z + m03,
                 m10*x + m11*y + m12*z + m13,
                 m20*x + m21*y + m22*z + m23);

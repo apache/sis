@@ -27,7 +27,7 @@ import org.apache.sis.geometries.internal.shared.Vertex;
 import org.apache.sis.geometries.surface.TIN;
 import org.apache.sis.geometries.surface.Triangle;
 import org.apache.sis.maths.NDArrays;
-import org.apache.sis.maths.Vector3D;
+import org.apache.sis.maths.Vector;
 
 // Test dependencies
 import static org.junit.jupiter.api.Assertions.*;
@@ -65,8 +65,8 @@ public class PrimitiveVisitorTest {
 
         //test geometry collection
         assertEquals(2, geometry.getNumGeometries());
-        assertEquals(new Vector3D.Double(0, 1, 2), geometry.getGeometryN(0).getPosition());
-        assertEquals(new Vector3D.Double(3, 4, 5), geometry.getGeometryN(1).getPosition());
+        assertEquals(Vector.of(0.0, 1.0, 2.0), geometry.getGeometryN(0).getPosition());
+        assertEquals(Vector.of(3.0, 4.0, 5.0), geometry.getGeometryN(1).getPosition());
     }
 
     /**
@@ -94,9 +94,9 @@ public class PrimitiveVisitorTest {
 
         //test geometry collection
         assertEquals(3, geometry.getNumGeometries());
-        assertEquals(new Vector3D.Double(0, 1, 2), geometry.getGeometryN(0).getPosition());
-        assertEquals(new Vector3D.Double(3, 4, 5), geometry.getGeometryN(1).getPosition());
-        assertEquals(new Vector3D.Double(0, 1, 2), geometry.getGeometryN(2).getPosition());
+        assertEquals(Vector.of(0.0, 1.0, 2.0), geometry.getGeometryN(0).getPosition());
+        assertEquals(Vector.of(3.0, 4.0, 5.0), geometry.getGeometryN(1).getPosition());
+        assertEquals(Vector.of(0.0, 1.0, 2.0), geometry.getGeometryN(2).getPosition());
     }
 
     /**

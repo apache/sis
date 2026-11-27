@@ -116,7 +116,7 @@ public class SphericalPolygonTest {
      */
     @Test
     public void edgeNormalsTest() {
-        final Vector<?>[] ring = {new Vector3D.Double(1, 0, 0), new Vector3D.Double(0, 1, 0), new Vector3D.Double(0, 0, 1)};
+        final Vector<?>[] ring = {Vector.of(1.0, 0.0, 0.0), Vector.of(0.0, 1.0, 0.0), Vector.of(0.0, 0.0, 1.0)};
         final Vector<?>[] normals = SphericalPolygon.edgeNormals(ring);
         assertArrayEquals(new double[] {0, 0, 1}, normals[0].toArrayDouble(), TOLERANCE);
         assertArrayEquals(new double[] {1, 0, 0}, normals[1].toArrayDouble(), TOLERANCE);
@@ -128,9 +128,9 @@ public class SphericalPolygonTest {
      */
     @Test
     public void getAreaTest() {
-        final Vector3D.Double a = new Vector3D.Double(1, 0, 0);
-        final Vector3D.Double b = new Vector3D.Double(0, 1, 0);
-        final Vector3D.Double c = new Vector3D.Double(0, 0, 1);
+        final Vector3D.Double a = Vector.of(1.0, 0.0, 0.0);
+        final Vector3D.Double b = Vector.of(0.0, 1.0, 0.0);
+        final Vector3D.Double c = Vector.of(0.0, 0.0, 1.0);
         assertEquals(Math.PI / 2, new SphericalPolygon(new DefaultSphere(3), ring(a, b, c)).getArea(), TOLERANCE);
         assertEquals(Math.PI / 2, new SphericalPolygon(new DefaultSphere(3), ring(c, b, a)).getArea(), TOLERANCE, "winding");
         assertEquals(2 * Math.PI, new SphericalPolygon(new DefaultSphere(3, 2), ring(a, b, c)).getArea(), TOLERANCE);

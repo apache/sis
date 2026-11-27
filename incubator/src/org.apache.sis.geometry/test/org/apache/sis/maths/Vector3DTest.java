@@ -66,22 +66,22 @@ public class Vector3DTest {
     @Test
     public void toLatLonTest() {
         assertArrayEquals(new double[]{0, 0},
-                new Vector3D.Double(1, 0, 0).toLatLon(), TOLERANCE);
+                Vector.of(1.0, 0.0, 0.0).toLatLon(), TOLERANCE);
 
         assertArrayEquals(new double[]{0, Math.PI / 2},
-                new Vector3D.Double(0, 1, 0).toLatLon(), TOLERANCE);
+                Vector.of(0.0, 1.0, 0.0).toLatLon(), TOLERANCE);
 
         assertArrayEquals(new double[]{0, Math.PI},
-                new Vector3D.Double(-1, 0, 0).toLatLon(), TOLERANCE);
+                Vector.of(-1.0, 0.0, 0.0).toLatLon(), TOLERANCE);
 
         assertArrayEquals(new double[]{Math.PI / 2, 0},
-                new Vector3D.Double(0, 0, 1).toLatLon(), TOLERANCE);
+                Vector.of(0.0, 0.0, 1.0).toLatLon(), TOLERANCE);
 
         assertArrayEquals(new double[]{-Math.PI / 2, 0},
-                new Vector3D.Double(0, 0, -1).toLatLon(), TOLERANCE);
+                Vector.of(0.0, 0.0, -1.0).toLatLon(), TOLERANCE);
 
         assertArrayEquals(new double[]{Math.PI / 4, Math.PI / 4},
-                new Vector3D.Double(0.5, 0.5, HALF_SQRT2).toLatLon(), TOLERANCE);
+                Vector.of(0.5, 0.5, HALF_SQRT2).toLatLon(), TOLERANCE);
     }
 
     /**

@@ -30,13 +30,7 @@ public class VectorXubTest extends AbstractVectorTest{
 
     @Override
     protected Vector create(int dim) {
-        switch (dim) {
-            case 1 : return new Vector1D.UByte((byte)0);
-            case 2 : return new Vector2D.UByte((byte)0,(byte)0);
-            case 3 : return new Vector3D.UByte((byte)0,(byte)0,(byte)0);
-            case 4 : return new Vector4D.UByte((byte)0,(byte)0,(byte)0,(byte)0);
-            default : return new VectorND.UByte(dim);
-        }
+        return Vector.of(DataType.UBYTE, new double[dim]);
     }
 
 }
