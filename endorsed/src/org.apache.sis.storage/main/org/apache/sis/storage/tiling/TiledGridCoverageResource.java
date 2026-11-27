@@ -87,7 +87,8 @@ import org.opengis.coverage.CannotEvaluateException;
  * </ul>
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.7
+ * @version 1.8
+ *
  * @since SIS 1.7
  */
 public abstract class TiledGridCoverageResource extends AbstractGridCoverageResource implements TiledResource {
@@ -102,13 +103,13 @@ public abstract class TiledGridCoverageResource extends AbstractGridCoverageReso
      * Each key shall be unique within its enclosing {@link TiledGridCoverageResource} instance.
      */
     static final class CacheKey {
-        /** Index in a row-major array of tiles. */ private final int    indexInTileVector;
+        /** Index in a row-major array of tiles. */ private final long   indexInTileVector;
         /** Bands in strictly increasing order.  */ private final int[]  includedBands;
         /** Subsampling factors at read time.    */ private final long[] subsampling;
         /** Remainder of subsampling divisions.  */ private final long[] subsamplingOffsets;
 
         /** Creates a key with given arrays hold be reference (no copy). */
-        CacheKey(final int indexInTileVector, final int[] includedBands,
+        CacheKey(final long indexInTileVector, final int[] includedBands,
                  final long[] subsampling, final long[] subsamplingOffsets)
         {
             this.indexInTileVector  = indexInTileVector;
@@ -119,7 +120,7 @@ public abstract class TiledGridCoverageResource extends AbstractGridCoverageReso
 
         /** Returns a hash-code value for this key. */
         @Override public int hashCode() {
-            return indexInTileVector
+            return Long.hashCode(indexInTileVector)
                     +   73 * Arrays.hashCode(includedBands)
                     + 1063 * Arrays.hashCode(subsampling)
                     + 7919 * Arrays.hashCode(subsamplingOffsets);

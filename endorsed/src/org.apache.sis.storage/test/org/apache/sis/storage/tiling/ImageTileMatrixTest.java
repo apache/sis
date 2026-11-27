@@ -27,6 +27,7 @@ import org.apache.sis.coverage.SampleDimension;
 import org.apache.sis.coverage.grid.GridExtent;
 import org.apache.sis.coverage.grid.GridGeometry;
 import org.apache.sis.coverage.grid.PixelInCell;
+import org.apache.sis.coverage.grid.GridCoordinateSystem;
 import org.apache.sis.referencing.operation.transform.MathTransforms;
 import org.apache.sis.storage.DataStoreException;
 import org.apache.sis.storage.GridCoverageResource;
@@ -353,19 +354,18 @@ public final class ImageTileMatrixTest extends TestCase {
          */
         @Override
         protected Raster[] readTiles(final TileIterator iterator) {
-            final Raster[] tiles = new Raster[iterator.tileCountInQuery];
             do {
-                final WritableRaster tile = iterator.createRaster();
+                final WritableRaster tile = iterator.createRaster(false);
                 final int xmin = tile.getMinX();
                 final int ymin = tile.getMinY();
-                final long[] tileIndices = iterator.getTileCoordinatesInResource();
+                final long[] tileIndices = iterator.getTileIndices(GridCoordinateSystem.RESOURCE);
                 assertEquals(DIMENSION, tileIndices.length);
                 for (int i=0; i<DIMENSION; i++) {
                     tile.setSample(xmin + i, ymin + i, 0, StrictMath.toIntExact(tileIndices[i]));
                 }
-                tiles[iterator.getTileIndexInResultArray()] = tile;
+                iterator.setReadTile(tile);
             } while (iterator.next());
-            return tiles;
+            return iterator.tiles();
         }
     }
 }

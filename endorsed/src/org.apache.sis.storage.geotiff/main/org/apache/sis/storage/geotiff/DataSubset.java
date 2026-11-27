@@ -40,6 +40,7 @@ import org.apache.sis.image.DataType;
 import org.apache.sis.image.internal.shared.TilePlaceholder;
 import org.apache.sis.image.internal.shared.ImageUtilities;
 import org.apache.sis.image.internal.shared.RasterFactory;
+import org.apache.sis.coverage.grid.GridCoordinateSystem;
 import org.apache.sis.storage.DataStoreException;
 import org.apache.sis.storage.DataStoreContentException;
 import org.apache.sis.storage.tiling.TiledGridCoverage;
@@ -260,14 +261,15 @@ class DataSubset extends TiledGridCoverage {
      * Information about a tile to be read. A list of {@code Tile} is created and sorted by increasing offsets
      * before the read operation begins, in order to read tiles in the order they are written in the TIFF file.
      */
-    private static final class Tile extends Snapshot implements Comparable<Tile> {
+    private final class Tile extends AOI implements Comparable<Tile> {
         /**
-         * Value of {@link DataSubset#tileOffsets} at index {@link #getTileIndexInResource()}.
+         * Value of {@link DataSubset#tileOffsets} at index {@code getFlatTileIndex(GridCoordinateSystem.RESOURCE)}.
          * If pixel data are stored in different planes ("banks" in Java2D terminology),
          * then current implementation takes only the offset of the first bank to read.
          * This field contains the value that we want in increasing order.
          *
          * @see #compareTo(Tile)
+         * @see #getFlatTileIndex(GridCoordinateSystem)
          */
         private final long byteOffset;
 
@@ -281,11 +283,11 @@ class DataSubset extends TiledGridCoverage {
          */
         Tile(final AOI domain, final Vector tileOffsets, final int[] includedBanks, final int numTiles) {
             super(domain);
-            int p = getTileIndexInResource();
+            long p = getFlatTileIndex(GridCoordinateSystem.RESOURCE);
             if (includedBanks != null) {
                 p += includedBanks[0] * numTiles;
             }
-            byteOffset = tileOffsets.longValue(p);
+            byteOffset = tileOffsets.longValue(Math.toIntExact(p));
         }
 
         /**
@@ -300,7 +302,7 @@ class DataSubset extends TiledGridCoverage {
         final void notifyInputChannel(final Vector tileOffsets, final Vector tileByteCounts,
                                       int b, final int numTiles, final ChannelDataInput input)
         {
-            b = getTileIndexInResource() + b * numTiles;
+            b = Math.toIntExact(getFlatTileIndex(GridCoordinateSystem.RESOURCE) + Math.multiplyFull(b, numTiles));
             final long offset = tileOffsets.longValue(b);
             final long length = tileByteCounts.longValue(b);
             input.rangeOfInterest(offset, Numerics.saturatingAdd(offset, length));
@@ -317,8 +319,9 @@ class DataSubset extends TiledGridCoverage {
          */
         final void copyTileInfo(final Vector source, final long[] target, final int[] includedBanks, final int numTiles) {
             for (int j=0; j<target.length; j++) {
-                final int i = getTileIndexInResource() + numTiles * (includedBanks != null ? includedBanks[j] : j);
-                target[j] = source.longValue(i);
+                long i = getFlatTileIndex(GridCoordinateSystem.RESOURCE)
+                        + Math.multiplyFull(numTiles, (includedBanks != null) ? includedBanks[j] : j);
+                target[j] = source.longValue(Math.toIntExact(i));
             }
         }
 
@@ -333,7 +336,7 @@ class DataSubset extends TiledGridCoverage {
     /**
      * Returns all tiles in the given area of interest. Tile indices are relative to this {@code DataSubset}:
      * (0,0) is the tile in the upper-left corner of this {@code DataSubset} (not necessarily the upper-left
-     * corner of the image stored in the TIFF file).
+     * corner of the image stored in the <abbr>TIFF</abbr> file).
      *
      * The {@link Raster#getMinX()} and {@code getMinY()} coordinates of returned rasters
      * will start at the given {@code offsetAOI} values.
@@ -341,7 +344,7 @@ class DataSubset extends TiledGridCoverage {
      * <p>This method is thread-safe. Synchronization is done on {@link DataCube#getSynchronizationLock()}.</p>
      *
      * @param  iterator  an iterator over the tiles that intersect the Area Of Interest specified by user.
-     * @return tiles decoded from the TIFF file.
+     * @return tiles decoded from the <abbr>TIFF</abbr> file.
      * @throws IOException if an I/O error occurred.
      * @throws DataStoreException if a logical error occurred.
      * @throws RuntimeException if the Java2D image cannot be created for another reason
@@ -358,30 +361,25 @@ class DataSubset extends TiledGridCoverage {
          */
         final ChannelDataInput input = source.reader.input;
         final int[] includedBanks = (sourcePixelStride == 1) ? includedBands : null;
-        final Raster[] result = new Raster[iterator.tileCountInQuery];
-        final Tile[] missings = new Tile[iterator.tileCountInQuery];
+        final Raster[] result = iterator.tiles();
+        final Tile[] missings = new Tile[result.length];
         int numMissings = 0;
         boolean needsCompaction = false;
         synchronized (source.getSynchronizationLock()) {
             do {
-                final Raster tile = iterator.getCachedTile();
-                if (tile != null) {
-                    result[iterator.getTileIndexInResultArray()] = tile;
-                } else {
-                    /*
-                     * Tile not yet loaded. Add to a queue of tiles to load later.
-                     * Notify the input channel about the ranges of bytes to read.
-                     * This notification is redundant with the same notification
-                     * done in `InflaterChannel.setInputRegion(…)`, but doing all
-                     * notifications in advance gives a chance to group ranges.
-                     */
-                    final Tile missing = new Tile(iterator, tileOffsets, includedBanks, numTiles);
-                    missings[numMissings++] = missing;
-                    if (includedBanks == null) {
-                        missing.notifyInputChannel(tileOffsets, tileByteCounts, 0, numTiles, input);
-                    } else for (int b : includedBanks) {
-                        missing.notifyInputChannel(tileOffsets, tileByteCounts, b, numTiles, input);
-                    }
+                /*
+                 * Tile not yet loaded. Add to a queue of tiles to load later.
+                 * Notify the input channel about the ranges of bytes to read.
+                 * This notification is redundant with the same notification
+                 * done in `InflaterChannel.setInputRegion(…)`, but doing all
+                 * notifications in advance gives a chance to group ranges.
+                 */
+                final Tile missing = new Tile(iterator, tileOffsets, includedBanks, numTiles);
+                missings[numMissings++] = missing;
+                if (includedBanks == null) {
+                    missing.notifyInputChannel(tileOffsets, tileByteCounts, 0, numTiles, input);
+                } else for (int b : includedBanks) {
+                    missing.notifyInputChannel(tileOffsets, tileByteCounts, b, numTiles, input);
                 }
             } while (iterator.next());
             if (numMissings != 0) {
@@ -397,15 +395,12 @@ class DataSubset extends TiledGridCoverage {
                 final long[] lower       = new long[BIDIMENSIONAL];   // Coordinates of the first pixel to read relative to the tile.
                 final long[] upper       = new long[BIDIMENSIONAL];   // Coordinates after the last pixel to read relative to the tile.
                 final long[] subsampling = new long[BIDIMENSIONAL];
-                final Point  origin      = new Point();
                 final long[] offsets     = new long[numBanks];
                 final long[] byteCounts  = new long[numBanks];
                 try (Closeable finisher  = createInflater()) {
                     for (int i=0; i<numMissings; i++) {
                         final Tile tile = missings[i];
-                        if (tile.getRegionInsideTile(lower, upper, subsampling, false)) {
-                            origin.x = tile.originX;
-                            origin.y = tile.originY;
+                        if (tile.getRegionInsideTile(lower, upper, subsampling, GridCoordinateSystem.AREA_OF_INTEREST)) {
                             tile.copyTileInfo(tileOffsets,    offsets,    includedBanks, numTiles);
                             tile.copyTileInfo(tileByteCounts, byteCounts, includedBanks, numTiles);
                             boolean isEmpty = true;
@@ -418,6 +413,7 @@ class DataSubset extends TiledGridCoverage {
                              * This is a GDAL-specific convention but seems reasonable. Note that the default
                              * fill value zero is different than `TilePlaceholder` default, which can be NaN.
                              */
+                            final Point origin = tile.getRasterLocation();
                             final Raster r;
                             if (isEmpty) {
                                 if (emptyTiles == null) {
@@ -433,7 +429,7 @@ class DataSubset extends TiledGridCoverage {
                                 tile.fireTileReadStarted();
                                 r = readSlice(offsets, byteCounts, lower, upper, subsampling, origin);
                             }
-                            result[tile.getTileIndexInResultArray()] = tile.cache(r);
+                            tile.setReadTile(r);
                         } else {
                             needsCompaction = true;
                         }

@@ -24,7 +24,7 @@
  * The "tile" word is used because of its wide usage with two-dimensional data, but actually this package has no restriction
  * on the number of dimensions and can work with multi-dimensional "tiles" as well.
  *
- * <h2>References</h2>
+ * <p><b>References</b></p>
  * <ul>
  *   <li><a href="https://www.ogc.org/standards/tms">OGC Two Dimensional Tile Matrix Set</a> — the core standard used in this package.</li>
  *   <li><a href="https://www.ogc.org/standards/wmts">OGC Web Map Tile Service (<abbr>WMTS</abbr>)</a> — a common use of above standard.</li>
@@ -40,7 +40,7 @@
  * <a href="https://docs.mapbox.com/mapbox-tiling-service/guides/">MapBox Tiling service</a>.
  *
  *
- * <h2>Relationship with <abbr>OGC</abbr> specifications</h2>
+ * <h2>Relationship between <abbr>SIS</abbr> images and <abbr>OGC</abbr> specifications</h2>
  * The {@code TileMatrix} and {@code TileMatrixSet} class names are reused as defined by OGC.
  * The "2D" suffix in class names is omitted because this package is fully multi-dimensional.
  * The concept of "tiling scheme" is encapsulated in a {@link org.apache.sis.coverage.grid.GridGeometry}.
@@ -53,7 +53,7 @@
  * Users may need to enforce above OGC restrictions themselves if compatibility with OGC specification is desired).
  *
  *
- * <h2>Relationship with Java2D rendered image</h2>
+ * <h2>Relationship between <abbr>SIS</abbr> images and Java2D rendered image</h2>
  * OGC tiles can be mapped to {@linkplain java.awt.image.RenderedImage#getTile(int, int) Java2D tiles}
  * with the following restrictions:
  *
@@ -68,7 +68,8 @@
  * @author  Johann Sorel (Geomatys)
  * @author  Alexis Manin (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.7
+ * @version 1.8
+ *
  * @since SIS 1.2
  */
 package org.apache.sis.storage.tiling;

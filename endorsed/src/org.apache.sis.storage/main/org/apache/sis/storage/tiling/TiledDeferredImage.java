@@ -61,10 +61,10 @@ final class TiledDeferredImage extends BatchComputedImage {
                        final TiledGridCoverage.TileIterator iterator)
     {
         super(iterator.getCoverage().model, properties);
-        this.width    = imageSize[iterator.xDimension];
-        this.height   = imageSize[iterator.yDimension];
-        this.minTileX = tileLower[iterator.xDimension];
-        this.minTileY = tileLower[iterator.yDimension];
+        this.width    = imageSize[iterator.xDimension()];
+        this.height   = imageSize[iterator.yDimension()];
+        this.minTileX = tileLower[iterator.xDimension()];
+        this.minTileY = tileLower[iterator.yDimension()];
         this.iterator = iterator;
     }
 
@@ -75,12 +75,12 @@ final class TiledDeferredImage extends BatchComputedImage {
 
     /** Returns the minimum <var>x</var> coordinate (inclusive) of this image. */
     @Override public final int getMinX() {
-        return iterator.getTileOrigin(iterator.xDimension);
+        return iterator.rasterLocation[iterator.xDimension()];
     }
 
     /** Returns the minimum <var>y</var> coordinate (inclusive) of this image. */
     @Override public final int getMinY() {
-        return iterator.getTileOrigin(iterator.yDimension);
+        return iterator.rasterLocation[iterator.yDimension()];
     }
 
     /** Returns the number of pixels along X axis in the whole rendered image. */
@@ -113,6 +113,6 @@ final class TiledDeferredImage extends BatchComputedImage {
                     Math.addExact(tiles.x, tiles.width),
                     Math.addExact(tiles.y, tiles.height)
                 });
-        return aoi.getCoverage().readTiles(aoi);
+        return aoi.execute();
     }
 }

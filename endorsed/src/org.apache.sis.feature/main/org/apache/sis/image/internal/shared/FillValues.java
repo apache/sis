@@ -123,7 +123,7 @@ public final class FillValues {
      * Fills the given raster with the fill value. The raster sample model should be the same
      * than the sample model specified at construction time of this {@code FillValues} object.
      *
-     * <p><b>Implementation note</b>
+     * <p><b>Implementation note:</b>
      * This method fills the raster using its API, without direct access to the backing array.
      * We do not use direct array access because it would disable Java2D hardware acceleration
      * in subsequent operations.</p>

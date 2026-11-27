@@ -16,9 +16,13 @@
  */
 package org.apache.sis.storage.tiling;
 
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Optional;
 import java.nio.file.Path;
+import java.io.IOException;
+import javax.imageio.ImageReader;
+import javax.imageio.ImageReadParam;
 import java.awt.Point;
 import java.awt.Rectangle;
 import java.awt.image.DataBuffer;
@@ -40,12 +44,15 @@ import org.opengis.util.GenericName;
 import org.apache.sis.coverage.SubspaceNotSpecifiedException;
 import org.apache.sis.coverage.grid.GridCoverage;
 import org.apache.sis.coverage.grid.GridExtent;
+import org.apache.sis.coverage.grid.GridCoordinateSystem;
 import org.apache.sis.coverage.grid.DisjointExtentException;
 import org.apache.sis.image.PlanarImage;
 import org.apache.sis.image.internal.shared.DeferredProperty;
+import org.apache.sis.image.internal.shared.TilePlaceholder;
 import org.apache.sis.image.internal.shared.TiledImage;
 import org.apache.sis.storage.event.StoreListeners;
 import org.apache.sis.storage.internal.Resources;
+import org.apache.sis.util.ArraysExt;
 import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.collection.WeakValueHashMap;
 import org.apache.sis.util.resources.Errors;
@@ -66,7 +73,7 @@ import org.opengis.coordinate.MismatchedDimensionException;
  * The reading of tiles is done by the {@link #readTiles(TileIterator)} method,
  * which must be defined by subclasses.
  *
- * <h2>Cell coordinates</h2>
+ * <h2>Cell coordinates in <abbr>SIS</abbr> tiled images</h2>
  * When there is no subsampling, this coverage uses the same cell coordinates as the originating resource.
  * When there is a subsampling, cell coordinates in this coverage are divided by the subsampling factors.
  * Conversions can be done by {@link #coverageToResourceCoordinate(long, int)}.
@@ -80,8 +87,14 @@ import org.opengis.coordinate.MismatchedDimensionException;
  * This class does not use the same tile indices as the coverage resource in order to avoid integer overflow.
  * Each {@code TiledGridCoverage} instance uses its own, independent, Tile Matrix Coordinates (<abbr>TMC</abbr>).
  *
+ * <h2>Tiled Grid Coverage backed by Image I/O</h2>
+ * A {@code TiledGridCoverage} can be {@linkplain AOI#readTile backed by Java Image I/O}.
+ * However, the use of Java Image I/O is not mandatory.
+ * Many tiled grid coverage readers provided by Apache <abbr>SIS</abbr> will rather read the tiles directly.
+ *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.7
+ * @version 1.8
+ *
  * @since SIS 1.7
  */
 public abstract class TiledGridCoverage extends GridCoverage {
@@ -91,6 +104,7 @@ public abstract class TiledGridCoverage extends GridCoverage {
      * {@link TiledGridCoverageResource} domain, expanded to an integer number of chunks.
      * A chunk size is usually a tile size, but not necessarily as there is other
      * criteria to take in account such as "atom" size and subsampling.
+     * The coordinate system is {@link GridCoordinateSystem#RESOURCE}.
      *
      * <p>In the special case of reading a single, potentially huge tile,
      * the read extent may have been cropped for avoiding to read a huge amount of data.
@@ -128,6 +142,7 @@ public abstract class TiledGridCoverage extends GridCoverage {
      * All coverages created from the same {@link TiledGridCoverageResource} shall have the same tile size values.
      * The length of this array is the number of dimensions in the source {@link GridExtent}.
      * This is often {@value #BIDIMENSIONAL} but can also be more.
+     * The coordinate system is {@link GridCoordinateSystem#RESOURCE}.
      *
      * <h4>What is a "virtual" size</h4>
      * The tile size stored in this field is usually the size of tiles used by the binary encoding of the file
@@ -151,7 +166,7 @@ public abstract class TiledGridCoverage extends GridCoverage {
     private final long[] virtualTileSize;
 
     /**
-     * Values by which to multiply each tile coordinates for obtaining the index in the tile vector.
+     * Values by which to multiply each tile coordinate for obtaining the index in the tile vector.
      * The length of this array is the same as {@link #virtualTileSize}. All coverages created from
      * the same {@link TiledGridCoverageResource} have the same stride values.
      */
@@ -164,15 +179,16 @@ public abstract class TiledGridCoverage extends GridCoverage {
     private final int indexOfFirstTile;
 
     /**
-     * The Tile Matrix Coordinates (<abbr>TMC</abbr>) that tile (0,0) of this coverage
+     * The Tile Matrix Coordinates (<abbr>TMC</abbr>) that tile (0, 0) of this coverage
      * would have in the originating {@code TiledGridCoverageResource}.
      * This is the value to subtract from tile indices computed from cell coordinates.
+     * The tile matrix system for these indices is {@link GridCoordinateSystem#RESOURCE}.
      *
-     * <p>The current implementation assumes that the tile (0,0) in the resource starts
-     * at cell coordinates (0,0) of the resource.</p>
+     * <p>The current implementation assumes that the tile (0, 0) in the resource starts
+     * at cell coordinates (0, 0) of the resource.</p>
      *
      * @see #indexOfFirstTile
-     * @see AOI#getTileCoordinatesInResource()
+     * @see AOI#getTileIndices(GridCoordinateSystem)
      */
     private final long[] tmcOfFirstTile;
 
@@ -244,7 +260,7 @@ public abstract class TiledGridCoverage extends GridCoverage {
      * {@code minY} values can be anything, depending which {@code TiledGridCoverage} was first to load the tile.
      *
      * @see TiledGridCoverageResource#rasters
-     * @see AOI#getCachedTile()
+     * @see TileIterator#useCachedTile()
      * @see #createCacheKey(int)
      */
     private final WeakValueHashMap<TiledGridCoverageResource.CacheKey, Raster> rasters;
@@ -269,10 +285,17 @@ public abstract class TiledGridCoverage extends GridCoverage {
     /**
      * The values to use for filling empty spaces in rasters, or {@code null} if zero in all bands.
      * If non-null, the array length is equal to the number of bands.
+     * This array should be considered read-only.
      *
      * @see TiledGridCoverageResource#getFillValues(int[])
      */
     protected final Number[] fillValues;
+
+    /**
+     * Source of read-only empty tiles to use as placeholder for tiles that were not computed.
+     * This is a shared instance determined by {@link #fillValues}.
+     */
+    final TilePlaceholder tileFiller;
 
     /**
      * Whether the reading of tiles is deferred until {@link RenderedImage#getTile(int, int)} is invoked.
@@ -346,6 +369,7 @@ public abstract class TiledGridCoverage extends GridCoverage {
         this.colors     = subset.colorsForBandSubset;
         this.fillValues = subset.fillValues;
         forceWholeTiles = subset.forceWholeTiles(subSize);
+        tileFiller      = TilePlaceholder.filled(model, fillValues);
     }
 
     /**
@@ -407,32 +431,7 @@ public abstract class TiledGridCoverage extends GridCoverage {
     }
 
     /**
-     * Computes the value to assign to {@link AOI#uncroppedTileLocation}. This code is a copy of
-     * {@link AOI#getRegionInsideTile(long[], long[], long[], boolean)} where the {@code tmcInSubset}
-     * counter is replaced by its initial value {@code tileLower}, and the limit calculation is omitted.
-     *
-     * @param  tileLower  the value of {@link TileIterator#tileLower}.
-     * @return the value to assign to {@link AOI#uncroppedTileLocation}, which may be null.
-     */
-    private int[] uncroppedTileLocation(final int[] tileLower) {
-        int[] offsets = null;
-        final int dimension = virtualTileSize.length;       // May be shorter than the grid geometry dimension.
-        for (int i=0; i<dimension; i++) {
-            final long tileIndex = addExact(tmcOfFirstTile[i], tileLower[i]);
-            final long tileBase  = multiplyExact(tileIndex, virtualTileSize[i]);
-            final long offset    = Math.max(subtractExact(readExtent.getLow(i), tileBase), 0);
-            if (offset != 0) {
-                if (offsets == null) {
-                    offsets = new int[dimension];
-                }
-                offsets[i] = toIntExact(-offset / subsampling[i]);
-            }
-        }
-        return offsets;
-    }
-
-    /**
-     * Converts a cell coordinate of this coverage to the {@code TiledGridCoverageResource} coordinate space.
+     * Converts a cell coordinate of this coverage to the {@code TiledGridCoverageResource} grid coordinate system.
      * This method removes the subsampling effect,
      * i.e. returns the coordinate that we would have if this coverage was at full resolution.
      * The result is the given {@code coordinate} value unchanged when there is no subsampling.
@@ -440,14 +439,16 @@ public abstract class TiledGridCoverage extends GridCoverage {
      * @param  coordinate  coordinate in this {@code TiledGridCoverage} domain.
      * @param  dimension   the dimension of the coordinate to convert.
      * @return coordinate in the {@code TiledGridCoverageResource} domain with no subsampling applied.
-     * @throws ArithmeticException if the coordinate cannot be represented as a 64 bits integer.
+     * @throws ArithmeticException if the calculation overflows the capacity of 64-bits integers.
+     *
+     * @see AOI#imageToResource(Rectangle, boolean)
      */
     protected final long coverageToResourceCoordinate(final long coordinate, final int dimension) {
         return addExact(multiplyExact(coordinate, subsampling[dimension]), subsamplingOffsets[dimension]);
     }
 
     /**
-     * Converts a cell coordinate from the {@code TiledGridCoverageResource} to this coverage coordinate space.
+     * Converts a cell coordinate from the {@code TiledGridCoverageResource} to the coordinate system of this grid.
      * This method is the converse of {@link #coverageToResourceCoordinate(long, int)}.
      * The result is the given {@code coordinate} value unchanged when there is no subsampling.
      * If there is a subsampling, the returned value is rounded toward negative infinity.
@@ -455,7 +456,9 @@ public abstract class TiledGridCoverage extends GridCoverage {
      * @param  coordinate  coordinate in the {@code TiledGridCoverageResource} domain.
      * @param  dimension   the dimension of the coordinate to convert.
      * @return coordinates in this subsampled {@code TiledGridCoverage} domain.
-     * @throws ArithmeticException if the coordinate cannot be represented as a 64 bits integer.
+     * @throws ArithmeticException if the calculation overflows the capacity of 64-bits integers.
+     *
+     * @see AOI#resourceToImage(Rectangle, boolean)
      */
     protected final long resourceToCoverageCoordinate(final long coordinate, final int dimension) {
         return floorDiv(subtractExact(coordinate, subsamplingOffsets[dimension]), subsampling[dimension]);
@@ -470,13 +473,14 @@ public abstract class TiledGridCoverage extends GridCoverage {
      * @param  tileIndex  tile index from the <abbr>TMC</abbr> of this coverage.
      * @param  dimension  the dimension of the coordinate to convert.
      * @return cell coordinate of the tile lower coordinate in the originating resource.
+     * @throws ArithmeticException if the calculation overflows the capacity of 64-bits integers.
      */
     private long coverageTileToResourceCell(final long tileIndex, final int dimension) {
         return multiplyExact(addExact(tileIndex, tmcOfFirstTile[dimension]), virtualTileSize[dimension]);
     }
 
     /**
-     * Converts a cell coordinate from this {@code TiledGridCoverage} coordinate space to
+     * Converts a cell coordinate from this {@code TiledGridCoverage} coordinate system to
      * the Tile Matrix Coordinate (<abbr>TMC</abbr>) of the tile which contains that cell.
      * The returned <abbr>TMC</abbr> is relative to the full {@link TiledGridCoverageResource},
      * i.e. without subtraction of {@link #tmcOfFirstTile}.
@@ -484,7 +488,7 @@ public abstract class TiledGridCoverage extends GridCoverage {
      * @param  coordinate  coordinates in this {@code TiledGridCoverage} domain.
      * @param  dimension   the dimension of the coordinate to convert.
      * @return Tile Matrix Coordinate (TMC) of the tile which contains the specified cell.
-     * @throws ArithmeticException if the coordinate cannot be represented as an integer.
+     * @throws ArithmeticException if the calculation overflows the capacity of 64-bits integers.
      */
     private long coverageCellToResourceTile(final long coordinate, final int dimension) {
         return floorDiv(coverageToResourceCoordinate(coordinate, dimension), virtualTileSize[dimension]);
@@ -495,10 +499,10 @@ public abstract class TiledGridCoverage extends GridCoverage {
      * {@link MultiPixelPackedSampleModel} which packs many pixels in a single bank element.
      * This value is a power of 2 according {@code MultiPixelPackedSampleModel} specification.
      *
-     * <h4>Design note</h4>
+     * <p><b>Design note:</b>
      * This is value is the number of <em>pixels per element</em>, not <em>samples per element</em>.
      * This distinction is important in the case of {@link SinglePixelPackedSampleModel}, for which
-     * this method returns 1 (contrary to the number of samples per element which would be greater than 1).
+     * this method returns 1 (contrary to the number of samples per element which would be greater than 1).</p>
      *
      * @return number of pixels in a single bank element. This is often 1.
      *
@@ -554,7 +558,7 @@ public abstract class TiledGridCoverage extends GridCoverage {
     /**
      * Returns a two-dimensional slice of grid data as a rendered image.
      * The default implementation creates a {@link TileIterator} over the region specified in argument,
-     * then {@linkplain #readTiles(TileIterator) reads the tiles} and stores the result in a rendered image.
+     * invokes {@link #readTiles(TileIterator)} for reading the tiles, then stores the result in a rendered image.
      *
      * @param  sliceExtent  a subspace of this grid coverage, or {@code null} for the whole image.
      * @return the grid slice as a rendered image. Image location is relative to {@code sliceExtent}.
@@ -626,7 +630,7 @@ public abstract class TiledGridCoverage extends GridCoverage {
                 listeners.warning(e);
                 // Leave `eventContext` to null: no event will be fired.
             }
-            final var iterator = new TileIterator(tileLower, tileUpper, offsetAOI, dimension, xDimension, yDimension, eventContext);
+            final var iterator = new TileIterator(offsetAOI, tileLower, tileUpper, eventContext);
             final var properties = new HashMap<String, Object>(4);
             DeferredProperty.addGridGeometry(properties, gridGeometry, selectedDimensions);
             if (name != null) {
@@ -639,7 +643,7 @@ public abstract class TiledGridCoverage extends GridCoverage {
                  * If the loading strategy is not `RasterLoadingStrategy.AT_GET_TILE_TIME`, get all tiles
                  * in the area of interest now. I/O operations, if needed, happen in `readTiles(…)` call.
                  */
-                final Raster[] result = readTiles(iterator);
+                final Raster[] result = iterator.execute();
                 final var minTile = new Point    (tileLower[xDimension], tileLower[yDimension]);
                 final var bounds  = new Rectangle(imageSize[xDimension], imageSize[yDimension]);
                 bounds.x = offsetAOI[xDimension];
@@ -665,57 +669,101 @@ public abstract class TiledGridCoverage extends GridCoverage {
 
     /**
      * An Area Of Interest (<abbr>AOI</abbr>) describing a tile area or sub-area to read in response to a user's request.
-     * {@code AOI} can be a mutable iterator over all the tiles to read ({@link TileIterator}) or an immutable snapshot
-     * of the iterator position as an instant ({@link Snapshot}).
+     * The <abbr>AOI</abbr> is usually the whole area of a single tile to read, but may also be a different area if the
+     * tile is only partially valid (as sometime in the last row and last column of a tile matrix) or in untiled image.
+     * If the {@code AOI} subclass is {@link TileIterator}, then the <abbr>AOI</abbr> coordinates change every time that
+     * {@link TileIterator#next()} is invoked. Otherwise, the <abbr>AOI</abbr> can be considered as an immutable snapshot.
+     *
+     * <p><b>Terms and definitions:</b>
+     * In this class, "tile" and "cell" are multi-dimensional,
+     * and "pixel" is synonymous of "cell" in the two-dimensional case.
+     * "Upper-left corner" means the corner of an extent with the smallest coordinate values.
+     * It appears in the upper-left corner when an image is rendered on screen with no coordinate conversion,
+     * but not necessarily after a "grid to real world" coordinate operation.
+     * The latter operation is out of scope of this class.</p>
+     *
+     * @author  Martin Desruisseaux (Geomatys)
+     * @version 1.8
+     *
+     * @since SIS 1.7
      */
-    protected static abstract class AOI {
+    protected class AOI {
         /**
-         * The dimension of the <var>x</var> and <var>y</var> axes in rendered images.
+         * Pixel coordinates to assign to the upper-left corner of the region to render, with subsampling applied.
+         * This is the difference between the region requested by user and the region which will be rendered.
+         * This is often 0 or negative, but may also be positive if the image has been clipped.
+         * The coordinate system for these indices is {@link GridCoordinateSystem#RENDERED_IMAGE}.
          */
-        final int xDimension, yDimension;
+        final int[] offsetAOI;
+
+        /**
+         * Pixel coordinates of the upper-left corner of the tile. When the iterator is on the first tile,
+         * the initial values are equal to {@link #offsetAOI}.
+         * These values are updated by {@link TileIterator#next()} only, never by {@code AOI}.
+         * The coordinate system for these indices is {@link GridCoordinateSystem#RENDERED_IMAGE}.
+         *
+         * @see #getRasterLocation()
+         */
+        final int[] rasterLocation;
+
+        /**
+         * Coordinates (relative to the uncropped tile) of the upper-left corner of the cropped tile.
+         * Should be non-null only when reading an image made of a single potentially huge tile
+         * and the {@link #readExtent} has been cropped for avoiding to read that huge tile in whole.
+         * The array should always be null for tiled images, because this class usually reads tiles
+         * fully (without cropping) on the assumption that they are reasonably small.
+         * The coordinate system for these indices is {@link GridCoordinateSystem#TILE}.
+         */
+        private final long[] rasterInTile;
+
+        /**
+         * Indices relative to the enclosing {@code TiledGridCoverage} of the upper-left tile to read.
+         * Tile indices starts at (0, 0, …), not at the indices of the corresponding tile in resource,
+         * for avoiding integer overflow.
+         * The tile matrix system for these indices is {@link GridCoordinateSystem#COVERAGE}.
+         *
+         * @see TileIterator#tileUpper
+         */
+        final int[] tileLower;
 
         /**
          * Tile Matrix Coordinates (TMC) relative to the enclosing {@link TiledGridCoverage}.
-         * Tile (0,0) is the tile in the upper-left corner of this {@link TiledGridCoverage},
+         * Tile (0, 0) is the tile in the upper-left corner of this {@link TiledGridCoverage},
          * not necessarily the tile in the upper-left corner of the image in the resource.
+         * The tile matrix system for these indices is {@link GridCoordinateSystem#COVERAGE}.
          *
-         * <p>In the case of {@link Snapshot}, this array shall be considered unmodifiable.
+         * <p>In the case of snapshot, this array shall be considered unmodifiable.
          * In the case of {@link TileIterator}, this array is initialized to a clone of
-         * {@link TileIterator#tileLower} and is modified by calls to
-         * {@link TileIterator#next()}.</p>
+         * {@link #tileLower} and is modified by calls to {@link TileIterator#next()}.</p>
          */
         final int[] tmcInSubset;
+
+        /**
+         * The result of reading tiles with this iterator.
+         *
+         * @todo Make the field final after JEP 513: Flexible Constructor Bodies.
+         */
+        Raster[] result;
 
         /**
          * Current iterator position as an index in the array of tiles to be returned by {@link #readTiles(TileIterator)}.
          * The initial position is zero. This field is incremented by calls to {@link TileIterator#next()}.
          *
-         * @see #getTileIndexInResultArray()
+         * @see #getFlatTileIndex(GridCoordinateSystem)
          */
         int indexInResultArray;
 
         /**
          * Current iterator position as an index in the vector of tiles in the {@link TiledGridCoverageResource}.
-         * Tiles are assumed stored in a row-major fashion. This field is incremented by calls to {@link #next()}.
+         * Tiles are assumed stored in a row-major fashion.
+         * This field is incremented by calls to {@link TileIterator#next()}.
          * This index is also used as key in the {@link TiledGridCoverage#rasters} map.
          *
-         * <h4>Example</h4>
+         * <p><b>Example:</b>
          * In a GeoTIFF image, this is the index of the tile in the {@code tileOffsets}
-         * and {@code tileByteCounts} vectors.
+         * and {@code tileByteCounts} vectors.</p>
          */
-        int indexInTileVector;
-
-        /**
-         * Coordinates (relative to the cropped tile) of the upper-left corner of the uncropped tile.
-         * This array should be non-null only when reading an image made of a single potentially huge tile,
-         * and the {@link #readExtent} has been cropped for avoiding to read that huge tile in whole.
-         * This array should always be null for tiled images, because this class usually reads tiles
-         * fully (without cropping) on the assumption that they are reasonably small.
-         *
-         * @see #uncroppedTileLocation(int[])
-         * @see #getUncroppedTileLocation()
-         */
-        final int[] uncroppedTileLocation;
+        long indexInTileVector;
 
         /**
          * The context of all {@link TileReadEvent}s, or {@code null} if this type of event will never be fired.
@@ -731,29 +779,98 @@ public abstract class TiledGridCoverage extends GridCoverage {
         boolean fireTileReadEvent;
 
         /**
-         * Creates a new area of interest.
+         * Creates a new area of interest for the specified values.
          *
-         * @param xDimension   the dimension of the <var>x</var> axis in rendered images.
-         * @param yDimension   the dimension of the <var>y</var> axis in rendered images.
-         * @param tmcInSubset  Tile Matrix Coordinates (TMC) relative to the enclosing {@link TiledGridCoverage}.
-         * @param uncroppedTileLocation  coordinates (relative to the cropped tile) of the upper-left corner of the uncropped tile.
+         * @param offsetAOI    pixel coordinates to assign to the upper-left corner of the subsampled region to render.
+         * @param tileLower    indices (relative to enclosing {@code TiledGridCoverage}) of the upper-left tile to read.
          * @param eventContext the context of all {@link TileReadEvent}s, or {@code null} if this type of event will never be fired.
          */
-        AOI(final int xDimension, final int yDimension, final int[] tmcInSubset,
-                final int[] uncroppedTileLocation, final TileReadEvent.Context eventContext)
-        {
-            this.xDimension  = xDimension;
-            this.yDimension  = yDimension;
-            this.tmcInSubset = tmcInSubset;
-            this.uncroppedTileLocation = uncroppedTileLocation;
-            this.eventContext = eventContext;
-            fireTileReadEvent = (eventContext != null);
+        AOI(final int[] offsetAOI, final int[] tileLower, final TileReadEvent.Context eventContext) {
+            this.offsetAOI      = offsetAOI;
+            this.tileLower      = tileLower;
+            this.tmcInSubset    = tileLower.clone();
+            this.rasterLocation = offsetAOI.clone();
+            this.eventContext   = eventContext;
+            fireTileReadEvent   = (eventContext != null);
+            long[] offsets = null;
+            for (int i = offsetAOI.length; --i >= 0;) {
+                final long tileIndex = addExact(tmcOfFirstTile[i], tileLower[i]);
+                final long tileBase  = multiplyExact(tileIndex, getTileSize(i));
+                final long offset    = Math.max(subtractExact(readExtent.getLow(i), tileBase), 0);
+                if (offset != 0) {
+                    if (offsets == null) {
+                        offsets = new long[offsetAOI.length];
+                    }
+                    offsets[i] = offset / getSubsampling(i);
+                }
+            }
+            rasterInTile = offsets;
+        }
+
+        /**
+         * Stores information about a tile to be loaded.
+         * This constructor can be invoked for creating snapshot of an iterator position.
+         *
+         * @param  iterator  the iterator for which to create a snapshot of its current position.
+         * @throws IllegalArgumentException if the given iterator was created for another coverage.
+         *
+         * @see TileIterator#snapshot()
+         *
+         * @since SIS 1.8
+         */
+        public AOI(final AOI iterator) {
+            if (iterator.getCoverage() != TiledGridCoverage.this) {
+                throw new IllegalArgumentException();
+            }
+            offsetAOI          = iterator.offsetAOI;
+            tileLower          = iterator.tileLower;
+            tmcInSubset        = iterator.tmcInSubset.clone();
+            rasterLocation     = iterator.rasterLocation.clone();
+            rasterInTile       = iterator.rasterInTile;
+            result             = iterator.result;
+            indexInResultArray = iterator.indexInResultArray;
+            indexInTileVector  = iterator.indexInTileVector;
+            fireTileReadEvent  = iterator.fireTileReadEvent;
+            eventContext       = iterator.eventContext;
         }
 
         /**
          * Returns the enclosing coverage.
          */
-        abstract TiledGridCoverage getCoverage();
+        final TiledGridCoverage getCoverage() {
+            return TiledGridCoverage.this;
+        }
+
+        /**
+         * Returns the dimension of the grid which is mapped to the <var>x</var> axis (column indexes).
+         * This is an accessor to the {@link #xDimension} value, which is usually 0.
+         *
+         * @return the grid coverage dimension taken as the <var>x</var> axis of the rendered image.
+         *
+         * @since SIS 1.8
+         */
+        public final int xDimension() {
+            return xDimension;
+        }
+
+        /**
+         * Returns the dimension of the grid which is mapped to the <var>y</var> axis (row indexes).
+         * This is an accessor to the {@link #yDimension} value, which is usually 1.
+         *
+         * @return the grid coverage dimension taken as the <var>y</var> axis of the rendered image.
+         *
+         * @since SIS 1.8
+         */
+        public final int yDimension() {
+            return yDimension;
+        }
+
+        /**
+         * Returns an error message for an unsupported {@code gridCS} argument.
+         */
+        private String unsupported(final GridCoordinateSystem gridCS) {
+            return errors().getString(Errors.Keys.IllegalArgumentValue_2, "gridCS", gridCS);
+        }
 
         /**
          * Returns the current <abbr>AOI</abbr> position in the tile matrix of the original resource.
@@ -761,46 +878,106 @@ public abstract class TiledGridCoverage extends GridCoverage {
          * coordinates (0,0) of the resource.
          *
          * @return current <abbr>AOI</abbr> tile coordinates in original coverage resource.
+         *
+         * @deprecated Replaced by {@code getTileIndices(GridCoordinateSystem.RESOURCE)}.
          */
+        @Deprecated(since = "1.8", forRemoval = true)
         public final long[] getTileCoordinatesInResource() {
-            final long[] tmcOfFirstTile = getCoverage().tmcOfFirstTile;
-            final long[] coordinate = new long[tmcOfFirstTile.length];
-            for (int i = 0; i < coordinate.length; i++) {
-                coordinate[i] = addExact(tmcOfFirstTile[i], tmcInSubset[i]);
+            return getTileIndices(GridCoordinateSystem.RESOURCE);
+        }
+
+        /**
+         * Returns the tile Matrix Coordinates (<abbr>TMC</abbr>) of the current <abbr>AOI</abbr> position.
+         * The tile matrix origin (the location of the (0, 0, …) tile) depends on the {@code gridCS} argument:
+         *
+         * <ul>
+         *   <li>{@code COVERAGE}: the origin is the upper-left corner of the enclosing {@link TiledGridCoverage}.</li>
+         *   <li>{@code RESOURCE}: the origin is the upper left corner of the original {@link TiledGridCoverageResource}.
+         *       In this case, the tile matrix origin is also the cell coordinate system origin in the resource.</li>
+         * </ul>
+         *
+         * @param  gridCS  whether tile indices are relative to the coverage or resource upper-left corner.
+         * @return current <abbr>AOI</abbr> tile indices in the enclosing coverage or resource (as requested).
+         * @throws IllegalArgumentException if {@code gridCS} is not {@code COVERAGE} or {@code RESOURCE}.
+         * @throws ArithmeticException if an index overflows the capacity of 64-bits integers.
+         *
+         * @see #getFlatTileIndex(GridCoordinateSystem)
+         * @see #getRasterLocation(GridCoordinateSystem)
+         *
+         * @since SIS 1.8
+         */
+        public long[] getTileIndices(final GridCoordinateSystem gridCS) {
+            switch (gridCS) {
+                case COVERAGE: {
+                    return ArraysExt.copyAsLongs(tmcInSubset);
+                }
+                case RESOURCE: {
+                    final long[] indices = new long[tmcOfFirstTile.length];
+                    Arrays.setAll(indices, (i) -> addExact(tmcOfFirstTile[i], tmcInSubset[i]));
+                    return indices;
+                }
+                default: {
+                    throw new IllegalArgumentException(unsupported(gridCS));
+                }
             }
-            return coordinate;
+        }
+
+        /**
+         * Returns the current <abbr>AOI</abbr> position as an index in an one-dimensional vector of tiles.
+         * The vector indexing system depends on the {@code gridCS} argument:
+         *
+         * <ul>
+         *   <li>{@code RENDERED_IMAGE}: index in the array of tiles returned by {@link #readTiles(TileIterator)}.</li>
+         *   <li>{@code RESOURCE}: row-major index in the tiles of the original {@link TiledGridCoverageResource}.
+         *       In this case, the tile at index 0 is the tile in the upper-left corner of the resource.</li>
+         * </ul>
+         *
+         * The flat index is incremented every time that the {@link TileIterator#next()} method is invoked.
+         * The increment is not necessarily 1, as {@code TileIterator} skips the tiles that have been cached
+         * in a previous read operation.
+         *
+         * @param  gridCS  {@code RENDERED_IMAGE} for {@link TileIterator} indexing, {@code RESOURCE} for resource indexing.
+         * @return current <abbr>AOI</abbr> tile index in an one-dimensional vector of tiles.
+         * @throws IllegalArgumentException if {@code gridCS} is not {@code RENDERED_IMAGE} or {@code RESOURCE}.
+         *
+         * @see #readTiles(TileIterator)
+         *
+         * @since SIS 1.8
+         */
+        public long getFlatTileIndex(final GridCoordinateSystem gridCS) {
+            switch (gridCS) {
+                case RESOURCE: return indexInTileVector;
+                case RENDERED_IMAGE: return indexInResultArray;
+                default: throw new IllegalArgumentException(unsupported(gridCS));
+            }
         }
 
         /**
          * Returns the current <abbr>AOI</abbr> position as an index in the vector of tiles of the original resource.
-         * Tiles are assumed stored in a row-major fashion. with the first tiles starting at index 0.
+         * Tiles are assumed stored in a row-major fashion. with the first tile at index 0.
          *
          * @return current <abbr>AOI</abbr> tile index in original coverage resource.
+         *
+         * @deprecated Replaced by {@code getFlatTileIndex(GridCoordinateSystem.RESOURCE)}.
          */
+        @Deprecated(since = "1.8", forRemoval = true)
         public final int getTileIndexInResource() {
-            return indexInTileVector;
+            return toIntExact(indexInTileVector);
         }
 
         /**
          * Returns the current <abbr>AOI</abbr> position as an index in the array of tiles to be returned
          * by {@code TiledGridCoverage.readTiles(…)}. If this <abbr>AOI</abbr> is an iterator, the initial
-         * position is zero and is incremented by 1 in each call to {@link TileIterator#next()}.
+         * position is zero and is incremented in each call to {@link TileIterator#next()}.
          *
          * @return current <abbr>AOI</abbr> tile index in the result array of tiles.
          *
-         * @see #readTiles(TileIterator)
+         * @deprecated Replaced by {@code getFlatTileIndex(GridCoordinateSystem.RENDERED_IMAGE)}.
          */
+        @Deprecated(since = "1.8", forRemoval = true)
         public final int getTileIndexInResultArray() {
             return indexInResultArray;
         }
-
-        /**
-         * Returns the origin to assign to the tile at the current iterator position.
-         * See {@link TileIterator#getTileOrigin(int)} for more explanation.
-         *
-         * @see TileIterator#getTileOrigin(int)
-         */
-        abstract int getTileOrigin(final int dimension);
 
         /**
          * Returns the cached tile for current <abbr>AOI</abbr> position.
@@ -810,19 +987,18 @@ public abstract class TiledGridCoverage extends GridCoverage {
          *
          * @return cached tile at current <abbr>AOI</abbr> position, or {@code null} if none.
          *
-         * @see #cache(Raster)
+         * @deprecated Now managed automatically.
          */
+        @Deprecated(since = "1.8", forRemoval = true)   // TODO: inline inside TileIterator.useCachedTile()
         public Raster getCachedTile() {
-            final TiledGridCoverage coverage = getCoverage();
-            final Raster tile = coverage.getCachedTile(indexInTileVector);
+            final Raster tile = TiledGridCoverage.this.getCachedTile(indexInTileVector);
             if (tile != null) {
                 /*
                  * Found a tile, but the sample model may be different because band order may be different.
                  * In any cases, we need to make sure that the raster starts at the expected coordinates.
                  */
-                final int x = getTileOrigin(xDimension);
-                final int y = getTileOrigin(yDimension);
-                final SampleModel model = coverage.model;
+                final int x = rasterLocation[xDimension];
+                final int y = rasterLocation[yDimension];
                 if (model.equals(tile.getSampleModel())) {
                     if (tile.getMinX() == x && tile.getMinY() == y) {
                         return tile;
@@ -863,10 +1039,11 @@ public abstract class TiledGridCoverage extends GridCoverage {
          * @return the cached raster. Should be the given {@code raster} instance,
          *         unless this method is invoked during two concurrent reads of the same tile.
          *
-         * @see #getCachedTile()
+         * @deprecated Now managed automatically.
          */
+        @Deprecated(since = "1.8", forRemoval = true)
         public Raster cache(final Raster tile) {
-            return getCoverage().cacheTile(indexInTileVector, tile);
+            return cacheTile(indexInTileVector, tile);
         }
 
         /**
@@ -884,19 +1061,16 @@ public abstract class TiledGridCoverage extends GridCoverage {
          *
          * @return a newly created, initially empty raster.
          *
-         * @see #getTileLocation()
+         * @deprecated Replaced by {@link #createRaster(boolean)}.
          */
+        @Deprecated(since = "1.8", forRemoval = true)
         public WritableRaster createRaster() {
-            final WritableRaster tile = Raster.createWritableRaster(getCoverage().model, getTileLocation());
-            if (fireTileReadEvent) {
-                fireTileReadEvent(tile.getBounds());
-            }
-            return tile;
+            return createRaster(false);
         }
 
         /**
          * Returns the given raster relocated at the current <abbr>AOI</abbr> position.
-         * This method does not need to be invoked for tiles created by {@link #createRaster()},
+         * This method does not need to be invoked for tiles created by {@link #createRaster(boolean)},
          * but may need to be invoked for tiles created by a method external to this class,
          * such as {@link javax.imageio.ImageReader#readTileRaster(int, int, int)}.
          * If the given raster is already at the current <abbr>AOI</abbr> position,
@@ -905,11 +1079,12 @@ public abstract class TiledGridCoverage extends GridCoverage {
          * @param  tile  the raster to move at the current <abbr>AOI</abbr> position.
          * @return the relocated raster (may be {@code raster} itself).
          *
-         * @see Raster#createTranslatedChild(int, int)
+         * @deprecated This is automatically verified by {@link #setReadTile(Raster)}.
          */
+        @Deprecated(since = "1.8", forRemoval = true)
         public Raster moveRaster(Raster tile) {
-            final int x = getTileOrigin(xDimension);
-            final int y = getTileOrigin(yDimension);
+            final int x = rasterLocation[xDimension];
+            final int y = rasterLocation[yDimension];
             if (tile.getMinX() != x || tile.getMinY() != y) {
                 tile = tile.createTranslatedChild(x, y);
             }
@@ -920,6 +1095,67 @@ public abstract class TiledGridCoverage extends GridCoverage {
         }
 
         /**
+         * Returns the cell coordinates of the upper-left corner of the raster at the current <abbr>AOI</abbr> position.
+         * The raster is usually the whole tile, except when reading a cropped region of a single potentially huge tile.
+         * In the latter case, the location is the upper-left corner of the cropped region,
+         * i.e. the location of the first cell stored in the raster, for all {@code gridCS} values.
+         * The coordinate system origin (the location of the (0, 0, …) cell) depends on the {@code gridCS} argument:
+         *
+         * <ul>
+         *   <li>{@code RESOURCE}: the origin is the upper left corner of the {@link TiledGridCoverageResource} and there is no subsampling.</li>
+         *   <li>{@code COVERAGE}: same origin as {@code RESOURCE} but with subsampling applied.</li>
+         *   <li>{@code RENDERED_IMAGE}: uses the coordinate system of the image returned by {@link #render(GridExtent)}.</li>
+         *   <li>{@code TILE}: the origin is the tile slot in the rendered image (see below).</li>
+         *   <li>{@code RASTER} and {@code AREA_OF_INTEREST}: the return value is (0, 0, …) by definition
+         *       since the coordinate system origin is the raster upper-left corner.</li>
+         * </ul>
+         *
+         * {@code TILE} is usually the same as {@code RASTER}.
+         * It may differ only when reading an image made of a single potentially huge tile
+         * and the huge tile is cropped for avoiding to read that tile in whole.
+         *
+         * @param  gridCS  the object from which the upper-left corner will be the origin.
+         * @return current <abbr>AOI</abbr> tile indices in the enclosing image or resource (as requested).
+         * @throws ArithmeticException if a coordinate overflows the capacity of 64-bits integers.
+         *
+         * @see #getTileIndices(GridCoordinateSystem)
+         *
+         * @since SIS 1.8
+         */
+        public long[] getRasterLocation(final GridCoordinateSystem gridCS) {
+            final long[] coordinates = new long[offsetAOI.length];
+            if (gridCS == GridCoordinateSystem.TILE && rasterInTile != null) {
+                System.arraycopy(rasterInTile, 0, coordinates, 0, coordinates.length);
+            }
+            if (gridCS.ordinal() < GridCoordinateSystem.TILE.ordinal()) {
+                rasterToImage(coordinates);
+                switch (gridCS) {
+                    case COVERAGE: Arrays.setAll(coordinates, (i) -> imageToCoverage(coordinates[i], i)); break;
+                    case RESOURCE: Arrays.setAll(coordinates, (i) -> imageToResource(coordinates[i], i)); break;
+                }
+            }
+            return coordinates;
+        }
+
+        /**
+         * Returns the coordinates of the upper-left corner of the raster at the current <abbr>AOI</abbr> position.
+         * This is the ({@code minX}, {@code minY}) values of the tile created by {@link #createRaster(boolean)}.
+         * This is a shortcut for invoking {@code getRasterLocation(GridCoordinateSystem.RENDERED_IMAGE)},
+         * fetching the coordinates in the <var>x</var> and <var>y</var> dimensions
+         * and returning them as 32-bits integers.
+         *
+         * @return coordinates of the upper-left pixel of the raster at the current iterator position.
+         *
+         * @see #createRaster(boolean)
+         * @see #getRasterLocation(GridCoordinateSystem)
+         *
+         * @since SIS 1.8
+         */
+        public Point getRasterLocation() {
+            return new Point(rasterLocation[xDimension], rasterLocation[yDimension]);
+        }
+
+        /**
          * Creates the coordinates of the upper-left corner of the tile at the current <abbr>AOI</abbr> position.
          * This is the ({@code minX}, {@code minY}) values of the tile created by {@link #createRaster()}.
          *
@@ -927,14 +1163,20 @@ public abstract class TiledGridCoverage extends GridCoverage {
          *
          * @see #createRaster()
          * @see #getTileCoordinatesInResource()
+         *
+         * @deprecated Renamed as {@link #getRasterLocation()} for avoiding confusion between
+         *             {@link GridCoordinateSystem#TILE} and {@link GridCoordinateSystem#RASTER}.
          */
+        @Deprecated(since="1.8", forRemoval=true)
         public Point getTileLocation() {
-            return new Point(getTileOrigin(xDimension), getTileOrigin(yDimension));
+            return getRasterLocation();
         }
 
         /**
          * Returns the location (relative to the cropped tile) of the upper-left corner of the uncropped tile.
-         * This value is present under the following conditions:
+         * This is a shortcut for invoking {@code getRasterLocation(GridCoordinateSystem.TILE)}, fetching the
+         * coordinates in the <var>x</var> and <var>y</var> dimensions and returning their negative values as
+         * 32-bits integers. This point is present under the following conditions:
          *
          * <ul>
          *   <li>Reading an image made of a single potentially huge tile, and</li>
@@ -945,68 +1187,51 @@ public abstract class TiledGridCoverage extends GridCoverage {
          * fully (without cropping) on the assumption that they are reasonably small.
          *
          * <p>This value can be <em>added</em> to the coordinates of a point
-         * for converting from uncropped tile coordinates to cropped tile coordinates.
-         * See {@link #getRegionInsideTile(boolean)} for a code snippet.</p>
+         * for converting from uncropped tile coordinates to cropped tile coordinates.</p>
          *
          * @return the location (relative to the cropped tile) of the upper-left corner of the uncropped tile.
+         * @throws ArithmeticException if a coordinate overflows the capacity of 32-bits integers.
+         *
+         * @deprecated Not needed anymore after the introduction of {@link GridCoordinateSystem}.
          */
+        @Deprecated(since="1.8", forRemoval=true)
         public Optional<Point> getUncroppedTileLocation() {
-            if (uncroppedTileLocation == null) {
-                return Optional.empty();    // Usual case.
+            if (rasterInTile != null) {
+                final int x = toIntExact(Math.negateExact(rasterInTile[xDimension]));
+                final int y = toIntExact(Math.negateExact(rasterInTile[yDimension]));
+                if ((x | y) != 0) {
+                    return Optional.of(new Point(x, y));
+                }
             }
-            return Optional.of(new Point(uncroppedTileLocation[xDimension],
-                                         uncroppedTileLocation[yDimension]));
+            return Optional.empty();    // Usual case.
         }
 
         /**
          * Returns the coordinates of the pixels to read relative to the current tile's upper-left corner.
-         * The upper-left corner of the <em>uncropped</em> tile is assumed to have the coordinates (0,0).
-         * Therefore, the (<var>x</var>, <var>y</var>) location computed by this method is usually (0,0)
-         * and the rectangle size is usually the tile size, but those values may be different if the
-         * enclosing {@link TiledGridCoverage} contains only one (potentially large) tile.
-         * The rectangle may also be smaller when reading tiles on the last row or column of the tile matrix.
+         * The upper-left corner of the <em>uncropped</em> tile is assumed to have the (0, 0) coordinates.
+         * Therefore, the (<var>x</var>, <var>y</var>) location computed by this method is usually (0, 0)
+         * and the rectangle size is usually the {@linkplain #createRaster(boolean) raster} size.
+         * But those values may be different if the enclosing {@link TiledGridCoverage} is untiled,
+         * or when reading tiles on the last row or last column of the tile matrix.
          *
-         * <h4>Subsampling</h4>
-         * If the {@code subsampled} argument is {@code false}, then this method returns coordinates
+         * <p>If the {@code gridCS} argument is {@code AREA_OF_INTEREST}, then this method returns coordinates
          * relative to the tile in the originating {@link TiledGridCoverageResource}, i.e. without subsampling.
-         * If {@code subsampled} is {@code true}, then this method returns coordinates relative to the
-         * {@linkplain #createRaster() raster}, i.e. with {@linkplain #getSubsampling(int) subsampling}.
+         * If {@code gridCS} is {@code TILE}, then this method returns coordinates relative to the tile slot,
+         * with {@linkplain #getSubsampling(int) subsampling} applied.
+         * See the {@linkplain #getRegionInsideTile(long[], long[], long[], GridCoordinateSystem) general case}
+         * of this method for a list of supported grid coordinate systems.</p>
          *
-         * <h4>Conversion to raster space</h4>
-         * Because this rectangle is relative to the uncropped tile, the {@linkplain Raster#getMinX() raster origin}
-         * needs to be added to the {@linkplain Rectangle#getLocation() rectangle location} for obtaining coordinates
-         * in the raster space. Furthermore, in the special case where the region to read is made of one potentially
-         * huge tile, {@code TiledGridCoverage} may have cropped the tile. In the latter case, the rectangle location
-         * also needs to be shifted by subtracting the {@link #getUncroppedTileLocation()} value.
-         * Generally, the code can be as below:
-         *
-         * {@snippet lang="java" :
-         *     WritableRaster tile = iterator.createRaster();
-         *     Rectangle validArea = iterator.getRegionInsideTile(true);
-         *     if (validArea != null) {
-         *         // Conversion from relative to absolute tile's coordinates.
-         *         validArea.translate(tile.getMinX(), tile.getMinY());
-         *
-         *         // Conversion to coordinates to read in the underlying resource.
-         *         Rectangle sourceArea = iterator.imageToResource(validArea, false);
-         *
-         *         // Conversion from uncropped coordinates to cropped coordinates.
-         *         iterator.getUncroppedTileLocation().ifPresent((p) -> sourceArea.translate(p.x, p.y));
-         *     }
-         *     }
-         *
-         * @param  subsampled  whether to return coordinates with subsampling applied.
+         * @param  gridCS  the desired grid coordinate system for the returned rectangle.
          * @return pixel to read inside the tile, or {@code null} if the region is empty.
          * @throws ArithmeticException if the tile coordinates overflow 32-bits integer capacity.
          *
-         * @see #getUncroppedTileLocation()
-         * @see TileIterator#imageToResource(Rectangle, boolean)
+         * @see #imageToResource(Rectangle, boolean)
          */
-        public Rectangle getRegionInsideTile(final boolean subsampled) {
+        public Rectangle getRegionInsideTile(final GridCoordinateSystem gridCS) {
             final int dimension = Math.max(xDimension, yDimension) + 1;
             final long[] lower = new long[dimension];
             final long[] upper = new long[dimension];
-            if (getRegionInsideTile(lower, upper, null, subsampled)) {
+            if (getRegionInsideTile(lower, upper, null, gridCS)) {
                 return new Rectangle(
                         toIntExact(lower[xDimension]),
                         toIntExact(lower[yDimension]),
@@ -1017,43 +1242,61 @@ public abstract class TiledGridCoverage extends GridCoverage {
         }
 
         /**
-         * Returns the clipped coordinates of the cells to read relative to the tile's upper-left corner.
-         * The upper-left corner of the <em>uncropped</em> tile is assumed to have the coordinates (0,0,0,…).
-         * Therefore, the lower bounds computed by this method are usually (0,0,0,…) and the upper bounds
-         * (before subsampling) are usually the {@linkplain #getTileSize tile size},
-         * but those values may be different if the enclosing {@link TiledGridCoverage} contains only one tile.
-         * The bounds may also be smaller when reading tiles on the last row or column of the tile matrix.
+         * Returns the clipped coordinates of the cells to read inside the tile slot.
+         * The {@link TiledGridCoverage} subsampling can be provided for convenience.
+         * The coordinate system origin (the location of the (0, 0, …) cell) and the
+         * subsampling depends on the {@code gridCS} argument:
          *
-         * <p>The {@link TiledGridCoverage} subsampling is provided for convenience,
-         * but is constant for all tiles regardless the subregion to read.
-         * The same values can be obtained by {@link #getSubsampling(int)}.</p>
+         * <ul>
+         *   <li>{@code AREA_OF_INTEREST}: the origin is the upper left corner of the tile slot (no cropping)
+         *       and no subsampling is applied. In this case, the {@code lower} values computed by this method are
+         *       usually (0, 0, …) and the {@code upper} values are usually the {@linkplain #getTileSize tile size}.
+         *       But those values may be different if the enclosing {@link TiledGridCoverage} is untiled,
+         *       or when reading tiles on the last row or last column of the tile matrix.</li>
+         *   <li>{@code TILE}: same origin as {@code AREA_OF_INTEREST} but with subsampling applied.</li>
+         *   <li>{@code RASTER}: same size as {@code TILE}, but origin is always (0, 0, …) by definition.</li>
+         *   <li>{@code RENDERED_IMAGE}: uses the coordinate system of the image returned by {@link #render(GridExtent)}.</li>
+         *   <li>{@code COVERAGE}: uses the coordinate system of the enclosing {@link TiledGridCoverage}.</li>
+         *   <li>{@code RESOURCE}: uses the coordinate system of the original {@link TiledGridCoverageResource}.
+         *       The coordinates should be the same as {@code COVERAGE} but without subsampling.</li>
+         * </ul>
          *
-         * <p>This method is a generalization of {@link #getRegionInsideTile(boolean)} to any number of dimensions.
-         * See that method for a discussion about the {@code subsampled} argument and a code snippet.
+         * This method is a generalization of {@link #getRegionInsideTile(GridCoordinateSystem)}.
          * The given arrays can be of any length, but that length must be the same for all arguments.
-         * If the given arrays are longer than necessary, the result is truncated to the arrays length.
-         * If the given arrays are longer than necessary, the extraneous array elements are unchanged.</p>
+         * If the given arrays are shorter than needed, the result is truncated to the arrays length.
+         * If the given arrays are longer than necessary, the extraneous array elements are unchanged.
          *
-         * @param  lower        a pre-allocated array where to store relative coordinates of the first pixel.
-         * @param  upper        a pre-allocated array where to store relative coordinates after the last pixel.
+         * @param  lower        a pre-allocated array where to store relative coordinates of the first cell.
+         * @param  upper        a pre-allocated array where to store relative coordinates after the last cell.
          * @param  subsampling  a pre-allocated array where to store subsampling, or {@code null} if not needed.
-         * @param  subsampled   whether to return coordinates with subsampling applied.
+         * @param  gridCS       the desired grid coordinate system for the coordinates to store in supplied arrays.
          * @return {@code true} on success, or {@code false} if the tile is empty.
          * @throws ArrayIndexOutOfBoundsException if the given arrays are not of the same length.
+         * @throws ArithmeticException if a coordinate overflows the capacity of 64-bits integers.
+         *
+         * @since SIS 1.8
          */
         public boolean getRegionInsideTile(final long[] lower,
                                            final long[] upper,
                                            final long[] subsampling,
-                                           final boolean subsampled)
+                                           final GridCoordinateSystem gridCS)
         {
-            final TiledGridCoverage coverage = getCoverage();
-            int dimension = Math.min(coverage.readExtent.getDimension(), Math.max(lower.length, upper.length));
+            int i = Math.max(lower.length, upper.length);
+            ArgumentChecks.ensureDimensionMatches("lower",       i, lower);
+            ArgumentChecks.ensureDimensionMatches("upper",       i, upper);
+            ArgumentChecks.ensureDimensionMatches("subsampling", i, subsampling);
+            i = Math.min(readExtent.getDimension(), i);
             if (subsampling != null) {
-                System.arraycopy(coverage.subsampling, 0, subsampling, 0, dimension);
+                switch (gridCS) {
+                    case AREA_OF_INTEREST:
+                    case RESOURCE: System.arraycopy(TiledGridCoverage.this.subsampling, 0, subsampling, 0, i); break;
+                    default: Arrays.fill(subsampling, 0, i, 1); break;
+                }
             }
-            while (--dimension >= 0) {
-                final long tileSize  = coverage.getTileSize(dimension);
-                final long tileIndex = addExact(coverage.tmcOfFirstTile[dimension], tmcInSubset[dimension]);
+            final int dimension = i;
+            while (--i >= 0) {
+                final long tileSize  = getTileSize(i);
+                final long tileIndex = addExact(tmcOfFirstTile[i], tmcInSubset[i]);
                 final long tileBase  = multiplyExact(tileIndex, tileSize);
                 /*
                  * The `offset` value is usually zero or negative because the tile to read should be inside the AOI,
@@ -1061,9 +1304,9 @@ public abstract class TiledGridCoverage extends GridCoverage {
                  * only one (potentially big) tile, so the tile reading process become a reading of untiled data.
                  * However, after the `if` block below, the offset will always be positive.
                  */
-                long offset  = subtractExact(coverage.readExtent.getLow(dimension), tileBase);
-                long limit   = Math.min(addExact(offset, coverage.readExtent.getSize(dimension)), tileSize);
-                final long s = coverage.getSubsampling(dimension);
+                long offset  = subtractExact(readExtent.getLow(i), tileBase);
+                long limit   = Math.min(addExact(offset, readExtent.getSize(i)), tileSize);
+                final long s = getSubsampling(i);
                 if (offset < 0) {
                     /*
                      * Example: for `tileSize` = 10 pixels and `subsampling` = 3,
@@ -1088,17 +1331,411 @@ public abstract class TiledGridCoverage extends GridCoverage {
                 if (offset >= limit) {          // Test for intersection before we adjust the limit.
                     return false;
                 }
-                if ((coverage.forceWholeTiles & Numerics.bitmask(dimension)) != 0) {
+                if ((forceWholeTiles & Numerics.bitmask(i)) != 0) {
                     limit = tileSize;
                 }
-                if (subsampled) {
+                if (gridCS != GridCoordinateSystem.AREA_OF_INTEREST) {
                     offset /= s;                // Rounding toward 0 is okay because values are positive.
                     limit = (limit - 1) / s + 1;
                 }
-                lower[dimension] = offset;
-                upper[dimension] = limit;
+                lower[i] = offset;
+                upper[i] = limit;
+            }
+            /*
+             * Finished to compute the `TILE` or `AREA_OF_INTEREST` cases.
+             * Now derive variants if requested.
+             */
+            if (gridCS == GridCoordinateSystem.RASTER) {
+                for (i = dimension; --i >= 0;) {
+                    upper[i] -= lower[i];
+                    lower[i]  = 0;
+                }
+            } else if (gridCS.ordinal() <= GridCoordinateSystem.RENDERED_IMAGE.ordinal()) {
+                rasterToImage(lower);
+                rasterToImage(upper);
+                if (rasterInTile != null) {
+                    for (i = dimension; --i >= 0;) {
+                        final long offset = rasterInTile[i];
+                        lower[i] = subtractExact(lower[i], offset);
+                        upper[i] = subtractExact(upper[i], offset);
+                    }
+                }
+                switch (gridCS) {
+                    case COVERAGE: {
+                        for (i = dimension; --i >= 0;) {
+                            lower[i] = imageToCoverage(lower[i], i);
+                            upper[i] = imageToCoverage(upper[i], i);
+                        }
+                        break;
+                    }
+                    case RESOURCE: {
+                        for (i = dimension; --i >= 0;) {
+                            lower[i] = imageToResource(lower[i], i);
+                            upper[i] = imageToResource(upper[i], i);
+                        }
+                        break;
+                    }
+                }
             }
             return true;
+        }
+
+        /**
+         * @deprecated The {@code subsampled} Boolean argument
+         * has been replaced by a {@link GridCoordinateSystem} enumeration value.
+         */
+        @Deprecated(since = "1.8", forRemoval = true)
+        public Rectangle getRegionInsideTile(final boolean subsampled) {
+            return getRegionInsideTile(subsampled ? GridCoordinateSystem.TILE : GridCoordinateSystem.AREA_OF_INTEREST);
+        }
+
+        /**
+         * @deprecated The {@code subsampled} Boolean argument
+         * has been replaced by a {@link GridCoordinateSystem} enumeration value.
+         */
+        @Deprecated(since = "1.8", forRemoval = true)
+        public boolean getRegionInsideTile(final long[] lower,
+                                           final long[] upper,
+                                           final long[] subsampling,
+                                           final boolean subsampled)
+        {
+            return getRegionInsideTile(lower, upper, subsampling,
+                    subsampled ? GridCoordinateSystem.TILE : GridCoordinateSystem.AREA_OF_INTEREST);
+        }
+
+        /**
+         * Converts in-place the given array from coordinates relative to the raster to image coordinates.
+         * This is from {@link GridCoordinateSystem#RASTER} to {@link GridCoordinateSystem#RENDERED_IMAGE}.
+         * If the starting point is {@link GridCoordinateSystem#TILE} instead (i.e., the uncropped tile),
+         * then all coordinates need to be subtracted by {@link #rasterInTile}.
+         *
+         * @param  coordinates  the coordinates to convert in-place.
+         */
+        private void rasterToImage(final long[] coordinates) {
+            for (int i = Math.min(coordinates.length, rasterLocation.length); --i >= 0;) {
+                coordinates[i] = addExact(coordinates[i], rasterLocation[i]);
+            }
+        }
+
+        /**
+         * Converts the given pixel coordinate to the coordinate in the enclosing coverage.
+         * We could do a more direct conversion avoiding useless multiplication and divsion
+         * of subsampling, but this method is defined only for completness and is presumed
+         * not needed often.
+         *
+         * @param  coordinate  pixel coordinate in the {@link RenderedImage} coordinate system.
+         * @param  dimension   the dimension of the coordinate to convert.
+         * @return cell coordinate in the {@link TiledGridCoverage} coordinate system.
+         */
+        private long imageToCoverage(long coordinate, final int dimension) {
+            coordinate = imageToResource(coordinate, dimension);
+            coordinate = resourceToCoverageCoordinate(coordinate, dimension);
+            return coordinate;
+        }
+
+        /**
+         * Converts the given pixel coordinate to the coordinate in the originating resource.
+         * The source coordinate system is the coordinate system of the {@link RenderedImage}
+         * to be rendered. Note that the top-left corner of the image is not necessarily (0, 0).
+         *
+         * <p>When reading a cropped region of a single potentially huge tile, this method assumes that
+         * the raster origin is the location of the uncropped tile slot instead of the cropped region.</p>
+         *
+         * @param  coordinate  pixel coordinate in the {@link RenderedImage} coordinate system.
+         * @param  dimension   the dimension of the coordinate to convert.
+         * @return cell coordinate in the {@link TiledGridCoverageResource} coordinate system.
+         */
+        private long imageToResource(long coordinate, final int dimension) {
+            if (rasterInTile != null) {
+                // Happen only if the tile is cropped.
+                coordinate = addExact(coordinate, rasterInTile[dimension]);
+            }
+            coordinate = subtractExact(coordinate, offsetAOI[dimension]);       // (0, 0) at image origin instead of AOI.
+            coordinate = multiplyExact(coordinate, getSubsampling(dimension));  // Full resolution, like in the resource.
+            coordinate = addExact(coordinate, coverageTileToResourceCell(tileLower[dimension], dimension));
+            return coordinate;
+        }
+
+        /**
+         * Converts the given cell coordinate from the originating resource to the pixel coordinate.
+         * The destination coordinate system is the coordinate system of the {@link RenderedImage}
+         * to be rendered. Note that the top-left corner of the image is not necessarily (0, 0).
+         *
+         * @param  coordinate  pixel coordinate in the {@link RenderedImage} coordinate system.
+         * @param  dimension   the dimension of the coordinate to convert.
+         * @param  ceil        {@code true} for rounding up, or {@code false} for rounding down.
+         * @return cell coordinate in the {@link TiledGridCoverageResource} coordinate system.
+         */
+        private long resourceToImage(long coordinate, final int dimension, final boolean ceil) {
+            coordinate = subtractExact(coordinate, coverageTileToResourceCell(tileLower[dimension], dimension));
+            long s = getSubsampling(dimension);
+            coordinate = ceil ? ceilDiv(coordinate, s) : floorDiv(coordinate, s);
+            coordinate = addExact(coordinate, offsetAOI[dimension]);
+            if (rasterInTile != null) {
+                // Happen only if the tile is cropped.
+                coordinate = subtractExact(coordinate, rasterInTile[dimension]);
+            }
+            return coordinate;
+        }
+
+        /**
+         * Converts from pixel coordinates in the rendered image to cell coordinates in the originating resource.
+         * If {@code tight} is {@code true}, this method returns the smallest bounding box of
+         * interest for a reader which will apply {@linkplain #getSubsampling(int) subsampling}.
+         * If {@code false}, this method uses a more straightforward calculation which may result
+         * in a larger bounding box, with right and bottom areas possibly containing pixels that
+         * should be skipped by subsampling.
+         *
+         * <p>The latter case is sometime desirable when the caller may compute scale factors
+         * as the ratio of the size of different rectangles. For such calculations,
+         * tight bounding boxes may be confusing.</p>
+         *
+         * @param  bounds  a box in the coordinate system of the {@link RenderedImage} and {@link Raster}.
+         * @param  tight   whether to return the smallest bounding box, at the cost of less straightforward rectangle size.
+         * @return new box in the coordinate system of the {@link TiledGridCoverageResource}.
+         * @throws ArithmeticException if the result cannot be expressed as 32-bits integers.
+         *
+         * @see #coverageToResourceCoordinate(long, int)
+         */
+        public Rectangle imageToResource(final Rectangle bounds, final boolean tight) {
+            long x, y;      // Convenience for casting `int` to `long`.
+            final long d = tight ? 1 : 0;
+            final var r = new Rectangle();
+            r.x      = toIntExact(imageToResource(x = bounds.x,          xDimension));
+            r.y      = toIntExact(imageToResource(y = bounds.y,          yDimension));
+            r.width  = toIntExact(imageToResource(x + bounds.width  - d, xDimension) - r.x + d);
+            r.height = toIntExact(imageToResource(y + bounds.height - d, yDimension) - r.y + d);
+            return r;
+        }
+
+        /**
+         * Converts cell coordinates from the originating resource to pixel coordinates in the rendered image.
+         * If {@code tight} is {@code true}, this method returns the smallest bounding box of
+         * interest for a reader which will apply {@linkplain #getSubsampling(int) subsampling}.
+         * See {@link #imageToResource(Rectangle, boolean)} for a discussion of the trade-off.
+         *
+         * @param  bounds  a box in the coordinate system of the {@link TiledGridCoverageResource}.
+         * @param  tight   whether to return the smallest bounding box.
+         * @return new box in the coordinate system of the {@link Raster} and {@link RenderedImage}.
+         * @throws ArithmeticException if the result cannot be expressed as 32-bits integers.
+         *
+         * @see #resourceToCoverageCoordinate(long, int)
+         */
+        public Rectangle resourceToImage(final Rectangle bounds, final boolean tight) {
+            long x, y;      // Convenience for casting `int` to `long`.
+            final long d = tight ? 1 : 0;
+            final var r = new Rectangle();
+            r.x      = toIntExact(resourceToImage(x = bounds.x,          xDimension, false));
+            r.y      = toIntExact(resourceToImage(y = bounds.y,          yDimension, false));
+            r.width  = toIntExact(resourceToImage(x + bounds.width  - d, xDimension, true) - r.x + d);
+            r.height = toIntExact(resourceToImage(y + bounds.height - d, yDimension, true) - r.y + d);
+            return r;
+        }
+
+        /**
+         * Creates an initially empty raster for the tile at the current <abbr>AOI</abbr> position.
+         * The sample model is {@link #model} and the tile location (minimum pixel coordinates) is
+         * set to the minimum (<var>x</var>, <var>y</var>) coordinates of this <abbr>AOI</abbr>.
+         *
+         * <p>If {@code filled} is {@code true}, all pixels are set to the {@linkplain #fillValues fill values}.
+         * Otherwise (if {@code filled} is {@code false}), all samples keep their default value, which is zero.
+         * It is recommended to invoke {@code createRaster(true)} only if the returned raster may be modified.
+         * Otherwise, {@link #setEmptyTile()} is cheaper as it can share existing raster data.</p>
+         *
+         * <p>If some {@linkplain TiledGridCoverageResource#listeners resource's listeners} have registered
+         * an interest for tile read events, and if these listeners have not yet been notified
+         * about the reading of the current tile, then a {@link TileReadEvent} is sent to these listeners.
+         * This policy is based on the fact that this method is typically invoked before a tile is read.</p>
+         *
+         * @param  fill  whether to initialize all pixels to the {@linkplain #fillValues fill values}.
+         * @return a newly created, initially empty or filled raster.
+         *
+         * @see #getRasterLocation()
+         *
+         * @since SIS 1.8
+         */
+        public WritableRaster createRaster(final boolean fill) {
+            final WritableRaster tile = Raster.createWritableRaster(model, getRasterLocation());
+            if (fireTileReadEvent) {
+                fireTileReadEvent(tile.getBounds());
+            }
+            if (fill) {
+                tileFiller.draw(tile);
+            }
+            return tile;
+        }
+
+        /**
+         * Sets the current tile to an empty tile.
+         * If {@linkplain #fillValues fill values} were specified, all pixels are set to these values.
+         * The {@link Raster} used for representing the empty tile may be shared with other empty tiles
+         * (possibly in other coverages) for reducing memory consumption.
+         *
+         * @throws IllegalStateException if the tile has already been specified for the current iterator position.
+         *
+         * @since SIS 1.8
+         */
+        public void setEmptyTile() {
+            setReadTile(tileFiller.create(getRasterLocation()));
+        }
+
+        /**
+         * Sets the result of reading the tile at the current iterator position.
+         * The given raster should be the return value of {@link #createRaster(boolean)}
+         * or an equivalent raster (with same size, location and sample model).
+         * This method can be invoked only once per iterator position.
+         *
+         * <p>If the given tile does not have the expected location for the current <abbr>AOI</abbr> position,
+         * then this method creates a {@linkplain Raster#createTranslatedChild(int, int) translated raster}
+         * with the correct (<var>x</var>, <var>y</var>) coordinates.</p>
+         *
+         * <p>If a raster is already in the cache and has the same size and equal sample model,
+         * then the given raster is ignored and the existing raster is reused on the assumption
+         * that it has the same content. Otherwise, the given raster is added to the cache with
+         * {@linkplain java.lang.ref.WeakReference weak reference} for automatic reuse the next
+         * time that tiles are read.</p>
+         *
+         * @param  tile  the tile which has been read.
+         * @throws IllegalStateException if the tile has already been specified for the current iterator position.
+         *
+         * @see #setEmptyTile()
+         * @see #createRaster(boolean)
+         * @see #readTile(ImageReader, int, GridCoordinateSystem, long[])
+         *
+         * @since SIS 1.8
+         */
+        public void setReadTile(Raster tile) {
+            if (result[indexInResultArray] != null) {
+                String id = "tiles[" + indexInResultArray + ']';
+                throw new IllegalStateException(Errors.format(Errors.Keys.AlreadyInitialized_1, id));
+            }
+            final int x = rasterLocation[xDimension];
+            final int y = rasterLocation[yDimension];
+            if (tile.getMinX() != x || tile.getMinY() != y) {
+                tile = tile.createTranslatedChild(x, y);
+            }
+            final Raster cached = cacheTile(indexInTileVector, tile);
+            if (fireTileReadEvent && tile == cached) {
+                fireTileReadEvent(tile.getBounds());
+            }
+            result[indexInResultArray] = cached;
+        }
+
+        /**
+         * Reads and stores the image region corresponding to this tile using the given Image I/O reader.
+         * The {@linkplain ImageReader#setInput(Object) reader input must be set} by the caller before to
+         * invoke this method. The coordinate system expectations are as below:
+         *
+         * <ul>
+         *   <li>If {@code gridCS} is {@code RESOURCE} or {@code AREA_OF_INTEREST}, then the {@code reader}
+         *       pixel coordinate system shall be at full resolution and the subsampling will be specified
+         *       to the reader by {@link ImageReadParam}. Otherwise (for all other {@code gridCS} values),
+         *       the reader pixel coordinate system is already subsampled.</li>
+         *   <li>The {@code origin} gives the {@code reader} origin in units of the grid coordinate system
+         *       identified by {@code gridCS}. For example, if {@code gridCS} is {@code RESOURCE}, then the
+         *       pixel located at (0, 0) in the {@code reader} coordinate system is located at {@code origin}
+         *       in the {@link TiledGridCoverageResource} grid coordinate system.</li>
+         *   <li>The tile size <em>should</em> be the same as the enclosing {@link TiledGridCoverage} for efficiency,
+         *       but this method is tolerant to different tile sizes.</li>
+         *   <li>The tile grid offset (which determines the origin of the tile indices) can be anything
+         *       and does not need to be the same between two invocations of this method.</li>
+         * </ul>
+         *
+         * This method is provided for interoperability with {@code javax.imageio} but its use is not mandatory.
+         * Many tiled grid coverage readers will rather create and read the tile themselves, then store the result
+         * with {@link #setReadTile(Raster)}.
+         *
+         * @param  reader      the Image I/O reader to use.
+         * @param  imageIndex  index of the image to read.
+         * @param  gridCS      the grid coordinate system used by the reader, with an optional translation.
+         * @param  origin      the {@code reader} origin in units of the {@code gridCS}, or {@code null} if zero.
+         * @throws IOException if an error occurred while reading the tile.
+         * @throws ArithmeticException if some coordinates overflow 32-bits integer capacity.
+         * @throws IllegalStateException if the tile has already been specified for the current iterator position.
+         *
+         * @see #setReadTile(Raster)
+         * @see ImageReader#readTileRaster(int, int, int)
+         *
+         * @since SIS 1.8
+         */
+        public void readTile(final ImageReader reader, final int imageIndex,
+                             final GridCoordinateSystem gridCS, final long[] origin)
+                throws IOException
+        {
+            final int dimension  = Math.max(xDimension, yDimension) + 1;
+            final long[] lower = new long[dimension];
+            final long[] upper = new long[dimension];
+            final long[] subsampling = new long[dimension];
+            if (!getRegionInsideTile(lower, upper, subsampling, gridCS)) {
+                setEmptyTile();
+                return;
+            }
+            final int sx = toIntExact(subsampling[xDimension]);
+            final int sy = toIntExact(subsampling[yDimension]);
+            long[] tileIndices = (sx == 1 && sy == 1) ? new long[dimension] : null;
+            for (int i=0; i<dimension; i++) {
+                // Convert to tile indices in the reader tile matrix.
+                final int size, offset;
+                if (i == xDimension) {
+                    size   = reader.getTileWidth(imageIndex);
+                    offset = reader.getTileGridXOffset(imageIndex);
+                } else if (i == yDimension) {
+                    size   = reader.getTileHeight(imageIndex);
+                    offset = reader.getTileGridYOffset(imageIndex);
+                } else {
+                    size   = 1;
+                    offset = 0;
+                }
+                long min = lower[i];
+                long max = upper[i];
+                if (origin != null && i < origin.length) {
+                    final long t = origin[i];
+                    lower[i] = min = subtractExact(min, t);
+                    upper[i] = max = subtractExact(max, t);
+                }
+                if (tileIndices != null) {
+                    if (max - min != size || (min -= offset) != (tileIndices[i] = floorDiv(min, size)) * size) {
+                        tileIndices = null;     // Not exactly one tile of the reader.
+                    }
+                }
+            }
+            final Raster raster;
+            if (tileIndices != null) {
+                /*
+                 * Read the tile at full resolution provided that the `ImageReader`
+                 * tile matrix is as expected by the enclosing `TiledGridCoverage`.
+                 * If not, the generic fallback below will be used instead.
+                 */
+                final int tx = toIntExact(tileIndices[xDimension]);
+                final int ty = toIntExact(tileIndices[yDimension]);
+                if (reader.canReadRaster()) {
+                    raster = reader.readTileRaster(imageIndex, tx, ty);
+                } else {
+                    raster = reader.readTile(imageIndex, tx, ty).getRaster();
+                }
+            } else {
+                /*
+                 * Read only the requested region of the tile with the requested subsampling.
+                 * The (-tx, -ty) translation of the `GridExtent` is not strictly necessary
+                 * (that translation is cancelled by the offset in `setSourceSubsampling(…)`),
+                 * but we do that for aligning the requested region on the subsampling factor
+                 * in case the `ImageReader` implementation has broken mathematic.
+                 */
+                final int tx = (int) (lower[xDimension] % sx);
+                final int ty = (int) (lower[yDimension] % sy);
+                lower[xDimension] -= tx;    // Toward 0.
+                lower[yDimension] -= ty;
+                final var extent = new GridExtent(null, lower, upper, false);
+                final ImageReadParam param = reader.getDefaultReadParam();
+                param.setSourceSubsampling(sx, sy, tx, ty);
+                param.setSourceRegion(bidimensional(extent));
+                if (reader.canReadRaster()) {
+                    raster = reader.readRaster(imageIndex, param);
+                } else {
+                    raster = reader.read(imageIndex, param).getRaster();
+                }
+            }
+            setReadTile(raster);
         }
 
         /**
@@ -1108,10 +1745,24 @@ public abstract class TiledGridCoverage extends GridCoverage {
          * @param  bounds  bounds of the raster which is about to be read, in pixel coordinates.
          * @throws NullPointerException if {@link #eventContext} is null.
          */
-        final void fireTileReadEvent(final Rectangle bounds) {
+        private void fireTileReadEvent(final Rectangle bounds) {
             fireTileReadEvent = false;
-            final StoreListeners listeners = getCoverage().listeners;
             listeners.fire(TileReadEvent.class, new TileReadEvent(listeners.getSource(), eventContext, bounds));
+        }
+
+        /**
+         * Sends to the listeners a notification that the reading of the tile at current position started.
+         * If such event was not already sent for current position, this method creates a {@link TileReadEvent}
+         * and gives it to the {@linkplain TiledGridCoverageResource#listeners resource's listeners}.
+         */
+        public void fireTileReadStarted() {
+            if (fireTileReadEvent) {
+                fireTileReadEvent(new Rectangle(
+                        rasterLocation[xDimension],
+                        rasterLocation[yDimension],
+                        model.getWidth(),
+                        model.getHeight()));
+            }
         }
     }
 
@@ -1121,32 +1772,29 @@ public abstract class TiledGridCoverage extends GridCoverage {
     /**
      * An iterator over the tiles to read. Instances of this class are computed by {@link #render(GridExtent)}
      * and given to {@link #readTiles(TileIterator)}. The latter is the method that subclasses need to override.
+     *
+     * @author  Martin Desruisseaux (Geomatys)
+     * @version 1.8
+     *
+     * @since SIS 1.7
      */
     protected final class TileIterator extends AOI {
         /**
          * Total number of tiles in the AOI, from {@link #tileLower} inclusive to {@link #tileUpper} exclusive.
          * This is the length of the array to be returned by {@link #readTiles(TileIterator)}.
+         *
+         * @deprecated Replaced by {@link #tiles()}.
          */
+        @Deprecated(since = "1.8", forRemoval = true)
         public final int tileCountInQuery;
 
         /**
-         * Indices (relative to enclosing {@code TiledGridCoverage}) of the upper-left tile to read.
-         * Tile indices starts at (0, 0, …), not at the indices of the corresponding tile in resource,
-         * for avoiding integer overflow.
-         */
-        private final int[] tileLower;
-
-        /**
-         * Indices (relative to enclosing {@code TiledGridCoverage}) after the bottom-right tile to read.
+         * Indices relative to the enclosing {@code TiledGridCoverage} after the bottom-right tile to read.
+         * The tile matrix system for these indices is {@link GridCoordinateSystem#COVERAGE}.
+         *
+         * @see #tileLower
          */
         private final int[] tileUpper;
-
-        /**
-         * Pixel coordinates to assign to the upper-left corner of the region to render, with subsampling applied.
-         * This is the difference between the region requested by user and the region which will be rendered.
-         * This is often 0 or negative. May be positive if the image has been clipped.
-         */
-        private final int[] offsetAOI;
 
         /**
          * Cell coordinates of current iterator position relative to the Area Of Interest specified by user.
@@ -1158,28 +1806,19 @@ public abstract class TiledGridCoverage extends GridCoverage {
 
         /**
          * Creates a new Area Of Interest for the given tile indices.
+         * Callers other than {@link #subset(int[], int[])} should invoke {@link #execute()} for reading the tiles.
          *
+         * @param  offsetAOI  pixel coordinates to assign to the upper-left corner of the subsampled region to render.
          * @param  tileLower  indices (relative to enclosing {@code TiledGridCoverage}) of the upper-left tile to read.
          * @param  tileUpper  indices (relative to enclosing {@code TiledGridCoverage}) after the bottom-right tile to read.
-         * @param  offsetAOI  pixel coordinates to assign to the upper-left corner of the subsampled region to render.
-         * @param  dimension  number of dimension of the {@code TiledGridCoverage} grid extent.
          */
-        TileIterator(final int[] tileLower,
+        TileIterator(final int[] offsetAOI,
+                     final int[] tileLower,
                      final int[] tileUpper,
-                     final int[] offsetAOI,
-                     final int dimension,
-                     final int xDimension,
-                     final int yDimension,
                      final TileReadEvent.Context eventContext)
         {
-            super(xDimension,
-                  yDimension,
-                  tileLower.clone(),
-                  uncroppedTileLocation(tileLower),
-                  eventContext);
-            this.tileLower = tileLower;
+            super(offsetAOI, tileLower, eventContext);
             this.tileUpper = tileUpper;
-            this.offsetAOI = offsetAOI;
             tileOffsetFull = new long[offsetAOI.length];
             /*
              * Initialize variables to values for the first tile to read. The loop does arguments validation and
@@ -1188,10 +1827,10 @@ public abstract class TiledGridCoverage extends GridCoverage {
             indexInTileVector = indexOfFirstTile;
             @SuppressWarnings("LocalVariableHidesMemberVariable")
             int tileCountInQuery = 1;
-            for (int i=0; i<dimension; i++) {
+            for (int i=0; i<offsetAOI.length; i++) {
                 final int lower   = tileLower[i];
                 final int count   = subtractExact(tileUpper[i], lower);
-                indexInTileVector = addExact(indexInTileVector, multiplyExact(tileStrides[i], lower));
+                indexInTileVector = addExact(indexInTileVector, Math.multiplyFull(tileStrides[i], lower));
                 tileCountInQuery  = multiplyExact(tileCountInQuery, count);
                 tileOffsetFull[i] = multiplyExact(getSubsampling(i), offsetAOI[i]);
                 /*
@@ -1204,15 +1843,23 @@ public abstract class TiledGridCoverage extends GridCoverage {
                 assert max > Math.max(offsetAOI[i], 0) : max;
             }
             this.tileCountInQuery = tileCountInQuery;
+            result = new Raster[tileCountInQuery];
+            updateRasterLocation();
         }
 
         /**
          * Returns a new {@code TileIterator} instance over a sub-region of this Area Of Interest.
-         * The region is specified by tile indices, with (0,0) being the first tile of the enclosing grid coverage.
+         * The region is specified by tile indices, with (0, 0) being the first tile of the enclosing grid coverage.
          * The given region is intersected with the region of this {@code AOI}.
          * The {@code tileLower} and {@code tileUpper} array can have any length;
          * extra indices are ignored and missing indices are inherited from this AOI.
          * This method is independent to the iterator position of this {@code AOI}.
+         *
+         * <p>Caller should invoke {@link #execute()} on the returned iterator for reading the tiles.</p>
+         *
+         * <p>Note: the {@code getFlatTileIndex(RENDERED_IMAGE)} documentation is not quite right
+         * when the {@code AOI} is a subset because this is no longer an index in the whole image.
+         * But since this method is not public, we accept this deviation from documentation.</p>
          *
          * @param  firstTile  indices (relative to enclosing {@code TiledGridCoverage}) of the upper-left tile to read.
          * @param  endTile    indices (relative to enclosing {@code TiledGridCoverage}) after the bottom-right tile to read.
@@ -1226,7 +1873,7 @@ public abstract class TiledGridCoverage extends GridCoverage {
                 final int s = firstTile[i];
                 if (s > base) {
                     lower[i] = s;
-                    // Use of `ceilDiv(…)` is for consistency with `getTileOrigin(int)`.
+                    // Use of `ceilDiv(…)` is for consistency with `rasterLocation`.
                     long origin = ceilDiv(multiplyExact(getTileSize(i), s - base), getSubsampling(i));
                     offset[i] = toIntExact(addExact(origin, offset[i]));
                 }
@@ -1235,22 +1882,14 @@ public abstract class TiledGridCoverage extends GridCoverage {
             for (int i = Math.min(endTile.length, upper.length); --i >= 0;) {
                 upper[i] = Math.max(lower[i], Math.min(upper[i], endTile[i]));
             }
-            return new TileIterator(lower, upper, offset, offset.length, xDimension, yDimension, eventContext);
-        }
-
-        /**
-         * Returns the enclosing coverage.
-         */
-        @Override
-        final TiledGridCoverage getCoverage() {
-            return TiledGridCoverage.this;
+            return new TileIterator(offset, lower, upper, eventContext);
         }
 
         /**
          * Returns the extent of the full region to read (all tiles) in units of the originating resource.
-         * The returned extent does not change during the iteration process (this method is not available
-         * in {@link Snapshot} for that reason). This method is typically invoked only at the beginning of
-         * the iteration process, when knowing in advance the full read region allows some optimizations.
+         * The returned extent does not change during the iteration process.
+         * This method is typically invoked only at the beginning of the iteration process,
+         * when knowing in advance the full read region allows some optimizations.
          *
          * <p>The returned region is based on the user's request in her/his call to {@link #render(GridExtent)},
          * but is not necessarily identical. The render method may have expanded or clipped the user's request.
@@ -1272,91 +1911,7 @@ public abstract class TiledGridCoverage extends GridCoverage {
         }
 
         /**
-         * Converts the given cell coordinate from the originating resource to the pixel coordinate.
-         * The destination coordinate system is the coordinate system of the {@link RenderedImage}
-         * to be rendered. Note that the top-left corner of the image is not necessarily (0,0).
-         *
-         * @param  coordinate  pixel coordinate in the {@link RenderedImage} coordinate system.
-         * @param  dimension   the dimension of the coordinate to convert.
-         * @param  ceil        {@code true} for rounding up, or {@code false} for rounding down.
-         * @return cell coordinate in the {@link TiledGridCoverageResource} coordinate system.
-         */
-        private long resourceToImage(long coordinate, final int dimension, final boolean ceil) {
-            coordinate = subtractExact(coordinate, coverageTileToResourceCell(tileLower[dimension], dimension));
-            long s = getSubsampling(dimension);
-            coordinate = ceil ? ceilDiv(coordinate, s) : floorDiv(coordinate, s);
-            coordinate = addExact(coordinate, offsetAOI[dimension]);
-            return coordinate;
-        }
-
-        /**
-         * Converts the given pixel coordinate to the coordinate in the originating resource.
-         * The source coordinate system is the coordinate system of the {@link RenderedImage}
-         * to be rendered. Note that the top-left corner of the image is not necessarily (0,0).
-         *
-         * @param  coordinate  pixel coordinate in the {@link RenderedImage} coordinate system.
-         * @param  dimension   the dimension of the coordinate to convert.
-         * @return cell coordinate in the {@link TiledGridCoverageResource} coordinate system.
-         */
-        private long imageToResource(long coordinate, final int dimension) {
-            coordinate = subtractExact(coordinate, offsetAOI[dimension]);       // (0,0) at image origin instead of AOI.
-            coordinate = multiplyExact(coordinate, getSubsampling(dimension));  // Full resolution, like in the resource.
-            coordinate = addExact(coordinate, coverageTileToResourceCell(tileLower[dimension], dimension));
-            return coordinate;
-        }
-
-        /**
-         * Converts cell coordinates from the originating resource to pixel coordinates.
-         * If {@code tight} is {@code true}, this method returns the smallest bounding box of
-         * interest for a reader which will apply {@linkplain #getSubsampling(int) subsampling}.
-         * See {@link #imageToResource(Rectangle, boolean)} for a discussion of the trade-off.
-         *
-         * @param  bounds  the coordinates to convert.
-         * @param  tight   whether to return the smallest bounding box.
-         * @return the converted coordinates.
-         * @throws ArithmeticException if the result cannot be expressed as 32-bits integers.
-         */
-        public Rectangle resourceToImage(final Rectangle bounds, final boolean tight) {
-            long x, y;      // Convenience for casting `int` to `long`.
-            final long d = tight ? 1 : 0;
-            final var r = new Rectangle();
-            r.x      = toIntExact(resourceToImage(x = bounds.x,          xDimension, false));
-            r.y      = toIntExact(resourceToImage(y = bounds.y,          yDimension, false));
-            r.width  = toIntExact(resourceToImage(x + bounds.width  - d, xDimension, true) - r.x + d);
-            r.height = toIntExact(resourceToImage(y + bounds.height - d, yDimension, true) - r.y + d);
-            return r;
-        }
-
-        /**
-         * Converts cell coordinates from pixel coordinates to the originating resource.
-         * If {@code tight} is {@code true}, this method returns the smallest bounding box of
-         * interest for a reader which will apply {@linkplain #getSubsampling(int) subsampling}.
-         * If {@code false}, this method uses a more straightforward calculation which may result
-         * in a larger bounding box, with right and bottom areas possibly containing pixels that
-         * should be skipped by subsampling.
-         *
-         * <p>The latter case is sometime desirable when the caller may compute scale factors
-         * as the ratio of the size of different rectangles. For such calculations,
-         * tight bounding boxes may be confusing.</p>
-         *
-         * @param  bounds  the coordinates to convert.
-         * @param  tight   whether to return the smallest bounding box, at the cost of less straightforward rectangle size.
-         * @return the image coordinates converted to resource coordinates.
-         * @throws ArithmeticException if the result cannot be expressed as 32-bits integers.
-         */
-        public Rectangle imageToResource(final Rectangle bounds, final boolean tight) {
-            long x, y;      // Convenience for casting `int` to `long`.
-            final long d = tight ? 1 : 0;
-            final var r = new Rectangle();
-            r.x      = toIntExact(imageToResource(x = bounds.x,          xDimension));
-            r.y      = toIntExact(imageToResource(y = bounds.y,          yDimension));
-            r.width  = toIntExact(imageToResource(x + bounds.width  - d, xDimension) - r.x + d);
-            r.height = toIntExact(imageToResource(y + bounds.height - d, yDimension) - r.y + d);
-            return r;
-        }
-
-        /**
-         * Returns the origin to assign to the tile at current iterator position.
+         * Updates the origin to assign to the tile at current iterator position.
          * Note that the subsampling should be a divisor of tile size,
          * otherwise a drift in pixel coordinates will appear.
          * There are two exceptions to this rule:
@@ -1367,8 +1922,7 @@ public abstract class TiledGridCoverage extends GridCoverage {
          *   <li>If subsampling is larger than tile size.</li>
          * </ul>
          */
-        @Override
-        final int getTileOrigin(final int dimension) {
+        private void updateRasterLocation() {
             /*
              * We really need `ceilDiv(…)` below, not `floorDiv(…)`. It makes no difference in the usual
              * case where the subsampling is a divisor of the tile size (the numerator is initialized to
@@ -1380,49 +1934,121 @@ public abstract class TiledGridCoverage extends GridCoverage {
              * At first the index values seem inconsistent, but after we discard the tiles where
              * `getRegionInsideTile(…)` returns `false`, they become consistent.
              */
-            return toIntExact(ceilDiv(tileOffsetFull[dimension], getSubsampling(dimension)));
+            for (int i = rasterLocation.length; --i >= 0;) {
+                rasterLocation[i] = toIntExact(ceilDiv(tileOffsetFull[i], getSubsampling(i)));
+            }
         }
 
         /**
-         * Moves the iterator position to next tile. This method should be invoked in a loop as below:
+         * Returns a snapshot of the current {@code TileIterator} position.
+         * Those snapshots can be created during an iteration for processing a tile later.
+         * For example, a {@link #readTiles(TileIterator)} method implementation may want
+         * to create a list of all tiles to load before to start the actual reading process
+         * in order to read the tiles in some optimal order,
+         * or for combining multiple read operations in a single operation.
+         *
+         * @return snapshot of current tile iterator position.
+         *
+         * @see AOI#AOI(AOI)
+         *
+         * @since SIS 1.8
+         */
+        public AOI snapshot() {
+            return new Snapshot(this);
+        }
+
+        /**
+         * Moves the iterator position to next tile to read.
+         * This method should be invoked in a loop as below:
          *
          * {@snippet lang="java" :
-         *     do {
-         *         // Process current tile.
-         *     } while (domain.next());
+         *     Raster[] readTiles(TileIterator iterator) {
+         *         do {
+         *             // Process current tile.
+         *         } while (iterator.next());
+         *         return iterator.tiles();
          *     }
+         *     }
+         *
+         * Tiles cached from a previous read operation are automatically skip.
          *
          * @return {@code true} on success, or {@code false} if the iteration is finished.
          */
         public boolean next() {
-            if (++indexInResultArray >= tileCountInQuery) {
-                fireTileReadEvent = false;
-                return false;
-            }
-            /*
-             * Iterates over all tiles in the region specified to this method by maintaining 4 indices:
-             *
-             *   - `indexInResultArray` is the index in the `rasters` array to be returned.
-             *   - `indexInTileVector`  is the corresponding index in the `tileOffsets` vector.
-             *   - `tmcInSubset[]`      contains the Tile Matrix Coordinates (TMC) relative to this `TiledGridCoverage`.
-             *   - `tileOffsetFull[]`   contains the pixel coordinates relative to the user-specified AOI.
-             *
-             * We do not check for integer overflow in this method because if an overflow is possible,
-             * then `ArithmeticException` should have occurred in `TiledGridCoverage` constructor.
-             */
-            for (int i=0; i<tmcInSubset.length; i++) {
-                indexInTileVector += tileStrides[i];
-                if (++tmcInSubset[i] < tileUpper[i]) {
-                    tileOffsetFull[i] += getTileSize(i);
-                    break;
+            do {
+                if (++indexInResultArray >= tileCountInQuery) {
+                    fireTileReadEvent = false;
+                    updateRasterLocation();
+                    return false;
                 }
-                // Rewind to index for tileLower[i].
-                indexInTileVector -= (tmcInSubset[i] - tileLower[i]) * tileStrides[i];
-                tmcInSubset   [i]  = tileLower[i];
-                tileOffsetFull[i]  = multiplyExact(getSubsampling(i), offsetAOI[i]);
-            }
-            fireTileReadEvent = (eventContext != null);
+                /*
+                 * Iterates over all tiles in the region specified to this method by maintaining 4 indices:
+                 *
+                 *   - `indexInResultArray` is the index in the `rasters` array to be returned.
+                 *   - `indexInTileVector`  is the corresponding index in the `tileOffsets` vector.
+                 *   - `tmcInSubset[]`      contains the Tile Matrix Coordinates (TMC) relative to this `TiledGridCoverage`.
+                 *   - `tileOffsetFull[]`   contains the pixel coordinates relative to the user-specified AOI.
+                 *
+                 * We do not check for integer overflow in this method because if an overflow is possible,
+                 * then `ArithmeticException` should have occurred in `TiledGridCoverage` constructor.
+                 */
+                for (int i=0; i<tmcInSubset.length; i++) {
+                    indexInTileVector += tileStrides[i];
+                    if (++tmcInSubset[i] < tileUpper[i]) {
+                        tileOffsetFull[i] += getTileSize(i);
+                        break;
+                    }
+                    // Rewind to index for tileLower[i].
+                    indexInTileVector -= (tmcInSubset[i] - (long) tileLower[i]) * tileStrides[i];
+                    tmcInSubset   [i]  = tileLower[i];
+                    tileOffsetFull[i]  = multiplyExact(getSubsampling(i), offsetAOI[i]);
+                }
+                fireTileReadEvent = (eventContext != null);
+                updateRasterLocation();
+            } while (useCachedTile());
             return true;
+        }
+
+        /**
+         * Sets the tile at current <abbr>AOI</abbr> position to a value cached from a previous iteration.
+         * This method reuses the tile given in a call to {@link #setReadTile(Raster)} when the iterator was
+         * at the same position during a previous iteration if that tile has not yet been garbage collected.
+         *
+         * @return whether a cached tile at current <abbr>AOI</abbr> position has been reused.
+         */
+        private boolean useCachedTile() {
+            final Raster tile = getCachedTile();
+            if (tile != null) {
+                result[indexInResultArray] = tile;
+                return true;
+            }
+            return false;
+        }
+
+        /**
+         * Executes the read operation, skipping tiles that are still in the cache.
+         *
+         * @return tiles decoded from the {@link TiledGridCoverageResource}.
+         * @throws Exception if at least one tile cannot be created.
+         */
+        final Raster[] execute() throws Exception {
+            if (useCachedTile() && !next()) {
+                return tiles();     // All tiles were in the cache.
+            }
+            return readTiles(this);
+        }
+
+        /**
+         * Returns all tiles which were read.
+         * This returned array is live (the array is not cloned):
+         * calls to {@link #setReadTile(Raster)} write in this array.
+         *
+         * @return all tiles which were read.
+         *
+         * @since 1.8
+         */
+        public Raster[] tiles() {
+            return result;
         }
     }
 
@@ -1434,13 +2060,14 @@ public abstract class TiledGridCoverage extends GridCoverage {
      * for processing a tile later. For example, a {@link #readTiles(TileIterator)} method implementation
      * may want to create a list of all tiles to load before to start the actual reading process in order
      * to read the tiles in some optimal order, or for combining multiple read operations in a single operation.
+     *
+     * @version 1.8
+     * @since SIS 1.7
+     *
+     * @deprecated Replaced by {@link TileIterator#snapshot()}.
      */
-    protected static class Snapshot extends AOI {
-        /**
-         * The source coverage.
-         */
-        private final TiledGridCoverage coverage;
-
+    @Deprecated(since="1.8", forRemoval=true)
+    protected class Snapshot extends AOI {
         /**
          * Pixel coordinates of the upper-left corner of the tile.
          */
@@ -1452,74 +2079,31 @@ public abstract class TiledGridCoverage extends GridCoverage {
          * @param iterator  the iterator for which to create a snapshot of its current position.
          */
         public Snapshot(final AOI iterator) {
-            super(iterator.xDimension,
-                  iterator.yDimension,
-                  iterator.tmcInSubset.clone(),
-                  iterator.uncroppedTileLocation,
-                  iterator.eventContext);
-            coverage           = iterator.getCoverage();
-            indexInResultArray = iterator.indexInResultArray;
-            indexInTileVector  = iterator.indexInTileVector;
-            originX            = iterator.getTileOrigin(xDimension);
-            originY            = iterator.getTileOrigin(yDimension);
-        }
-
-        /**
-         * Returns the enclosing coverage.
-         */
-        @Override
-        final TiledGridCoverage getCoverage() {
-            return coverage;
-        }
-
-        /**
-         * Returns the origin to assign to the tile at the current iterator position.
-         * This is needed by the parent class only for the two first dimensions.
-         *
-         * @see TileIterator#getTileOrigin(int)
-         */
-        @Override
-        final int getTileOrigin(final int dimension) {
-            if (dimension == xDimension) return originX;
-            if (dimension == yDimension) return originY;
-            throw new AssertionError(dimension);
-        }
-
-        /**
-         * Sends to the listeners a notification that the reading of the tile identified by this snapshot started.
-         * If this event has not already been sent for this snapshot, this method creates a {@link TileReadEvent}
-         * and gives this event to the {@linkplain TiledGridCoverageResource#listeners resource's listeners}.
-         *
-         * <p>This event is sent only once per {@code Snapshot} instance.
-         * If this method is invoked more than once, the extra calls are no-operation.</p>
-         */
-        public void fireTileReadStarted() {
-            if (fireTileReadEvent) {
-                final SampleModel model = coverage.model;
-                fireTileReadEvent(new Rectangle(originX, originY, model.getWidth(), model.getHeight()));
-            }
+            super(iterator);
+            originX = rasterLocation[xDimension];
+            originY = rasterLocation[yDimension];
         }
     }
 
     /**
      * Creates the key to use for caching the tile at given index.
      */
-    private TiledGridCoverageResource.CacheKey createCacheKey(final int indexInTileVector) {
+    private TiledGridCoverageResource.CacheKey createCacheKey(final long indexInTileVector) {
         return new TiledGridCoverageResource.CacheKey(indexInTileVector, includedBands, subsampling, subsamplingOffsets);
     }
 
     /**
      * Returns a raster in the cache, or {@code null} if none.
-     * See {@link AOI#getCachedTile()} for more information.
+     * See {@link TileIterator#useCachedTile()} for more information.
      */
-    private Raster getCachedTile(final int indexInTileVector) {
+    private Raster getCachedTile(final long indexInTileVector) {
         return rasters.get(createCacheKey(indexInTileVector));
     }
 
     /**
      * Caches the given raster. See {@link AOI#cache(Raster)} for more information.
      */
-    private Raster cacheTile(final int indexInTileVector, final Raster tile) {
+    private Raster cacheTile(final long indexInTileVector, final Raster tile) {
         final TiledGridCoverageResource.CacheKey key = createCacheKey(indexInTileVector);
         Raster existing = rasters.put(key, tile);
         /*
@@ -1547,13 +2131,23 @@ public abstract class TiledGridCoverage extends GridCoverage {
 
     /**
      * Returns all tiles in the given area of interest. Tile indices are relative to this {@code TiledGridCoverage}:
-     * (0,0) is the tile in the upper-left corner of this {@code TiledGridCoverage} (not necessarily the upper-left
+     * (0, 0) is the tile in the upper-left corner of this {@code TiledGridCoverage} (not necessarily the upper-left
      * corner of the image in the {@link TiledGridCoverageResource}).
      *
-     * <p>The {@link Raster#getMinX()} and {@code getMinY()} coordinates of returned rasters
-     * shall start at the values given by {@link TileIterator#getTileOrigin(int)}.
-     * Each tile in the returned array shall be stored at the index given by
-     * {@link TileIterator#getTileIndexInResultArray()}.</p>
+     * <p>Each tile read during the iteration can be saved by a call to {@link AOI#setReadTile(Raster)}.
+     * The array to return can be obtained by {@link TileIterator#tiles()}. Example:</p>
+     *
+     * {@snippet lang="java" :
+     *     @Override
+     *     protected Raster[] readTiles(TileIterator iterator) {
+     *         do {
+     *             WritableRaster tile = tile.createRaster(false);
+     *             // ... write tile pixel values.
+     *             iterator.setReadTile(tile);
+     *         } while (iterator.next());
+     *         return iterator.tiles();
+     *     }
+     *     }
      *
      * <p>The <var>x</var> axis of the raster shall be the grid dimension specified by {@link #xDimension}.
      * Likewise, the <var>y</var> axis shall be the dimension specified by {@link #yDimension}.
@@ -1564,14 +2158,14 @@ public abstract class TiledGridCoverage extends GridCoverage {
      *
      * @param  iterator  an iterator over the tiles that intersect the Area Of Interest specified by user.
      * @return tiles decoded from the {@link TiledGridCoverageResource}.
-     * @throws Exception if the tile cannot be created. There is too many possible exceptions for listing all types,
+     * @throws Exception if a tile cannot be created. There is too many possible exceptions for listing all types,
      *         but the main ones are {@link java.io.IOException} for I/O errors and various {@link RuntimeException}
      *         subtypes for Java2D errors.
      *
      * @see #xDimension
      * @see #yDimension
-     * @see TileIterator#createRaster()
-     * @see TileIterator#getTileIndexInResultArray()
+     * @see TileIterator#createRaster(boolean)
+     * @see TileIterator#getFlatTileIndex(GridCoordinateSystem)
      */
     protected abstract Raster[] readTiles(TileIterator iterator) throws Exception;
 }

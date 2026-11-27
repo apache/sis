@@ -388,7 +388,7 @@ public final class Region {
          * {@snippet lang="java" :
          *     final TileIterator t = ...;
          *     final var b = new Region.Builder(3);
-         *     t.getRegionInsideTile(b.regionLower, b.regionUpper, b.subsampling, true);
+         *     t.getRegionInsideTile(b.regionLower, b.regionUpper, b.subsampling, GridCoordinateSystem.RESOURCE);
          *     b.pixelsToSampleValues(sampleModel);
          *     }
          *

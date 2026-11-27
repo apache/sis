@@ -40,7 +40,7 @@ import org.apache.sis.referencing.operation.transform.MathTransforms;
 import org.apache.sis.coverage.SampleDimension;
 import org.apache.sis.coverage.grid.GridExtent;
 import org.apache.sis.coverage.grid.GridGeometry;
-import org.apache.sis.image.internal.shared.TilePlaceholder;
+import org.apache.sis.coverage.grid.GridCoordinateSystem;
 import org.apache.sis.metadata.iso.DefaultMetadata;
 import org.apache.sis.storage.DataStore;
 import org.apache.sis.storage.DataStoreException;
@@ -330,7 +330,7 @@ final class ImageResource extends TiledGridCoverageResource implements StoreReso
          */
         @Override
         protected Raster[] readTiles(final TileIterator iterator) throws Exception {
-            final var result = new Raster[iterator.tileCountInQuery];
+            final var result = iterator.tiles();
             final var requests = new ReadContext[result.length];
             int count = 0;
             synchronized (getSynchronizationLock()) {
@@ -338,12 +338,7 @@ final class ImageResource extends TiledGridCoverageResource implements StoreReso
                 final var inflater = new AtomicReference<ComputedByteChannel>();
                 try {
                     do {
-                        Raster raster = iterator.getCachedTile();
-                        if (raster != null) {
-                            result[iterator.getTileIndexInResultArray()] = raster;
-                        } else {
-                            requests[count++] = new ReadContext(iterator, readers, inflater, ImageResource.this);
-                        }
+                        requests[count++] = new ReadContext(iterator, readers, inflater, ImageResource.this);
                     } while (iterator.next());
                     /*
                      * For any tile that was not in the cache, read them in the order they appear in the file.
@@ -359,7 +354,7 @@ final class ImageResource extends TiledGridCoverageResource implements StoreReso
                         }
                     }
                     for (int i=0; i<count; i++) {
-                        requests[i].readTile(input, result);        // Implementation may create an `input` view.
+                        requests[i].readTile(input);    // Implementation may create an `input` view.
                     }
                 } finally {
                     readers.values().forEach(ImageReader::dispose);
@@ -371,7 +366,7 @@ final class ImageResource extends TiledGridCoverageResource implements StoreReso
         /**
          * Context about a {@code readTile(…)} operation. Contains the tile to create, or
          * the image reader to use in the case of read operations delegated to Image I/O.
-         * An instance of this class exist for each tile and is discarded after the tile
+         * An instance of this class exists for each tile and is discarded after the tile
          * has been read.
          *
          * <p><b>Note:</b> this is defined as an inner class of {@link TiledGridCoverage} subclass
@@ -382,7 +377,7 @@ final class ImageResource extends TiledGridCoverageResource implements StoreReso
             /**
              * Iterator over the tiles to read.
              */
-            private final Snapshot iterator;
+            private final AOI iterator;
 
             /**
              * The image readers created for reading the tiles.
@@ -396,7 +391,7 @@ final class ImageResource extends TiledGridCoverageResource implements StoreReso
 
             /**
              * 0-based index (column and row) of the tile to read inside the image to read.
-             * This is a tile inside the {@linkplain #tile}, i.e. a second level of tiling.
+             * This is a tile inside the {@linkplain #iterator}, i.e. a second level of tiling.
              */
             final long subTileX, subTileY;
 
@@ -423,10 +418,10 @@ final class ImageResource extends TiledGridCoverageResource implements StoreReso
                                 final ImageResource owner)
                     throws DataStoreException
             {
-                this.iterator = new Snapshot(iterator);
+                this.iterator = new AOI(iterator);
                 this.readers  = readers;
                 this.inflater = inflater;
-                final long[] tileCoord = iterator.getTileCoordinatesInResource();
+                final long[] tileCoord = iterator.getTileIndices(GridCoordinateSystem.RESOURCE);
                 final Image tile = owner.getTile(tileCoord[0], tileCoord[1]);
                 subTileX = tileCoord[0] % tile.numXTiles;
                 subTileY = tileCoord[1] % tile.numYTiles;
@@ -434,39 +429,43 @@ final class ImageResource extends TiledGridCoverageResource implements StoreReso
             }
 
             /**
-             * Reads the tile and store the result in the given array.
+             * Reads the tile and store the result.
              * The given input is the stream over the <abbr>HEIF</abbr> file
              * (not yet the view showing all bytes as if they were stored in a single extent).
              *
              * @param  input   the input from which to read bytes.
-             * @param  result  where to store the result.
              * @throws Exception any I/O error, arithmetic error, raster format error or other kinds of error.
              */
-            final void readTile(ChannelDataInput input, final Raster[] result) throws Exception {
+            final void readTile(ChannelDataInput input) throws Exception {
                 iterator.fireTileReadStarted();
                 input = viewAsConsecutiveBytes(input);
                 Raster raster = reader.readTile(input);
-                raster = iterator.cache(iterator.moveRaster(raster));
-                result[iterator.getTileIndexInResultArray()] = raster;
+                if (raster != null) {
+                    iterator.setReadTile(raster);
+                }
             }
 
             /**
              * Gets offsets of the <em>sample values</em> to read, relative to the beginning of the tiles.
-             * If that region is empty, returns an empty raster that the caller should return immediately.
+             * If that region is empty, sets the iterator position to an empty raster and returns {@code null}.
              *
-             * @param  builder  the builder to update.
-             * @return an empty raster if the region to read is empty, or {@code null} otherwise.
+             * @param  dimension  number of dimensions.
+             * @return the builder on success, or {@code null} if the tile is empty.
              * @throws RasterFormatException if the given sample model is unsupported.
              * @throws ArithmeticException if an overflow occurred during integer arithmetic.
              */
-            final Raster getRegionInsideTile(final Region.Builder builder,
-                                             final SampleModel sampleModel)
-            {
-                if (iterator.getRegionInsideTile(builder.regionLower, builder.regionUpper, builder.subsampling, false)) {
-                    builder.pixelsToSampleValues(sampleModel);
-                    return null;
+            final Region.Builder getRegionInsideTile(final int dimension) {
+                final var builder = new Region.Builder(dimension, true);
+                if (iterator.getRegionInsideTile(
+                        builder.regionLower,
+                        builder.regionUpper,
+                        builder.subsampling,
+                        GridCoordinateSystem.AREA_OF_INTEREST))
+                {
+                    return builder;
                 }
-                return TilePlaceholder.empty(sampleModel).create(iterator.getTileLocation());
+                iterator.setEmptyTile();
+                return null;
             }
 
             /**
@@ -477,7 +476,7 @@ final class ImageResource extends TiledGridCoverageResource implements StoreReso
              * @return a newly created, initially empty raster.
              */
             public WritableRaster createRaster() {
-                return iterator.createRaster();
+                return iterator.createRaster(false);
             }
 
             /**
@@ -489,7 +488,7 @@ final class ImageResource extends TiledGridCoverageResource implements StoreReso
              * @return an image reader instance created by the given provider.
              * @throws IOException if an error occurred while creating the image reader.
              */
-            public ImageReader getReader(final ImageReaderSpi provider) throws IOException {
+            public ImageReader getImageReader(final ImageReaderSpi provider) throws IOException {
                 try {
                     return readers.computeIfAbsent(provider, (spi) -> {
                         try {
@@ -501,6 +500,29 @@ final class ImageResource extends TiledGridCoverageResource implements StoreReso
                 } catch (UncheckedIOException e) {
                     throw e.getCause();
                 }
+            }
+
+            /**
+             * Reads and stores the tile using the given image reader.
+             * The reader input must have been set. The pixel coordinates of the image read by
+             * the reader are at full resolution and relative to the upper-left corner of the
+             * <abbr>HEIF</abbr> item, which may contain many tiles (a second level of tiling).
+             * The tile to read is the tile at index ({@link #subTileX}, {@link #subTileY}) in that item.
+             *
+             * @param  reader      the reader to use, with its input already set.
+             * @param  imageIndex  index of the image to read.
+             * @throws IOException if an error occurred while reading the tile.
+             * @throws ArithmeticException if a coordinate overflows the capacity of 64-bits integers.
+             */
+            public void readTile(final ImageReader reader, final int imageIndex) throws IOException {
+                /*
+                 * Location of the reader origin (the upper-left corner of the HEIF item)
+                 * relative to the upper-left corner of the tile to read, at full resolution.
+                 */
+                iterator.readTile(reader, imageIndex, GridCoordinateSystem.AREA_OF_INTEREST, new long[] {
+                    -multiplyExact(subTileX, sampleModel.getWidth()),   // Negation of positive values can't overflow.
+                    -multiplyExact(subTileY, sampleModel.getHeight())
+                });
             }
 
             /**

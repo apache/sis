@@ -19,7 +19,6 @@ package org.apache.sis.storage.geoheif;
 import java.util.Iterator;
 import java.io.IOException;
 import java.awt.image.SampleModel;
-import java.awt.image.BufferedImage;
 import javax.imageio.ImageReader;
 import javax.imageio.ImageTypeSpecifier;
 import javax.imageio.event.IIOReadWarningListener;
@@ -118,7 +117,7 @@ final class FromImageIO extends Image implements IIOReadWarningListener {
      * Returns the sample model and color model of this image.
      * The size of the sample model is the tile size.
      *
-     * @todo Try to fetch the image reader from {@code ImageResource.Coverage.ReadContext.getReader(provider))}.
+     * @todo Try to fetch the image reader from {@code ImageResource.Coverage.ReadContext.getImageReader(provider))}.
      *
      * @param  store   the store that opened the <abbr>HEIF</abbr> file.
      * @throws DataStoreContentException if this image does not include information about the sample/color models.
@@ -154,28 +153,23 @@ final class FromImageIO extends Image implements IIOReadWarningListener {
      * Computes the range of bytes that will be needed for reading a single tile of this image.
      *
      * @param  context  where to store the ranges of bytes.
+     * @return {@code null} because the tile has been stored by this method.
      * @throws DataStoreException if an error occurred while computing the range of bytes.
      */
     @Override
     protected Reader computeByteRanges(final ImageResource.Coverage.ReadContext context) throws DataStoreException {
         locator.resolve(0, -1, context);
         return (final ChannelDataInput input) -> {
-            final int tx = Math.toIntExact(context.subTileX);
-            final int ty = Math.toIntExact(context.subTileY);
-            final ImageReader reader = context.getReader(provider);
-            final BufferedImage image;
+            final ImageReader reader = context.getImageReader(provider);
             try {
                 reader.addIIOReadWarningListener(this);
                 setReaderInput(reader, input, context);
-                if (reader.canReadRaster()) {
-                    return reader.readTileRaster(IMAGE_INDEX, tx, ty);
-                }
-                image = reader.readTile(IMAGE_INDEX, tx, ty);
+                context.readTile(reader, IMAGE_INDEX);
             } finally {
                 reader.setInput(null);
                 reader.removeIIOReadWarningListener(this);
             }
-            return image.getRaster();
+            return null;
         };
     }
 

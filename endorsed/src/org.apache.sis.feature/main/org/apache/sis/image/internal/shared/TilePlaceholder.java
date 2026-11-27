@@ -32,6 +32,7 @@ import org.apache.sis.pending.jdk.JDK16;
 import org.apache.sis.util.Disposable;
 import org.apache.sis.util.Workaround;
 import org.apache.sis.util.collection.WeakHashSet;
+import org.apache.sis.util.internal.shared.Strings;
 import org.apache.sis.util.internal.shared.Numerics;
 import org.apache.sis.system.ReferenceQueueConsumer;
 import org.apache.sis.image.DataType;
@@ -110,6 +111,15 @@ public class TilePlaceholder {
         public void dispose() {
             owner = null;
         }
+
+        /**
+         * Returns an indication about whether the reference has been disposed, for debugging purposes.
+         * Also for keeping an usage of {@link #owner}, whose purpose is to avoid garbage collection.
+         */
+        @Override
+        public String toString() {
+            return Strings.toString(getClass(), "dispose", owner == null);
+        }
     }
 
     /**
@@ -170,8 +180,9 @@ public class TilePlaceholder {
 
     /**
      * Creates a tile to use as a placeholder when a tile cannot be computed.
+     * The returned instance shall be considered read-only as it may be shared.
      *
-     * @param  location  minimum x and y coordinates of the tile raster.
+     * @param  location  minimum <var>x</var> and <var>y</var> coordinates of the tile raster.
      * @return placeholder for a tile at the given location.
      */
     public final Raster create(final Point location) {
@@ -212,13 +223,13 @@ public class TilePlaceholder {
     }
 
     /**
-     * Invoked when a new empty tile is created. Subclasses can override this method
-     * for drawing some visual indication that the tile is missing.
-     * The default implementation does nothing.
+     * Invoked when a new empty tile is created.
+     * Subclasses can override this method for drawing some visual indication that the tile is missing.
+     * The default implementation does nothing, which is okay for newly created tiles filled with zeros.
      *
      * @param  tile  the tile where to draw.
      */
-    protected void draw(final WritableRaster tile) {
+    public void draw(WritableRaster tile) {
     }
 
 
@@ -245,7 +256,7 @@ public class TilePlaceholder {
          * Fills the given raster.
          */
         @Override
-        protected void draw(final WritableRaster tile) {
+        public void draw(final WritableRaster tile) {
             fill.fill(tile);
         }
 
@@ -312,7 +323,7 @@ public class TilePlaceholder {
          * odd coordinates. The same pattern applies to top and bottom borders.
          */
         @Override
-        protected void draw(final WritableRaster tile) {
+        public void draw(final WritableRaster tile) {
             final int width  = tile.getWidth();
             final int height = tile.getHeight();
             final int xmin   = tile.getMinX();
@@ -394,6 +405,8 @@ public class TilePlaceholder {
 
     /**
      * Returns a hash code value for this provider of tile placeholders.
+     *
+     * @return a hash code value based on the sample model.
      */
     @Override
     public int hashCode() {

@@ -20,7 +20,6 @@ import static java.lang.Math.addExact;
 import static java.lang.Math.multiplyExact;
 import java.awt.image.DataBuffer;
 import java.awt.image.SampleModel;
-import java.awt.image.Raster;
 import java.awt.image.WritableRaster;
 import java.awt.image.RasterFormatException;
 import org.apache.sis.image.DataType;
@@ -176,11 +175,11 @@ class UncompressedImage extends Image {
         final long tileIndex = addExact(multiplyExact(context.subTileY, numXTiles), context.subTileX);
         computeByteRanges(tileIndex, region, context);
         return (ChannelDataInput input) -> {
-            final var builder = new Region.Builder(3, true);
-            final Raster empty = context.getRegionInsideTile(builder, sampleModel);
-            if (empty != null) {
-                return empty;
+            final Region.Builder builder = context.getRegionInsideTile(3);
+            if (builder == null) {
+                return null;
             }
+            builder.pixelsToSampleValues(sampleModel);
             long origin = context.offset();
             ComputedByteChannel inflater = context.reuseInflater();
             if (inflater == null || inflater.compressedInput() != input) {

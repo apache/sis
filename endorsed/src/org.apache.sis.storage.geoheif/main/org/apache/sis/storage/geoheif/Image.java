@@ -127,7 +127,7 @@ abstract class Image {
          * Implementations should ignore the fact that the sequence of bytes may be spread in many extents.
          *
          * @param  input  a view of the byte sequences as if they were stored in one single large extent.
-         * @return tile filled with the pixel values read by this method.
+         * @return tile to store in the image, or {@code null} if already stored by this implementation.
          * @throws Exception any I/O error, arithmetic error, raster format error or other kinds of error.
          */
         Raster readTile(ChannelDataInput input) throws Exception;

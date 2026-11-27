@@ -237,7 +237,7 @@ public class GridCoverage2D extends GridCoverage {
     public GridCoverage2D(GridGeometry domain, final List<? extends SampleDimension> range, RenderedImage data) {
         /*
          * The complex nesting of method calls below is a workaround
-         * while waiting for JEP 513: Flexible Constuctor Bodies.
+         * while waiting for JEP 513: Flexible Constructor Bodies.
          */
         super(domain = addExtentIfAbsent(domain, data = unwrapIfSameSize(data)),
                 defaultIfAbsent(range, data, ImageUtilities.getNumBands(data)));

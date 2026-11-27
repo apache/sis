@@ -26,6 +26,7 @@ import org.opengis.util.GenericName;
 import org.apache.sis.util.logging.Logging;
 import org.apache.sis.storage.DataStoreException;
 import org.apache.sis.storage.tiling.TiledGridCoverage;
+import org.apache.sis.coverage.grid.GridCoordinateSystem;
 
 // Test dependencies
 import org.apache.sis.image.internal.shared.AssertionMessages;
@@ -105,14 +106,12 @@ final class TiledCoverage extends TiledGridCoverage {
              * Pixel values are copied twice: GDAL ⟶ `transferBuffer` ⟶ tiles.
              * The transfer buffer is reused for each tile.
              */
-            final var result = new WritableRaster[iterator.tileCountInQuery];
             try (Arena arena = Arena.ofConfined()) {
                 final MemorySegment transferBuffer = arena.allocate(getTileLength());
                 do {
-                    final WritableRaster tile = iterator.createRaster();
-                    final Rectangle rasterBounds = iterator.getRegionInsideTile(true);
+                    final WritableRaster tile = iterator.createRaster(false);
+                    final Rectangle rasterBounds = iterator.getRegionInsideTile(GridCoordinateSystem.RENDERED_IMAGE);
                     if (rasterBounds != null) {
-                        rasterBounds.translate(tile.getMinX(), tile.getMinY());
                         assert (imageBounds == null) || imageBounds.contains(rasterBounds)
                                 : AssertionMessages.notContained(imageBounds, rasterBounds);
                         /*
@@ -126,22 +125,16 @@ final class TiledCoverage extends TiledGridCoverage {
                          */
                         resourceBounds = iterator.imageToResource(rasterBounds, false);
                         owner.clipReadRegion(resourceBounds);
-                        /*
-                         * Conversion from uncropped coordinates to cropped coordinates before reading.
-                         * The crop is needed only when reading from a single large tile. It is a no-op
-                         * when reading a tiled image.
-                         */
-                        iterator.getUncroppedTileLocation().ifPresent((p) -> rasterBounds.translate(p.x, p.y));
                         if (!Band.transfer(gdal, OpenFlag.READ, bands, owner.dataType, resourceBounds, tile, rasterBounds, transferBuffer)) {
                             break;      // Exception will be thrown by `throwOnFailure(…)`
                         }
                     }
-                    result[iterator.getTileIndexInResultArray()] = tile;
+                    iterator.setReadTile(tile);
                 } while (iterator.next());
             } finally {
                 ErrorHandler.throwOnFailure(owner.parent, "read");      // Public caller of this method.
             }
-            return result;
+            return iterator.tiles();
         }
     }
 }
