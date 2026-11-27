@@ -38,6 +38,10 @@ The test suite uses software developed by the JUnit community
 under Eclipse public license version 2.
 https://junit.org/junit5/
 
+The `org.apache.sis.referencing.dggs.isea` package contains code
+adapted from GeoGrid ISEA Aperture 3 Hexagon Discrete Global Grid System in dual license MIT and Apache 2.
+https://github.com/mocnik-science/geogrid
+
 
 -------------------------------------------------------------
   Optional modules NOT included unless explicitly requested

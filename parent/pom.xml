@@ -418,6 +418,15 @@
         <role>developer</role>
       </roles>
     </contributor>
+    <contributor>
+      <name>Dr Franz-Benjamin Mocnik</name>
+      <organization>Faculty of Digital and Analytical Sciences, Paris Lodron University of Salzburg, Austria</organization>
+      <organizationUrl>https://www.plus.ac.at</organizationUrl>
+      <timezone>+2</timezone>
+      <roles>
+        <role>developer</role>
+      </roles>
+    </contributor>
   </contributors>
 
   <!-- ===================================================================
