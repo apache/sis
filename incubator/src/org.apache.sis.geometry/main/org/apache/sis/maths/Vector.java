@@ -657,9 +657,8 @@ public sealed interface Vector<T extends Vector<T>> permits AbstractVector {
      * @throws IllegalArgumentException if a vector size is not 3
      */
     default Vector3D.Double cross(Vector<?> other) {
-        if (getDimension() != 3 || other.getDimension() != 3) {
-            throw new IllegalArgumentException("vector and other size must be 3.");
-        }
+        AbstractVector.ensureDimension(this, 3);
+        AbstractVector.ensureDimension(other, 3);
         final double x = get(0), y = get(1), z = get(2);
         final double ox = other.get(0), oy = other.get(1), oz = other.get(2);
         return Vector.of(
@@ -679,9 +678,8 @@ public sealed interface Vector<T extends Vector<T>> permits AbstractVector {
      * @throws IllegalArgumentException if a vector size is not 3
      */
     default Vector3D.Double crossAccurate(Vector<?> other) {
-        if (getDimension() != 3 || other.getDimension() != 3) {
-            throw new IllegalArgumentException("vector and other size must be 3.");
-        }
+        AbstractVector.ensureDimension(this, 3);
+        AbstractVector.ensureDimension(other, 3);
         final double x = get(0), y = get(1), z = get(2);
         final double ox = other.get(0), oy = other.get(1), oz = other.get(2);
         return Vector.of(

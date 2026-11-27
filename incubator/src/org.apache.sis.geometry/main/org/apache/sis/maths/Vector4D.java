@@ -41,39 +41,6 @@ public abstract sealed class Vector4D<T extends Vector4D<T>> extends AbstractVec
     }
 
     @Override
-    public T normalize() {
-        return scale(1.0 / length());
-    }
-
-    @Override
-    public T negate() {
-        return scale(-1);
-    }
-
-    @Override
-    public T perpendicular(Vector<?> unit) {
-        ensureDimension(unit, 4);
-        return combine(1, unit, -dot(unit));
-    }
-
-    @Override
-    public T lerpAccurate(Vector<?> other, double ratio) {
-        ensureDimension(other, 4);
-        return combineAccurate(1 - ratio, other, ratio);
-    }
-
-    @Override
-    public T slerp(Vector<?> other, double ratio) {
-        return AbstractVector.slerp(this, other, ratio, (a, b) -> combine(a, other, b));
-    }
-
-    @Override
-    public T vectorTo(Vector<?> other) {
-        ensureDimension(other, 4);
-        return combine(-1, other, 1);
-    }
-
-    @Override
     public double lengthSquare() {
         final double v0 = get(0);
         final double v1 = get(1);

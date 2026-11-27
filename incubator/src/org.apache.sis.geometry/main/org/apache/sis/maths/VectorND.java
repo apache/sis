@@ -35,39 +35,6 @@ public abstract sealed class VectorND<T extends VectorND<T>> extends AbstractVec
     public VectorND() {
     }
 
-    @Override
-    public T normalize() {
-        return scale(1.0 / length());
-    }
-
-    @Override
-    public T negate() {
-        return scale(-1);
-    }
-
-    @Override
-    public T perpendicular(Vector<?> unit) {
-        ensureDimension(unit, getDimension());
-        return combine(1, unit, -dot(unit));
-    }
-
-    @Override
-    public T lerpAccurate(Vector<?> other, double ratio) {
-        ensureDimension(other, getDimension());
-        return combineAccurate(1 - ratio, other, ratio);
-    }
-
-    @Override
-    public T slerp(Vector<?> other, double ratio) {
-        return AbstractVector.slerp(this, other, ratio, (a, b) -> combine(a, other, b));
-    }
-
-    @Override
-    public T vectorTo(Vector<?> other) {
-        ensureDimension(other, getDimension());
-        return combine(-1, other, 1);
-    }
-
     public static final class Byte extends VectorND<Byte> {
 
         private final byte[] values;
