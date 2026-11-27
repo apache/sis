@@ -301,7 +301,7 @@ public class Matrix3D extends AbstractMatrix<Matrix3D> {
         double angle_y;
         double angle_z;
 
-        if (m20 != -1 && m20 != +1){
+        if (m20 > -1 && m20 < 1){
             //first possible solution
             angle_y = -Math.asin(m20);
             double cosy1 = Math.cos(angle_y);
@@ -315,9 +315,9 @@ public class Matrix3D extends AbstractMatrix<Matrix3D> {
             //angle_z = Math.atan2(mat[1][0]/cosy2, mat[0][0]/cosy2);
 
         } else {
-            // Gimbal lock
+            // Gimbal lock, including a value which drifted past ±1 by rounding errors
             angle_z = 0;
-            if (m20 == -1){
+            if (m20 < 0){
                 angle_y = Math.PI / 2.0;
                 angle_x = angle_z + Math.atan2(m01, m02);
             } else {
