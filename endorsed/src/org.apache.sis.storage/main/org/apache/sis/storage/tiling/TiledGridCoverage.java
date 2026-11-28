@@ -44,7 +44,6 @@ import org.opengis.util.GenericName;
 import org.apache.sis.coverage.SubspaceNotSpecifiedException;
 import org.apache.sis.coverage.grid.GridCoverage;
 import org.apache.sis.coverage.grid.GridExtent;
-import org.apache.sis.coverage.grid.GridCoordinateSystem;
 import org.apache.sis.coverage.grid.DisjointExtentException;
 import org.apache.sis.image.PlanarImage;
 import org.apache.sis.image.internal.shared.DeferredProperty;

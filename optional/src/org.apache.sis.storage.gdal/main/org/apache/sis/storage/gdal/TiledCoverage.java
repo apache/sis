@@ -26,7 +26,7 @@ import org.opengis.util.GenericName;
 import org.apache.sis.util.logging.Logging;
 import org.apache.sis.storage.DataStoreException;
 import org.apache.sis.storage.tiling.TiledGridCoverage;
-import org.apache.sis.coverage.grid.GridCoordinateSystem;
+import org.apache.sis.storage.tiling.GridCoordinateSystem;
 
 // Test dependencies
 import org.apache.sis.image.internal.shared.AssertionMessages;

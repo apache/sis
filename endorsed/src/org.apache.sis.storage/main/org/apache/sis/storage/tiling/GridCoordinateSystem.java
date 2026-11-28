@@ -14,17 +14,18 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.sis.coverage.grid;
+package org.apache.sis.storage.tiling;
 
 import java.awt.Rectangle;
 import java.awt.image.Raster;
 import java.awt.image.RenderedImage;
+import org.apache.sis.coverage.grid.GridCoverage;
+import org.apache.sis.storage.GridCoverageResource;
 
 
 /**
  * Identification of the coordinate system used for cell indices or tile indices in a grid.
- * The coordinates can be relative to a {@link org.apache.sis.storage.GridCoverageResource}
- * such as a big <abbr>TIFF</abbr> file,
+ * The coordinates can be relative to a {@link GridCoverageResource} such as a big <abbr>TIFF</abbr> file,
  * or relative to a {@link GridCoverage} read from a subset of that file,
  * or relative to a {@link RenderedImage} produced for a sub-region of that coverage,
  * or relative to a {@link Raster} for one tile of that image (non-exhaustive list).
@@ -44,23 +45,22 @@ public enum GridCoordinateSystem {
     /**
      * Cell or tile indices are in the grid coordinate system of a resource.
      * A resource is, for example, a data store opened on a big <abbr>TIFF</abbr> file
-     * and is represented by a {@link org.apache.sis.storage.GridCoverageResource}.
+     * and represented by a {@link GridCoverageResource}.
      * The origin with (0, 0, …) coordinates is often (but not necessarily) the upper-left corner of the whole file.
      *
-     * @see org.apache.sis.storage.GridCoverageResource#getGridGeometry()
+     * @see GridCoverageResource#getGridGeometry()
      */
     RESOURCE,
 
     /**
      * Cell or tile indices are in the grid coordinate system of a coverage.
-     * A coverage can be {@linkplain org.apache.sis.storage.GridCoverageResource#read read from a resource subspace}.
+     * A coverage can be {@linkplain GridCoverageResource#read read from a resource subspace}.
      * Compared to {@link #RESOURCE}, this coordinate system may be translated (although a {@link GridCoverage}
-     * can choose to keep the same origin as the the parent {@link org.apache.sis.storage.GridCoverageResource}
-     * even if that origin is not inside the coverage) and may have a scale factor if subsampling was applied
-     * at reading time.
+     * can choose to keep the same origin as the the parent {@link GridCoverageResource} even if that origin is
+     * not inside the coverage) and may have a scale factor if subsampling was applied at reading time.
      *
      * @see GridCoverage#getGridGeometry()
-     * @see org.apache.sis.storage.tiling.TiledGridCoverage#coverageToResourceCoordinate(long, int)
+     * @see TiledGridCoverage#coverageToResourceCoordinate(long, int)
      */
     COVERAGE,
 
